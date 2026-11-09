@@ -2,48 +2,84 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4403606A320
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 02:35:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0BCF7606A326
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 03:51:19 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=E1kYaEH6
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vQEbEEng
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNDQg4bhQz2xfK;
-	Mon, 09 Nov 2026 13:35:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::5b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794191707;
-	cv=none; b=a9JqLYxNwFwLEpRbSuEARDgi1OysFxfHW3pDBftuM94jetJajxoEYXuOsUxzoOMqga3zBI/HrenYwELnUszAeqv0UzSGjZrhlrIrTc+1KJOoZY03UyRh9jP/HEUxh+RzpP0jF3PaOwWSzUr4fMcoclHD5LBjLlJcaQ/Uu+QhFP+RhXe7LRF8YmKSEzfLsTSPsINjxTNHFrLAEkpD08wscA1UQf3nzRuxF2by+SuvQL+kpQSIoYfql+CGU68/FxTdyRoSHsvJucNqPPXTJhpCcBypWyIejgkaFmYeER34BkVz8AIaxNxNS2vrY/s+ogQWJ56E6IfFLdur1IWBsagy3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNG6X6Cfwz2xwL;
+	Mon, 09 Nov 2026 14:51:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::32f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794196276;
+	cv=none; b=FK8mH+sdMK3f/OUHRYR7jmswOIFlKNB644Z8oa21BQozQuZ4n0Y1fIJmPStL8ikLOwnS5F3NuFTmKcNOQYyt1g1iqKVCemCT9uZkcfin9GancGcTV7XrFGyaQ9cJ3aHRClZ4U7Jm5qbPrF9b/cQILl4+tooyOW2ZvV1m/w2nZz/zKQ09lK/WWF+JCu0CU51xXLR27ZmWJLI39wuWd4FZQZRhMdgj4g2oLaPkaobWFL5bIQ3onX7Oym+TfVxnGnu9wlWZJ/LUEr+5e11wDVsVEOlosUgD1E4f6o8nz2nni1w+lt3G5wzQQ1lLOo/bnN0CBbFMXF6nXCseuiXUbNfFGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794191707; c=relaxed/relaxed;
-	bh=17hrMgRLWHFMxzi/w8AjQ1hc79wxooWOGGXrIHOf1cE=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=Z1EAsPbofNGP7jIxNHkPTFQHAFnyaJOyqtwXRAKTfrTdVNcysFTCmLew4MOv+q0L0kRH9OPA+jfhprOl/tZ0uOlhf6Hb7cLg/dWPF43GWk+Fy3UaC4r1Yc24z+0HzxoTaemSNmdLrXAYmNLvt9lSdaNpcdVUZwfePMGP4wPtjRk0jsGORVTagRhdKYmzeadQNriPeOsODNCgPd8BopVZa570AAJB8RVA2inZuM7ro8rwYgEtY/AMAFCs62XJwEt1WT94Uw+tk1eVuEyewZJUCzaGA8W1vqSHaqhv6koK2ZFzAflQxVNwNyxP8Wsvrm6eFfR9PzeOfpi+vWXxOLqsxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=E1kYaEH6; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::5b; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1794196276; c=relaxed/relaxed;
+	bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=VpKyBa27aW7LcQqdLTBqaafhc6w6VSULP7xuvFyQPHiM2x+x5Gp6j0zfrxZ4UzeRT0VUaRsw2kHr3oMDF5EO5H4t0G2JQx7hgpf9JcErIfhhpEVylFz1azBIUWx8g9tSTyifolcUWv+Lk5J4RroD2hsNkAq9MXdIBZx6Rr3kuqJHuWEbV3zVXCA23blBB177u+HS2ykovo4wFqi7wImSBhWF8dfbKa25XS5BuDeKATKInFrCWFh43eAgDn41SFORYtI4GAEmYl5KVFwOKs8jBc5DXH36XFxHZ+hCASwC7Bvw36efvNGtAszIqZDVtVZgxArRIWduuZx5/baJmJgXAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vQEbEEng; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::32f; helo=mail-ot1-x32f.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=E1kYaEH6;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vQEbEEng;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::5b; helo=mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-91.mta0.migadu.com [IPv6:2001:41d0:1004:224b::5b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::32f; helo=mail-ot1-x32f.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com [IPv6:2607:f8b0:4864:20::32f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNDQc16lZz2xNC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 13:35:02 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=5+eXtFOPw8ri8zVpqqb1XMOQVeMGX4sPLIb3BO8RS5s=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794191679; v=1; x=1794796479;
- b=E1kYaEH6geZzRwSNpJrbVowY52bR/Gl+rBzc2FmVZw4opA/3j74cqrHLhGZeiHPlS+VZ3xp7
- jTq/g0+e9GhGcqRh1Fq69ENp8y4v3w1lfF7MLjz2IueEs7rPga97rVYfX/15zvySxtFsGvp/CLN
- Tw7sjx/gzOcNDTCYJszTiX8s=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by mta10.migadu.com with ESMTPS id 9205fe4f08972061;
-	Mon, 09 Nov 2026 02:34:39 +0000
-X-Mizu-Trace-ID: 9205fe4f08972061
-X-Migadu-Flow: FLOW_OUT
-Content-Type: text/plain;
-	charset=us-ascii
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNG6W0mwWz2xSS
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 14:51:14 +1100 (AEDT)
+Received: by mail-ot1-x32f.google.com with SMTP id 46e09a7af769-7f84a55e31aso210155a34.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 19:51:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794196272; x=1794801072; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+        b=vQEbEEngVuvXIh8xUxIZozEgi2xRIVAq4w3eIOJn7bmsGGz9TPY7J18z6UtR3Fz+rB
+         Zz6v1uenKiTPqVr7laZnGoKwzg4vJcLvcZbkXNN58hKp62bOVwAmW+Z1K7shfPemnC+Q
+         JZejXOALB+jE5B08N8xGxMN9urqlp617xDE972CgvYhfwruuN0bkPff4W8b8skdXmbxh
+         85ORn0h/uAWw6yIKf11gZQQUH31C4KFHXaqznwGv1V4hdl80PpQ2x5rSCIzE/hoKVCa7
+         fAeaR/K5XALFelHrSDLXKPdnGCP6UX93aulxlu9oD/wV7v4XE3eyu4kImzN2rPPxDayS
+         Y1cg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794196272; x=1794801072;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+        b=2W0QwXSsWS1iKc4sY3d/HUwfn2fA4xHIKgnE8+lwLiiT+OhUt4hCmQgd7HZZBc1krm
+         IVZ236dbm5mjWMFyU3KXQLhp3Ns/n+q6+6jhxoWbEbVutXHr84IELUVJanb3anKIyj8m
+         WqNgWcfp72CDrL9qejdF6Q6K5qKDzlhKaINgWFTNii1vy/OYEKGHdBb1Yx7A1jaimcue
+         jWoTj60l8gJwHvIPIXjIkQkYF3Pd/MCX/9O58zsLLxp4H3PhuCJeclTtdsh2gS/ZmxVk
+         6otNxd0DcGnxDkiNGtBw92Scltn93Yt6rrnUPRAaF4BTRdO0aU4JnnAaHB/uepE+EJOa
+         iI0Q==
+X-Forwarded-Encrypted: i=1; AL+hErEHpCOWWKNGhv6/I4vyhMYX/oiLVFza7RMKxFB54RcSo/qiKKjCTrt9vvwPGO+4T2z6bCfdXUOkQWrRfFs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9TBRGaZ51USZY4tNFmf5S6x5sw6/w9o6/tL5mOLJNHNHIiE2Ll
+	lZzd4R5WgMwF0i+42fpTBnGoEF9lfYbL3j8AnZCwThlSbqbhr7XzyY3XBK4qrpXS
+X-Gm-Gg: AYBFou2oq+h5etLjR1e3FzoZyRugZu+reQdULBGz0CAU6Gon1wks55oObRreqOhdDZN
+	nLBdaD1wL0IFnXS6+NmTxqRTJ6DrJL396KS08+bRkeDgeYbmCj7/MUK26DegUrlvOc35iGUWVav
+	jCW+PSYUzRGaFINOsUoEZwvoSXbdsPcDaM3Rc55G+YpCA9p3TufyWkeHDDNCNlM1lJnrMTOWEjr
+	cpeD5iiHSuwR6fLaZcjj9KNO/tmfz3Kv35x9kgD6fMVlHo6+KwbJHDKPo9TvmTvGYpYnFAKQMbq
+	UZROxn1yXlEjdRtAepQdgRRBQWk+6eNMo0TWumicY92SyDV4hqArVUtTpb2pyVaRLKSvzMoYq4v
+	axdbLr6hjh8IS5NxNuxaag1BapQDn8awlG1vXLae2A28mlORfNMDIeiCVZkDGP7vetI2faEso+4
+	GXFFnYLWlVLfFq6m0CbGT6Woc9M7i0BUqKF7ol05c8fXd0TScBnaQ+ZxOA+a0GH5LX5dk54jC/Z
+	+NTxfoFuKfJQsMz4QDlnbQC4Sj/ILxsRQl3ai2lW5xwhGnuQ3EjFnaG6san/8oTwJ7ZxOpLYDsj
+	do4RBGIwrbaBvkuqJtVuCIQjO97o4E7Lsc7A2750MgBhtI4mPZ0JkM8VyppR3/WhYSj+/T/Qs8x
+	HDCW3kcpl2PqH4YREEI2PoajQoufWIM21oJrJAdRqW/NXr7nyHcGuQeh7MhFf52sMF1Eq1HUeu1
+	7gHhYPmsOVZeQpSDZJNZjxZB9DW7OkEWEq1ERvJf2TzMY8zaao/+5x
+X-Received: by 2002:a05:6830:2b22:b0:85f:49ec:c96b with SMTP id 46e09a7af769-85f507ef5eemr2216062a34.16.1794196272163;
+        Sun, 08 Nov 2026 19:51:12 -0800 (PST)
+Received: from [127.0.1.1] (174-29-1-49.hlrn.qwest.net. [174.29.1.49])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-85f4fad32cdsm2800428a34.6.2026.11.08.19.51.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Nov 2026 19:51:11 -0800 (PST)
+From: James Hilliard <james.hilliard1@gmail.com>
+Date: Sun, 08 Nov 2026 20:50:10 -0700
+Subject: [PATCH v10 1/8] serial: 8250_omap: separate locked TX DMA
+ completion processing
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,191 +92,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.200.71.1.16\))
-Subject: Re: [PATCH v2] dax/pmem: fix unaligned compound devmap initialization
-From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <cxseojgn.ritesh.list@gmail.com>
-Date: Mon, 9 Nov 2026 10:34:18 +0800
-Cc: Muchun Song <songmuchun@bytedance.com>,
- Dan Williams <djbw@kernel.org>,
- Vishal Verma <vishal.l.verma@intel.com>,
- Dave Jiang <dave.jiang@intel.com>,
- Alison Schofield <alison.schofield@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Joao Martins <joao.m.martins@oracle.com>,
- Pavithra Prakash <pavrampu@linux.ibm.com>,
- stable@vger.kernel.org,
- nvdimm@lists.linux.dev,
- linux-cxl@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <1672E495-DED0-4475-B17E-DB63D10DD529@linux.dev>
-References: <20261107030126.90894-1-songmuchun@bytedance.com>
- <cxseojgn.ritesh.list@gmail.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-X-Mailer: Apple Mail (2.3901.200.71.1.16)
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261108-submit-serial-8250-dma-cancel-v1-v10-1-e6227ddb95b1@gmail.com>
+References: <20261108-submit-serial-8250-dma-cancel-v1-v10-0-e6227ddb95b1@gmail.com>
+In-Reply-To: <20261108-submit-serial-8250-dma-cancel-v1-v10-0-e6227ddb95b1@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Raul E Rangel <rrangel@chromium.org>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Tony Lindgren <tony@atomide.com>, 
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+ Richard Genoud <richard.genoud@bootlin.com>, 
+ Nicolas Ferre <nicolas.ferre@microchip.com>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+ Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, 
+ Timur Tabi <timur@kernel.org>, Peter Ujfalusi <peter.ujfalusi@ti.com>, 
+ Vignesh Raghavendra <vigneshr@ti.com>, 
+ Patrice Chotard <patrice.chotard@foss.st.com>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+ linuxppc-dev@lists.ozlabs.org, James Hilliard <james.hilliard1@gmail.com>
+X-Mailer: b4 0.15.2
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Separate the port-locked completion processing from the DMA callback
+wrapper. Keep the shutdown check and locking in the callback, and retain
+the existing FIFO accounting, delayed register restore and THRI handling
+in the helper.
 
+Reviewed-by: Raul E Rangel <rrangel@chromium.org>
+Signed-off-by: James Hilliard <james.hilliard1@gmail.com>
+---
+ drivers/tty/serial/8250/8250_omap.c | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-> On Nov 9, 2026, at 09:57, Ritesh Harjani (IBM) <ritesh.list@gmail.com> =
-wrote:
->=20
-> Muchun Song <songmuchun@bytedance.com> writes:
->=20
->> Static pmem Device DAX namespaces reserve space for namespace =
-metadata
->> before the user-visible data range, and may also include padding =
-needed
->> to satisfy the Device DAX alignment. __dax_pmem_probe() adjusts the
->> dax_region range to start at the data range, but the dev_pagemap =
-range
->> still starts at the beginning of the namespace.
->>=20
->> That is not valid for compound devmap mappings whose memmap is stored =
-in
->> system RAM. Compound page initialization requires the start PFN to be
->> naturally aligned to the compound page size, because the head and =
-tail
->> struct pages are initialized according to that geometry. If the pgmap
->> starts before the aligned data range, memmap_init_zone_device() can =
-build
->> compound page metadata from an unaligned PFN.
->>=20
->> The resulting struct page layout is inconsistent with the Device DAX
->> mapping. A later mmap fault can then resolve the user-visible PFN =
-through
->> invalid compound page metadata and hit a kernel panic while inserting =
-the
->> DAX folio.
->>=20
->> Fix this by rounding the pgmap start up to the Device DAX alignment =
-for
->> non-altmap mappings. This gives compound mappings the required =
-naturally
->> aligned start while retaining full-section vmemmap savings when the
->> original start is already aligned. The altmap path remains unchanged
->> because memmap_init_zone_device() skips the altmap reservation =
-itself.
->>=20
->> Fixes: 14606001efb4 ("device-dax: compound devmap support")
->> Cc: <stable@vger.kernel.org>
->> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
->> Reported-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Closes: https://lore.kernel.org/r/wlrkqqvg.ritesh.list@gmail.com
->=20
-> Tested v2 also on my Power dev test setup. With this patch the =
-reported
-> problem is fixed. I am no more hitting the following warning and =
-crash:
->=20
-> [    3.071811][    T1] WARNING: mm/mm_init.c:1175 at =
-memmap_init_zone_device+0x144/0x470, CPU#0: swapper/0/1
-> [    3.082276][    T1] NIP [c000000000596604] =
-memmap_init_zone_device+0x144/0x470
-> [    3.082763][    T1] LR [c0000000006d72b8] =
-memremap_pages+0x3b0/0x974
-> [    3.083345][    T1] Call Trace:
-> [    3.083629][    T1] [c000000006d86e00] [c000000006d86e40] =
-0xc000000006d86e40 (unreliable)
-> [    3.084975][    T1] [c000000006d86f10] [c0000000006d72b8] =
-memremap_pages+0x3b0/0x974
-> [    3.085449][    T1] [c000000006d86fe0] [c0000000006d78b8] =
-devm_memremap_pages+0x3c/0xa4
-> [    3.085891][    T1] [c000000006d87020] [c00000000125c084] =
-dev_dax_probe+0x264/0x3d0
-> [    3.086339][    T1] [c000000006d870c0] [c000000001259a28] =
-dax_bus_probe+0x140/0x1c8
-> [    3.086778][    T1] [c000000006d87110] [c0000000011ce640] =
-really_probe+0x108/0x580
-> [    3.087218][    T1] [c000000006d871a0] [c0000000011ceb84] =
-__driver_probe_device+0xcc/0x284
-> [    3.087668][    T1] [c000000006d87230] [c0000000011ceea0] =
-driver_probe_device+0x5c/0x10c
-> [    3.088123][    T1] [c000000006d87270] [c0000000011cf05c] =
-__device_attach_driver+0x10c/0x1e8
-> [    3.088582][    T1] [c000000006d872f0] [c0000000011cab70] =
-bus_for_each_drv+0xc0/0x13c
-> [    3.089035][    T1] [c000000006d87350] [c0000000011cf65c] =
-__device_attach+0xdc/0x2b0
-> [    3.089467][    T1] [c000000006d873f0] [c0000000011cfaac] =
-device_initial_probe+0x80/0x98
-> [    3.089910][    T1] [c000000006d87420] [c0000000011cac44] =
-__bus_probe_device+0x58/0xf4
-> [    3.090358][    T1] [c000000006d87470] [c0000000011c8030] =
-device_add+0x850/0xa78
-> [    3.090778][    T1] [c000000006d87530] [c00000000125b040] =
-__devm_create_dev_dax+0x1c0/0x638
-> [    3.091236][    T1] [c000000006d875d0] [c00000000125b6c8] =
-devm_create_dev_dax+0x44/0x7c
-> [    3.091676][    T1] [c000000006d87600] [c00000000125dbe8] =
-__dax_pmem_probe+0x238/0x27c
-> [    3.092120][    T1] [c000000006d87770] [c00000000125dc4c] =
-dax_pmem_probe+0x20/0x44
-> [    3.092542][    T1] [c000000006d87790] [c000000001237a14] =
-nvdimm_bus_probe+0xcc/0x370
-> [    3.093097][    T1] [c000000006d87830] [c0000000011ce640] =
-really_probe+0x108/0x580
-> [    3.093610][    T1] [c000000006d878c0] [c0000000011ceb84] =
-__driver_probe_device+0xcc/0x284
-> <...>
-> [    3.099405][    T1] ---- interrupt: 0 at 0x0
-> [    3.099837][    T1] Code: 7c0802a6 fa8100b0 faa100b8 fb8100f0 =
-7d574030 7d4a4030 f8010120 fbe10108 3917ffff 7d294038 3109ffff 7d284910 =
-<0b090000> 3d2201c5 7bb53664 7ed607b4
-> [    3.101209][    T1] ---[ end trace 0000000000000000 ]---
-> [    3.104702][    T1] BUG: Unable to handle kernel data access on =
-write at 0xc00c000000210000
-> [    3.105209][    T1] Faulting instruction address: =
-0xc000000000596394
-> cpu 0x0: Vector: 300 (Data Access) at [c000000006d86aa0]
->    lr: c0000000005962c4: memmap_init_compound+0xac/0x2a8
->    sp: c000000006d86d40
->   msr: 8000000002009033
->   dar: c00c000000210000
-> dsisr: a000000
->  current =3D 0xc000000006d33e00
->  paca    =3D 0xc000000005010000   irqmask: 0x03   irq_happened: 0x01
->    pid   =3D 1, comm =3D swapper/0
-> Linux version 7.3.0-17056-gc0944ee4a2c4 (powerpc64le-linux-gnu-gcc =
-(Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #111 =
-SMP PREEMPT Mon Nov  9 07:25:29 IST 2026
-> enter ? for help
-> [c000000006d86e00] c0000000005968f8 =
-memmap_init_zone_device+0x438/0x470
-> [c000000006d86f10] c0000000006d72b8 memremap_pages+0x3b0/0x974
-> [c000000006d86fe0] c0000000006d78b8 devm_memremap_pages+0x3c/0xa4
-> [c000000006d87020] c00000000125c084 dev_dax_probe+0x264/0x3d0
-> [c000000006d870c0] c000000001259a28 dax_bus_probe+0x140/0x1c8
-> [c000000006d87110] c0000000011ce640 really_probe+0x108/0x580
-> [c000000006d871a0] c0000000011ceb84 __driver_probe_device+0xcc/0x284
-> [c000000006d87230] c0000000011ceea0 driver_probe_device+0x5c/0x10c
-> [c000000006d87270] c0000000011cf05c __device_attach_driver+0x10c/0x1e8
-> [c000000006d872f0] c0000000011cab70 bus_for_each_drv+0xc0/0x13c
-> [c000000006d87350] c0000000011cf65c __device_attach+0xdc/0x2b0
-> [c000000006d873f0] c0000000011cfaac device_initial_probe+0x80/0x98
-> [c000000006d87420] c0000000011cac44 __bus_probe_device+0x58/0xf4
-> [c000000006d87470] c0000000011c8030 device_add+0x850/0xa78
-> [c000000006d87530] c00000000125b040 __devm_create_dev_dax+0x1c0/0x638
-> [c000000006d875d0] c00000000125b6c8 devm_create_dev_dax+0x44/0x7c
-> [c000000006d87600] c00000000125dbe8 __dax_pmem_probe+0x238/0x27c
-> [c000000006d87770] c00000000125dc4c dax_pmem_probe+0x20/0x44
-> [c000000006d87790] c000000001237a14 nvdimm_bus_probe+0xcc/0x370
-> [c000000006d87830] c0000000011ce640 really_probe+0x108/0x580
-> <...>
->=20
-> Feel free to add:
->=20
-> Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
+index 4805b644ccb1..b6f108d34854 100644
+--- a/drivers/tty/serial/8250/8250_omap.c
++++ b/drivers/tty/serial/8250/8250_omap.c
+@@ -1080,18 +1080,13 @@ static int omap_8250_rx_dma(struct uart_8250_port *p)
+ 
+ static int omap_8250_tx_dma(struct uart_8250_port *p);
+ 
+-static void omap_8250_dma_tx_complete(void *param)
++static void omap_8250_tx_dma_complete(struct uart_8250_port *p)
+ {
+-	struct uart_8250_port	*p = param;
+ 	struct uart_8250_dma	*dma = p->dma;
+ 	struct tty_port		*tport = &p->port.state->port;
+ 	bool			en_thri = false;
+ 	struct omap8250_priv	*priv = p->port.private_data;
+ 
+-	guard(uart_port_lock_irqsave)(&p->port);
+-	if (dma->shutting_down)
+-		return;
+-
+ 	dma_sync_single_for_cpu(dmaengine_get_dma_device(dma->txchan), dma->tx_addr,
+ 				UART_XMIT_SIZE, DMA_TO_DEVICE);
+ 
+@@ -1123,6 +1118,18 @@ static void omap_8250_dma_tx_complete(void *param)
+ 	}
+ }
+ 
++static void omap_8250_dma_tx_complete(void *param)
++{
++	struct uart_8250_port *p = param;
++	struct uart_8250_dma *dma = p->dma;
++
++	guard(uart_port_lock_irqsave)(&p->port);
++
++	if (dma->shutting_down)
++		return;
++	omap_8250_tx_dma_complete(p);
++}
++
+ static int omap_8250_tx_dma(struct uart_8250_port *p)
+ {
+ 	struct uart_8250_dma		*dma = p->dma;
 
-Thanks for testing again.
-
-Muchun
+-- 
+2.53.0
 
 
