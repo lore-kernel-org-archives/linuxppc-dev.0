@@ -2,57 +2,89 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D944A606A334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 01:50:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AB5F2606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 02:03:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=xiaopeng.com header.i=@xiaopeng.com header.a=rsa-sha256 header.s=default header.b=rswHMVZS
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jpk7qFuM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNCQn3J7Tz2xfK;
-	Mon, 09 Nov 2026 12:50:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.28.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794189009;
-	cv=none; b=h81BCPEzspJwJfzT8ADeQB0iNSY2nGeX9xf1Y2NOxRp1MQVgEDhPTIgXo6JY045YQJC/zgqvhHBcuh2gRj62HQndgX5CN1N80nZDLUdIXe+mNT53nBt0pbv7MI2EjnCS0FLnkTMZDg/bQ3cHV0uynoy4d/ywhyC5PCP6FCodIQwGKdsEEHihK8+6y6npQ5LqYLWrXvrxE29ZeSv8IV8M2H/N94eogPFlkc8m8DwXk7o3+EDsysbEYWT7fqe5GPXAzlMc2RbQT6YqUo3V+d9HhEepyUGUj/MOscNycr99XhzS2E/I91fedSvqVNs4PpYza85LteuiLLudLspKhJopJw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNCkh0YPxz2xfK;
+	Mon, 09 Nov 2026 13:03:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794189835;
+	cv=none; b=GUlAMcPOqjTeJg1guo8TPlZf5sv5BZI8pQLVh/oiJliIGNevz6wx4EyvTyCMLE8pfRg5kK4Z7z2x4o1MFEU6IfoMfN52Pdvcak+KiMB24E4/C2SF2R/ejp/pFvBuimsN1LgixLpSU2w+a+rCKkUqa/mIAEemJMhBCx1Pg+SE7jV0OeWZLW1NLa1bOTUK9i1/IObogHBI6SxaxUVs/FWrucqNNoJZ304Z26C+AQ0LkWE8iPQv9XE9eWiv8s/1O+mCNaz5JBpNDCPjIISZJ3RpYvKDMsVGYBBNSlBiR5c56Hag+g3KJOgPxT6hNwrTUCfxPsVpt5b0ER1lPzXutM+9hw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794189009; c=relaxed/relaxed;
-	bh=V38T8aAeXJ9M+jcD3MoRT7yJtF10TXOXINWjQCRAFE8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Da5f/JnEfYyTPSd8h+DHoy3CBwVwshKifkSADq5fWTPkb82W8SWbk0LWk26+R4eUBaUizY576Ff/W9G1HunXPGwXwXMjCXRkumHXE9QS+cteGcts/ND3ePPI55mJzjpbGRxy8BnI2GvOOWge1Lm3ZkR6SAuh9zNJoYKr6iZrQxkswMU0BmZAk9HjFiojGl7j+xp6dCN27SmA18wa1340Zu9q9pBHv4FQyVHu+rBcls+p0+fgAqiwT6/ASOvVrcykfo8MUZktyIGk0SyXXL9Bjg1z3IcHcEM4yOJc4KB6CkPp3u1de5jrke2ZzKS49Otkkm74je+HEjtSiiW5AIfSeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xiaopeng.com; dkim=pass (1024-bit key; unprotected) header.d=xiaopeng.com header.i=@xiaopeng.com header.a=rsa-sha256 header.s=default header.b=rswHMVZS; dkim-atps=neutral; spf=pass (client-ip=115.124.28.3; helo=out28-3.mail.aliyun.com; envelope-from=guozh23@xiaopeng.com; receiver=lists.ozlabs.org) smtp.mailfrom=xiaopeng.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xiaopeng.com
+	t=1794189835; c=relaxed/relaxed;
+	bh=e5KGXFtLIP4zXwl3CaHAlUnWSxZc9jYkQR01vVD5bYM=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=jyRnnJsUNS5u38ZbZhAy7exVkAXT1AyFz2PLFvGQsf1U7iWUn03i0e2oU8hA/tn6yM18UOaDHkpfUC/7Ss7FGBFPwiLRwQ9s71mRodz77xZQHBhmylHz3ENUFatK7N/Z9Vs9ZJOrImO7KUjm6S8zy5v5m5vupTPm6hKvi3xDfF7ljT9xE7LQWDPxYaGmP1KNJzlOib+4X5xBtrTUtuevH6lyTSrxb/KcEsK9AEA25CJE6QsSzRdkpvaLa19VnblFDLOJhAJr5x9w9+8h1q5RZXoACNdai4YIMnj49ZM8tLlTXIIOR3gDNdC850sCOJ8Esd9RlEPzPaGalZq1Et/Fhg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jpk7qFuM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=xiaopeng.com header.i=@xiaopeng.com header.a=rsa-sha256 header.s=default header.b=rswHMVZS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jpk7qFuM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xiaopeng.com (client-ip=115.124.28.3; helo=out28-3.mail.aliyun.com; envelope-from=guozh23@xiaopeng.com; receiver=lists.ozlabs.org)
-Received: from out28-3.mail.aliyun.com (out28-3.mail.aliyun.com [115.124.28.3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNCQk73w1z2xNC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 12:50:04 +1100 (AEDT)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=xiaopeng.com; s=default;
-	t=1794188999; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=V38T8aAeXJ9M+jcD3MoRT7yJtF10TXOXINWjQCRAFE8=;
-	b=rswHMVZSeoF3uG3iqJSWruna1hSjO0DDR6+p/KJQoSOx5pRbMpgVzmVwUPtOIOtEReRXcDbXIAnIQKXMlK8QC7QkpbWcyUxrCKvRx/gfVtWIrbWu5Sqn63h90UvTlDq4U0Fu42tk/DSX/irdoyVMjjTZPh1D5kOtesf5DluKiYU=
-X-Alimail-AntiSpam:AC=CONTINUE;BC=0.07461259|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_regular_dialog|0.00469702-0.00473385-0.990569;FP=10823690688715638298|0|0|0|0|-1|-1|-1;HT=maildocker-contentspam033037028158;MF=guozh23@xiaopeng.com;NM=1;PH=DS;RN=8;RT=8;SR=0;TI=SMTPD_---.jzgjJbI_1794188997;
-Received: from localhost(mailfrom:guozh23@xiaopeng.com fp:SMTPD_---.jzgjJbI_1794188997 cluster:ay29)
-          by smtp.aliyun-inc.com;
-          Mon, 09 Nov 2026 09:49:58 +0800
-From: Guo Zihao <guozh23@xiaopeng.com>
-To: Peter Huewe <peterhuewe@gmx.de>,
-	Jarkko Sakkinen <jarkko@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>,
-	Ashley Lai <adlai@linux.vnet.ibm.com>,
-	Kent Yoder <key@linux.vnet.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-integrity@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] tpm: ibmvtpm: check the response size against the buffer size
-Date: Mon,  9 Nov 2026 09:49:57 +0800
-Message-ID: <20261109014957.2777790-1-guozh23@xiaopeng.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <au3w4NDX1Uqz-iqd@kernel.org>
-References: <au3w4NDX1Uqz-iqd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNCkf29vvz2xNC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 13:03:53 +1100 (AEDT)
+Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-3645f0f3fcdso769642eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 18:03:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794189830; x=1794794630; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=e5KGXFtLIP4zXwl3CaHAlUnWSxZc9jYkQR01vVD5bYM=;
+        b=jpk7qFuME7xxduqBpUcRl9X/zZyXXQydd4izNGtTfzXYrNw4zwTq1ktxYUX4NUBML2
+         WruzkPPgmMcW8bveTr4SDsn7QnyzQxJz+TSJO2T1wjMl7tAj9Y/vwfRXv1kC2kJv+tNd
+         kDHwv1O3mdJKEv/VqR76/XtRDY8DTThf5DA1QhQ+4gMS06lqs74tDlcUxl1rab4Ye12k
+         3yP+U60nxo+FE89FVLwW8RWIxMm9oelI/wzf4SvoWSD9cFEVkMgmONkn+SngD4KXX15c
+         0+tLAI964JpzzsATMhqn4Akbt0dzzc7Nbvm05G3YwkW4uv8oWpEJELJNtqLvKCnmzWC2
+         MfEg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794189830; x=1794794630;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=e5KGXFtLIP4zXwl3CaHAlUnWSxZc9jYkQR01vVD5bYM=;
+        b=F2jLaz0lYFLYZ/jQjb8ZpHby8G+chEQ+/Gy6GgmmgGT1ge9TxhSFXQcH0I9RIDByNu
+         D34ukJl3xsiYP0IQXbthkA7BUB+DtFPb/Iqpnd0KSHMXX758JKOpHtuS/eDJuau255yT
+         nCEJjjwoH5gS3uKvKZ+qYk1lbR3qxmp+4cq9OBO9Naz4vnf0w5/VT/LshUQ1f0TJspPi
+         h4QQZETgXM6qRmzhvoT6Vm+ky6FKTHWU+bOXJMrqbbw0N6743H2JC+oIVEaPeokCSj4r
+         UlcZSotZBP0wYFH1UKaA8tRXy2wV35WYz8qtKm2+HbRv75TIlWNcrBvjy9zpIQufJkk1
+         MAFw==
+X-Forwarded-Encrypted: i=1; AL+hErFt+eNozm7UVjrUAi/ZFvWx5MUYLqjgfAytryp0PgSD3fzru+4TXRjqIP0Xiug05rX6rqPB/QbY//jTblU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9UFR6uAIcVoKrIUqxF1Bg5KXSkORqYSuE8tY30B0mSXFsT32Ty
+	4fxZOEgevzHH2Z4I3yhvr6mh1SEyJS2YzTrEOTEIUC/QLczZozu6/BKfAMiopsCH
+X-Gm-Gg: AYBFou18sQ5nV8bTluLh7rGyLQI7YfbLBPpVRUTwrCH1y3YwdUe6eavXNf4evduGixQ
+	t06llj8Zo0Qxk2Kc5zJn+3eziuGF1ooyvjmWTVSbXT9Y5qEuughJl3jV8Z48z+PmUXefbAJKOjt
+	vVcvQL+2LthQUJYNiHdqxei3Hsato1NBBJdVv//2s0hRAeGhER8xRWbaglrKnj7/zBTyOv9lQbW
+	cGMUTk1bp96zJ/3bCIgDH6CFeN3dEc8hNSbi8bF+KMeedKwIzKenFOGPBaBASL60qoj0jpPd+zX
+	iJWUjZuG9LdHmLVrglcjLi52hPB4RPyrWoWyP2RpSIEDyncBuaBDMuqRUGsWAq5GA6k8LnvKuv8
+	iFl/JYpD82RuNyjHwtStUM2aJkxU8i5Vv/uUaoKUzU4DBnWl6bXEsl1HVvjX55129oQ6mEXR+K+
+	iPsIN2sUkO0iZHvpCX+mAFOon8etyLnt5uxx8kSPjkTRN/u6K8myygQaqv2YPD6wGJIPCJ7kwk1
+	76PXtqKp8KaIPOf1vxpmLZQFbE7LOSiPNdNe837EvStTNL4NLqF1RE2Ta7FjZOoeFQKR03RIM8s
+	2PVrTBCxjiUOOxhIb0lUz35VlEn9VeFMp3GdP92sNDBlpUiX
+X-Received: by 2002:a05:7300:680e:b0:36b:d3dd:2e85 with SMTP id 5a478bee46e88-372575c63fcmr5237251eec.36.1794189829714;
+        Sun, 08 Nov 2026 18:03:49 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3726039c635sm8670520eec.0.2026.11.08.18.03.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 08 Nov 2026 18:03:48 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Muchun Song <songmuchun@bytedance.com>, Dan Williams <djbw@kernel.org>, Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang <dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Joao Martins <joao.m.martins@oracle.com>, Pavithra Prakash <pavrampu@linux.ibm.com>, Muchun Song <muchun.song@linux.dev>, stable@vger.kernel.org, nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org, linux-kernel@vger.kernel.org, Muchun Song <songmuchun@bytedance.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] dax/pmem: fix unaligned compound devmap initialization
+In-Reply-To: <20261107030126.90894-1-songmuchun@bytedance.com>
+Date: Mon, 09 Nov 2026 07:27:12 +0530
+Message-ID: <cxseojgn.ritesh.list@gmail.com>
+References: <20261107030126.90894-1-songmuchun@bytedance.com>
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,78 +97,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-The send path validates the transfer size against the size of the
-RTCE buffer:
+Muchun Song <songmuchun@bytedance.com> writes:
 
-	if (count > ibmvtpm->rtce_size) {
-		dev_err(ibmvtpm->dev,
-			"Invalid size in send: count=%zd, rtce_size=%d\n",
-			count, ibmvtpm->rtce_size);
-		return -EIO;
-	}
+> Static pmem Device DAX namespaces reserve space for namespace metadata
+> before the user-visible data range, and may also include padding needed
+> to satisfy the Device DAX alignment. __dax_pmem_probe() adjusts the
+> dax_region range to start at the data range, but the dev_pagemap range
+> still starts at the beginning of the namespace.
+>
+> That is not valid for compound devmap mappings whose memmap is stored in
+> system RAM. Compound page initialization requires the start PFN to be
+> naturally aligned to the compound page size, because the head and tail
+> struct pages are initialized according to that geometry. If the pgmap
+> starts before the aligned data range, memmap_init_zone_device() can build
+> compound page metadata from an unaligned PFN.
+>
+> The resulting struct page layout is inconsistent with the Device DAX
+> mapping. A later mmap fault can then resolve the user-visible PFN through
+> invalid compound page metadata and hit a kernel panic while inserting the
+> DAX folio.
+>
+> Fix this by rounding the pgmap start up to the Device DAX alignment for
+> non-altmap mappings. This gives compound mappings the required naturally
+> aligned start while retaining full-section vmemmap savings when the
+> original start is already aligned. The altmap path remains unchanged
+> because memmap_init_zone_device() skips the altmap reservation itself.
+>
+> Fixes: 14606001efb4 ("device-dax: compound devmap support")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+> Reported-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Closes: https://lore.kernel.org/r/wlrkqqvg.ritesh.list@gmail.com
 
-The receive path has no such check: the response length is whatever
-the hypervisor reported in the completion CRQ, and it is only
-compared against the size the caller asked for before being used to
-copy and clear the RTCE buffer:
+Tested v2 also on my Power dev test setup. With this patch the reported
+problem is fixed. I am no more hitting the following warning and crash:
 
-	len = ibmvtpm->res_len;
+[    3.071811][    T1] WARNING: mm/mm_init.c:1175 at memmap_init_zone_device+0x144/0x470, CPU#0: swapper/0/1
+[    3.082276][    T1] NIP [c000000000596604] memmap_init_zone_device+0x144/0x470
+[    3.082763][    T1] LR [c0000000006d72b8] memremap_pages+0x3b0/0x974
+[    3.083345][    T1] Call Trace:
+[    3.083629][    T1] [c000000006d86e00] [c000000006d86e40] 0xc000000006d86e40 (unreliable)
+[    3.084975][    T1] [c000000006d86f10] [c0000000006d72b8] memremap_pages+0x3b0/0x974
+[    3.085449][    T1] [c000000006d86fe0] [c0000000006d78b8] devm_memremap_pages+0x3c/0xa4
+[    3.085891][    T1] [c000000006d87020] [c00000000125c084] dev_dax_probe+0x264/0x3d0
+[    3.086339][    T1] [c000000006d870c0] [c000000001259a28] dax_bus_probe+0x140/0x1c8
+[    3.086778][    T1] [c000000006d87110] [c0000000011ce640] really_probe+0x108/0x580
+[    3.087218][    T1] [c000000006d871a0] [c0000000011ceb84] __driver_probe_device+0xcc/0x284
+[    3.087668][    T1] [c000000006d87230] [c0000000011ceea0] driver_probe_device+0x5c/0x10c
+[    3.088123][    T1] [c000000006d87270] [c0000000011cf05c] __device_attach_driver+0x10c/0x1e8
+[    3.088582][    T1] [c000000006d872f0] [c0000000011cab70] bus_for_each_drv+0xc0/0x13c
+[    3.089035][    T1] [c000000006d87350] [c0000000011cf65c] __device_attach+0xdc/0x2b0
+[    3.089467][    T1] [c000000006d873f0] [c0000000011cfaac] device_initial_probe+0x80/0x98
+[    3.089910][    T1] [c000000006d87420] [c0000000011cac44] __bus_probe_device+0x58/0xf4
+[    3.090358][    T1] [c000000006d87470] [c0000000011c8030] device_add+0x850/0xa78
+[    3.090778][    T1] [c000000006d87530] [c00000000125b040] __devm_create_dev_dax+0x1c0/0x638
+[    3.091236][    T1] [c000000006d875d0] [c00000000125b6c8] devm_create_dev_dax+0x44/0x7c
+[    3.091676][    T1] [c000000006d87600] [c00000000125dbe8] __dax_pmem_probe+0x238/0x27c
+[    3.092120][    T1] [c000000006d87770] [c00000000125dc4c] dax_pmem_probe+0x20/0x44
+[    3.092542][    T1] [c000000006d87790] [c000000001237a14] nvdimm_bus_probe+0xcc/0x370
+[    3.093097][    T1] [c000000006d87830] [c0000000011ce640] really_probe+0x108/0x580
+[    3.093610][    T1] [c000000006d878c0] [c0000000011ceb84] __driver_probe_device+0xcc/0x284
+<...>
+[    3.099405][    T1] ---- interrupt: 0 at 0x0
+[    3.099837][    T1] Code: 7c0802a6 fa8100b0 faa100b8 fb8100f0 7d574030 7d4a4030 f8010120 fbe10108 3917ffff 7d294038 3109ffff 7d284910 <0b090000> 3d2201c5 7bb53664 7ed607b4
+[    3.101209][    T1] ---[ end trace 0000000000000000 ]---
+[    3.104702][    T1] BUG: Unable to handle kernel data access on write at 0xc00c000000210000
+[    3.105209][    T1] Faulting instruction address: 0xc000000000596394
+cpu 0x0: Vector: 300 (Data Access) at [c000000006d86aa0]
+    lr: c0000000005962c4: memmap_init_compound+0xac/0x2a8
+    sp: c000000006d86d40
+   msr: 8000000002009033
+   dar: c00c000000210000
+ dsisr: a000000
+  current = 0xc000000006d33e00
+  paca    = 0xc000000005010000   irqmask: 0x03   irq_happened: 0x01
+    pid   = 1, comm = swapper/0
+Linux version 7.3.0-17056-gc0944ee4a2c4 (powerpc64le-linux-gnu-gcc (Debian 12.2.0-14) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #111 SMP PREEMPT Mon Nov  9 07:25:29 IST 2026
+enter ? for help
+[c000000006d86e00] c0000000005968f8 memmap_init_zone_device+0x438/0x470
+[c000000006d86f10] c0000000006d72b8 memremap_pages+0x3b0/0x974
+[c000000006d86fe0] c0000000006d78b8 devm_memremap_pages+0x3c/0xa4
+[c000000006d87020] c00000000125c084 dev_dax_probe+0x264/0x3d0
+[c000000006d870c0] c000000001259a28 dax_bus_probe+0x140/0x1c8
+[c000000006d87110] c0000000011ce640 really_probe+0x108/0x580
+[c000000006d871a0] c0000000011ceb84 __driver_probe_device+0xcc/0x284
+[c000000006d87230] c0000000011ceea0 driver_probe_device+0x5c/0x10c
+[c000000006d87270] c0000000011cf05c __device_attach_driver+0x10c/0x1e8
+[c000000006d872f0] c0000000011cab70 bus_for_each_drv+0xc0/0x13c
+[c000000006d87350] c0000000011cf65c __device_attach+0xdc/0x2b0
+[c000000006d873f0] c0000000011cfaac device_initial_probe+0x80/0x98
+[c000000006d87420] c0000000011cac44 __bus_probe_device+0x58/0xf4
+[c000000006d87470] c0000000011c8030 device_add+0x850/0xa78
+[c000000006d87530] c00000000125b040 __devm_create_dev_dax+0x1c0/0x638
+[c000000006d875d0] c00000000125b6c8 devm_create_dev_dax+0x44/0x7c
+[c000000006d87600] c00000000125dbe8 __dax_pmem_probe+0x238/0x27c
+[c000000006d87770] c00000000125dc4c dax_pmem_probe+0x20/0x44
+[c000000006d87790] c000000001237a14 nvdimm_bus_probe+0xcc/0x370
+[c000000006d87830] c0000000011ce640 really_probe+0x108/0x580
+<...>
 
-	if (count < len) {
-		...
-		return -EIO;
-	}
+Feel free to add:
 
-	spin_lock(&ibmvtpm->rtce_lock);
-	memcpy((void *)buf, (void *)ibmvtpm->rtce_buf, len);
-	memset(ibmvtpm->rtce_buf, 0, len);
-
-A response length larger than the RTCE buffer makes the memcpy read
-past the buffer and the memset clear past it.
-
-Reject a response that does not fit in the RTCE buffer, mirroring
-the check the send path already performs.
-
-Signed-off-by: Guo Zihao <guozh23@xiaopeng.com>
----
-
-v2: Drop the Fixes and Cc: stable tags, as suggested by Jarkko
-Sakkinen: a hypervisor reporting an oversized response is not
-known to violate the architecture, so this is hardening rather
-than a bug fix. No code changes.
-
- drivers/char/tpm/tpm_ibmvtpm.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 6fb4d30eb6f6..bfef4bc14767 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -121,6 +121,13 @@ static int tpm_ibmvtpm_recv(struct tpm_chip *chip, u8 *buf, size_t count)
- 		return -EIO;
- 	}
- 
-+	if (len > ibmvtpm->rtce_size) {
-+		dev_err(ibmvtpm->dev,
-+			"Invalid size in recv: res_len=%d, rtce_size=%d\n",
-+			len, ibmvtpm->rtce_size);
-+		return -EIO;
-+	}
-+
- 	spin_lock(&ibmvtpm->rtce_lock);
- 	memcpy((void *)buf, (void *)ibmvtpm->rtce_buf, len);
- 	memset(ibmvtpm->rtce_buf, 0, len);
--- 
-2.50.1
+Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
 
