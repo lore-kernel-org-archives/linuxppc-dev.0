@@ -2,70 +2,93 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1FD606A330
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 05:06:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78FAD606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 05:27:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=egf84Gcq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNHmw2bpgz2xMQ;
-	Mon, 09 Nov 2026 16:06:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4190:8020::34"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794200768;
-	cv=none; b=Dt8+uCfQM7f6iJ7xEQXxM+V/UxPavhs48ZLjzOiOmRAk1jQ1SNJLE4USa1TvE8TFoGUeJS1Udj8b87/did6mhYYGUeQBHZrbtMfNkQPX7FxTIAhkWPmq9OOB+q9e3P2o98msy8G6L1gjU2o4/xP9lUUBHuoBPhfuCYceLti67g1n3jLik+ASaNmFnF/MdwqpTtMgI6YuYn8aU/6ndN5ncTjSCE8hPhkJdxcHLqsEE4PqblGY69/ysRnZLhFlaAuELqkSUtvO0F/AxHogfefjMQGr6YZkt7vfT0POf4ZpwXwOseW0KlO13yHCDWC0VbLpl/+oGyuCqAdQ/TuLC63EYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNJFs4Z2nz2xdb;
+	Mon, 09 Nov 2026 16:27:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794202065;
+	cv=none; b=aC8IMlCKNjpFUCvQJ2p3ntfzEMhDf0/xAIsgmt3EyRu0OqJSicsaBaCPohcC0+QLNBJwnVCcerJlIBwhr/G+dPS7xKG59MbZe9+el0tzgKcekbxAFYf5YI9aZQ4KzPqxBRPNe2PhQ/Bb7h4g7X+cOUv2/bO19WfEmX3ipnwdYDF3d6p81sj+0HLF1Mf814Q4isRWgQn+V2xnPmztLgz+zrW4AIjQ27bzfQSPNd8jXieBE2C3Chp01INvwncBKAu43YUAwUETwQbssP2aANh5yuxvtYwpjjX18PvojEUQB9p6oJGY788TFMe02fI8wGG6KmBhD2ZIEJwBNzlyl7LGwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794200768; c=relaxed/relaxed;
-	bh=+UmCB5muc9jAh5/NVu2M6h8Lcfrpgge2sRUuegusfl0=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=gBosmqN85xFxCTmk2pr/4XQ/UQn4uLV3x3whMK23OHVlEEdFPJg25NrxntKolhfIpxPAwXWs50KpU9J2+iA2hbI7InBedHPKag3QHhdLLbjh+DxQs+z0EWS2Y8WznhaBZ/QIPZ1+B4kx95D8ZiNyZCtAtglMKLZa2rzBrL/BnHYRCivXM5+culQ1Y1viL7rh3sl660elPm6a1gA6uVcFqKiKYYORJKVeE52xxtzAb8bliqemIAkQSfR+qAqMwXbrXu2c1SmPelgC3I5N51g4NiFuMUjqnasoV/2HUwDpEmb6SBkLSkY2ldn4Ndhz9OaaPY96dx8EdPeycJCGvqr2uA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk; spf=none (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org) smtp.mailfrom=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNHmv1G82z2xKx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 16:06:05 +1100 (AEDT)
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id B42DD92009C; Mon,  9 Nov 2026 06:05:57 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id B0D2992009B;
-	Mon,  9 Nov 2026 05:05:57 +0000 (GMT)
-Date: Mon, 9 Nov 2026 05:05:57 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@orcam.me.uk>
-To: David Laight <david.laight.linux@gmail.com>
-cc: Christian Brauner <brauner@kernel.org>, 
-    Geert Uytterhoeven <geert@linux-m68k.org>, linux-fsdevel@vger.kernel.org, 
-    Linus Torvalds <torvalds@linux-foundation.org>, 
-    Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
-    Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
-    NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-    Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-    Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
-    Greg Kroah-Hartman <gregkh@suse.de>, 
-    Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
-    Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
-    linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-    linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-    linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-    linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
-    linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
-    ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
-    coreteam@netfilter.org, kexec@lists.infradead.org, 
-    linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
-    netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-    ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
-    linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-    linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-    linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
-    linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
-    sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-    linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
-    linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
-    linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-    linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
-    linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
-Subject: Re: [PATCH RESEND v2 14/23] proc: let procfs copy in writes before
- pinning the entry
-In-Reply-To: <20261108185953.28054fb3@pumpkin>
-Message-ID: <alpine.DEB.2.21.2611090504170.17804@angie.orcam.me.uk>
-References: <20261104-work-procfs-core-v2-14-76ace653a773@kernel.org> <CAMuHMdVfakapgBK6TBhO1iWX8qzvLDk8jzRS=t2MVa5G=MCUeg@mail.gmail.com> <20261107-akteur-gemieden-eckdaten-21304d085e35@brauner> <20261108185953.28054fb3@pumpkin>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+	t=1794202065; c=relaxed/relaxed;
+	bh=inbRv9rqETpvmrvWY+hsNFNboYN1tmYS0qnuK2Kr/gs=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=XeKhUFq3gr/L7LX6PUtTde+xKQ5lEYJw09SC9YnzbdA4dMXAJhulGXYfHn7qhrmRMb1rI+40zgqpuT8c6Ln+b1IRrUtP0M9Qe0s6h50COi5TCu3GXAP8Yd/YvbR5iCXXSSaWXB6ZZLmQ8Hynj8SCLTHTyIEtWi3IILmwXCmb6uf08b+N59UyDNHUfrSDy0hqPHN6a2FD+pBRj3D46HzMFspzVw6uBVPWlF7zgNWWc9GYRUA9YZKw/bKhffNOmI14ujhCjppjgzStYAAXDiNQnTq5QVC7DXeztYVT3vcK6pGdly0G6I+bv9BfTYwjBWkl6rkc043OPrhHUoHNGvOeeQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=egf84Gcq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=egf84Gcq;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+X-Greylist: delayed 544 seconds by postgrey-1.37 at boromir; Mon, 09 Nov 2026 16:27:45 AEDT
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNJFs0mjVz2xMQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 16:27:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1794201519;
+	bh=inbRv9rqETpvmrvWY+hsNFNboYN1tmYS0qnuK2Kr/gs=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=egf84Gcqai+t2RbzRcp/hsSqUjhQHhjh3vyzhBpm8hV2KWxqDFJxnPUahIU113EcT
+	 BgLm6wqU/Euo4rhk1oHtIX3Z9zvOL05mtWbK6K/L7+70zAOa6b9LxPeqiMFkTfAyXR
+	 sJ6r+I/RKBuOwB8hQ4kh0KzVB0J735kCbnMQRQlA7QvM+MYWUHFrMnQcdvVsUlq4qL
+	 OrhgI7yGlCRf9GdwPQCvkWPbpW6LqMolW9oQ7mrzBne/qL9+nOjj/aqp3F164dsqk2
+	 7rLero/HB4L0DSs1r+ug01+7VgG2RcG87tSeq7M4AqhpAUCMcl+W2qQMRVuMpXb4J2
+	 kfa7LW520ih5Q==
+Received: from [192.168.68.117] (unknown [180.150.112.139])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 083566E9E9;
+	Mon,  9 Nov 2026 13:18:31 +0800 (AWST)
+Message-ID: <4848c58f3152233477c4fa4786de2a49c9261c9c.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 09/14] soc: aspeed: convert LPC and P2A control mmap
+ hooks to mmap_prepare
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>, Juergen Gross
+ <jgross@suse.com>,  Stefano Stabellini <sstabellini@kernel.org>, Oleksandr
+ Tyshchenko <oleksandr_tyshchenko@epam.com>, Madhavan Srinivasan	
+ <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Michael
+ Ellerman	 <mpe@ellerman.id.au>, "Christophe Leroy (CS GROUP)"
+ <chleroy@kernel.org>,  "Ritesh Harjani (IBM)"	 <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Haiyang Zhang	
+ <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui	
+ <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang	
+ <jasowangio@gmail.com>, Eugenio =?ISO-8859-1?Q?P=E9rez?=
+ <eperezma@redhat.com>,  Xuan Zhuo <xuanzhuo@linux.alibaba.com>, Jarkko
+ Sakkinen <jarkko@kernel.org>, Dave Hansen	 <dave.hansen@linux.intel.com>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar	 <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org, "H. Peter Anvin"
+ <hpa@zytor.com>, Jan Kara <jack@suse.com>, Paul Moore
+ <paul@paul-moore.com>, Stephen Smalley <stephen.smalley.work@gmail.com>,
+ Ondrej =?UTF-8?Q?Mosn=C3=A1=C4=8Dek?=	 <omosnacek@gmail.com>, Joel Stanley
+ <joel@jms.id.au>, Ryan Chen	 <ryan_chen@aspeedtech.com>, Billy Tsai
+ <billy_tsai@aspeedtech.com>, Bjorn Andersson <andersson@kernel.org>, Konrad
+ Dybcio <konradybcio@kernel.org>, Abel Vesa	 <abelvesa@kernel.org>, Jens
+ Wiklander <jenswi@kernel.org>, Sumit Garg	 <sumit.garg@kernel.org>, Scott
+ Branden <scott.branden@broadcom.com>,  Broadcom internal kernel review list
+	 <bcm-kernel-feedback-list@broadcom.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Richard Cochran
+ <richardcochran@gmail.com>, David Woodhouse	 <dwmw2@infradead.org>, Andrew
+ Lunn <andrew+netdev@lunn.ch>, "David S. Miller"	 <davem@davemloft.net>,
+ Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski	 <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>
+Cc: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, 	virtualization@lists.linux.dev,
+ linux-sgx@vger.kernel.org, 	selinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, 	linux-aspeed@lists.ozlabs.org,
+ linux-arm-msm@vger.kernel.org, 	op-tee@lists.trustedfirmware.org,
+ netdev@vger.kernel.org
+Date: Mon, 09 Nov 2026 15:48:30 +1030
+In-Reply-To: <20261105-late-2026-mmap_prepare-v1-9-c56aadfbab8a@kernel.org>
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org>
+	 <20261105-late-2026-mmap_prepare-v1-9-c56aadfbab8a@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,27 +102,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, 8 Nov 2026, David Laight wrote:
+On Thu, 2026-11-05 at 21:05 +0000, Lorenzo Stoakes (ARM) wrote:
+> Move from the deprecated mmap hook to the new mmap_prepare hook for both
+> the LPC control and P2A control drivers.
+>=20
+> Both remap a range of their reserved memory region, so use the PFN remap
+> mmap action to do so, retaining the -EAGAIN error on failure via the acti=
+on
+> error override.
+>=20
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-> > > While at it, I think it would be good to use this conversion as an
-> > > opportunity to replace "char *" by "void *", which will probably let
-> > > you drop several casts from users.  
-> > 
-> > So I tried that too. The thing is it drops exactly one u8 * cast in
-> > ntfs3's label write. 
-> 
-> Since char is now unsigned that one isn't even needed...
-
- Please excuse me missing the context, but what circumstances does your 
-claim refer to?
-
-  Maciej
+Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
