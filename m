@@ -1,49 +1,49 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7235B606A323
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 13:31:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CF3A9606A322
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 13:32:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MiXLiEgg
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Mq/IF6nA
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNW0T1dtVz2y7r;
-	Tue, 10 Nov 2026 00:31:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794231113;
-	cv=none; b=m5Y8ywprocxlZpcJ5XxJXOKL02/UqREPLlDC2Wd4lssPpA/bD9dcf5AuHQZnuRYsPfpJe/TG1R2jxYCmLHcu8qxqboXPbbxgl63XLFvTt9X3eOk+hbZniQYThJsCaDf5y/FswWF9ujtimbrqxgmfgKexFUjJfB620htWh6v8LMHyV8uWCgMOnmud0U2s/hIbXRB7vHUbN3ofvCOwr26x9v3rfQ5s7rrFkHDVdJovynyQ5jF9nbZI5gFrgaN//IohE71y1zxsOHQlEpyjCkrWKePS1Xw+SYg8H67YHZSqM7eOGB8ZVCKoN2ta5Hxqjp9axbKeu+FwJ4An5Jazgee7tA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNW103dnCz2y7r;
+	Tue, 10 Nov 2026 00:32:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794231140;
+	cv=none; b=P+G6TrqBfms6qc8dnKUQ9UlnJmO40Q8yKTY4ks3mKBz9Qtnc2JcsQHtBGZIqeFmFufxuP6O9Rl1+NFqNXexDXPrc+6SYhshVH7nOVNp9twZpg2S41VbZwudq8mF8CT4gMtAcyk/10blS33Axtm2b1IF2FXz1Vz3zwKyGH0RQlwL1UKfADSWfOThuT2k5CTTqoMY0UUv+AFINTy1GXBRyV91IYnQMEtbn9ru6MFhdhBcBk7Nv5RbPzcQajIHnu69ZNtQovrCmeKrtJS7r+ffn8v/8BcHHsS3UhypkPo60kyR7j1KOVr9Za9G0kfU4rTMg7tZiO32nb1dgQBKbuSJpmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794231113; c=relaxed/relaxed;
-	bh=J9hDzei4f8OCxDxAWxM/wfgiQG7uywFP6rebfNmExOI=;
+	t=1794231140; c=relaxed/relaxed;
+	bh=iEcip7tPdDxBNKjDoqV1dnIj6BkMr6G9KqwvTKyQBlY=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=nL5VnE30iBOY0I2rd1gwWY5KAwX7Dsz2xRhCN6bG0BiTIWyG+SIBRjm638BCT0G8baUbPboA+LfHgYXtlC+invoB+Clo9w93DKfBB4oy04k/Xsy0Wb98InlWt1GVsHglNbRNfPf8iFIUMrhQFx7V3obSCyMr7MschDl1jgzjy3zfPWpLrQCQQdmcm5SMLxYCz4FZ0dSjdHgfelCZ+sz4zFnuZG1LCrspHDFhcnIwD1rcrZGEnOUte++ZQ4FjZdzyUwIBUX8vebRAitIwkJ2S81EPmyfNorceLg/Mlt/soX009hRfxTjlMBNSmSqAY6BRGxtAKlqBUVuw0mLY2drulg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MiXLiEgg; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=LA3TuJN84OzXTXZZXZNq+uekz6t1X1l7Qsx2AlPIxW3IOGglGippkvJbs/z5moWejIYqbYu7axVjQwvQYCHgA8fFmv6hfqyxZ/36h4KMeli4BVPwJzgjgrwZEaD3azXmEAJsl8KHciWDj4YRKkkQKweEjUtV/UokHM/VDB0A1PCPKipeU8AEfuyDs43Q7euMCAghQwHBENmhqubtu4ucnXE8BHGL+gPRWvLDvzqhTyYdClgVUFd9J9T3A6lpUJFMewHpDP+XBOCXTQ5f12UyhnMgPiA8lolfDNX0xaZXx2Pj0WSkwyu6WYw45P26aM+FRhLTYoTarGdOPu25Qrkfeg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Mq/IF6nA; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MiXLiEgg;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Mq/IF6nA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNW0S2cc9z2xwL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 00:31:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNW0z5Q2kz2xwL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 00:32:19 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4542A61EAC;
-	Mon,  9 Nov 2026 13:31:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 499B61F008A6;
-	Mon,  9 Nov 2026 13:31:27 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9FAD54173F;
+	Mon,  9 Nov 2026 13:32:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9BE501F008A1;
+	Mon,  9 Nov 2026 13:31:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794231109;
-	bh=J9hDzei4f8OCxDxAWxM/wfgiQG7uywFP6rebfNmExOI=;
+	s=k20260515; t=1794231137;
+	bh=iEcip7tPdDxBNKjDoqV1dnIj6BkMr6G9KqwvTKyQBlY=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=MiXLiEgghPUOGcvs6oBh8SjxhDpzDdm93oOC7wBp36PR4aRXZCBfzyY8pYVK+mF5W
-	 8Q1p1lSm/UfhTrZdh6nrBdWOERBoks35DD2LxW590LnMDt2k7UxuDNsGDKqj+6pSGG
-	 V93BEmYQm4xmxz4+w4TbH8CQGQebjNz0kr3y+62G6v2bCkBCV0VBIf2igcw7/cl2hI
-	 A46TImS9+vIqeS0SJlbcC4U2jxvS3ZTyJf5U3b6v2h/YDHF2UNXOTAH6+UC+m2pNgW
-	 gRr32oeePKKCSsaIMonl4S5iW6F5oWe240wU2Gf3B2Tg75fhs3AKIuHdLyYcGXAokl
-	 a7GivVblgSh8w==
+	b=Mq/IF6nAMfmH60nLPc54eDBG30/vFlV8Nc7Dg4Qdvt7otaTrZadQW+QyVbbqiu8gY
+	 4wjvjbmFJe+KDJBHvPARyW3uVLXiix0Voc6pD380sc/TmGQR5tS8AC9B38beKlP/8e
+	 PQZ0OYnhYWGq55QhIxMvUrgcxbFkd0ZgwHoskTOXv5H640Dc2YEhrpmGX3a2SahkiK
+	 AhcKF6Ohn3DW5vnYoz7WjPduA9doZ/6OPl7rEKgwB+xIKz4DGTBJFBL0wGwe8D6ANH
+	 Qb4+q0i1Vi/h/SL2PgYtGHx57LE3bgVc37ngC0JaZNjvsDC5VMDtJUmD9dxhJvp3mQ
+	 mSjPAtwc28pfw==
 From: David Hildenbrand <david@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
  David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
@@ -101,12 +101,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
  apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
  linux-integrity@vger.kernel.org, selinux@vger.kernel.org
-In-Reply-To: <20261105-late-2026-vma-flags-v1-4-0d3cd15ab75f@kernel.org>
-References: <20261105-late-2026-vma-flags-v1-4-0d3cd15ab75f@kernel.org>
-Subject: Re: [PATCH 04/13] mm/migrate: convert VMA flag tests to use
+In-Reply-To: <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
+References: <20261105-late-2026-vma-flags-v1-3-0d3cd15ab75f@kernel.org>
+Subject: Re: [PATCH 03/13] mm/rmap: convert remaining VMA flag tests to use
  vma_flags_t
-Message-Id: <179423108696.12416.1867664320008779953.b4-ty@b4>
-Date: Mon, 09 Nov 2026 14:31:26 +0100
+Message-Id: <179423111633.12539.3540482164681335432.b4-ty@b4>
+Date: Mon, 09 Nov 2026 14:31:56 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -126,24 +126,20 @@ X-Mailer: b4 0.16.0
 X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, 05 Nov 2026 21:30:55 +0000, Lorenzo Stoakes (ARM) wrote:
-> Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
-> migration logic.
+On Thu, 05 Nov 2026 21:30:54 +0000, Lorenzo Stoakes (ARM) wrote:
+> Replace the remaining uses of the legacy vm_flags_t flags in the rmap logic
+> with vma_flags_t values.
 > 
-> We retain the READ_ONCE() of vma->vm_flags in remove_migration_pte(), as
-> there is no vma_flags_t equivalent, and arch_make_huge_pte() continues to
-> take legacy flags for the time being.
-> 
-> [...]
+> No functional change intended.
 
 Applied, thanks!
 
 tree: mm/core.git
-branch: migrate-7.5.misc
+branch: rmap-7.5.misc
 
 Applied patches will appear soon in mm-next, followed by linux-next.
 
@@ -158,8 +154,8 @@ Note that commit hashes shown below are subject to change due to rebase,
 trailer updates or similar. Further, this is not a guarantee that the
 patches will go upstream. If in doubt, please check the listed branch.
 
-[04/13] mm/migrate: convert VMA flag tests to use vma_flags_t
-        https://git.kernel.org/mm/core/c/ec215c56
+[03/13] mm/rmap: convert remaining VMA flag tests to use vma_flags_t
+        https://git.kernel.org/mm/core/c/1c78523f
 
 -- 
 Cheers,
