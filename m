@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1A86606A321
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 13:41:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06D50606D80D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 13:45:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bk9tlQV3
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gz5j+IRt
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNWCH1PdXz2y7r;
-	Tue, 10 Nov 2026 00:41:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794231675;
-	cv=none; b=TZlu5yVMGJSg2/+pX/8toDZqX82l1vThIs8CAdyKrzhb81YoR2iPX635OzH3Iua/J9F4Ele96HVGu46K0/7B11nhffiBNm/yUzGqEIAOO8WpAS97lrOpJLmYjRmxpq/TY5qzy+2LiWgJBb2DU8+VaXEsoiVBRhExmG2JU90vt0utCnOXfARfhuAg8s5xYPGcAh3+kgKMb2NJJ0mLdUTQu3e7iuoXVARhDCTrO0BPIIsLBnducPRSqR2n4/UB/zeGEkC9C0BXS6f3iKoAjLGpJBXrZ017SM/nwyV7xcNf28X/PEfgQVK5P9rjXjbL8Aqt30FByh6Pl6djhfuTcs9SSw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNWHn5FVDz2xjv;
+	Tue, 10 Nov 2026 00:45:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794231909;
+	cv=none; b=KbcY1cz1sdAEj6BnfpGn5BmfGdv5cqXQkF6mKf8q9e5+Ta4Jy4nbqlF3+Z/Q8flNBpiTIhOJrzzxfOprTbugy/DaJHqCyLlk3HSzuRiHbi/8coC8bmX06vLdX/Wy45hCTBTeytrj8tSBhKIvrTe3KXvzCafH4OAG0VaDES/4mcSvEMSgyKAvgtT4F9+1y1tve/yrR2rFY48xv0b/JbLv4Z31OtNALyfLv9zrmG5G3/macjm9BLApSLSs90m/sjzA7y8nQOUpHg2RbOE8oI9M3kro53hAc3Pl9zU9Ga39vdHGVHbZ9AIr5ZeBKAreRk24XH0Tetzwmp5yiNMzb2BMwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794231675; c=relaxed/relaxed;
-	bh=vXnN4wP7YrRqcl/kzLqC3ibVyCYH5Vwpm+s2u3nE+fM=;
+	t=1794231909; c=relaxed/relaxed;
+	bh=SjhNGKAFa/LGrtAPePCfHjw2jptgU6AWjXk819xv4y0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MCa6hGacbsdojcO3ZmpA3JXNrbFQdmfWpJu2eNmMBUKkiPbla3JBbfce1Hc85YrnOkITCxtJRsI5J/k02RGS7u6RdXbkDrSlfIfUeN3XUEr/Bhi7/vf2hlxzfZZ+izZR/f+D9QHejCge7JJ8wJu/xTdpfMB3ZEuaMOw1rKvRergsgGf0m/Y6IFe8lPdhJn8lsMa6BRCG4skYkDMLugaCKvhnRx7/7JmnhlgJP7jrviIqHN4A7gZ0HHstlRSF8x4eV/4RnNp+kRyeFaxJMkwEqDAuEO/Un/0ahi9kqYr+9sVxtdC6xp3iHmmw5b14hve8UIOOoOD91aIEn42QAtpoww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bk9tlQV3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=b1IyLg2H5OUPew8gvxmyldmVA4ukN70li9bX/X4cDHSwkgGyObLm0Oa8wZfoAVQvafUw8YC2wyaZlafuragoNw1HcgcFHHXAhMEQtFlTqYvit4zusNrPttAIdtB+d+VWtEh163PORwfvPuOfnQARLBZhe0ClizkH1PEpKBYll4CXqoCXYEfu+gM+tkgxJsdm4pLzAe/x8XFB+pvo3uTvDCHT1gQNUlf1nuyDr6b5LZRbztTf/ICRzVX4jvjSV7uO+mOhjcKFX5cZLktqRH8xv819TaPTCqS1uYJAKmAti2XzAo4IIKqZluiN4EbYw0viI6GcGWlxLnJDY7zXuvJXJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gz5j+IRt; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=bk9tlQV3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gz5j+IRt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNWCG2H4mz2xwL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 00:41:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNWHm6W8lz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 00:45:08 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7E03245973;
-	Mon,  9 Nov 2026 13:41:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 686A01F008A7;
-	Mon,  9 Nov 2026 13:40:51 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F27B041074;
+	Mon,  9 Nov 2026 13:45:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71F641F008A1;
+	Mon,  9 Nov 2026 13:44:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794231672;
-	bh=vXnN4wP7YrRqcl/kzLqC3ibVyCYH5Vwpm+s2u3nE+fM=;
+	s=k20260515; t=1794231906;
+	bh=SjhNGKAFa/LGrtAPePCfHjw2jptgU6AWjXk819xv4y0=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=bk9tlQV3JmFD9uT+BBoFG0Y2WscnfjTaEiPgkxT5GhrocFAfv9ZeQD1n0cBbBuRDD
-	 UvCJlkW+8VKOAZty6EKE1cUNirPOPuGRa+XgB8OZ8sGJDyfxug+ZyO05kgjatX20tT
-	 qGntVXE1JDp2J8VcnZTRCvGoC7wOupjpNOt7UVEaDBdIdwYVw6UYEIHcm2TlaZEX/Z
-	 v4NVV8K6Bn/X8aVHuF5ian/BFE4kbCHIAF6YgOGLuXJAVdTtBWVaLxshIRZNd554lM
-	 3PBoA/jda9ss8181UzzC4N0lg9o5iZKdeCq+m6QaCVehjcyruhpjKnKWYughz+93qL
-	 5rIHrNEXZKRUQ==
-Message-ID: <93fef824-9f60-4940-9ee6-80c9c8e3f945@kernel.org>
-Date: Mon, 9 Nov 2026 14:40:48 +0100
+	b=gz5j+IRt16UMA6Uf8i7EiWjJIBV4vUN9Xy0DKD3/t3wCmxXemR+4mZb4wvMKa+MmX
+	 f5HAwCJPOHi3ECi2nnYFk4cj5S/zAPOZ2LN9cK/+ZjkYO2qsnmOqFygzSsugJjLhqm
+	 XGRy5hq8F0U4PLasq04Uo0A8njicFtwJd+tVw9S5/oDT+gwbYpzSWYp9+YFgcFxTSP
+	 lY7NQStpmvJvsKMIHeFroSHfXp3NwGG0it00SCNdbhEez/eZikwWMazkfHuz+638K3
+	 clgUGputwUFM5yxXtCj0F3eWtXusMjSAYPVemwnv/PNJjY3t4VgVd157Fgzi20jQkR
+	 WpW6XsNlxhqFw==
+Message-ID: <ac29cf71-a1af-4ce7-96c3-aea5a771979a@kernel.org>
+Date: Mon, 9 Nov 2026 14:44:40 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,12 +60,12 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 00/13] mm: continue vma_flags_t conversion
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jason Gunthorpe
- <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>,
- Peter Xu <peterx@redhat.com>, "Matthew Wilcox (Oracle)"
- <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+Subject: Re: [PATCH 07/13] mm/madvise: convert madvise_vma_behavior() to use
+ vma_flags_t
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Jason Gunthorpe <jgg@ziepe.ca>,
+ John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>,
  Rik van Riel <riel@surriel.com>, "Liam R. Howlett" <liam@infradead.org>,
  Vlastimil Babka <vbabka@kernel.org>, Harry Yoo <harry@kernel.org>,
  Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>,
@@ -108,16 +108,15 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Jason Gunthorpe
  Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
  Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>,
  Stephen Smalley <stephen.smalley.work@gmail.com>,
- =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  kvm@vger.kernel.org, damon@lists.linux.dev,
  linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
  apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org,
  linux-integrity@vger.kernel.org, selinux@vger.kernel.org
 References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
- <d0ea7929-7c12-4245-ba3f-6dd5c0269e6b@kernel.org> <au3r0-geuwtRYPiC@gremlin>
- <1c0b1368-a381-4b25-bba9-7a4f8e92b764@kernel.org> <au-DXpEi4wHwsz0r@gremlin>
+ <20261105-late-2026-vma-flags-v1-7-0d3cd15ab75f@kernel.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -164,100 +163,237 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <au-DXpEi4wHwsz0r@gremlin>
+In-Reply-To: <20261105-late-2026-vma-flags-v1-7-0d3cd15ab75f@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/7/26 21:09, Lorenzo Stoakes (ARM) wrote:
-> I think we're slightly talking across purposes, so to be clear - I am totally
-> fine with you taking any of this through your tree or whatever works for you and
-> Andrew to avoid merge pain :)
+On 11/5/26 22:30, Lorenzo Stoakes (ARM) wrote:
+> Replace use of the legacy vm_flags_t flags with vma_flags_t values
+> throughout the madvise logic.
 > 
-> I was just talking more generally about how to merge series that touch a lot of
-> subsystems and maintainers-who-may-never-reply, etc.
+> In order to do so, update ksm_madvise() and hugepage_madvise() to take a
+> vma_flags_t pointer, and update their other callers in mremap and the
+> powerpc KVM ultravisor code accordingly.
 > 
-> These are the edge cases that make things... fun :)
+> In the latter case we replace vm_flags_reset() with vma_overwrite_flags().
+> The VMA is write locked at this point, so the atomic flags preserved by
+> vma_overwrite_flags() cannot differ from those copied, and the behaviour
+> is unchanged.
 > 
-> Anyway, I guess easiest resolution here is for you to take the bits that belong
-> to your trees and Andrew takes the bits that belong elsewhere?
+> No functional change intended.
+> 
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  arch/powerpc/kvm/book3s_hv_uvmem.c | 10 ++++----
+>  include/linux/huge_mm.h            |  4 ++--
+>  include/linux/ksm.h                |  4 ++--
+>  mm/khugepaged.c                    | 10 ++++----
+>  mm/ksm.c                           | 11 +++++----
+>  mm/madvise.c                       | 47 ++++++++++++++++++++------------------
+>  mm/mremap.c                        |  2 +-
+>  7 files changed, 46 insertions(+), 42 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> index 463aef870c4e..0fa50bee2ffc 100644
+> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
+> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
+> @@ -393,7 +393,7 @@ static int kvmppc_memslot_page_merge(struct kvm *kvm,
+>  {
+>  	unsigned long gfn = memslot->base_gfn;
+>  	unsigned long end, start = gfn_to_hva(kvm, gfn);
+> -	vm_flags_t vm_flags;
+> +	vma_flags_t vma_flags;
+>  	int ret = 0;
+>  	struct vm_area_struct *vma;
+>  	int merge_flag = (merge) ? MADV_MERGEABLE : MADV_UNMERGEABLE;
+> @@ -411,15 +411,15 @@ static int kvmppc_memslot_page_merge(struct kvm *kvm,
+>  			break;
+>  		}
+>  		vma_start_write(vma);
+> -		/* Copy vm_flags to avoid partial modifications in ksm_madvise */
+> -		vm_flags = vma->vm_flags;
+> +		/* Copy flags to avoid partial modifications in ksm_madvise */
+> +		vma_flags = vma->flags;
+>  		ret = ksm_madvise(vma, vma->vm_start, vma->vm_end,
+> -			  merge_flag, &vm_flags);
+> +			  merge_flag, &vma_flags);
 
-Yes, that's what I did now, applying #1,#3,#4,#5,#6
+Unusual indentation (before your change).
 
-7+8 touches some of my components, but the chance for conflicts are hopefully small.
+>  		if (ret) {
+>  			ret = H_STATE;
+>  			break;
+>  		}
+> -		vm_flags_reset(vma, vm_flags);
+> +		vma_overwrite_flags(vma, vma_flags);
+>  		start = vma->vm_end;
+>  	} while (end > vma->vm_end);
+>  
+> diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+> index c745f7ad2298..8b6f4101eabf 100644
+> --- a/include/linux/huge_mm.h
+> +++ b/include/linux/huge_mm.h
+> @@ -508,7 +508,7 @@ change_huge_pud(struct mmu_gather *tlb, struct vm_area_struct *vma,
+>  			__split_huge_pud(__vma, __pud, __address);	\
+>  	}  while (0)
+>  
+> -int hugepage_madvise(struct vm_area_struct *vma, vm_flags_t *vm_flags,
+> +int hugepage_madvise(struct vm_area_struct *vma, vma_flags_t *vma_flags,
+>  		     int advice);
+>  int madvise_collapse(struct vm_area_struct *vma, unsigned long start,
+>  		     unsigned long end, bool *lock_dropped);
+> @@ -710,7 +710,7 @@ static inline bool unmap_huge_pmd_locked(struct vm_area_struct *vma,
+>  	do { } while (0)
+>  
+>  static inline int hugepage_madvise(struct vm_area_struct *vma,
+> -				   vm_flags_t *vm_flags, int advice)
+> +				   vma_flags_t *vma_flags, int advice)
 
-> 
-> I don't think anything here has an inter-dependency.
-> 
+Could do two tabs while at it.
 
-Yeah that makes it a lot easier.
+>  {
+>  	return -EINVAL;
+>  }
+> diff --git a/include/linux/ksm.h b/include/linux/ksm.h
+> index d39d0d5483a2..1ffc69a72a1a 100644
+> --- a/include/linux/ksm.h
+> +++ b/include/linux/ksm.h
+> @@ -16,7 +16,7 @@
+>  
+>  #ifdef CONFIG_KSM
+>  int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+> -		unsigned long end, int advice, vm_flags_t *vm_flags);
+> +		unsigned long end, int advice, vma_flags_t *vma_flags);
+>  vma_flags_t ksm_vma_flags(struct mm_struct *mm, const struct file *file,
+>  			  vma_flags_t vma_flags);
+>  int ksm_enable_merge_any(struct mm_struct *mm);
+> @@ -139,7 +139,7 @@ static inline void collect_procs_ksm(const struct folio *folio,
+>  
+>  #ifdef CONFIG_MMU
+>  static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+> -		unsigned long end, int advice, vm_flags_t *vm_flags)
+> +		unsigned long end, int advice, vma_flags_t *vma_flags)
+>  {
+>  	return 0;
+>  }
+> diff --git a/mm/khugepaged.c b/mm/khugepaged.c
+> index a2c7c6a0768d..be1f779c8da5 100644
+> --- a/mm/khugepaged.c
+> +++ b/mm/khugepaged.c
+> @@ -363,16 +363,16 @@ static unsigned int collapse_max_ptes_swap(struct collapse_control *cc,
+>  }
+>  
+>  int hugepage_madvise(struct vm_area_struct *vma,
+> -		     vm_flags_t *vm_flags, int advice)
+> +		     vma_flags_t *vma_flags, int advice)
+>  {
+>  	switch (advice) {
+>  	case MADV_HUGEPAGE:
+> -		*vm_flags &= ~VM_NOHUGEPAGE;
+> -		*vm_flags |= VM_HUGEPAGE;
+> +		vma_flags_clear(vma_flags, VMA_NOHUGEPAGE_BIT);
+> +		vma_flags_set(vma_flags, VMA_HUGEPAGE_BIT);
+>  		break;
+>  	case MADV_NOHUGEPAGE:
+> -		*vm_flags &= ~VM_HUGEPAGE;
+> -		*vm_flags |= VM_NOHUGEPAGE;
+> +		vma_flags_clear(vma_flags, VMA_HUGEPAGE_BIT);
+> +		vma_flags_set(vma_flags, VMA_NOHUGEPAGE_BIT);
+>  		/*
+>  		 * Setting VM_NOHUGEPAGE will prevent khugepaged from scanning
+>  		 * this vma even if we leave the mm registered in khugepaged if
+> diff --git a/mm/ksm.c b/mm/ksm.c
+> index 61b772bba229..3eb9c1ec2f87 100644
+> --- a/mm/ksm.c
+> +++ b/mm/ksm.c
+> @@ -779,7 +779,8 @@ static struct vm_area_struct *find_mergeable_vma(struct mm_struct *mm,
+>  	if (ksm_test_exit(mm))
+>  		return NULL;
+>  	vma = vma_lookup(mm, addr);
+> -	if (!vma || !vma_test(vma, VMA_MERGEABLE_BIT) || !vma_has_anon_rmap(vma))
+> +	if (!vma || !vma_test(vma, VMA_MERGEABLE_BIT) ||
+> +	    !vma_has_anon_rmap(vma))
+>  		return NULL;
+>  	return vma;
+>  }
+> @@ -3021,7 +3022,7 @@ int ksm_disable(struct mm_struct *mm)
+>  }
+>  
+>  int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+> -		unsigned long end, int advice, vm_flags_t *vm_flags)
+> +		unsigned long end, int advice, vma_flags_t *vma_flags)
+>  {
+>  	struct mm_struct *mm = vma->vm_mm;
+>  	int err;
+> @@ -3039,11 +3040,11 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+>  				return err;
+>  		}
+>  
+> -		*vm_flags |= VM_MERGEABLE;
+> +		vma_flags_set(vma_flags, VMA_MERGEABLE_BIT);
+>  		break;
+>  
+>  	case MADV_UNMERGEABLE:
+> -		if (!(*vm_flags & VM_MERGEABLE))
+> +		if (!vma_flags_test(vma_flags, VMA_MERGEABLE_BIT))
+>  			return 0;		/* just ignore the advice */
+>  
+>  		if (vma_has_anon_rmap(vma)) {
+> @@ -3052,7 +3053,7 @@ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+>  				return err;
+>  		}
+>  
+> -		*vm_flags &= ~VM_MERGEABLE;
+> +		vma_flags_clear(vma_flags, VMA_MERGEABLE_BIT);
+>  		break;
+>  	}
+>  
+> diff --git a/mm/madvise.c b/mm/madvise.c
+> index e9fa4f71efea..1b539e67b00d 100644
+> --- a/mm/madvise.c
+> +++ b/mm/madvise.c
+> @@ -148,11 +148,10 @@ static int replace_anon_vma_name(struct vm_area_struct *vma,
+>   * Update the vm_flags or anon_name on region of a vma, splitting it or merging
+>   * it as necessary. Must be called with mmap_lock held for writing.
+>   */
+> -static int madvise_update_vma(vm_flags_t new_flags,
+> +static int madvise_update_vma(vma_flags_t new_vma_flags,
+>  		struct madvise_behavior *madv_behavior)
+>  {
+>  	struct vm_area_struct *vma = madv_behavior->vma;
+> -	vma_flags_t new_vma_flags = legacy_to_vma_flags(new_flags);
+>  	struct madvise_behavior_range *range = &madv_behavior->range;
+>  	struct anon_vma_name *anon_name = madv_behavior->anon_name;
+>  	bool set_new_anon_name = madv_behavior->behavior == __MADV_SET_ANON_VMA_NAME;
+> @@ -601,7 +600,8 @@ static void madvise_cold_page_range(struct mmu_gather *tlb,
+>  
+>  static inline bool can_madv_lru_vma(struct vm_area_struct *vma)
+>  {
+> -	return !(vma->vm_flags & (VM_LOCKED|VM_PFNMAP|VM_HUGETLB));
+> +	return !vma_test_any(vma, VMA_LOCKED_BIT, VMA_PFNMAP_BIT,
+> +			     VMA_HUGETLB_BIT);
+>  }
+>  
+>  static long madvise_cold(struct madvise_behavior *madv_behavior)
+> @@ -650,7 +650,7 @@ static long madvise_pageout(struct madvise_behavior *madv_behavior)
+>  	 * further to pageout dirty anon pages.
+>  	 */
+>  	if (!vma_is_anonymous(vma) && (!can_do_file_pageout(vma) &&
+> -				(vma->vm_flags & VM_MAYSHARE)))
+> +				vma_test(vma, VMA_MAYSHARE_BIT)))
 
-> 
-> On Sat, Nov 07, 2026 at 08:26:29PM +0100, David Hildenbrand (Arm) wrote:
-> [ ... ]
->>
->> Because of [PATCH 05/13] mm: convert THP VMA flag tests to use vma_flags_t which
->> is THP-only, and feels like it could go straight through one of my trees,
->> avoiding conflicts with Andrew's tree. But maybe there is more to it that I am
->> missing.
-> 
-> Sorry about that! Please take that through your tree.
-> 
+Another weird indentation. Likely because the spare set of () that are not
+necessary?
 
-Not your fault, I guess we'll have to get used to merging stuff through separate
-trees, and dealing with conflicts that cannot be avoided :)
 
->>
->> I assume stable topic branches would fix that, but they are currently
->> unfortunately not on the table ... :)
-> 
-> I guess we need everybody-on-git for this!
-> 
-> I guess when Liam and & I have the VMA tree we can do that at least for stuff
-> that goes there :)
-
-Ack!
-
-> 
->>
->>>
->>>
->>> Right, but sometimes functions are declared in one place and called in
->>> others. It is impossible to change the signature of one without also touching
->>> the others.
->>
->> Yes. Something like that is unavoidable. Or if you need new APIs/
-> 
-> Yes.
-> 
->>
->>>
->>>
->>> It's not really all over the place, it's converting vm_flags_t to
->>> vma_flags_t across madvise.c, which involves changing a few function
->>> signatures, whose callers must be updated.
->>
->> Ah, yeah. What on earth does arch/powerpc/kvm/book3s_hv_uvmem.c do with madvise :(
-> 
-> Yeah it's quite worrying that... :)
-> 
->>
->>>
->>> I could split it up into 3 patches where 1 does internal-only, one changes 1
->>> function, and the next changes another, if that works?
->>
->> No, these things really have to go in as one unit, no need to split that up.
-> 
-> Thanks, yeah, it's a pain I know but eventually 'one fine day' (probably in
-> 2028) everything will be converted to vma_flags_t/mmap_prepare and we won't have
-> to think about this :P
-
-Right! :)
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
 -- 
 Cheers,
