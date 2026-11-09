@@ -1,90 +1,78 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D21C8606A321
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 06:16:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C99E606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Nov 2026 06:17:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Wq9Xus+a
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YdOHLkm1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNKKv0Bjqz2yMK;
-	Mon, 09 Nov 2026 17:16:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1229"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794160489;
-	cv=none; b=At4vsNs6dqtmM7KcZ4CB3X5zCmk1cP8hACVmQthtZVGOzwUZLnPUiJnIoTH69C1IOjVaj4aEEUOz3vT7c93l7SaUk5i5vZwH4vrET5pZ7w+KTnqGy8q/XBq/NrfzAwlhSSlbbiiV7AGdQOknEnZ0vDmW4Nkx1UWPVOvD0ootNrXZfZAWe2m9rIdi9eL5QkQ/f/e6ceb+GMCVpogRY8JSHOsahlunmZMkA0UUPgmr30kvS+tLVnO/+QX36vz4gVhE4NKose6iLJ0rSB0koZfsYpS+gR5iTbwY6Mhavs3ExofVAWr5wiZ76bLU/J6WtvTOyONFPGfBFXjvb0E0nKQNDw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNKLl3tnxz2yMK;
+	Mon, 09 Nov 2026 17:17:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.177
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794205023;
+	cv=none; b=Wwvlvnh5ImAEPfpdu7b+Bcr+vSEiLFHFwMwCGSTIJMEvsvn3R0SX8P2VVkYf+o69VWPDoOTZnfibU/Fj7xCQ9zqLf518vf0vj8pciUvPe8pTO+sJX+6tc1K0phEgrMKSl2j93jV90tV22uEQxFFPSeTSkBolSPdiDc7yP9paXWcfduJdjHIVGHQcCLHbmhuBgjUIRuCDdcPLCCB3fMNNUJV3O2RCqQi3f2y1Kz939aJaSm34aD5P003LJKtU7yjsd2LK+0vfZmbYLw4Vsmi3w2vWz516Rkap9UY5mW7zR5+hdqvod1598OU05p93J+h2Uw38PRwPxmtaheltHDIUOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794160489; c=relaxed/relaxed;
-	bh=XN+82m6XILmToReUZb14mcLlVGl4HvQRUT+BvYNhBMU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Hxj9tO089zCeBauomVqptW72PejBQpJWaye+uKQ1AvCnOeC5L1ysQ2gAbkzzE4eAhvfHyJ2xcSfEuNpma+NrYKCh1n1gzCOKiqnSV9go4iSUze5rUxW2r8lWJzRtXEib4tdXD5nIagedbn4C4khu+oYekpkc/qk3/PSnEM3GWTJtvoyzlWyiah7LQk4tgEMHHlM7iE+UO/bt0dGZdfoVqi6hhd4uEDPLfyfSZlgVTeWztlKcMjlA9gDi14KMZnQ0NW6OUFm9Zx/euE0LhQsFCTM6J5+yUsKWWNN56GlWwgK5fASo5WL3mR7QMVSfd3NOqMO3U2JCscOKiBQrzZnl8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Wq9Xus+a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1229; helo=mail-dl1-x1229.google.com; envelope-from=hj351016@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794205023; c=relaxed/relaxed;
+	bh=rLoo3d8wA/2dmWzlOHmZSdy7DBfGYigRliA9FCVCD2U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=dfTF1eqF9oIsRV9Fj5D7qYKIDPgtFS1NaV3Cbk8dcFXdRCr0xepa3c6q1C/igyRhvpliYC7rLtChSDHgsMOEOR/9zhqGjbttK0G5nqUxq+DUeAG/BzRUWmWo1SmzqQyOcyATHU/ev7kUpRyREi2OFNZ+q4AMNW1hEAxfcHQv66o581J3vFXfrCOOx4ub4RgeYHPWKdsjVOCOQLy2zTPoTukz2wV/F2ZVGMLzCOYJbFU9xENrluKZ/Eh7na6EShvOARzF0GylK5gjJBmGsMADxHY91ww2TSW5xdBebUiOX7/SLB4rlbyHvn0qVjLy0q7+Hhgr9bxrfSz+qU7AADTuGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YdOHLkm1; dkim-atps=neutral; spf=pass (client-ip=95.215.58.177; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Wq9Xus+a;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=YdOHLkm1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1229; helo=mail-dl1-x1229.google.com; envelope-from=hj351016@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1229.google.com (mail-dl1-x1229.google.com [IPv6:2607:f8b0:4864:20::1229])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.177; helo=mta1.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-177.mta1.migadu.com [95.215.58.177])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jN0tJ3qvCz2xnh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 04:54:47 +1100 (AEDT)
-Received: by mail-dl1-x1229.google.com with SMTP id a92af1059eb24-1b1ce85287aso160614c88.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Nov 2026 09:54:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794160485; x=1794765285; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=XN+82m6XILmToReUZb14mcLlVGl4HvQRUT+BvYNhBMU=;
-        b=Wq9Xus+agYcyWEnns1tOJe8ERmS4+p+8UUmR2MsU9VWZbrAe5dqFEvau+1QVilxPkM
-         xI6hzipMlSQCB3LoivogOsQILYV7Z0Gmllqk/HwBCiRFKpdrNZ2rN9YP6Fpsp6pFHt+R
-         HGODr6IkfV+H37dqc2lDWZhP7BaeGZ7H+SGDOeSmLtA917nwhE+2AIWhWWv7K7Cb6V1y
-         P8ZV7n+huGWwDyKA2APl1fSuB7rqwEigmXoistD1d+WrB3zClwyE5vmJjOHQA/wuWSLE
-         xv/1JYq+cFOx4V9KrxHTATFy8At13nI3O8qmzSUyvXTMJAfPJX82fr1cMXpVmjsQBk8B
-         TUNg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794160485; x=1794765285;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=XN+82m6XILmToReUZb14mcLlVGl4HvQRUT+BvYNhBMU=;
-        b=J+XCTzpTg1muT8DRp5hCGzfSK3R15Rrce8McU+n77L9d7dl0RXXg2eRoHOTt92actF
-         nlyVqsH6L4ifEt2yhbB65nfaaPR1jEunDY6yKhvqwnU8DQJRGWPnmLC2GV4dws6m57WS
-         0ZM0gVw6pLBoNVrbMBe7oelMml1feL/DI5BvDynbiPrCQsrAPmw0hz/Xbv8aSn5dDqyG
-         oZ5x+SCobZ65NWpJY09LQkoHsVppE6JcnnN9n0jaeb7cjd4rg0wgyvXP92tsqkL88RvQ
-         69a3hepG0SSE0H5ln6BKN3GpXCe3TaYBvJ8FXmACotyCVLFKXGpAEU1IQKPhBWFqAzPP
-         vdjg==
-X-Forwarded-Encrypted: i=1; AL+hErFSU3sGYswAB+fAm2q4oXU4CYlwQRK9xzowTptJC4/3TX8jbpnL44EZ6TkFz4FBdwba0RWDxcePdAYooqo=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+FxXF8/G2fP2mdqnzi1ggmvlC5qdNIgpfyOZO0TF7JquSCJUi4
-	JGcv+W/hsDKE7mC9RotI37LaTrd2zgQHybgO36f5ElKLB5s1kCLn2SNO
-X-Gm-Gg: AYBFou2Uu4LdEc2VFat03sPNCdGE+OQc4zZdNxfOQrFzVKIrV2an5CrHsBT+jI//obQ
-	cT8SxrRSplcnZmok/ltYhp4mAAwat1KdkpE3/1VSdK6ilcUX6H88P+rTR37ZdUgNwrgbHFewDPW
-	VhJvKAqup97n6ZZBHQ4aTLRPW+T22+ATSZzVhgRsVGd8IgfqxJfb7e+o29y6ZJ/gw1J/+QIa7rH
-	jJF5tWbJ4Y/517u7GfnLiikrmVLxZLaM3bOzc+FZJDOV2yeHBPoqmjj++yAGknG1vLlOfDfVErP
-	mVyUifZwVrI1PBH1h0QOnAqJlsvNU/kXljFMa5GR6QsGKYLF4WWAR0GxLaAhpaWOlsg/vgjFtpV
-	9hybsdbqJAblfolRx3Y3Bpbw84xm/3Ach3a7EA7ELFjoHfouxWzDDz6YNfKG6pb2yEEpqrd+rdd
-	sK5x9ABnUfMY4wR1xgD1GSwparPn1UpWaE6Et1RBEFBbM6ajtX6TsqQFAwXXJZQV2Fal6v7NWT4
-	Z7S24NwMSE+BRJN8YGQHWI+yZI8Qfvt8ox3vPuw2pxAKowHUk5FSdyfcYIdp2ZGEEU54K3jceRV
-	8lKev1fAtoDsffpB/gwQW6NE8T3iQP20QZq+/hDs4B5xnp4/
-X-Received: by 2002:a05:701b:260d:b0:196:7742:3928 with SMTP id a92af1059eb24-1b39fdaf0c3mr2557319c88.0.1794160484955;
-        Sun, 08 Nov 2026 09:54:44 -0800 (PST)
-Received: from hj.. ([163.239.22.29])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b3771ea85bsm7386310c88.18.2026.11.08.09.54.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Nov 2026 09:54:44 -0800 (PST)
-From: hyunjungg <hj351016@gmail.com>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Andrew Donnellan <andrew+kernel@donnellan.id.au>
-Cc: Frederic Barrat <fbarrat@linux.ibm.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNKLh3zKbz2y7r
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 17:16:59 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=rLoo3d8wA/2dmWzlOHmZSdy7DBfGYigRliA9FCVCD2U=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794205000; v=1; x=1794809800;
+ b=YdOHLkm18ej0NUagkOx5fL3TEOgHMQ4gnUIWPRRwP2usH38o0YIcXOhwUKSi9HBHrLmHN3CF
+ VnYMJvdPfaRR5Gnc4oHs25xqt4OL2JddMSYjRcOZQnm+keRRQyCMa8U5/cjU5k8uVN1qEiWUb8p
+ luxB4nmOtrLFMWZo/OoPRgjQ=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id b7a98a3c4281100a;
+	Mon, 09 Nov 2026 06:16:40 +0000
+X-Mizu-Trace-ID: b7a98a3c4281100a
+X-Migadu-Flow: FLOW_OUT
+From: Lance Yang <lance.yang@linux.dev>
+To: songmuchun@bytedance.com
+Cc: david@kernel.org,
+	maddy@linux.ibm.com,
+	rppt@kernel.org,
+	akpm@linux-foundation.org,
+	lance.yang@linux.dev,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ritesh.list@gmail.com,
+	sshegde@linux.ibm.com,
+	osalvador@suse.de,
+	qi.zheng@linux.dev,
+	muchun.song@linux.dev,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	linux-mm@kvack.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Hyunjung Ko <hj351016@gmail.com>
-Subject: [PATCH] ocxl: cancel xsl fault work before freeing the SPA to avoid use-after-free
-Date: Mon,  9 Nov 2026 02:54:35 +0900
-Message-ID: <20261108175435.725507-1-hj351016@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	linux-arm-kernel@lists.infradead.org,
+	linux-riscv@lists.infradead.org,
+	x86@kernel.org,
+	loongarch@lists.linux.dev,
+	linux-s390@vger.kernel.org
+Subject: Re: [PATCH v3 5/5] mm/sparse-vmemmap: drop @pgmap from vmemmap population APIs
+Date: Mon,  9 Nov 2026 14:16:30 +0800
+Message-ID: <20261109061630.47601-1-lance.yang@linux.dev>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20261107043122.25650-6-songmuchun@bytedance.com>
+References: <20261107043122.25650-6-songmuchun@bytedance.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,62 +86,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Hyunjung Ko <hj351016@gmail.com>
 
-The XSL translation-fault interrupt handler schedules
-spa->xsl_fault.fault_work (xsl_fault_handler_bh), which dereferences the
-fault and the SPA (via container_of) and acks the interrupt. free_link()
-calls release_xsl_irq() -- which frees the XSL interrupt so no new
-fault_work can be scheduled -- and then free_spa(), which frees the SPA.
-Neither cancels a fault_work that was already queued by the last
-interrupt. As it runs on the system workqueue with no timing bound, it
-can execute after the SPA has been freed, dereferencing freed memory --
-a use-after-free.
+On Sat, Nov 07, 2026 at 12:31:22PM +0800, Muchun Song wrote:
+>The vmemmap population and memory hotplug paths no longer need @pgmap
+>to decide whether a mapping can be optimized. That state is now carried
+>in mem_section, and the architecture-specific population code can make
+>the remaining decisions internally.
+>
+>Drop the @pgmap parameter from the vmemmap population helpers and the
+>related memory hotplug interfaces, and remove the remaining
+>dev_pagemap-specific coupling from those call chains.
+>
+>Signed-off-by: Muchun Song <songmuchun@bytedance.com>
+>---
 
-Cancel the fault work in free_spa() before the SPA is freed. By that
-point release_xsl_irq() has freed the interrupt, so the work cannot be
-re-queued and cancel_work_sync() is sufficient. The interrupt top half
-takes a reference on the faulting mm that the bottom half is expected to
-release, so if cancel_work_sync() cancels a not-yet-run work, drop that
-reference here to avoid leaking it.
+I had another another another look and couldn't spot a missed caller :D
 
-Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
-Cc: stable@vger.kernel.org
-Signed-off-by: Hyunjung Ko <hj351016@gmail.com>
----
- drivers/misc/ocxl/link.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Might as well stop passing pgmap around now that nothing down there uses
+it.
 
-diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-index 7749dcd..1c2a89e 100644
---- a/drivers/misc/ocxl/link.c
-+++ b/drivers/misc/ocxl/link.c
-@@ -376,6 +376,15 @@ static void free_spa(struct ocxl_link *link)
- 		link->dev);
- 
- 	if (spa && spa->spa_mem) {
-+		/*
-+		 * A pending xsl fault bottom half holds a reference on the
-+		 * faulting mm (taken in the top half, released by the bottom
-+		 * half). If we cancel it before it runs, drop that reference
-+		 * here so it is not leaked. release_xsl_irq() has already
-+		 * freed the xsl interrupt, so no new work can be scheduled.
-+		 */
-+		if (cancel_work_sync(&spa->xsl_fault.fault_work))
-+			mmput(spa->xsl_fault.pe_data.mm);
- 		free_pages((unsigned long) spa->spa_mem, spa->spa_order);
- 		kfree(spa);
- 		link->spa = NULL;
--- 
-2.43.0
+LGTM1 Feel free to add:
 
+Reviewed-by: Lance Yang <lance.yang@linux.dev>
 
