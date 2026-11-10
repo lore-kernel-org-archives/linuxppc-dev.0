@@ -2,87 +2,57 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 10364606A321
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 22:39:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8669606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 22:43:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HzRYE13j
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RvEu62MN
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPM655Wpwz2y2h;
-	Wed, 11 Nov 2026 09:39:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794343568;
-	cv=none; b=fCcd/CXpcko4OThMigyastEmHam/AiJKe+9VCsxHg5Fb4zjKT/8pY61ut4FNSFcSrcDoAg9n8l85jy7qkeGMc1IgQn8vub6k8imDTAE5vn7JH7Sj/UycIUk740e7zUVM35H0g5lb9Sar3UnZX7rIqC2H50OF3Ymx3cNapg8msenR30v+kTzpNbcOfTAPnFhWl3qF13Wm4AcsaUBy2zlkS4ji3jCp3zBVQsdRxzR4zzWSJzFowlqoQTptqLns38WCVrSV7nbl+TUeKIT5avE18EWzVSzAtbF1cs1dmNC0RxOb8vfuOXFUOq/V8XumbED48coJpM9vSnmSR7BPcrQtDw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPMBd0cWCz2y2h;
+	Wed, 11 Nov 2026 09:43:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.54
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794346181;
+	cv=none; b=SeIRjpXbGAev6O3KigR3I97pNvLaJgbQcl1+BHk6DV7jBk0plHEt5jlZBkd1+o/42ZFlEeed5QVkA+L6D5ZjJJF10TYIJUjkHb6+uJbC5+UjgyGwSmpRDWdobe3VfoZlvPsPlB6vPzdiLL6EwwnadHGYohbYLLa1nWHTedeBbeAIwwdesVCst6Pvrm2z3rQMshloKgm3EWErYEvG3cXrXTXR+zT6k/nxl6xtFTClBy7HsmCJktpLbescb6EgfGZ0Bq6ivYR54B2XROdd/VGbSbz7i5gdi9w6Eqo89PLaiImVJNEL49SdX8iNEqvUdgmTFw8b9TRA82tX8MvuewFwCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794343568; c=relaxed/relaxed;
-	bh=rMRPONQOYjAF9HKKBayLjA2YuezRW4mL6HNg3dL1nlo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AgNWh/PtS/I/GMcoEqDmMtOr+w6bFvWge34aLznBbfCuu0xcSebUB9M6nc4w8P5+4v3925E78nd30zBztIldKWqzb4UhuvjBmSuRX9/NBcz3xAuh8I/dujt6zBxgbqKTcoRp1oWO/rBhUOtzE16b0VKsp3lh/7KKVASlHbGfAN6JbbaFkIJqFbANGTb4CjYrcxzNjmkHgz2mAet4TjlqldM/UAkOVhz2TE3jcOkCLuBwkbdC3Mf+pDYjL7tD/eMjc7jqB/h3Cq2z8pGGIfXQonT+USX110xmgKqjfkrVp7NciBmb52sgA9RP+YPMqjdkmMVYEjc50QijQnA5fnoc8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HzRYE13j; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=xiang@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794346181; c=relaxed/relaxed;
+	bh=biwkDAkhrSVkft1MaQo1t5KVNSxdEdz7Z7B6JVIMvak=;
+	h=Date:From:To:CC:Subject:In-Reply-To:Message-ID:MIME-Version:
+	 Content-Type; b=hY9m6MI+tZe68Uqvu39xsF72QXCrwPUKRIA1KCj49VzqKLSOBkJILfTcLs9ib/HIGQP+uyggB/0gzveARuRPaXtf7vwZjBYcgGOLvwl0zknKuPwfmoAVAcJDcxIjxkc/fT7qw2heHmLrPcpSNDVrnkB3j9n4aNP9S0bxrvaYqiK1NRMWEloZ0uRaQRp9rgbx9Fi4xIrQkDePF1RHkk9RKaSMR4DD3ncLk4yMAsWbsU5YBFasfYrZDnXcm5rvIz/BmJQT4FHhy41GZGHC2Sx5npWnLZ89ntIYwTya1XaxbzruvBoXLDsL74f2E62X8xIwJ9eDhthrrCyL0kmQaS0RcA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RvEu62MN; dkim-atps=neutral; spf=pass (client-ip=95.215.58.54; helo=mta1.migadu.com; envelope-from=bradley.morgan@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HzRYE13j;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=RvEu62MN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=xiang@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.54; helo=mta1.migadu.com; envelope-from=bradley.morgan@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 400 seconds by postgrey-1.37 at boromir; Wed, 11 Nov 2026 08:29:37 AEDT
+Received: from mta1.migadu.com (out-54.mta1.migadu.com [95.215.58.54])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPJb403s2z2xNC;
-	Wed, 11 Nov 2026 07:46:07 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D3045618CA;
-	Tue, 10 Nov 2026 20:46:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47D441F008AB;
-	Tue, 10 Nov 2026 20:45:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794343564;
-	bh=rMRPONQOYjAF9HKKBayLjA2YuezRW4mL6HNg3dL1nlo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=HzRYE13jB8RdQv3aSy711gVTQF5aN3kmny3Bm+Tqd6DGpMnW/UdmBhwvuV3tDKwWA
-	 qBQkdAe99fCfyY4HwhHW6vpWLb11tiX1rqZm0gqSH24JDOLS4Qw49hrn6RKPLTZ5tX
-	 8yK911/kTi5YKMv0Zeg0t9hinxeSS095ez81rveTvDj3lhZIp5MNrpZ0TzLVXjAROD
-	 H+8sIgKlcwqIAFUbaPlcIA/mKF9hJXlPwet/3tzJzqABID/FKMqpm7AOyUBYjWme3C
-	 0bNu78jINjA9S3ckBH6UNePnv8GkZJATc2s+TTg1AYJLjtNo7jNr7qgY8y7Qdi6pm5
-	 ugUx9cOxV5vJQ==
-Date: Tue, 10 Nov 2026 21:45:52 +0100
-From: Gao Xiang <xiang@kernel.org>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
-	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
-	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-mm@kvack.org,
-	bpf@vger.kernel.org, linux-security-module@vger.kernel.org,
-	selinux@vger.kernel.org, apparmor@lists.ubuntu.com,
-	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
-	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
-	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>,
-	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC 40/41] erofs: refuse files on pseudo filesystems as
- backing files
-Message-ID: <avOCgJPOwRdsIxgd@MacBookPro.fritz.box>
-Mail-Followup-To: Christian Brauner <brauner@kernel.org>,
-	linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
-	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
-	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-mm@kvack.org,
-	bpf@vger.kernel.org, linux-security-module@vger.kernel.org,
-	selinux@vger.kernel.org, apparmor@lists.ubuntu.com,
-	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
-	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
-	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>,
-	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
- <20261110-work-loop-pseudo-v1-40-4c998976c6c7@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPKYF1L8Zz2xdX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 08:29:36 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=JqxqGip0H/iVwtmJNlw71uL3W6XGftaGigDng0GTLUc=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794346158; v=1; x=1794950958;
+ b=RvEu62MN1hp1kKbVNBHOL9kp/AeRp01IPDvEPGDOjxP15589zj4qYNd+8KIk1q9MocSR4yJJ
+ qXVpYlYQv2SVNPsn1Ke3Hy+0BbVelth0q3p9tWmhE7Jtg/yikQgMInzpbPaqOmQU0k50LzgJ5Nt
+ WuCvviLrITq/AKcJdbBOddOg=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 756820372af72f57;
+	Tue, 10 Nov 2026 21:22:36 +0000
+X-Mizu-Trace-ID: 756820372af72f57
+X-Migadu-Flow: FLOW_OUT
+Date: Tue, 10 Nov 2026 21:22:32 +0000
+From: Bradley Morgan <bradley.morgan@linux.dev>
+To: chleroy@kernel.org
+CC: brads@mainlining.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, ritesh.list@gmail.com, sshegde@linux.ibm.com
+Subject: =?US-ASCII?Q?Re=3A_=5BPATCH=5D_powerpc32/modules=3A_Reser?=
+ =?US-ASCII?Q?ve_a_PLT_entry_for_ftrace=5Fregs=5Fcaller?=
+In-Reply-To: <e89ab6eb-2fd3-4638-a3a9-fef406478435@kernel.org>
+Message-ID: <70954FB8-713D-4ACA-B176-03E335F00C33@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,27 +66,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20261110-work-loop-pseudo-v1-40-4c998976c6c7@kernel.org>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 10, 2026 at 10:14:56AM +0100, Christian Brauner wrote:
-> File-backed mounts take any regular file as the image and the same goes
-> for the extra devices of such a mount. erofs reads them with the
-> credentials of the mounter so this doesn't hand out anything the mounter
-> couldn't read anyway. But files on pseudo filesystems aren't images.
-> Refuse them just like loop does.
-> 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+On 10 November 2026 08:57:28 GMT, "Christophe Leroy (CS GROUP)"
+<chleroy@kernel.org> wrote:
+>
+>
+>Le 23/09/2026 à 19:56, Bradley Morgan a écrit :
+>> Commit 7dfbfb87c243 ("powerpc/ftrace: Activate
+>> HAVE_DYNAMIC_FTRACE_WITH_REGS on PPC32") made count_relocs()
+>> undercount the PLT entries the loader
+>> consumes: module_finalize_ftrace() now creates two trampolines
+>> (mod->arch.tramp for ftrace_caller() and mod->arch.tramp_regs for
+>> ftrace_regs_caller()), while count_relocs() reserves only one entry
+>> for ftrace.
+>> 
+>> So the core .plt ends up one ppc_plt_entry (16 bytes) short. The
+>> walk in do_plt_call() scans for a free slot with
+>> "while (entry->jump[0])" and has no bound check, so once the last
+>> reserved slot is used up, the walk steps past the end of the section
+>> and patch_instruction() writes the 4-instruction trampoline into
+>> whatever module memory follows the .plt.
+>> 
+>> Count the second entry, mirroring what module_64.c does for the same
+>> pair of stubs.
+>> 
+>> Signed-off-by: Bradley Morgan <brads@mainlining.org>
+>
+>I would have had a preference for something similar to commit c12cfe9dee07
+>("powerpc/module_64: Convert #ifdef to IS_ENABLED()")
+>
+>Nevertheless,
+>
+>Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-Reviewed-by: Gao Xiang <xiang@kernel.org>
+Thx, now the good question will be, who merges?
 
-Thanks,
-Gao Xiang
+>
+>
+>
+>> ---
+>>   arch/powerpc/kernel/module_32.c | 3 +++
+>>   1 file changed, 3 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/kernel/module_32.c
+>b/arch/powerpc/kernel/module_32.c
+>> index f930e3395a7f..61152deffc55 100644
+>> --- a/arch/powerpc/kernel/module_32.c
+>> +++ b/arch/powerpc/kernel/module_32.c
+>> @@ -41,6 +41,9 @@ static unsigned int count_relocs(const Elf32_Rela
+>*rela, unsigned int num)
+>>     #ifdef CONFIG_DYNAMIC_FTRACE
+>>   	_count_relocs++;	/* add one for ftrace_caller */
+>> +#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+>> +	_count_relocs++;	/* add one for ftrace_regs_caller */
+>> +#endif
+>>   #endif
+>>   	return _count_relocs;
+>>   }
+>
+
+--- Thanks!
 
