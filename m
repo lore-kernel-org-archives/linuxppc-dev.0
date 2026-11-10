@@ -2,52 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6796606A905
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 09:22:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A25B3606BF1F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 09:28:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZJA+k4jF
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNH7JWBj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP1N93RcNz3dWk;
-	Tue, 10 Nov 2026 20:20:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794302441;
-	cv=none; b=Lx9N6/s3lALHRao0dY21sfp5sNULJuzlzbZj7W9X+cRCe/968PotZ5nqnRIA9DE7XpZriTIkpHcLR5NtAjBvRNaDFOlrOcf7/W/vksMQB54PjpYB77F2EnTnrdJlI8emECng7bc+RP+x8UwK+ONGu//G+Mi6CGsdodppypTYDMIybeiDZ/7bs7gGYTISWxn7X8AuPs4sdcnMRGTAYiapmD3TKgT/OdDRFdMJZtpZMe5RKUbMJPdzv5GmlI0C0flRJaoe+AZd/3hlqhnnIemVMcGDXOsY80E0kIhX82FQUgHs6CEwAQbYhkr9kAMrNQnJ7AsKFLdc3q6oEAI+ZbulNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP1YZ1szDz3dXT;
+	Tue, 10 Nov 2026 20:28:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794302930;
+	cv=none; b=TBNUGWrvK0QQDjpDDRWlA64CavRm84Ev9QNoESQyvBlfaiQftI2+1wSUD11GSf3hUONNGjsXFF+aUg+2c/qLSSX8FEtJRIHhUyz1VLOmn9fqB44B1A0NDhJGk0jd7/7/1H30HWcaCtQ1vVsduKc2q5TWykJBLq5Fvk3JwamePYSxJ0VMCQJo08hQgItVgdqXRP7EZP2eXJNgDrBxqnEConwr5kcBSHPw1/ZI6Mh3XyI6WB92nLuD4iVUirJymRHSco4gqFJETB1lJnxT2bGI5Wwr7hafcDne14L23d85aUbHyCtDGNn7OpEnGGQV7FMuJoqMXsdsIHfxjxcazXXucw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794302441; c=relaxed/relaxed;
-	bh=HcRXRAYOuW3Mg9I3hu0cD8PLY2YH/pH7TktBJyJSNx8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Vg6xyAprmnuGgeq3JWdAitrzOdBTVdGu0R2Tl/8dtKfM7lbTimWa4jbSUXzeRYwdM1vSeERYYf2Fq00oOSuICwC3rNe8ofYPCW8xVup2srlPIbOPozCcfp54XsWR3HhNSmgmXGrGThv1SVWDqYP7qfM6rTnwI/S2k0urFHH0KWmZLrtxqN/F2FUCBXIkDmN23zKmf3MYqaXkEHyloz6NZtCJVnR7su53rvHhpx148JeeK7O7Yq+UyNcIquqzMRNXuVFgWjzXXSW3Fp2GX9AC97MOSpzx4KwgB8ryaTMC+HhFknPmczpSyfBecZL+nz4/mKzR+NZgq09Xr7uNfw8xJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZJA+k4jF; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794302930; c=relaxed/relaxed;
+	bh=m3p/DDXuAbdnnQuiur5i1eemlv0No7Pemm1h08DiR30=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HhvSe/BdEkuo58SwneNAejklpngOsBp7ftq8yIc23UacedTG4UYAlczaOJxbMI/PEblQYF9miNw9PBvd7aTSGsES3Ur/8ogMMC+5Kx4UCTZQtXiZmSCh0nA1e0fIylop1MbXoq73UZIfk4WA1Z6CgmB5NrMwsEtNBYuj7PsJnmPd+7wpCo+Psij8nvcyQ5+dgIPlEgirKB4XKt8aUP9enY3KNNNleytdROMjP3mvrnw+kCqB7I8vnq6ewgZ9Di5dNCUkfOnDIi8vUoRaYBIME62jHI2961NOPJwLIkHcFR6PO94YKSAu60AQAI4WE2c95BL1zpoodD49FCEggvaZRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNH7JWBj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZJA+k4jF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNH7JWBj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP1N822V4z3dWH;
-	Tue, 10 Nov 2026 20:20:40 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4FF426382C;
-	Tue, 10 Nov 2026 09:20:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D341A1F008A2;
-	Tue, 10 Nov 2026 09:20:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794302438;
-	bh=HcRXRAYOuW3Mg9I3hu0cD8PLY2YH/pH7TktBJyJSNx8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=ZJA+k4jFVB7QcXl0KFVo6FAm8XI4UkHhmuHM+xAo6A08HhRmiH/wYZOdlnlgLrh/9
-	 rcM+5k5rzdiLJi52fkaGO8lhYCA13C2aDo9CFXO/uzKhnDpIZ5rI/vU3Ljq7x3I7Bm
-	 MkhWlzcBR2LGti6K8n98z2uTbwDhWQPDuXr4DHrqemvTOVN3Tx4nNOe+6eX4Ml7Fyp
-	 9Vko9fTHjCHZ5NBoWCSVWvJBcx8Fv6eWP7XqdB6tuOAdRQweUL01pdhN1qREgq1HLW
-	 tKInp2gJ5HWhSiFiMhTw2dXTpS/ltNMOEyHElB6ILu033FIsaRQKmc4sbsA3Bxf7u6
-	 4uHy8e3VDnRvw==
-From: Christian Brauner <brauner@kernel.org>
-Date: Tue, 10 Nov 2026 10:14:57 +0100
-Subject: [PATCH RFC 41/41] selftests/filesystems: add backing file tests
- for pseudo files
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP1YY2Zvgz3dXS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 20:28:49 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA8EkeJ172632;
+	Tue, 10 Nov 2026 09:28:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=m3p/DD
+	XuAbdnnQuiur5i1eemlv0No7Pemm1h08DiR30=; b=bNH7JWBjDpfrXCniM6jbZY
+	urSiv2tl6E4orY10ZedBBa245qfEbepXIJw5iO4aqro/Jx7Ffw1QIT/K4/Fxhx/p
+	orA/2S4pd7gOTEDa+qji5DwdtylgKBknQpwB33MxnvkCKMzUOZ7IdU2REBRHy/Pz
+	/Pg/b6xulXyCfc9FiRMx2JDnRyP+wHxY+39jrCD6UoTZVJofGTSleEFy7zomJzLN
+	oYWMV6HHCiWJAKZ98G4pXhqhVToZPOB0vGFrY1eKSahC672Wc5fjGfjhoD9hOKxd
+	W0Um+aZftyR8ys6Z8KkcUfTivJCwpNtiss7iSdm1mCBc/FU3lb/gwDkAqn4ekujg
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsunt46a4-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 09:28:38 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA7ntVX1406220;
+	Tue, 10 Nov 2026 09:28:37 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4htfak5yp0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 09:28:37 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AA9SZv242140142
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Nov 2026 09:28:35 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8A4802004B;
+	Tue, 10 Nov 2026 09:28:35 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 858622004F;
+	Tue, 10 Nov 2026 09:28:33 +0000 (GMT)
+Received: from [9.39.31.79] (unknown [9.39.31.79])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Nov 2026 09:28:33 +0000 (GMT)
+Message-ID: <9da4b3b5-cc9d-4a55-9aba-b491f9b222e5@linux.ibm.com>
+Date: Tue, 10 Nov 2026 14:58:32 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,386 +81,133 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/smp: Handle of_property_count_u32_elems() error
+ in parse_thread_groups()
+To: Nathan Chancellor <nathan@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin
+ <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Kees Cook <kees@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+References: <20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261110-work-loop-pseudo-v1-41-4c998976c6c7@kernel.org>
-References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
-In-Reply-To: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
-To: linux-fsdevel@vger.kernel.org
-Cc: Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>, 
- Josef Bacik <josef@toxicpanda.com>, Christoph Hellwig <hch@lst.de>, 
- linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-nvme@lists.infradead.org, Alexander Viro <viro@zeniv.linux.org.uk>, 
- Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org, 
- target-devel@vger.kernel.org, driver-core@lists.linux.dev, 
- linux-mm@kvack.org, bpf@vger.kernel.org, 
- linux-security-module@vger.kernel.org, selinux@vger.kernel.org, 
- apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org, 
- netdev@vger.kernel.org, fuse-devel@lists.linux.dev, 
- linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, 
- ocfs2-devel@lists.linux.dev, linux-s390@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org, 
- Amir Goldstein <amir73il@gmail.com>, linux-erofs@lists.ozlabs.org, 
- linux-kselftest@vger.kernel.org, 
- "Christian Brauner (Amutable)" <brauner@kernel.org>
-X-Mailer: b4 0.17-dev-ce4c1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=9874; i=brauner@kernel.org;
- h=from:subject:message-id; bh=WrNqWZ7KkNp+RAbIFwB8NnBVD99KxYHQRcnlviAxa6g=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWR9enD4WbX5pPn5ziIC13kaPmfytEQmM0ZuPbw7WXPnm
- gSxsqe1HSUsDGJcDLJiiiwO7Sbhcst5KjYbZWrAzGFlAhnCwMUpABNZ8ZHhf973fTs7218EO58x
- 7P0e6Ze9+P+LjPP3fh7Xiy851MXwVZ/hx12Ja4+3MNaXiaTntPJ9281nGrssMtLdPjC4ZaFVjDA
- DAA==
-X-Developer-Key: i=brauner@kernel.org; a=openpgp;
- fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDAzNiBTYWx0ZWRfX5WX+RPQynwG3
+ 5JfEkkjN3w1cHQWMBKfFpcnBzPn1tTr5MKrxHNfcNe6S+QdbL7ZIZuLJWRS421ha7tRmuYgWIMH
+ cV8nhZOxY0zqcoobfa1AWp/696CSUWFifnvmpyUA3xFjnudlMO+6buUvWmAj+N146kzeY1fa4Cf
+ hpX2hBKdqIuISg9Dabxa0v5hNpJFRq1HgIGG3S745lB0yZwP9HcoTE1jayf5QnK48Y/TzZF9hhK
+ ndTbiIvDKoo2pHGWpcLZX+VtBbmmcGqRrBEBghASRHF9uOJgo6JbN3t+TQIWWXyjC5SGE/N5VUH
+ j7ZMtBkRpu691+TNdwlDEdZjnSC0FSRv+607UUjhcKGWOseO3J9SotD1KS3NRuzqaQB+5DAyghs
+ mlhy94sFUZCwkz2JdIfoGIpmySdOLDbRpE2Zga8/zmu5WKFpxU3LKFBLadsQiyNIsOC5DzJ7QRj
+ VD1KxB6gnxxVldkltzw==
+X-Proofpoint-ORIG-GUID: Vga60G3pp7sW2rY-UTzxIv8sw2-2Td04
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDAzNiBTYWx0ZWRfX5i0Nsm4mcGSp
+ KcR58Y/mAj5iy4nUvD2VMeP6bffa9wunKHfQnS4dAZ6an1z/T442qDrqRRF9WlfRW+ORPvTat22
+ n5iLnCwicwuXoPCaRK5aFkvSnkPUIUE=
+X-Authority-Analysis: v=2.4 cv=euZKXYpX c=1 sm=1 tr=0 ts=6af2e3c7 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=vYq-qXZFh7psd1dCY8cA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: YTGGr8qHyJr6rGJQsWXMyujRdtHwZC5S
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-10_03,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 clxscore=1015 suspectscore=0 spamscore=0 priorityscore=1501
+ lowpriorityscore=0 bulkscore=0 impostorscore=0 adultscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611100036
+X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add tests that files on pseudo filesystems can't be used as storage:
+Hi Nathan. Thanks for the fix.
 
-- a procfs file attached read-only to a loop device
-- sysfs files attached read-only and read-write to a loop device
-- a sysfs file behind a lower-only overlayfs attached to a loop device
-- a sysfs file as the backing file of a usb mass storage gadget LUN
-- a sysfs file as the source of a file-backed erofs mount
+On 11/9/26 11:30 PM, Nathan Chancellor wrote:
+> After commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
+> conversions"), there is a warning on boot for several PowerPC
+> configurations in QEMU:
+> 
+>    WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1b0, CPU#0: swapper/0/1
+>    Modules linked in:
+>    CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.4.0-rc1-00262-g0af298e62e5c #1 PREEMPT(lazy)
+>    NIP [c0000000006074e4] ___kmalloc_large_node+0x174/0x1b0
+>    LR [c00000000060782c] __kmalloc_large_node_noprof+0x3c/0x150
+>    Call Trace:
+>    ...
+>    [c00000000369fb60] [c000000000614ff0] __kmalloc_noprof+0x490/0x690
+>    [c00000000369fbe0] [c000000000051308] _kzalloc_noprof.constprop.0+0x1c/0x74
+>    [c00000000369fc00] [c00000000200b450] init_thread_group_cache_map+0xc0/0x2c4
+>    ...
+> 
+> In this case, of_property_count_u32_elems() returns -EINVAL because
+> there is no "ibm,thread-groups" property. When kcalloc() was used to
+> allocate thread_group_array, the multiplication overflow check in
+> _kmalloc_array_noprof() caught that a really large allocation was
+> requested (as -EINVAL was converted to size_t) and returned NULL.
+> kzalloc_objs() has no such check, so the large allocation check in
+> __kmalloc_large_noprof() triggers the visible warning above.
+> 
+> Check if of_property_count_u32_elems() has returned an error and bail
+> out if so, clearing up the warning.
+> 
+> Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
+> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
 
-And make sure that a memfd and another loop device still work as loop
-backing files and that loop refuses a backing file that isn't open for
-reading.
+Looks fine to me.
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 
-Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
----
- tools/testing/selftests/filesystems/.gitignore     |   1 +
- tools/testing/selftests/filesystems/Makefile       |   2 +-
- tools/testing/selftests/filesystems/config         |   9 +
- .../selftests/filesystems/pseudo_backing_test.c    | 274 +++++++++++++++++++++
- 4 files changed, 285 insertions(+), 1 deletion(-)
+> ---
+>   arch/powerpc/kernel/smp.c | 2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 7a25eaa59e62..58824f5f4c80 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -824,6 +824,8 @@ static int parse_thread_groups(struct device_node *dn,
+>   	int i = 0;
+>   
+>   	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
+> +	if (count < 0)
+> +		return count;
+>   	thread_group_array = kzalloc_objs(u32, count);
+>   	if (!thread_group_array)
+>   		return -ENOMEM;
+> 
+> ---
+> base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
+> base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+> change-id: 20261109-powerpc-smp-handle-count-err-b48b9ffd6e90
+> 
+> Best regards,
+> --
+> Cheers,
+> Nathan
+> 
 
-diff --git a/tools/testing/selftests/filesystems/.gitignore b/tools/testing/selftests/filesystems/.gitignore
-index cf79000e4092..8df38eabb125 100644
---- a/tools/testing/selftests/filesystems/.gitignore
-+++ b/tools/testing/selftests/filesystems/.gitignore
-@@ -7,3 +7,4 @@ kernfs_test
- idmapped_tmpfile
- ustat_test
- rw_hint_test
-+pseudo_backing_test
-diff --git a/tools/testing/selftests/filesystems/Makefile b/tools/testing/selftests/filesystems/Makefile
-index fbd5c27505ef..0ebb9005bcd2 100644
---- a/tools/testing/selftests/filesystems/Makefile
-+++ b/tools/testing/selftests/filesystems/Makefile
-@@ -2,7 +2,7 @@
- 
- CFLAGS += $(KHDR_INCLUDES)
- TEST_GEN_PROGS := devpts_pts anon_inode_test kernfs_test fclog ustat_test rw_hint_test
--TEST_GEN_PROGS += idmapped_tmpfile
-+TEST_GEN_PROGS += idmapped_tmpfile pseudo_backing_test
- TEST_GEN_PROGS_EXTENDED := dnotify_test
- 
- include ../lib.mk
-diff --git a/tools/testing/selftests/filesystems/config b/tools/testing/selftests/filesystems/config
-index 9f45bc493a30..228196160d29 100644
---- a/tools/testing/selftests/filesystems/config
-+++ b/tools/testing/selftests/filesystems/config
-@@ -6,3 +6,12 @@ CONFIG_NET=y
- CONFIG_NET_NS=y
- CONFIG_INET=y
- CONFIG_SYSFS=y
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_OVERLAY_FS=y
-+CONFIG_TMPFS=y
-+CONFIG_CONFIGFS_FS=y
-+CONFIG_USB_GADGET=y
-+CONFIG_USB_CONFIGFS=y
-+CONFIG_USB_CONFIGFS_MASS_STORAGE=y
-+CONFIG_EROFS_FS=y
-+CONFIG_EROFS_FS_BACKED_BY_FILE=y
-diff --git a/tools/testing/selftests/filesystems/pseudo_backing_test.c b/tools/testing/selftests/filesystems/pseudo_backing_test.c
-new file mode 100644
-index 000000000000..bc8e17ab8e6e
---- /dev/null
-+++ b/tools/testing/selftests/filesystems/pseudo_backing_test.c
-@@ -0,0 +1,274 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#define _GNU_SOURCE
-+
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <limits.h>
-+#include <sched.h>
-+#include <stdbool.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <linux/loop.h>
-+#include <linux/magic.h>
-+#include <sys/ioctl.h>
-+#include <sys/mman.h>
-+#include <sys/mount.h>
-+#include <sys/stat.h>
-+#include <sys/vfs.h>
-+
-+#include "kselftest_harness.h"
-+#include "wrappers.h"
-+
-+/*
-+ * Put @fd behind a free loop device. The device is set up with
-+ * LO_FLAGS_AUTOCLEAR and goes away again when it is closed here.
-+ */
-+static int loop_attach(int fd, bool rw, char *dev, size_t len)
-+{
-+	struct loop_config cfg = {};
-+	int ctl, nr, lfd, ret = 0;
-+
-+	ctl = open("/dev/loop-control", O_RDWR | O_CLOEXEC);
-+	if (ctl < 0)
-+		return -errno;
-+	nr = ioctl(ctl, LOOP_CTL_GET_FREE);
-+	if (nr < 0)
-+		ret = -errno;
-+	close(ctl);
-+	if (ret)
-+		return ret;
-+
-+	snprintf(dev, len, "/dev/loop%d", nr);
-+	lfd = open(dev, (rw ? O_RDWR : O_RDONLY) | O_CLOEXEC);
-+	if (lfd < 0)
-+		return -errno;
-+
-+	cfg.fd = fd;
-+	cfg.info.lo_flags = LO_FLAGS_AUTOCLEAR;
-+	if (!rw)
-+		cfg.info.lo_flags |= LO_FLAGS_READ_ONLY;
-+	if (ioctl(lfd, LOOP_CONFIGURE, &cfg)) {
-+		ret = -errno;
-+		close(lfd);
-+	} else {
-+		ret = lfd;
-+	}
-+	return ret;
-+}
-+
-+static int attach_path(const char *path, bool rw)
-+{
-+	char dev[PATH_MAX];
-+	int fd, ret;
-+
-+	fd = open(path, (rw ? O_RDWR : O_RDONLY) | O_CLOEXEC);
-+	if (fd < 0)
-+		return -errno;
-+	ret = loop_attach(fd, rw, dev, sizeof(dev));
-+	close(fd);
-+	if (ret >= 0) {
-+		close(ret);
-+		ret = 0;
-+	}
-+	return ret;
-+}
-+
-+static bool can_use_loop(void)
-+{
-+	return geteuid() == 0 && access("/dev/loop-control", R_OK | W_OK) == 0;
-+}
-+
-+TEST(memfd_backing_file)
-+{
-+	char dev[PATH_MAX];
-+	int fd, lfd;
-+
-+	if (!can_use_loop())
-+		SKIP(return, "loop devices unavailable");
-+
-+	fd = memfd_create("pseudo_backing_test", MFD_CLOEXEC);
-+	ASSERT_GE(fd, 0);
-+	ASSERT_EQ(ftruncate(fd, 1 << 20), 0);
-+
-+	lfd = loop_attach(fd, true, dev, sizeof(dev));
-+	ASSERT_GE(lfd, 0);
-+	EXPECT_EQ(close(lfd), 0);
-+	EXPECT_EQ(close(fd), 0);
-+}
-+
-+TEST(loop_device_backing_file)
-+{
-+	char dev[PATH_MAX], dev2[PATH_MAX];
-+	int fd, lfd, bfd, lfd2;
-+
-+	if (!can_use_loop())
-+		SKIP(return, "loop devices unavailable");
-+
-+	fd = memfd_create("pseudo_backing_test", MFD_CLOEXEC);
-+	ASSERT_GE(fd, 0);
-+	ASSERT_EQ(ftruncate(fd, 1 << 20), 0);
-+	lfd = loop_attach(fd, true, dev, sizeof(dev));
-+	ASSERT_GE(lfd, 0);
-+
-+	/* A block device stays fine as a backing file. */
-+	bfd = open(dev, O_RDWR | O_CLOEXEC);
-+	ASSERT_GE(bfd, 0);
-+	lfd2 = loop_attach(bfd, true, dev2, sizeof(dev2));
-+	ASSERT_GE(lfd2, 0);
-+
-+	EXPECT_EQ(close(lfd2), 0);
-+	EXPECT_EQ(close(bfd), 0);
-+	EXPECT_EQ(close(lfd), 0);
-+	EXPECT_EQ(close(fd), 0);
-+}
-+
-+TEST(write_only_backing_file)
-+{
-+	char dev[PATH_MAX], path[PATH_MAX];
-+	int fd, wfd, lfd;
-+
-+	if (!can_use_loop())
-+		SKIP(return, "loop devices unavailable");
-+
-+	fd = memfd_create("pseudo_backing_test", MFD_CLOEXEC);
-+	ASSERT_GE(fd, 0);
-+	ASSERT_EQ(ftruncate(fd, 1 << 20), 0);
-+
-+	/* Loop reads from its backing file so it must be open for reading. */
-+	snprintf(path, sizeof(path), "/proc/self/fd/%d", fd);
-+	wfd = open(path, O_WRONLY | O_CLOEXEC);
-+	ASSERT_GE(wfd, 0);
-+
-+	lfd = loop_attach(wfd, true, dev, sizeof(dev));
-+	if (lfd >= 0)
-+		close(lfd);
-+	EXPECT_EQ(lfd, -EBADF);
-+	EXPECT_EQ(close(wfd), 0);
-+	EXPECT_EQ(close(fd), 0);
-+}
-+
-+TEST(procfs_backing_file)
-+{
-+	if (!can_use_loop())
-+		SKIP(return, "loop devices unavailable");
-+
-+	ASSERT_EQ(attach_path("/proc/cpuinfo", false), -EINVAL);
-+}
-+
-+TEST(sysfs_backing_file)
-+{
-+	if (!can_use_loop())
-+		SKIP(return, "loop devices unavailable");
-+
-+	ASSERT_EQ(attach_path("/sys/kernel/warn_count", false), -EINVAL);
-+
-+	if (access("/sys/kernel/reboot/mode", F_OK))
-+		SKIP(return, "no /sys/kernel/reboot/mode");
-+	ASSERT_EQ(attach_path("/sys/kernel/reboot/mode", true), -EINVAL);
-+}
-+
-+TEST(overlayfs_on_sysfs_backing_file)
-+{
-+	if (!can_use_loop())
-+		SKIP(return, "loop devices unavailable");
-+
-+	ASSERT_EQ(unshare(CLONE_NEWNS), 0);
-+	ASSERT_EQ(mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL), 0);
-+	ASSERT_EQ(mount("tmpfs", "/tmp", "tmpfs", 0, NULL), 0);
-+	ASSERT_EQ(mkdir("/tmp/empty", 0755), 0);
-+	ASSERT_EQ(mkdir("/tmp/merged", 0755), 0);
-+
-+	/* A lower-only overlayfs serves reads from sysfs. */
-+	if (mount("overlay", "/tmp/merged", "overlay", MS_RDONLY,
-+		  "lowerdir=/sys/kernel:/tmp/empty"))
-+		SKIP(return, "no overlayfs on top of sysfs: %s", strerror(errno));
-+
-+	ASSERT_EQ(attach_path("/tmp/merged/warn_count", false), -EINVAL);
-+}
-+
-+#define CONFIGFS_DIR "/sys/kernel/config"
-+#define GADGET_DIR CONFIGFS_DIR "/usb_gadget/pseudo_backing_test"
-+#define MASS_STORAGE_DIR GADGET_DIR "/functions/mass_storage.0"
-+
-+TEST(usb_mass_storage_backing_file)
-+{
-+	const char *path = "/sys/kernel/warn_count";
-+	struct statfs sfs;
-+	ssize_t ret;
-+	int fd, err;
-+
-+	if (geteuid())
-+		SKIP(return, "needs root");
-+
-+	/* Mounting configfs on top of itself fails with EBUSY. */
-+	if (statfs(CONFIGFS_DIR, &sfs) || sfs.f_type != CONFIGFS_MAGIC) {
-+		ASSERT_EQ(unshare(CLONE_NEWNS), 0);
-+		ASSERT_EQ(mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL), 0);
-+		if (mount("configfs", CONFIGFS_DIR, "configfs", 0, NULL))
-+			SKIP(return, "no configfs: %s", strerror(errno));
-+	}
-+
-+	if (mkdir(GADGET_DIR, 0755))
-+		SKIP(return, "no usb gadget configfs: %s", strerror(errno));
-+	if (mkdir(MASS_STORAGE_DIR, 0755)) {
-+		err = errno;
-+		rmdir(GADGET_DIR);
-+		SKIP(return, "no usb mass storage function: %s", strerror(err));
-+	}
-+
-+	/* Writing the path opens the LUN's backing file right away. */
-+	fd = open(MASS_STORAGE_DIR "/lun.0/file", O_WRONLY | O_CLOEXEC);
-+	EXPECT_GE(fd, 0);
-+	if (fd >= 0) {
-+		ret = write(fd, path, strlen(path));
-+		err = errno;
-+		EXPECT_EQ(ret, -1);
-+		EXPECT_EQ(err, EINVAL);
-+		EXPECT_EQ(close(fd), 0);
-+	}
-+
-+	EXPECT_EQ(rmdir(MASS_STORAGE_DIR), 0);
-+	EXPECT_EQ(rmdir(GADGET_DIR), 0);
-+}
-+
-+TEST(erofs_backing_file)
-+{
-+	bool refused = false;
-+	char buf[256];
-+	int fsfd, ret, err;
-+	ssize_t n;
-+
-+	if (geteuid())
-+		SKIP(return, "needs root");
-+
-+	fsfd = sys_fsopen("erofs", FSOPEN_CLOEXEC);
-+	if (fsfd < 0)
-+		SKIP(return, "no erofs: %s", strerror(errno));
-+
-+	ASSERT_EQ(sys_fsconfig(fsfd, FSCONFIG_SET_STRING, "source",
-+			       "/sys/kernel/warn_count", 0), 0);
-+	ret = sys_fsconfig(fsfd, FSCONFIG_CMD_CREATE, NULL, NULL, 0);
-+	err = errno;
-+	if (ret && err == ENOTBLK) {
-+		close(fsfd);
-+		SKIP(return, "no file-backed erofs mounts");
-+	}
-+	ASSERT_EQ(ret, -1);
-+	ASSERT_EQ(err, EINVAL);
-+
-+	/*
-+	 * Something that isn't an erofs image fails with EINVAL as well so
-+	 * check that the source itself was refused.
-+	 */
-+	while ((n = read(fsfd, buf, sizeof(buf) - 1)) > 0) {
-+		buf[n] = '\0';
-+		if (strstr(buf, "pseudo filesystem"))
-+			refused = true;
-+	}
-+	EXPECT_TRUE(refused);
-+	EXPECT_EQ(close(fsfd), 0);
-+}
-+
-+TEST_HARNESS_MAIN
+Should the similar fix is needed here as well?
 
--- 
-2.53.0
+arch/powerpc/platforms/powernv/idle.c:
+         nr_idle_states = of_property_count_u32_elems(np,
+                                                 "ibm,cpu-idle-state-flags");
 
+         pnv_idle_states = kzalloc_objs(*pnv_idle_states, nr_idle_states);
+         temp_u32 = kzalloc_objs(u32, nr_idle_states);
+         temp_u64 = kzalloc_objs(u64, nr_idle_states);
+         temp_string = kcalloc(nr_idle_states, sizeof(char *),  GFP_KERNEL);
 
