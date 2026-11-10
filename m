@@ -1,78 +1,106 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1D4F606A320
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 15:44:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7319D606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 16:18:52 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxZoPAPr
+	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=asQC+qHD;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=pjDZKFBW
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP9v374nyz2yR1;
-	Wed, 11 Nov 2026 02:44:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794325471;
-	cv=none; b=ND4YOHhu+N7nwOTUzP4OdQKdfxkctDjyvBfC14v3WZDEHqbzlSyD0Ex5FrvgAliDWFhMokum6T857UpfGWOQZFpSIOYYwxI+REp6puiEOOwTHd3SnmNcQyqm28JThnq1BlGcUX3rBOHYXnEvoEqMssuCIZbavesS7xsWBqR8nT+CjcO0jYyDyuiZlMChVahhY78xu2sLLGLuQ1+jA2TmTXk25+4rBs3kfR4oAqWklZvtymwI8a/uoIxMF8CJeEC/VvkGNELvVntAZNdFdhahTT63muIdJhZi1D1slPj6Z4foplDWcsDUdYs9Xx8YI8FEnM5UmaTyutWBTmI6GBAJqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPBfg11VRz2xLF;
+	Wed, 11 Nov 2026 03:18:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.142
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794327531;
+	cv=none; b=hrBDetZLkLLcWAZTc3ZKXdOhkCgiawpk7zGDTvaBDvAwVs5d7HydZO3hTmBxNwx7c/YrOGK/LLBIDK/I1qTUHvzpr2OX1Knr5uiZdK5xS2kNSlIrzWa9a8cBwlon8OogwpZ8Ju14/VuYq8BVOviEBYgnrR+L8/qgPzCpSelcxnPH+CZ4hOBYtWwJEyQoOi6qnUavFTKoPxlweRnNzPG2gvv3aQXCZhHZIjvqa97b364D2ON8SJen0uw89ELip0P6YrSRAz4eVK7Dc+R1g68+f6/Ns2JscUfF/mhxyxaXx0m5yoZRJuUlNj3JmMCjgO7KFdvBPF9HJJwUAZAzYLSwgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794325471; c=relaxed/relaxed;
-	bh=PNlP9f6Wrf+sUQn6QPmno7fsahkNAHws9ylX2pvBoqc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xz6doWdxQK+PrYb+twWrbxgWxfn75omJqcPtMmd7yVJCW1RdNCHRyWVbEHSCptOeQq6HqeMeqAdn1MXVBTD18HvVuoN920c0/oLnO50D9nTQRLY18mbIBh7wHE+0kUXOZ/umqftKrDsgHCR6FJyfF6mrhhpzFkGQw+lhtPUFbXR9nqUU0iF6fEYFCMXA2wcAJShBKXvYvk+rTs2/hLtr8gKU/Qpqc3F+z7chWuPLd/dBXpZtFDarsB33hvPom7sJyJPj2+W2E9mq5KobE6Vnu0xzJ+1XsiSIaXe50NvHpjgVFdHYr6uuHUzquXoWWGZdUiDB2gkoXcwlRSvGHiFzSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxZoPAPr; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794327531; c=relaxed/relaxed;
+	bh=4stWdQp7BpJLS0676322fsmeG4ymFjAT9IbMRkPmpp0=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=YQMHk7a7t2jMXXZyi0uyJRkyPzhGSLT88o+naPhFv84i0uLsbrNKOOVlA8JyEshl2+BvSvLHFj5C/f7Aoq15gXGMwbG/mNqacA282lD0htP7O0yzLvIwXlnI3mp8waODDoWF6KJn299ut4op0ucHW1keuEOkzDldohZuOy9KWzb3I9FsKITRWuUwGfwNzaQgp7fMY90slBI+3AnEFoxKOe3ok87zDrf8pM7VA4m4THETY5x5q4FTy58cHcx0dyLIsNMlIgplh5UamqszjxnIxnqUbh90w+Fuyb+b2he/771dc7Jbg32zfNDWYn447LOdz5T+HRcqAbTEoExKeSxk1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=asQC+qHD; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=pjDZKFBW; dkim-atps=neutral; spf=pass (client-ip=103.168.172.142; helo=flow-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxZoPAPr;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=asQC+qHD;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=pjDZKFBW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.142; helo=flow-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 332 seconds by postgrey-1.37 at boromir; Wed, 11 Nov 2026 03:18:47 AEDT
+Received: from flow-a7-smtp.messagingengine.com (flow-a7-smtp.messagingengine.com [103.168.172.142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP9v15fc0z2xnn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 02:44:29 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AAFECoj2667195;
-	Tue, 10 Nov 2026 15:44:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=PNlP9f6Wrf+sUQn6QPmno7fsahkNAHws9ylX2pvBo
-	qc=; b=sxZoPAPrd2MlOVa/FhHY+4jxfS/cmpI9Hf0J2Diw8znSyrIxqXL5Gqt7r
-	jUyufx+JnXx7MejWRCjWy0k0KXxuhUThwAgdRUEqSX9PSDUshLxgCagVue41TD5r
-	N2aNss5xvw15yv1KSgNOcNM/NMb7FrdVvraRQigDybXUITQ3S9gVT1S2WBeW3gcy
-	cRZ95J72Q62uxnUQRCQXSfpj9BFdpfDQ7JA5Z+fEjjfuLzjtiYOFm8C2pO5ScEHG
-	yl/9+2IyTImY3EIrbQP7D5Olcvric1+UdIT8mv31KQ6JsfInZLkzSFMdGb+bzkU6
-	MTxn2rzvg462KshgfaKXoXII7V09Q==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsuq6wngv-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 10 Nov 2026 15:44:26 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AAF4wpw1880673;
-	Tue, 10 Nov 2026 15:44:25 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hv3320nj5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Nov 2026 15:44:25 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AAFiLMk48693680
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 10 Nov 2026 15:44:21 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4E7D20043;
-	Tue, 10 Nov 2026 15:44:21 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 066C820040;
-	Tue, 10 Nov 2026 15:44:20 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.39.31.184])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 10 Nov 2026 15:44:19 +0000 (GMT)
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        kvm@vger.kernel.org
-Subject: [PATCH] powerpc: Link with -z notext
-Date: Tue, 10 Nov 2026 21:14:15 +0530
-Message-ID: <20261110154415.46220-1-amachhiw@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPBfb2hpwz2xLf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 03:18:47 +1100 (AEDT)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.phl.internal (Postfix) with ESMTP id 65D7C13813DE
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 11:13:10 -0500 (EST)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Tue, 10 Nov 2026 11:13:10 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1794327177;
+	 x=1794334377; bh=4stWdQp7BpJLS0676322fsmeG4ymFjAT9IbMRkPmpp0=; b=
+	asQC+qHDAv/I83EYngLJ0bkBe+uuEnPcLg0jrc2OX9kVtaPYAd/md3quox9jqmy4
+	S/jELTpXjA2k1IxJWtdK3HZW4IriVAHis0xufJR256BBPAzbfZ5QsGw2eqYq1k/I
+	S4qzaUtb3Ob4GAV2mxThnKp0r/zG0TfcXAK+eUmyQOHhHqtyGONG7gkgzRBQG2d0
+	/gzJT11LHsGNvLKSZnn9JL3iytYjrT3V7KZt2FZsHfjjQeZHywjaesrjJhD0e7vN
+	Y6/iN3Jg7w8xS8OVdYMBSUZOfxDnVhVfPJGqKe/oSxsAZXPn7y2e4GOOItdMLZ2R
+	LLVckhHoSzC+MGE1iJu5eg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794327177; x=
+	1794334377; bh=4stWdQp7BpJLS0676322fsmeG4ymFjAT9IbMRkPmpp0=; b=p
+	jDZKFBWlX484yfO06iZThedU7MnSaqyMkXKHKaXomC5/xVavgZU65SsCjokZJWML
+	GjeTj8Lq4+LWeI1CWzzxuQj2m4isbVa0ssa9g7eZhXilCypVINe5kxTBiobUF6uZ
+	Gtle0jaTmJtlAyGlrtNmbTTDPt9uAjbADo1dgbyzsDA47ykOoKjYt1o87LKBSqHb
+	mP2YIbspjWDiF2EJOgZRHTKT7VhzsY0TtBEN2nWcPAnRSw5Q7HRlPmorpTONvfpP
+	auvP37j94bGeH1y2GQ4LwX12DjFEZi+3xGQave3kINRA2PBRPI5FXxcFzbhhhvXR
+	Tsc8Y3Jb1FgwsS6Y0dcjg==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=arndb.de a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1794327177; d=arndb.de;
+	mf=PGFybmRAYXJuZGIuZGU+;
+	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
+	s=fm2:rsa-sha256:jA9vx8+0OUi8VU6uP+j7n+QzW7pddHrfpkKIrkpC7qfZU30
+	85vkWmsWZhtdi4KV7z3hAXv4Y17dln5yDjwL/KsehEbCxk5Re7H7y3X563WFPtri
+	4SM6+RKhwIeZSHdka45rbGDFkc5Z8OkJedu5muiVBk7XIv5qu8nkvqWtKRLs/B6y
+	MDHN1x7S9dW0PC0xUSP6dEoUtI7oxBFxmm/TTmHAgfB5z9p6mSMEpLq0eUHjWVzN
+	xKpyyrn7BqG3TUCFMm6xsLeq31wekDQzOWkOHdeEyscFgewsmZPbyl6S7wDD3U6s
+	fR5GWt0220Om8ms8dCWbnefDIwFU1X2gkNIr1GA==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=12;
+	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
+	from,in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:NY+qH6VFe1gb9eaYka4u3Pju9dQg6z2rB5jHAxzea+M=:YUoKa4y1cAE3r8AhMFawDzVW7orX9AEZ4cmB97mmTGA=;
+X-ME-Sender: <xms:gELzat-KhdG49YOXD28knxP-wmxhvouurLuqg65ijoK_1PztTiM67w>
+    <xme:gELzashOw3MORHNRaj5VZYoHPjgRatChT2__Hps4-a7QS4ExIju8qL8_9B3SiDtB2
+    sGKQug7JFF_lfIFqrxv09JzfzrzZWKrRlvdLjWPWqavJafwb6XI9q0tBA>
+X-ME-Proxy-Cause: dmFkZTEwJqmeu88i0D1P4NSr1o0RdeyL0ncQrpwlZpsRiyH4mGhKK76jqiY9/AURvmAyKQ
+    Xh2LjT8fovpOgpIQnvH5QYWZs5UCg8lDhPsbwXo4GfEZeWp/aOvfLOYPWjqnmAFI1BwG/q
+    XyZG43p0HoLIgnysLFo6MzsLlgysOWgB08DJdha5yxDuEjeXR7MU6VvvNb4tgDJLpz9WaL
+    DOmlUn0Mje4CQssJm+pxYVCWPCE7uxZNBjliBSIc14Pa1+Q+euFKNdLxxVitjY9vJ+1g1T
+    +rig9iVkFuoti3t+qEcHMM2vh4+G+ag1IzrG3We9+FcQnC6cOfB1bItA6vAPi6A+u1KULf
+    wxoJ36bIqa+kM9OWApvgKo4MId3H8RRe0FCkMwp8Cj2i2hPzQqFijO+zALFklT7XBp4yQ4
+    D0Bsmvzif3sMMCJY2OSk1bwCPIIRPEFuJI4Mi/vpw7sfUa+jfrhN159tiieQQE7aztSV43
+    DlSawBFw+hJYm5oAPkD2NlBoL/gRh3vgmwf+Y/GbihlHM/o3EcsWCertLTOcD6iStWXR7G
+    LAS2aVSdVtxoGSiZj2/kYUSfLhEBFCn05KpxcrFYCW/FmzT2YT72YPVx3p0wR8sMiJ3lAW
+    x+8+3z8XttowLJjfinG9ew4R0xJsilSkEkmhmN5AqofFDl0uTCDo7P0ixMQQ
+X-ME-Proxy: <xmx:hkLzak2BPEyGi10FxxkrY3byRVHSjq_0wLclV2jUuSmkyRE3xcj4fw>
+    <xmx:hkLzakkySXPgYGwh_r1Ql-VHDAdYXcQ3p0tjVOV29OCOWQo8MbFMmw>
+    <xmx:hkLzavloJp1yUj6WriMMnPneQ8pVgU9Ew-sH84r-kdZ-OdXPheHDYw>
+    <xmx:hkLzarPnZB-B1EOixQtLefzjQeDp3wnHNrTbJ3SPpTKyjOvpO-EsFA>
+    <xmx:iULzajThipr-UxTyuQQEJ7jWDCsE73KlfzXTf41eZRpd8Rpi4a2MNCT2>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id AC32432A0097; Tue, 10 Nov 2026 11:12:48 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,76 +114,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDA2MiBTYWx0ZWRfX65r6+Laa4BA1
- 6MAxt1xuDBzeOuoJiWB/f35TPMeIJW6a0Ie2aCXXEruenoXVKIIJfwTEXy4a0SvFmBxspAcFk5K
- /SEXOqVUPiWE10bXxgorkhkZohpaHzY=
-X-Authority-Analysis: v=2.4 cv=HbCB3SE8 c=1 sm=1 tr=0 ts=6af33bda cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=_iiAB3vgKD867NDUgDgA:9
-X-Proofpoint-ORIG-GUID: L2jU7n3C7WxHLaCnRZ2cLLSuHaux1D9G
-X-Proofpoint-GUID: L2jU7n3C7WxHLaCnRZ2cLLSuHaux1D9G
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDA2MiBTYWx0ZWRfX1KoVsvXBCIHN
- Umfnk7C29chGhse5Hv9y1h2uk7nZFR5Gxs3HX6S9DSm+Z82/9xyFmRgEiCw9OR32oM68Y5mxdfS
- kWtds/0u1ehOK1ZTeLcQWMBnB0ul2Ac9dTL07M9xSNoPPDMC1MS1fxnlWXRbjwDrESyPKy3R/Vz
- GKo7hyYcz59XNrDpOb/tAqOwFhZI4ovsNA1UZBUDLEPfmt7Jdh/uLnnUzRZub9MhSCVryAW4B0Q
- 1VVIJk4772l/ShQajuAiiJgGwdrp0j9qxxlHufZfuhsF37Bk53BiI94sML91lluLgxR93sHg5V3
- BdnUYkXEathc4S00EuBeIo+w0QRSdIhXX54RjGiBLiz2yBejo/c8ZqMcV2AxZ7faH/ICfA+1oJ8
- p7cPIyq03OA8rYAOaglQIuGga7E0XDBw4pZiYvR2Jr4Ts4rVIbBy4kBfM86oDF5z0s6sQ93lpzg
- LfNr8c+NFvm28bv5/RQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-10_05,2026-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 spamscore=0 bulkscore=0 phishscore=0
- impostorscore=0 priorityscore=1501 clxscore=1015 lowpriorityscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611100062
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-ThreadId: AK-jVwBtQCQR
+Date: Tue, 10 Nov 2026 17:12:28 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: =?UTF-8?Q?Nuno_S=C3=A1?= <nuno.sa@analog.com>,
+ "Jonathan Cameron" <jic23@kernel.org>
+Cc: "Svyatoslav Ryhel" <clamor95@gmail.com>,
+ "Arnd Bergmann" <arnd@kernel.org>,
+ "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
+ "Bartosz Golaszewski" <brgl@kernel.org>, "Mark Brown" <broonie@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "Daniel Thompson" <danielt@kernel.org>,
+ "Helge Deller" <deller@gmx.de>, devicetree@vger.kernel.org,
+ "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+ dri-devel@lists.freedesktop.org, "Jingoo Han" <jingoohan1@gmail.com>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>, "Lee Jones" <lee@kernel.org>,
+ "Liam Girdwood" <lgirdwood@gmail.com>, "Linus Walleij" <linusw@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-fbdev@vger.kernel.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+ linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
+ "Guenter Roeck" <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
+ llvm@lists.linux.dev, "Mauro Carvalho Chehab" <mchehab@kernel.org>,
+ mfd@lists.linux.dev, "Michael Hennerich" <michael.hennerich@analog.com>,
+ patches@opensource.cirrus.com, "Pavel Machek" <pavel@kernel.org>,
+ "Rob Herring" <robh@kernel.org>, "Sebastian Reichel" <sre@kernel.org>,
+ "Support Opensource" <support.opensource@diasemi.com>
+Message-Id: <991009b6-e62b-46bd-9a0b-43c3b7a6d10a@app.fastmail.com>
+In-Reply-To: <avM5EnC9yujUZcCO@nsa>
+References: 
+ <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
+ <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
+ <20260912232047.19c4cb10@jic23-hlaptop> <avM5EnC9yujUZcCO@nsa>
+Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Building the powerpc tests with GNU ld 2.46.1 fails when linking the
-test binaries:
+On Tue, Nov 10, 2026, at 16:39, Nuno S=C3=A1 wrote:
+> On Sat, Sep 12, 2026 at 11:20:47PM +0100, Jonathan Cameron wrote:
+>> On Thu, 10 Sep 2026 20:14:15 +0200 "Arnd Bergmann" <arnd@arndb.de> wr=
+ote:
 
-  /usr/bin/ld.bfd: error: read-only segment has dynamic relocations
+>> > drivers/iio/adc/ad7793.c
+>> Maybe. Analog devices ack needed.
+>>=20
+>> Production part but this one indeed fails to probe.  Analog
+>> folk, do you want to fix this one up?
+>
+> Given it's production we should fix. Looking at platdata seems to nice=
+ly
+> fir in DT. Issue is that I don't have HW with me to test. So I'll maybe
+> just remove platdata and assume some defaults.
 
-The tests are linked with -pie and relocate themselves at boot (see
-relocate() in powerpc/reloc64.c, called from powerpc/cstart64.S).
-Newer GNU ld rejects relocations in read-only segments by default.  The
-Makefile already checks after linking that only R_PPC64_RELATIVE
-relocations are present.
+Sounds good. I already dropped my removal patch for this one.
 
-Fix this by adding `-z notext` to the powerpc linker flags, as was done
-for arm64 in commit 5d67db4e1860 ("arm64: Link with -z notext").
+>> > drivers/iio/frequency/ad9523.c
+>> Maybe. Analog Devices ack needed.
+>>=20
+>
+> Hmm we definitely use this one and we have OF support out of tree with
+> likely some DT abuse of what can be in DT or not. Not sure if I have
+> some HW around but we'll need to fix it.
+>
+> In general for ADI parts, I think we can drop the ones that are not
+> recommended for new designs. All the others I tempted to say we should
+> keep. Naturally we need to fix all the drivers that do not compile
+> without platdata. And for the ones with defaults we can also just remo=
+ve
+> platdata and use the plain defaults.
 
-Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
- powerpc/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Ok, I'll leave it alone as well now.
 
-diff --git a/powerpc/Makefile b/powerpc/Makefile
-index 41e752b070bc..35fe58835726 100644
---- a/powerpc/Makefile
-+++ b/powerpc/Makefile
-@@ -78,7 +78,7 @@ include $(SRCDIR)/scripts/asm-offsets.mak
- 
- FLATLIBS = $(libcflat) $(LIBFDT_archive)
- %.elf: CFLAGS += $(arch_CFLAGS)
--%.elf: LDFLAGS += $(arch_LDFLAGS) -pie -n
-+%.elf: LDFLAGS += $(arch_LDFLAGS) -pie -n -z notext
- %.elf: %.o $(FLATLIBS) $(SRCDIR)/powerpc/flat.lds $(cstart.o) $(reloc.o) %.aux.o
- 	$(LD) $(LDFLAGS) -o $@ \
- 		-T $(SRCDIR)/powerpc/flat.lds --build-id=none \
+I currently still have patches to remove adp8860/8870 (backlight), ad7877
+(touchscreen), ad714x (touch) and adxl34x (input, not the iio one), which
+are currently unusable with DT but are all listed as in production.
 
-base-commit: 5a221342a025948fa7d84f0c404748f6ba57f3ad
--- 
-2.54.0 (Apple Git-157)
+I assume you want to fix all of these and keep them in the kernel,
+but possibly still remove the adxl34x and only keep the IIO driver for
+that part?
 
+I also have patches to remove platform_data probing from ad5761, adf4350,
+ad5791, ad5421 and ad5504, these all have DT support.
+
+See=20
+https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/log/=
+?h=3Dboard-remove-7.4
+for the updated series. I hope to slowly get through that. Let
+me know if you want me to skip any more of those patches.
+
+Thanks,
+
+    Arnd
 
