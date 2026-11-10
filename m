@@ -1,94 +1,89 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3B7260A263B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 13:16:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5140606A326
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 13:43:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=j3TpTs3v
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TZidMebF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP6bh3Zrcz3bt2;
-	Wed, 11 Nov 2026 00:16:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794316560;
-	cv=none; b=TZ1L29QNZ1ofrsIYKPhplcwjpzB0XmAHkBo84umEdx4O8DI6WJscHmv//FqkgtqGxCVh6mD8CHPo4fXKQskPNxKvJR4kkG/qtRuPLRQFDkocrqiTiG9TNVHGCcJHIzs/8+ueMwy9lsduSb2W+l7vLj+xCm4/+vVqQGYuihu6ngBPhiPajulu2NvoUZNNwJRRIZ8nhk4PQSjWQh3t6TtGnPRvXExV9DyP+Wc/+kgNgpGlMTegDKSMBgnAk8kM2OMWPNN7mDy8S9dQgCwYGGJo35KuAIlc7OeNHmGdbxFH0YVRfIC6fau9hnLuNKUg+2VF6l+TamukbRZEOqoXuuJ+Vw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP7Cb2WfPz30gp;
+	Wed, 11 Nov 2026 00:43:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1232"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794318219;
+	cv=none; b=ESAoyiX0cUgiqhOuCEa7TTmczDoNBvuqTIhOlaNerTbkt8YWoLeVt95/ITPc5gnYhNqTZAb+Z/qidljLvJj49NGDYqhm8BDhMCY+TxZJGGb5FmAkMV1R3LM3BjpBAMNaXPHM5wsYF+S96nyvt2NNtqw3c9XKLfOk+KNsX3La7b7HgiV3ydqx+Eofgl2xz4nMoV/ABgepTogzsJyJvAJvW+SWHR4UcwIn6ORP8kc5lIkx/rFgxkV1C6L+M+QAprCEAxmi7+DTx8kHwEJ8Vs7m6R00MbfiX4WVEdYztJ2yaYTYm4lzmGe1sVAr/3xBS9Ntgp9wy/5y8LlNg4aLGjOvvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794316560; c=relaxed/relaxed;
-	bh=5J6MwDWOHWjl7QywHmcoK9CGF6kb9+LR3zZN5cslCcw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=I8ZfAbkmYJpe6II8cd1HMpByZWUGYfssnqlSBq0l4O1Lr0BYWkbyBzOn1Z/MK396qtK2KUey8Ia/3CuahhoA2a/stp+fh5ljDHMgdJSqiRopuQMzUtSkTiFFb1CEshCRtriuEHH/kxSfRlkXMduYRHD8+KaOhTVdJ3ExgwvJshd3xlGsm9hUhdd+XsA9pjfPlYVm99q/FIrxCu38bdhFtTNof+xVdzQA2OQj8uzINb/wZulmVyVQUBUjF/I0O1pMgXaIpuKQX5ZP4FuNbLuwL2PfWUE3KJpww6WvKS5nNVCxqbe3xqpUtxp6WzWK73o4gyEi9O+dyBZjZDAShSYlSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=j3TpTs3v; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1794318219; c=relaxed/relaxed;
+	bh=SF0VorXBRqQHhsbCyIkGXlS2ClFfeF3LBlFw4KZVLng=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=m5+88q4gx2h6fn9TbqKg/xug7du+G19ff7WABxs9qC/QckwBKiLRIFbQ1c62PxBmMPXWlE7r5gjwBLybwKDnnyh4iPgcmhrnfeD/u7NuBLMJ/71V2cs/yNakrTDfqdqe2reAmfjPDvZIFmfDMj6/8RiAbrg1T7qEbzmXVuuOgyVTenBHVRXDJh+Di2qrps8E1T+Googb/Zv8EAAmRhGnJbC3eoBRnaEJ7EpqGobdrqLLU354O1HZqw6XNSL23uapyFh9jeQXrnaEMVkcPME9PJtBZm0JnE52gA7bFEW+9BtT82fFzzrlR4pCK0aC6p7oj0NpX17tic0AqSQBPJXsug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TZidMebF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1232; helo=mail-dl1-x1232.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=j3TpTs3v;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TZidMebF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=allen.lkml@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1232; helo=mail-dl1-x1232.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1232.google.com (mail-dl1-x1232.google.com [IPv6:2607:f8b0:4864:20::1232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP6bg2l6Kz3brv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 00:15:58 +1100 (AEDT)
-Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-cdab9e9761cso988812a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 05:15:58 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP7CZ0jTkz30VV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 00:43:37 +1100 (AEDT)
+Received: by mail-dl1-x1232.google.com with SMTP id a92af1059eb24-1b3b4bcbfc9so1963091c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 05:43:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794316556; x=1794921356; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=5J6MwDWOHWjl7QywHmcoK9CGF6kb9+LR3zZN5cslCcw=;
-        b=j3TpTs3v/Dl7KrsoNHRv08WjhimEFK/KTEl8YNc+UGfGe07JySWhq4/Ak4weIOcPfT
-         OlcnL7fWZC7JD1qP9uKasWXaht1GIGNG2++ad6rjTOycZlKm1umcSE0d9IHsSdyv4p+Z
-         oYLrOVTcJ2NYlq6xyMEcQBOtploDDCxJX3ZktIYBK4v8HeA83LiZUXR2yv0O3zrJHbH0
-         7LpPuMQF3ayL2+0nzz9HO2kHFl80a/fqompGKUEJkFERh0NCw0xQ+kNO4nU42YQCcXfU
-         J7cvon6U0l9HAgWgm9eEXvUd10yD4EGQ6hkMCQPcp7ZnUSFpyMQXtZWAoVK3lxOIVrFO
-         kRbQ==
+        d=gmail.com; s=20260707; t=1794318215; x=1794923015; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=SF0VorXBRqQHhsbCyIkGXlS2ClFfeF3LBlFw4KZVLng=;
+        b=TZidMebFFWV8Cew0musAxMYxWYhLcK0AE1pTRq4GhB1FjP3CMeiG7fOPTR3+BKyB+S
+         VrEtO+JQ0LaZOddJuUGJhVZY3yINmhfN6JKOO5bZPsEWcle/ZP/7EboeXM6HOLIYaa8t
+         GZdcih2QuDeiVxZltUC5gL/aNnG56SUfSfCwjX/XkPkcEKqM4RYdCtW3VG93XD4oEjCY
+         9O2XJJH9sP+xkoeUMp2a28rH+ujU9Q+Jo9QkTeD7qVAoOk1gHIPe5WGjob6MJDzsKhKv
+         0s/Y1tA9Bn3rtt/2ZKhQJOZcIGn+jRD6fQ9EQ1kWG7pJeGbTbL0hpjd/ki0KFh3JsCkF
+         XT0g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794316556; x=1794921356;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=5J6MwDWOHWjl7QywHmcoK9CGF6kb9+LR3zZN5cslCcw=;
-        b=Ojz35KU0+DakK8j64ta2rqhE6cb3DErbv6IDABXNbm0lnAN5MNeVHBlq7AxmC8xrRL
-         ZZXZ6ctYLVBzk1IA88ZwdTOsXSXTrIyiqbBrFh8dWMVUIxy69OfRcZ2mkgaXN2LlGT38
-         TJTF3ryqsr7Z3rmq92IUWkb99vwppGhuOwrkJobWhL2ENOuiCX5rc+mW1V55VfGhxwRM
-         Wz5tXpQUT+w0COolvNlyAYtl/yR2JxHZCsmm+kgwTrYWuPjDaB4m7z4SYTx95kaxU4/7
-         xKFNesc7/q1+kFxQ/w1TICjdUfVqqTdldqFe4welNjk6tpahlJojs0I5riNjJ8O37/ux
-         O1Iw==
-X-Forwarded-Encrypted: i=1; AL+hErGQfggmrQNXLkVC6g37+v4QQVm7agojdmEZZuJOV5CEl11uqn7R9VmSNtg2kdnIeuoHWHf8FCOQL6VgSu8=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8VK9g8+cpJ+Jt+nrBG3a1vYZAQ7TFwz+XHOx/Ynr4kMRsw81Rm
-	cYv9DICSCel8Uz5ZtnlRxk211Nk4lEUe5iNFwW2ffiv4Hr59QYJ4Hx9j
-X-Gm-Gg: AYBFou0v0CD1BnLFgMX20tyJZ3SWwAn4iyMhTSXCs89+NvAe6uEGQ8206QSx+1KNXig
-	WTx5/KUkzaleMgstCNu6Kdx22oIjJd3ZtmWPogM8s9WATzCqpwENv1kMhUd3M0eqK3U8Ha/0Cx0
-	2lVSG6A88z7Z/vmc9X01XVnbv8mE1mTJlfCVb17eB7tGBz8VA0bR4GFE8UZSeqfIQWZGhxtPUmn
-	SEdAaGYVK8ZvO83DyAtEAPfyGp2qDdPQY9PXVZe9IBxTjtZGjmulLprHqZwI1s8/3mxAw4LVWCk
-	sL5MCWauhdkFOzeJKPr0hmFsKjMm6kwXof6odZLLtnxRwkdiz9mJFPaw56gZdFZpYx/8nOh9uBl
-	p9kan3Me+HdURfPh8jphqZ+lUN31lWbQ7A0O5oacGzASBDjHhJNuvHU3sRhwUmS2YzPK3Mhd2YI
-	SUB5pzOd2rl1ECBqNfOUzNUDEFPvx3T2IXm0F1qpka3EMvA9oHTg9gu0fZJCGQ+Tjm3p6n7KNAf
-	kP3J7Hcjfww8x00jwCE2iNsQs/DqxWzC+9GPRhKj+aZRCoeZ8CEE8A48n2v1TgKVT59d0Z1qyuu
-	vRsbcNh5B8cq1FhnBPu+3NhSGFm1gw0=
-X-Received: by 2002:a17:90b:4484:b0:3ab:2d46:1dd6 with SMTP id 98e67ed59e1d1-3b166ad1edamr2975506a91.4.1794316556474;
-        Tue, 10 Nov 2026 05:15:56 -0800 (PST)
-Received: from cryptic.lan ([2001:569:7077:be00:8191:2bfc:aa6d:704b])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b16769b589sm3806975a91.5.2026.11.10.05.15.55
+        d=1e100.net; s=20260707; t=1794318215; x=1794923015;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=SF0VorXBRqQHhsbCyIkGXlS2ClFfeF3LBlFw4KZVLng=;
+        b=CgRFiwpNXCzn6vMX1P08lI3PQ3pq/NXocZlZp2VoKD0sqqMbyUGx2iWUMtalQTpfcJ
+         mMpoTM+Akc98hRPL9ETcQfjF/Ld1Ks/Wjz0qjbZ8ZjCHY6CqOd57FXqaUebB29OtxoBZ
+         bYZd09ffEssBlK7R7IyUSJsZj+gGdN1a3EceQ3YsWhMGIZZNtIvyT+amOE3Z+ln+kBQ5
+         As6bAFBrnwYvgh03hWu6/mtEmHu+nFgNtta2tObBcASNWVX+Yy+XHz9sh0EGE9cueOWL
+         qa1ptcdOBexCDkWujUtvIS9EHHoI+0jcuTWakY0Fzg81dJifWf536eO0Cc78WCl82LQr
+         n85A==
+X-Gm-Message-State: APuU4Z9hszmoElpUIB89MtxxWko3c/KAMS5EGfFkM/iAGKWH36anQLE1
+	m55kqK1tjyAx0WlRvQzofI0XM9YjKjjIoQbUdvNYHqpI9H2Z3c1ohVrL188Es3P/
+X-Gm-Gg: AYBFou2TiJm3SYckcUYXgK9121mc7zP1aoAWkjMfSW1jItZYAUiK03HRl9jMHC6LjLR
+	fddzIVUXsxx+1y+YsqFRLo3DvbW0tCXviIcHa06UAtAn4A1STNkiqvd92TGi9LfSa3NsBi0WgTz
+	mnMSKQVUt7YeIghMSVqbfmv/ixvahjEs8IGKc/m6lTa9Kpe8dA8rfKAnphYfxw8JAm21C17TDK3
+	sitJ6zFlvGNcrb2myAxp74cnYpUFhRYaOh+cbP8hgwHHfjNqJx/x7pTWYJ5CZENOffG+s/57yLH
+	bfhOBdn3phad1MZMq+piubsBP+NRmgbxy8NBNiqxCdsOvCszGrte23aDwoftrQ6+X9azsGsz8Da
+	L+AnJhou4ArPAmeJvS5FEn21MCGmafln+eQAzOsMsI27YHPSArdsdW6eBSwrxZY99941XQERotR
+	jW7iCKR87Iy5o9zmB3MaCVlQDCyWxT0wH2bRM/pAX7rH09zta8Y/zwGxWwtzL5qDiRYQBGoR15U
+	Kxx+4a8DEbwxapjHTNRn74bBcwxCxZedom/CtXDOjRsWU8X/WFTC/IZeqIjnkRFExqLiKzNQbSY
+	PqCmI26RxeW2EZf6g+XE12V0/F3/ggkdbg==
+X-Received: by 2002:a05:7022:458e:b0:1b3:b131:6a22 with SMTP id a92af1059eb24-1b3b5fcdbefmr5046056c88.7.1794318214706;
+        Tue, 10 Nov 2026 05:43:34 -0800 (PST)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3751ff2ab59sm7500065eec.6.2026.11.10.05.43.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2026 05:15:56 -0800 (PST)
-From: Allen Pais <allen.lkml@gmail.com>
-To: Vinod Koul <vkoul@kernel.org>
-Cc: Allen Pais <allen.lkml@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	dmaengine@vger.kernel.org,
+        Tue, 10 Nov 2026 05:43:34 -0800 (PST)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
 	linux-kernel@vger.kernel.org,
-	Zhang Wei <zw@zh-kernel.org>,
-	Frank Li <Frank.Li@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 06/33] dmaengine: fsldma: migrate tasklet to dmaengine BH
-Date: Tue, 10 Nov 2026 05:13:06 -0800
-Message-ID: <351fd16a4ad121e2f2a423898480b449c5778480.1794315350.git.allen.lkml@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <cover.1794315350.git.allen.lkml@gmail.com>
-References: <cover.1794315350.git.allen.lkml@gmail.com>
+	chleroy@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCH] powerpc/smp: Handle missing ibm,thread-groups in parse_thread_groups()
+Date: Tue, 10 Nov 2026 19:13:24 +0530
+Message-Id: <39282c731de90f47678952e471236ef22e9d4b15.1794317777.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,75 +106,56 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Replace the per-channel tasklet with the shared dmaengine BH helper.
-The handler continues to run in softirq context while dmaengine owns
-the common scheduling and teardown mechanism.
+Power systems can have ibm,thread-groups properly absent like in one of
+the PowerNV Power9 boxes where there was a warning splat reported on
+7.4-rc2:
 
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+  WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1a0, CPU#124: swapper/124/1
+  ...
+  Call Trace:
+   __kmalloc_noprof+0x490/0x690
+   _kzalloc_noprof.constprop.0+0x1c/0x7c
+   init_thread_group_cache_map+0xd0/0x2d4
+   smp_prepare_cpus+0x2bc/0x484
+   kernel_init_freeable+0x168/0x3c4
+   kernel_init+0x34/0x1ac
+
+This happens because today we don't check for whether the properly is
+present or not and directly pass the return value of
+of_property_count_u32_elems(), to the allocator.
+
+This went unnoticed because earlier kcalloc() caught the overflow due to
+check_mul_overflow() check and returned NULL.
+But since commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
+conversions") switched this call to kzalloc_objs(), size_mul() saturates
+the size to SIZE_MAX instead and we now get a warning at boot.
+
+Bail out early if the property is missing or empty. Follow the return
+value as documented in kernel doc of parse_thread_groups() function.
+
+Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
+Reported-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- drivers/dma/fsldma.c | 12 ++++++------
- drivers/dma/fsldma.h |  1 -
- 2 files changed, 6 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/smp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 99a878ed1444..f069d1bbff17 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -970,18 +970,18 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
- 		chan_err(chan, "irq: unhandled sr 0x%08x\n", stat);
- 
- 	/*
--	 * Schedule the tasklet to handle all cleanup of the current
-+	 * Queue the BH worker to handle all cleanup of the current
- 	 * transaction. It will start a new transaction if there is
- 	 * one pending.
- 	 */
--	tasklet_schedule(&chan->tasklet);
-+	dmaengine_schedule_bh(&chan->common);
- 	chan_dbg(chan, "irq: Exit\n");
- 	return IRQ_HANDLED;
- }
- 
--static void dma_do_tasklet(struct tasklet_struct *t)
-+static void dma_do_tasklet(struct dma_chan *c)
- {
--	struct fsldma_chan *chan = from_tasklet(chan, t, tasklet);
-+	struct fsldma_chan *chan = to_fsl_chan(c);
- 
- 	chan_dbg(chan, "tasklet entry\n");
- 
-@@ -1154,7 +1154,7 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	}
- 
- 	fdev->chan[chan->id] = chan;
--	tasklet_setup(&chan->tasklet, dma_do_tasklet);
-+	dmaengine_init_bh(&chan->common, dma_do_tasklet);
- 	snprintf(chan->name, sizeof(chan->name), "chan%d", chan->id);
- 
- 	/* Initialize the channel */
-@@ -1207,7 +1207,7 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 
- static void fsl_dma_chan_remove(struct fsldma_chan *chan)
- {
--	tasklet_kill(&chan->tasklet);
-+	dmaengine_kill_bh(&chan->common);
- 	irq_dispose_mapping(chan->irq);
- 	list_del(&chan->common.device_node);
- 	iounmap(chan->regs);
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index d7b7a3138b85..cab33d010d51 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -173,7 +173,6 @@ struct fsldma_chan {
- 	struct device *dev;		/* Channel device */
- 	int irq;			/* Channel IRQ */
- 	int id;				/* Raw id of this channel */
--	struct tasklet_struct tasklet;
- 	u32 feature;
- 	bool idle;			/* DMA controller is idle */
- #ifdef CONFIG_PM
--- 
-2.43.0
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 7a25eaa59e62..9a0f63e43821 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -824,6 +824,10 @@ static int parse_thread_groups(struct device_node *dn,
+ 	int i = 0;
+
+ 	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
++	if (count < 0)
++		return count;
++	if (!count)
++		return -ENODATA;
+ 	thread_group_array = kzalloc_objs(u32, count);
+ 	if (!thread_group_array)
+ 		return -ENOMEM;
+--
+2.39.5
 
 
