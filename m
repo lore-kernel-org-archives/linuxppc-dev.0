@@ -1,94 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 433CF606A33B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 03:22:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 97C51606A321
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 03:35:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dNcF2hrX
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p5zCNWHN
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNsR714D4z2xfK;
-	Tue, 10 Nov 2026 14:22:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794280963;
-	cv=none; b=UMQcnEf5qzLXI1RyDeE34MyGZaYv/6/4K2kFXYvlH7L3EjIP4eF7zfBVNc/yeS3dSL+5uy+iqLgdoZPAgzYCVmkD3+Pj45PRZhskMJ6vAX24g2j+fh5ZFrweI5Q9iNJ3IaUTZHU3+D1E8/RoNi2LYAdNf1JzoWH7sZqCwajjfFR8qPMrR56Nr4SeFLmNJDhL16vibude+qOrtyGn+446QwDFBPVAHqU1IGlo5yJlQLTsyf1HUpsULXurmIMaNddcXaw6Gtfyp8sAXSJElxoDK3vEPpEViLRlEjO9R6964cKdBQvldCp3IPkYIOv7s5AjtH+2J2Lzk9yuWTOl3CK4gg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNskL1wwxz2xfK;
+	Tue, 10 Nov 2026 14:35:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794281754;
+	cv=none; b=MEt6n1MJ+FLp+SImacrbPdXC+CeSG51tD9luvdRFXHa/efJYutcMKr5ZedYYbIt+JuS7n9X/T600NE0QGw3jpADcJHxqn4O35sCF+8jaLnBTxy2NhGfBFzLvOhm51iH5mrVGGC97ZApNoadLfdbPMRGSdEjg5meV73IB1uZehpOODgluCmVxJ9K89u/iJ3cq2yWRjdgy7Ut7AMP6mg8azXS3K0kG8K0QEbJ/CGsx5dGp0OrEelS0zXbmy2VgYOeksm6HwtmhXWlx3Rs8SZdtpG/riryMZCbzQt8SFsXVXhF3R4AZe4OaDvzow0U9pf4KNMkJVpldhS8+HTTLWt6T3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794280963; c=relaxed/relaxed;
-	bh=W/wp6KJO63iMMRJlz6HcbO/i7czGvSk/CyVD5tv8Mv8=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=opksgSTn00mgPPcJlckzNvZixFtbPg7SMn8bYcOrVzMeq+ZyP0bfNAU1v8LRkJt3cbRss4fOphHM2aMwyljiAQNZKmt9xVbVs/uAnofBxkPPr+UNcMRrjbbckwLqiq8lGZ1VkRy2gvmrT9UKh7aEkYbMIwEm3buD41J+ksKgnm0rByX3c4GPpdiKmpApg/O9sFiY3JjvFK1ErCWFOT6bUCPx+tbmIFb5ufksfVt2vsUOuH4P3sm/IGOXtgIfc6I8aLrJCqSF3pBl+VSaq7kTnrG/S7CRfVChyCgogsdGFIrrS7BoEv386P0W36EwshJMjJETMSG5yrhjlOjeNcr8xw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dNcF2hrX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794281754; c=relaxed/relaxed;
+	bh=lCplubZ3KW5IAPzFP2BWcswNJnUw6KB2HzBlQqEKJ9c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gfB+B06MDXqadlwd5vkoEz158EFssEr7vDmgYsh0LRfaypiGwR2o5vlnMb338byzPgpdTAs++SXEIsE+UabwcV9JHLSyK4G7b2Cn+Zr+rDg8wkmRs+ZaNsf0yPknQkkQbDP58fH3ouaKFGzsRMPENa28BNaWD1a8HXS0rgYIu59iWlx5I2w7dVa+sBU126P0HOyqewdQlFiqVpzSZHihDl4KaNTgrJhZmDj+852/BySOuHHQApBXHMFhzByMkmCbYjAZsT0buktiGAiRthS1YCWzDNVCB5Wcd0xt2P189/5cz+uXU0ofdby2mmMbXuAw0LHwM44NhFPh7nY5WAOe4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p5zCNWHN; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dNcF2hrX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p5zCNWHN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132f.google.com (mail-dy1-x132f.google.com [IPv6:2607:f8b0:4864:20::132f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNsR53DDqz2xf8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 14:22:40 +1100 (AEDT)
-Received: by mail-dy1-x132f.google.com with SMTP id 5a478bee46e88-3700ed8dbe3so2105409eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 19:22:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794280957; x=1794885757; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=W/wp6KJO63iMMRJlz6HcbO/i7czGvSk/CyVD5tv8Mv8=;
-        b=dNcF2hrXQQ36yfqkQibpAtzk/+umOo8U76zfuaAer93WreATIUIuS7wM7mF47zSH0M
-         RTn36qAotRqAPviW1wrVt5EopflEoF8KuMXH5JsBaSjPi6muhJIJjf0J+NV+nW4WD/iT
-         LGiUFHeIL55FZd4+AMwKg+Sxial9NefkQJxgqqgpCU8rEG0QPVepnQiJ5EGo3s8yg+qf
-         sh3n3Oxnwfs/HiDG+MGMyGWs/hv8bxnTemzrwUXuVGN8X4cK/zrj7FROcr6RmXmzb/QY
-         3vSCF1HgEzTrDoZ25q4we/Sso8Y/+exVbDPDHxHfYJ9cHTTul9P9GhIcOJm5x6Is0Mgz
-         GFuw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794280957; x=1794885757;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=W/wp6KJO63iMMRJlz6HcbO/i7czGvSk/CyVD5tv8Mv8=;
-        b=DkXaRl+uKk0fDPOPvOM+8Z5y3PO030oCIaBSWIyC6kIGNfjBJ9qCaJRti1aDVvuE1f
-         n5BwhK2TYvOqAFPGKEdfmYAByFVqzeWNQd1OCHtiKWI/C9ZYHcXOZNEdzgvcSt9ea0Hd
-         JP8VTrLReQfKjb1V3gRnbKL/QynRM972yikNGanXhYBDIZn2uwJxRUsQZD+78XhDizvO
-         k3Mcv2sXji2nSSsuM0Eom9/fQNbAaehi4WFi+mz0kH56QGFsG17xNXl7srhswyP5vljg
-         JDBhlyw+UlilTTz1JULpgFCOgjCONQjdXZZoxkdVMZu2LYSkkaIh225V1zVg+XZmVw8c
-         mUWA==
-X-Forwarded-Encrypted: i=1; AL+hErHQpQy99M0IiasBJGNlmVbRmOTACoRJ0pB1zJC45zYGeF9FnxIl5kUUUSoxP7NeNfTWdsBBPAV14Oej9Oc=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8fUPClH4c3amHdpnomy08e6jB+vrosytQrM4EnJxUAtY0lTx6O
-	J0nLyRLvYbRrY+2rShHJzuO6TEyDYdipNJC8fJ8VfutQMi46eKBQYJtQ
-X-Gm-Gg: AYBFou2MWO79ob/LdZnibk81HpKic1ek7Gmppzr5T4WXskYXk4fSV446AUch2zWtvx4
-	sqLjSGMgv+ZZR4gZttBDD2dDtgzOqXOhMR3HcxvSwMUMXP978JKzt/hWMEewo0wVfRlIvN+d0fF
-	9/LqI//lcvfv+V8aaLOVjegjJAnT2eHEoEuN0u0XaIB/Pbo6O/bv73PtsxJSvEfJIhL+mTMe6rQ
-	j8Bkvx2zH31UoCZPKOBUKhJn0807MVXYzghy4CFyQVm5nHFS6xCrAg3sR5a18+LjYMisF5axPqA
-	mxygsMUfbfVh4KtcwePFoWPoKbgj5Wsl+zvs3hOO/RkgWTYJUJKS8sdWCtKQd+ZCCGM2oUItE2e
-	XDQPUqZsNWOBpdECrUB24EH9BGRwm51g0gJ6fUaVt+cK/oaEi4vZPepthmZHopZ8rAfueN4nSkZ
-	68QIg6NavBzwh20v6SJFT1ATw8ot7rYDdaZu9miyFQz01p5lH68jhRgmlGt/0yNnU3hT7rMOpH8
-	lA8WtomR4QInzrMvRs+gTwzL1B2H1sNgOrX0wxdpVpUQsECE2HEEDinSmDRiaV41GyEXF+TYw13
-	h0xNWOexKHHndadtqyiav4PEe75s
-X-Received: by 2002:a05:7300:3b03:b0:366:2893:7421 with SMTP id 5a478bee46e88-3751e6acd4cmr2378114eec.10.1794280957102;
-        Mon, 09 Nov 2026 19:22:37 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37520bf3e18sm4159008eec.16.2026.11.09.19.22.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 19:22:36 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Konstantin Khorenko <khorenko@virtuozzo.com>, Andrew Morton <akpm@linux-foundation.org>, "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Peter Xu <peterx@redhat.com>
-Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org, =?utf-8?Q?Lo?=
- =?utf-8?Q?=C3=AFc?= Molinari <loic.molinari@collabora.com>, Lorenzo Stoakes
- <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>,
- linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org, Madhavan
- Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org, Konstantin Khorenko
- <khorenko@virtuozzo.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- stable@vger.kernel.org, Sashiko <sashiko-bot@kernel.org>
-Subject: Re: [PATCH v5 3/4] mm/huge_memory: read a special PMD under the lock in copy_huge_pmd()
-In-Reply-To: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-3-c56d0d26f970@virtuozzo.com>
-Date: Tue, 10 Nov 2026 08:30:44 +0530
-Message-ID: <pkwd8k6b.ritesh.list@gmail.com>
-References: <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-0-c56d0d26f970@virtuozzo.com> <20261104-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v5-3-c56d0d26f970@virtuozzo.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNskK10tqz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 14:35:52 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA0iWMW3906794;
+	Tue, 10 Nov 2026 03:35:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=lCplub
+	Z3KW5IAPzFP2BWcswNJnUw6KB2HzBlQqEKJ9c=; b=p5zCNWHNRKRKmx3b/mAjvM
+	G59tZ19hSQvMODtcrLi/69iN7KAN5MIP/M8zBl9lwyoQkVXK5Yz6d+ND8i8RI5a7
+	9wVXSoydj9d9ZQOu+iOA1k+cUiDEQJk3OnS1DirElu6CmtEX8j0caAMXOzmvTUnB
+	yhb5i9DKmVSJL3OmvBlvg/aSF1Lwib8PVkSPQsIfLt353pdJEn6E6D1KAqufWXjd
+	TKIwKRIVDBPQuKCekbN9gQIHnuHwbWuiSMqfxFomIUgtrp2RrvGnpxbm1BFonSE9
+	sPixbEpc+cZc2QxBK213URYt6FV4CnbTV4dkjGwfjh8ep3uTrMyoqAObyyHZjuxw
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hstdg2jwr-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 03:35:38 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA14pZv1043053;
+	Tue, 10 Nov 2026 03:35:37 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4htepvw2uf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 03:35:37 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AA3Za5e30278160
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Nov 2026 03:35:36 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7833558056;
+	Tue, 10 Nov 2026 03:35:36 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 10F4D5803F;
+	Tue, 10 Nov 2026 03:35:31 +0000 (GMT)
+Received: from [9.123.14.23] (unknown [9.123.14.23])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Nov 2026 03:35:30 +0000 (GMT)
+Message-ID: <219b1f33-7bb8-43be-bbd1-7e7a5f805ad0@linux.ibm.com>
+Date: Tue, 10 Nov 2026 09:05:29 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,150 +80,113 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/9] keys/trusted_keys: propagate wrapping key
+ generation errors
+To: Jarkko Sakkinen <jarkko@kernel.org>
+Cc: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        James.Bottomley@hansenpartnership.com, zohar@linux.ibm.com,
+        linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+        nayna@linux.ibm.com, rnsastry@linux.ibm.com, stable@vger.kernel.org
+References: <20261105144320.357260-1-ssrish@linux.ibm.com>
+ <20261105144320.357260-2-ssrish@linux.ibm.com> <auy4vLV8CRJB2hKt@kernel.org>
+Content-Language: en-US
+From: Srish Srinivasan <ssrish@linux.ibm.com>
+In-Reply-To: <auy4vLV8CRJB2hKt@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=J+M/fwnS c=1 sm=1 tr=0 ts=6af2910a cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=x0mFdGU97Ue3yh8tahEA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDAxMiBTYWx0ZWRfX5XELAtYD/6ZT
+ wQfVNAWINDMlyr8XpqZOz7CDOEzV7Tss9lrXD8t+1/xXMSMsR21cdMQ1HsFXSNdCUkBuRhQwZjv
+ kjzO7i+24zlcKUWng3TtT0IWzz6L0NLz4JxKx16QUAq4OqWqKvKrDLhBROtqYtfhi9VyDls5PRC
+ nOAbedfvl3wTLZ7NjP4Er/YABoq4kTWK1RSx1SQxkyo5xoYIOuVdflrlu2pGnmE0iPTIEF8ctVo
+ 0ETxRjdzw4rPVEG7dK29zCse5hlnogzV2Uc/mk8vaVmr2qB/T8wy3u8zmlU/2tAleDU+3/an3fn
+ epTzg0NPHOkPHL6mf70voQxXiXRynH2Bem9hQp95GZbjNFA7Y/B0bOrJR+g8MNAls2WU9F7woY6
+ bUc8m295oVSvyHso7wzlfiZcXQcCumOPYommejBAUQ8NNxqcCBTZRzPuty8GAYYO25ZCpXy84cw
+ 9heh5pAWmlPI+pV7AQA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDAxMiBTYWx0ZWRfX8jDfyhclgVLd
+ Cj0RxyVmt4od8yAh89vjeRlSJLgwW3QEPNpr7UWU6TO4VbSWDr52T6/Uc50vWDknIFq1Dr/4bBo
+ DdzRHg10B6/ApTre8eHi44e18Th8xPE=
+X-Proofpoint-GUID: vk_w2uHnWXnxc3jjNBFmR4eSdao1W_3T
+X-Proofpoint-ORIG-GUID: bKv5OHUKM3cO6NFS6wbb7XorwYGzM8oY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-10_01,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 phishscore=0 bulkscore=0 adultscore=0 suspectscore=0
+ malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611100012
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Konstantin Khorenko <khorenko@virtuozzo.com> writes:
+Hi Jarkko,
+Thanks for taking a look.
 
-> copy_huge_pmd() reads a special PMD without the page table lock and
-> copies that value to the child. The mmap write lock held by fork does
-> not stop unmap_mapping_range(): it zaps under i_mmap_rwsem and the PMD
-> lock.
+On 11/5/26 10:41 PM, Jarkko Sakkinen wrote:
+> On Thu, Nov 05, 2026 at 08:13:12PM +0530, Srish Srinivasan wrote:
+>> plpks_gen_wrapping_key() returns a negative errno when default wrapping key
+>> generation fails. However, trusted_pkwm_init() returns -EINVAL for all such
+>> failures, discarding the original error.
+>>
+>> Propagate the error returned by plpks_gen_wrapping_key() unchanged.
+>>
+>> Fixes: c99fcb0d735b ("keys/trusted_keys: establish PKWM as a trusted source")
+>> Cc: stable@vger.kernel.org # 7.0
+>> Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
+>> Tested-by: R Nageswara Sastry <rnsastry@linux.ibm.com>
+> Nit: I'd put the SOB as last.
+
+
+Sure, I will make this change.
+
+
 >
-> The zap visits the parent VMA before the child's, as dup_mmap() links
-> the child right after the parent in i_mmap. If it clears the parent PMD
-> after fork has read it, and passes the child before fork copies it, the
-> child keeps a mapping the driver has revoked, for example:
+>> ---
+>>   security/keys/trusted-keys/trusted_pkwm.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/security/keys/trusted-keys/trusted_pkwm.c b/security/keys/trusted-keys/trusted_pkwm.c
+>> index bf42c6679245..422f752598e1 100644
+>> --- a/security/keys/trusted-keys/trusted_pkwm.c
+>> +++ b/security/keys/trusted-keys/trusted_pkwm.c
+>> @@ -170,7 +170,7 @@ static int trusted_pkwm_init(void)
+>>   	ret = plpks_gen_wrapping_key();
+>>   	if (ret) {
+>>   		pr_err("Failed to generate default wrapping key\n");
+>> -		return -EINVAL;
+>> +		return ret;
+>>   	}
+>>   
+>>   	return register_key_type(&key_type_trusted);
+>> -- 
+>> 2.52.0
+>>
+> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+
+
+Thank you for the Rb.
+
+
 >
-> - vfio-pci: the child reaches the BAR after the device memory was
->   disabled or the device was reset, instead of getting SIGBUS;
-> - panthor: the child maps the pages of an evicted buffer object after
->   the driver has released them.
->
-> The same branch deposits no page table under the copy. ppc64 in hash
-> mode keeps the hash slot array of every huge PMD in that table, so the
-> child dereferences a NULL table on the first hash fault, in
-> __hash_page_thp(), and on the zap, in hash__pmdp_huge_get_and_clear().
->
-> Take the locks first and let vm_normal_page_pmd() tell a PFN mapping
-> from a folio under them, as copy_present_ptes() does with
-> vm_normal_page(). The zap clears the parent PMD under the same lock, so
-> either fork finds it none and skips it, or the copy is in place before
-> the zap reaches the child.
->
-> The copy of a PFN mapping then goes through the same tail as a folio:
->
-> - it gets a page table where the architecture needs one;
-> - in a shared mapping it is marked clean in the child, as a PTE is;
-> - in a CoW mapping, which only VM_MIXEDMAP allows, both sides are write
->   protected instead of a warning being printed.
->
-> Fixes: bc02afbd4d73 ("mm/fork: accept huge pfnmap entries")
-> Fixes: d1503aa9ab80 ("powerpc/64s: Add support for huge pfnmaps")
-
-Thanks Konstantin, for fixing this. Without this patch I can reproduce the problem on Hash
-on Power (on my test dev setup), after fork(), when child touches those pages.
-
-[   62.543247][  T242] Kernel attempted to read user page (0) - exploit attempt? (uid: 0)
-[   62.544992][  T242] BUG: Kernel NULL pointer dereference on read at 0x00000000
-[   62.545335][  T242] Faulting instruction address: 0xc0000000000a0ee8
-cpu 0x0: Vector: 300 (Data Access) at [c00000002035f9d0]
-    pc: c0000000000a0ee8: __hash_page_thp+0x218/0x560
-    lr: c0000000000a0e14: __hash_page_thp+0x144/0x560
-    sp: c00000002035fc70
-   msr: 8000000000009033
-   dar: 0
- dsisr: 40000000
-  current = 0xc00000001fb08480
-  paca    = 0xc000000005010000   irqmask: 0x03   irq_happened: 0x09
-    pid   = 242, comm = vfio-fork
-enter ? for help
-[c00000002035fc70] 0000000000000000 (unreliable)
-[c00000002035fd30] c000000000098a40 hash_page_mm+0x688/0x8d0
-[c00000002035fe10] c000000000098dc8 do_hash_fault+0x140/0x368
-[c00000002035fe50] c000000000008be0 data_access_common_virt+0x210/0x220
----- Exception: 300 (Data Access) at 0000000010001b60
-SP (7fffde6dd7b0) is in userspace
-
-With this series, I see that the issue is fixed. Thanks for helping in
-fixing it. Please feel free to add:
-
-Tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com> #PowerPC
+> Br, Jarkko
 
 
+Thanks,
+Srish.
 
-
-
-
-> Cc: stable@vger.kernel.org
-> Reported-by: Sashiko <sashiko-bot@kernel.org>
-> Closes: https://sashiko.dev/#/patchset/20261014-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v1-1-d225c60bc316@virtuozzo.com?part=1
-> Suggested-by: David Hildenbrand (Arm) <david@kernel.org>
-> Acked-by: Kiryl Shutsemau (Meta) <kas@kernel.org>
-> Acked-by: David Hildenbrand (Arm) <david@kernel.org>
-> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
-> ---
->  mm/huge_memory.c | 24 +++---------------------
->  1 file changed, 3 insertions(+), 21 deletions(-)
->
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index e00632edb3856..9cb5f99aba87f 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -1961,25 +1961,6 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  	int ret = -ENOMEM;
->  	bool writable;
->  
-> -	pmd = pmdp_get_lockless(src_pmd);
-> -	if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
-> -		     !is_huge_zero_pmd(pmd))) {
-> -		dst_ptl = pmd_lock(dst_mm, dst_pmd);
-> -		src_ptl = pmd_lockptr(src_mm, src_pmd);
-> -		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-> -		/*
-> -		 * No need to recheck the pmd, it can't change with write
-> -		 * mmap lock held here.
-> -		 *
-> -		 * Meanwhile, making sure it's not a CoW VMA with writable
-> -		 * mapping, otherwise it means either the anon page wrongly
-> -		 * applied special bit, or we made the PRIVATE mapping be
-> -		 * able to wrongly write to the backend MMIO.
-> -		 */
-> -		VM_WARN_ON_ONCE(vma_is_cow_mapping(src_vma) && pmd_write(pmd));
-> -		goto set_pmd;
-> -	}
-> -
->  	if (vma_is_anonymous(dst_vma) || arch_needs_pgtable_deposit()) {
->  		pgtable = pte_alloc_one(dst_mm);
->  		if (unlikely(!pgtable))
-> @@ -2021,7 +2002,9 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  		goto copy_pmd;
->  	}
->  
-> -	src_page = pmd_page(pmd);
-> +	src_page = vm_normal_page_pmd(src_vma, addr, pmd);
-> +	if (!src_page)
-> +		goto copy_pmd;
->  	VM_BUG_ON_PAGE(!PageHead(src_page), src_page);
->  	src_folio = page_folio(src_page);
->  
-> @@ -2061,7 +2044,6 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
->  	}
->  	if (src_vma->vm_flags & VM_SHARED)
->  		pmd = pmd_mkclean(pmd);
-> -set_pmd:
->  	pmd = pmd_mkold(pmd);
->  	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
->  
->
-> -- 
-> 2.43.0
 
