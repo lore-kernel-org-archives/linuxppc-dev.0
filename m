@@ -2,90 +2,77 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E5BC60A2604
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 15:26:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1D4F606A320
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 15:44:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Q5xrzrEx
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxZoPAPr
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP9VH0v3Dz2yNj;
-	Wed, 11 Nov 2026 02:26:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1332"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794324391;
-	cv=none; b=k03yOohoCjV/NacNKiDRMFag33K0R+971w6glkDqoMSJLrtVqzLU+l43CSsA5Glb6vnR5Jg8s45bIRoVS6MfEskv5dhMHnMjpLz2K6m5rld8mbnFRA8YLnhUn1ZsvL/jUXFbcdAp0jV/EIqeDe1sFYTAXNQdafGJfuTpSl/rF6PHQEaApQv6BbOKFiyXAi8yxUI7inVTbz4zwAwV2JZYFw6ryKSN65WpodB2OVA6AN1/p3AsmXSCP8XqSQqDNQcskLxoDd0ktqgeFUkMa2uCkyt5rylsKLjtOTcxyRuETLXB/2KV5pizOboMh1EB9tbU+2b0rY27cuInyfhFKIFrow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP9v374nyz2yR1;
+	Wed, 11 Nov 2026 02:44:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794325471;
+	cv=none; b=ND4YOHhu+N7nwOTUzP4OdQKdfxkctDjyvBfC14v3WZDEHqbzlSyD0Ex5FrvgAliDWFhMokum6T857UpfGWOQZFpSIOYYwxI+REp6puiEOOwTHd3SnmNcQyqm28JThnq1BlGcUX3rBOHYXnEvoEqMssuCIZbavesS7xsWBqR8nT+CjcO0jYyDyuiZlMChVahhY78xu2sLLGLuQ1+jA2TmTXk25+4rBs3kfR4oAqWklZvtymwI8a/uoIxMF8CJeEC/VvkGNELvVntAZNdFdhahTT63muIdJhZi1D1slPj6Z4foplDWcsDUdYs9Xx8YI8FEnM5UmaTyutWBTmI6GBAJqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794324391; c=relaxed/relaxed;
-	bh=/rNbcmd5Epz0U56BKGmsQmjNGEGUDaMDB1UCVAt5F+0=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=fJI5QgowsJcwLb/7276NqRsfoMoueJwNfX9yf4aPiW1dZeWX4xpJlXkCoSRFBD+SWAFORcc9ppYyARAf+G9rwjGsvS5JBzefJrWMe5+6KBnZM0pdKORAmK6I91VhWWt5fk2Y6nyYRBMe+2UaHMTJtyY4nqXf2SmvlD1psjfyioPlFbZcLo/qQZvuIdltBtHv/KDJ4/NXZ8kxX/sIk9pgS4RwpUCzIhkX8frybtdTollWUB0MRsPYA2H4+jSsV3T4sKObNr0JEoJV4+nMcZ6Ruiqt72/Hj3HmRh4U9dZbmTeWI5korOWtpgx7baoAVRcWg4xG1Zbz1oSR31kEQAk39Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Q5xrzrEx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794325471; c=relaxed/relaxed;
+	bh=PNlP9f6Wrf+sUQn6QPmno7fsahkNAHws9ylX2pvBoqc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xz6doWdxQK+PrYb+twWrbxgWxfn75omJqcPtMmd7yVJCW1RdNCHRyWVbEHSCptOeQq6HqeMeqAdn1MXVBTD18HvVuoN920c0/oLnO50D9nTQRLY18mbIBh7wHE+0kUXOZ/umqftKrDsgHCR6FJyfF6mrhhpzFkGQw+lhtPUFbXR9nqUU0iF6fEYFCMXA2wcAJShBKXvYvk+rTs2/hLtr8gKU/Qpqc3F+z7chWuPLd/dBXpZtFDarsB33hvPom7sJyJPj2+W2E9mq5KobE6Vnu0xzJ+1XsiSIaXe50NvHpjgVFdHYr6uuHUzquXoWWGZdUiDB2gkoXcwlRSvGHiFzSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxZoPAPr; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Q5xrzrEx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sxZoPAPr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1332.google.com (mail-dy1-x1332.google.com [IPv6:2607:f8b0:4864:20::1332])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP9VG3tBvz2yMK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 02:26:30 +1100 (AEDT)
-Received: by mail-dy1-x1332.google.com with SMTP id 5a478bee46e88-36dbde64409so4434444eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 07:26:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794324388; x=1794929188; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=/rNbcmd5Epz0U56BKGmsQmjNGEGUDaMDB1UCVAt5F+0=;
-        b=Q5xrzrEx/fOWaUjYB/GDyaEwIHClSerwDN0VVd9EBzyYOuDS8NrF6IU3GEkTIP5KB/
-         ew5cfwYZ/E/wXHQQ9OR0IJ4U35c1spw9GfhAJG2aYex/0HolQ1nIyIoDmLIjSlnjhmeR
-         m+36fam7cwUN8fBqGO8SuA3G9CeZ3n7la0jXucMEBoDCJpyLDGsbwHnIVDhuyV6j50cy
-         maSDM+5JFGt9hujFtiU6loUDQSk5x4TeVLrLHQoLDkFEBFxh8FIlMlT0pSrsamKIyhhO
-         miUmXkLQQcRRlGHTC72wTQTlRGmPDA5KuE/v7h2uxIYi6OpTOicqbeNSTGdV7i8ZhJsh
-         qBwA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794324388; x=1794929188;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=/rNbcmd5Epz0U56BKGmsQmjNGEGUDaMDB1UCVAt5F+0=;
-        b=Y7a1SmehK+vclAF3mrzMogJLzoKumIRABbzqHjnax9Igsq2eUY+ZYnvGxk5MflVkE2
-         iS7DM3uMxMwMdJqd3kVy8Ssx1ar7e+N44wWgWttmCOacCP+j+5EJ6BbAaLBK/wjmPj6Q
-         KPmljNqs1xKSNB9f5dyoNcWTh7RbPiYh/mJXfaCMbYo6okydVr5uZ5P9QCryHadOKvM6
-         ybiy57+t93AXTO839vO1/6K6afrEtjZjcuyQbFmSf8uYBNFklxmhb3KRtBUFc1fgocjl
-         rOc9oEqUuaI9tBETiFoEA+ucv7E0hFRCm8W3dFkIfcBIzjqNk/jQ03TpAhgx5Uvp0wXq
-         1Byw==
-X-Forwarded-Encrypted: i=1; AL+hErF7jUp+3+AkwVs+d1DKMuOS4rmPDTM1cztNoxQnMh0GbNnJTIo/77htR423YvspZehdMBjaehmBwZTLjU0=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8G/YpT6GKOTkkR51YoHoch6pbAlB7MyX6kc/CcUdDx3EkuF8bX
-	Q2CqSgD5qjS5/8ItmywW5JLdsUbDQqS4yE34/9P8CYlIg2PEHqgVS/nf
-X-Gm-Gg: AYBFou2nt/x0xVOGKu5mTLgUC10+vmoQOQ8RFycMahzk0s1eLDJ+DwLoeBuyef0F0a0
-	eajqlAMrHrzCnUyqjqkNOeAJwk59a56Fg7LAx3iA/RGFMSEEWVR4z/zKwiW3HY+pdmbhvKiYKJq
-	FSCEuqSPe78oBYvrJb0989QVuENlcy0FVaHmVxx/flgVC+qMYAeKyjTSi94ZEHJ+EIMOL+P7l5D
-	gISgpX1Zi9L9gCqD3lPVm/yqKALAQ9mp4pfILkytWkqh+ubuC6DmL8xrCdh9CyXg+DDe6k/bDRL
-	DtMReYyH4eyxAoWq00C0M/HQQVEB2IDUErOi3NOm44qFJvceuK9Gg3b+JHZYLPpvhMd4PHeDjrd
-	26I+W+nqvPx4oEovfMeQcShaXvs5zi8t4EwGUoEJGaAbnwt/BnXNh190RZMrA/AAS/e7KyD0CVX
-	l6v/XMMS5v2DtOKj2Qoc42pAN2NGkKAoc5UvBoEYIHLLIl913HdD8mXoE0JTL0SnR6U5Bz66MEG
-	wedQoJObLprOOqF8r/XXSzKP3ikg8VB/vjdNqPcg1eF3odzRvtZdshJcQcJPgoJm+YLsEoJc0Hx
-	sboSqd86IobNhrM9Ai3CLbLskTU=
-X-Received: by 2002:a05:7301:fc0b:b0:36a:18d2:8c79 with SMTP id 5a478bee46e88-37520216c5fmr3078818eec.19.1794324388197;
-        Tue, 10 Nov 2026 07:26:28 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37520cfe07dsm8049288eec.20.2026.11.10.07.26.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2026 07:26:27 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Nathan Chancellor <nathan@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Kees Cook <kees@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>
-Subject: Re: [PATCH] powerpc/smp: Handle of_property_count_u32_elems() error in parse_thread_groups()
-In-Reply-To: <20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org>
-Date: Tue, 10 Nov 2026 20:55:05 +0530
-Message-ID: <mrrg90a6.ritesh.list@gmail.com>
-References: <20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP9v15fc0z2xnn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 02:44:29 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AAFECoj2667195;
+	Tue, 10 Nov 2026 15:44:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=PNlP9f6Wrf+sUQn6QPmno7fsahkNAHws9ylX2pvBo
+	qc=; b=sxZoPAPrd2MlOVa/FhHY+4jxfS/cmpI9Hf0J2Diw8znSyrIxqXL5Gqt7r
+	jUyufx+JnXx7MejWRCjWy0k0KXxuhUThwAgdRUEqSX9PSDUshLxgCagVue41TD5r
+	N2aNss5xvw15yv1KSgNOcNM/NMb7FrdVvraRQigDybXUITQ3S9gVT1S2WBeW3gcy
+	cRZ95J72Q62uxnUQRCQXSfpj9BFdpfDQ7JA5Z+fEjjfuLzjtiYOFm8C2pO5ScEHG
+	yl/9+2IyTImY3EIrbQP7D5Olcvric1+UdIT8mv31KQ6JsfInZLkzSFMdGb+bzkU6
+	MTxn2rzvg462KshgfaKXoXII7V09Q==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsuq6wngv-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 15:44:26 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AAF4wpw1880673;
+	Tue, 10 Nov 2026 15:44:25 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hv3320nj5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 15:44:25 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AAFiLMk48693680
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Nov 2026 15:44:21 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B4E7D20043;
+	Tue, 10 Nov 2026 15:44:21 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 066C820040;
+	Tue, 10 Nov 2026 15:44:20 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.39.31.184])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Nov 2026 15:44:19 +0000 (GMT)
+From: Amit Machhiwal <amachhiw@linux.ibm.com>
+To: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Amit Machhiwal <amachhiw@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org
+Subject: [PATCH] powerpc: Link with -z notext
+Date: Tue, 10 Nov 2026 21:14:15 +0530
+Message-ID: <20261110154415.46220-1-amachhiw@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,44 +85,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDA2MiBTYWx0ZWRfX65r6+Laa4BA1
+ 6MAxt1xuDBzeOuoJiWB/f35TPMeIJW6a0Ie2aCXXEruenoXVKIIJfwTEXy4a0SvFmBxspAcFk5K
+ /SEXOqVUPiWE10bXxgorkhkZohpaHzY=
+X-Authority-Analysis: v=2.4 cv=HbCB3SE8 c=1 sm=1 tr=0 ts=6af33bda cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=_iiAB3vgKD867NDUgDgA:9
+X-Proofpoint-ORIG-GUID: L2jU7n3C7WxHLaCnRZ2cLLSuHaux1D9G
+X-Proofpoint-GUID: L2jU7n3C7WxHLaCnRZ2cLLSuHaux1D9G
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDA2MiBTYWx0ZWRfX1KoVsvXBCIHN
+ Umfnk7C29chGhse5Hv9y1h2uk7nZFR5Gxs3HX6S9DSm+Z82/9xyFmRgEiCw9OR32oM68Y5mxdfS
+ kWtds/0u1ehOK1ZTeLcQWMBnB0ul2Ac9dTL07M9xSNoPPDMC1MS1fxnlWXRbjwDrESyPKy3R/Vz
+ GKo7hyYcz59XNrDpOb/tAqOwFhZI4ovsNA1UZBUDLEPfmt7Jdh/uLnnUzRZub9MhSCVryAW4B0Q
+ 1VVIJk4772l/ShQajuAiiJgGwdrp0j9qxxlHufZfuhsF37Bk53BiI94sML91lluLgxR93sHg5V3
+ BdnUYkXEathc4S00EuBeIo+w0QRSdIhXX54RjGiBLiz2yBejo/c8ZqMcV2AxZ7faH/ICfA+1oJ8
+ p7cPIyq03OA8rYAOaglQIuGga7E0XDBw4pZiYvR2Jr4Ts4rVIbBy4kBfM86oDF5z0s6sQ93lpzg
+ LfNr8c+NFvm28bv5/RQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-10_05,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 spamscore=0 bulkscore=0 phishscore=0
+ impostorscore=0 priorityscore=1501 clxscore=1015 lowpriorityscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611100062
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-Nathan Chancellor <nathan@kernel.org> writes:
+Building the powerpc tests with GNU ld 2.46.1 fails when linking the
+test binaries:
 
-> After commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
-> conversions"), there is a warning on boot for several PowerPC
-> configurations in QEMU:
->
->   WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1b0, CPU#0: swapper/0/1
->   Modules linked in:
->   CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.4.0-rc1-00262-g0af298e62e5c #1 PREEMPT(lazy)
->   NIP [c0000000006074e4] ___kmalloc_large_node+0x174/0x1b0
->   LR [c00000000060782c] __kmalloc_large_node_noprof+0x3c/0x150
->   Call Trace:
->   ...
->   [c00000000369fb60] [c000000000614ff0] __kmalloc_noprof+0x490/0x690
->   [c00000000369fbe0] [c000000000051308] _kzalloc_noprof.constprop.0+0x1c/0x74
->   [c00000000369fc00] [c00000000200b450] init_thread_group_cache_map+0xc0/0x2c4
->   ...
->
-> In this case, of_property_count_u32_elems() returns -EINVAL because
-> there is no "ibm,thread-groups" property. When kcalloc() was used to
-> allocate thread_group_array, the multiplication overflow check in
-> _kmalloc_array_noprof() caught that a really large allocation was
-> requested (as -EINVAL was converted to size_t) and returned NULL.
-> kzalloc_objs() has no such check, so the large allocation check in
-> __kmalloc_large_noprof() triggers the visible warning above.
->
-> Check if of_property_count_u32_elems() has returned an error and bail
-> out if so, clearing up the warning.
->
-> Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-> ---
->  arch/powerpc/kernel/smp.c | 2 ++
->  1 file changed, 2 insertions(+)
+  /usr/bin/ld.bfd: error: read-only segment has dynamic relocations
 
+The tests are linked with -pie and relocate themselves at boot (see
+relocate() in powerpc/reloc64.c, called from powerpc/cstart64.S).
+Newer GNU ld rejects relocations in read-only segments by default.  The
+Makefile already checks after linking that only R_PPC64_RELATIVE
+relocations are present.
 
-Thanks for fixing it. Looks good to me. Please feel free to add:
+Fix this by adding `-z notext` to the powerpc linker flags, as was done
+for arm64 in commit 5d67db4e1860 ("arm64: Link with -z notext").
 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+---
+ powerpc/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/powerpc/Makefile b/powerpc/Makefile
+index 41e752b070bc..35fe58835726 100644
+--- a/powerpc/Makefile
++++ b/powerpc/Makefile
+@@ -78,7 +78,7 @@ include $(SRCDIR)/scripts/asm-offsets.mak
+ 
+ FLATLIBS = $(libcflat) $(LIBFDT_archive)
+ %.elf: CFLAGS += $(arch_CFLAGS)
+-%.elf: LDFLAGS += $(arch_LDFLAGS) -pie -n
++%.elf: LDFLAGS += $(arch_LDFLAGS) -pie -n -z notext
+ %.elf: %.o $(FLATLIBS) $(SRCDIR)/powerpc/flat.lds $(cstart.o) $(reloc.o) %.aux.o
+ 	$(LD) $(LDFLAGS) -o $@ \
+ 		-T $(SRCDIR)/powerpc/flat.lds --build-id=none \
+
+base-commit: 5a221342a025948fa7d84f0c404748f6ba57f3ad
+-- 
+2.54.0 (Apple Git-157)
+
 
