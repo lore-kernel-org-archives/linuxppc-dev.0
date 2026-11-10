@@ -2,122 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 04C1A606A33B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 14:35:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2D78760A2600
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 14:38:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Kf4/V3k7;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0sClAhd5;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Kf4/V3k7;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0sClAhd5
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nwl8C3gE
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP8Ly5LWtz2yCr;
-	Wed, 11 Nov 2026 01:35:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794321306;
-	cv=none; b=mOF/8PPlsCBdlO4q8TXjofPS3XdV/7IUoz9VhnUo7aR0qU310y3JRzHPn4Wf5yc+llYKMmGwdoUZo6OoGwxtldI4Z3r6FiiPxLw+zJMNUecLcMGuk3jNDYVeupi5gG1tyFdOa6GDakehh4VGqapEbObOkB58RyI8VlZv4l3yAXj6jjUB4KSoc/y6Emd+kHq4v5fzybBZiLvP5WJBUcxjOkw3uh2GAfjIynAwZR+pJJCBKpA4h6Cqc2vWffv1HnXV6Q8Mfs93NAH1qbAWJFtsKY4lutCHyEH7eJv8LvK0OvMy/oN6SwztUWzEELtqUYRs+5Ep8w7drqi/v4aOulfqfQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP8QQ2VLQz30V0;
+	Wed, 11 Nov 2026 01:38:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794321486;
+	cv=none; b=NDGufDaOs/dqHvGZW3PEwnPZojFfkyVvQJGYJHkjFMWknEYp/XSkDxN2S/KNMY1M9QjVL4SL7V3XM15Si2+7kNUlqKOWM04AGj7WEyoUgexk+B3wwUFmZKw7Yry1N9N/n0npzNY1UP2tPRmhlBLfvnigqw0yumOBKvMv0KFaaDNkGU+9xyxmyIDaKercu++M1dJY9hsblSxqXnV1bRCZnm3nT+poi1Ptep23HsyXERUoYSl0KqrSkqGP2GseA06+pVUdznbKMPFpUm3kS7bW7ZLhzXGD8CXlr1aKjuI7WksgUeN//ayQEikP2t4FxYdaW1sroXeOhSuE4jcwnmgUlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794321306; c=relaxed/relaxed;
-	bh=8GztbmdPIq1W7yvyzWknacNZFNOoqhx0Fy+nAHd0FJc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=C7TpyIQ1VCPQ3TKI7F0nfGLqg1EJvDX3Ua6g0Jg7D4N0Akc+hdmDIUFMlrqMsMkBOByS8HcTtaRY7GW82aRrltfAQYIkmwHT1Dk5ZwrrPayDhnUz0jU3vkBMl6LsG7U8EdIB6YN/G3NCSrnx9t+51FeR1UKYdRPdufURhofsu1ObQOztVZfRkh01J0Y8O4ln9JkA8/U287vK9+UZAKfBpYxqTuyJ7hOipSIhX5SN7UA2wXpX73CCElW1de4IGz7fCGpBcYmtiHBYgcoDjJlt9gkD66g/1nsJwilId5LeLEOdYKtw7hkNf87rSBHV5gX6w08cpJi3lnYud278lOqL8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Kf4/V3k7; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0sClAhd5; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Kf4/V3k7; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0sClAhd5; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	t=1794321486; c=relaxed/relaxed;
+	bh=Ig5ZI+kd6iU35YUUwhpb1qxrXXHnmsZuId8llNh8eYg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=PNFPutCAyMHTEgCgEEeAmikChtybGu9FNxv7aJSTDr/fN+41dBx1Zk5X9zW/oUHe58YnUre62a5aV58kHKf18KzmDfgkTvSKjTa0t2DSy0XYc3CzfjXtSFyeVWzF5bYXYNWGyM28Tz7IdNFGHc4ikIlOhnGdKr8JhuKB67kLCxunaxLvc28j2EK7HSSy3TsymniDIs2WxOKr/yeKKt/n+BzbO/5xdPUrnYThL3eVfM5jz/b1qVvpxeMfrklxyShBGVMxjeSNnIRKhTSOGGc4ff7XdswrQum3cuN464a5VdptC7kmL8nOPoiOfcdX9kdZtdEpkhvOLB/+sU2LQl5YIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nwl8C3gE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Kf4/V3k7;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0sClAhd5;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=Kf4/V3k7;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=0sClAhd5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nwl8C3gE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP8Lw0jkgz2x9N
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 01:35:03 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 0F2F11F7E9;
-	Tue, 10 Nov 2026 14:35:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1794321300; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8GztbmdPIq1W7yvyzWknacNZFNOoqhx0Fy+nAHd0FJc=;
-	b=Kf4/V3k7uJ3/e8gJIc8Yq2RfTu9sqtfttw7+/XtgLjAgzqpseC8KVY0cIt3vE7gewsFtgS
-	Ul25YQuPGcy+MdjCiZ01nYNZL6oIl9h+7CtWLxqD0DCE7dLCT4LVtl2+MaCEOzBnO5VmYl
-	TqvBQPF83X/L0SH3n0hrFLzjLD0A3pk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1794321300;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8GztbmdPIq1W7yvyzWknacNZFNOoqhx0Fy+nAHd0FJc=;
-	b=0sClAhd5uG01XGSIXIU41VEvI9NfiuUN4ZK34eq4spWakFMk8sOp9e0DDfiJbg/Z9APkfg
-	hTmYlGV16kkIijCQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b="Kf4/V3k7";
-	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=0sClAhd5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1794321300; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8GztbmdPIq1W7yvyzWknacNZFNOoqhx0Fy+nAHd0FJc=;
-	b=Kf4/V3k7uJ3/e8gJIc8Yq2RfTu9sqtfttw7+/XtgLjAgzqpseC8KVY0cIt3vE7gewsFtgS
-	Ul25YQuPGcy+MdjCiZ01nYNZL6oIl9h+7CtWLxqD0DCE7dLCT4LVtl2+MaCEOzBnO5VmYl
-	TqvBQPF83X/L0SH3n0hrFLzjLD0A3pk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1794321300;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8GztbmdPIq1W7yvyzWknacNZFNOoqhx0Fy+nAHd0FJc=;
-	b=0sClAhd5uG01XGSIXIU41VEvI9NfiuUN4ZK34eq4spWakFMk8sOp9e0DDfiJbg/Z9APkfg
-	hTmYlGV16kkIijCQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id CBD091339F;
-	Tue, 10 Nov 2026 14:34:59 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id eH+6KJMr82prKwAAD6G6ig
-	(envelope-from <jack@suse.cz>); Tue, 10 Nov 2026 14:34:59 +0000
-Received: by quack.suse.cz (Postfix, from userid 1000)
-	id 5190222543; Tue, 10 Nov 2026 15:34:59 +0100 (CET)
-Date: Tue, 10 Nov 2026 15:34:59 +0100
-From: Jan Kara <jack@suse.cz>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, 
-	Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
-	Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, 
-	Eric Dumazet <edumazet@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
-	Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
-	Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados <joel.granados@kernel.org>, 
-	Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
-	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	netdev@vger.kernel.org, ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
-	coreteam@netfilter.org, kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-	ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
-	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
-	sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org, 
-	Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
-Subject: Re: [PATCH v2 32/51] proc: resume readdir after the last name it
- returned
-Message-ID: <67qeb525vqah4cjisunzwemua7rf2xj4esnlo2xl3t6crnqmzc@lsuqyjwenpx4>
-References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
- <20261104-work-procfs-bugfixes-v2-32-bbf7d5546809@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP8QP2y0Wz2yCr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 01:38:04 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AABEddb2178313;
+	Tue, 10 Nov 2026 14:37:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Ig5ZI+
+	kd6iU35YUUwhpb1qxrXXHnmsZuId8llNh8eYg=; b=Nwl8C3gEeSey0jJ+bLLbOg
+	0IMzjJbvM25agPL5GyqTqpDgi9UDTJDFBaS8sl1lX5o366Qg1AFiezPV/ATtS8QR
+	PKAyYwRWkv0XtHlTgvvCAR0e0/vHBH9aVPF8baQuLiCPfgokuC26/UKVYxu+qYyp
+	MxkbKiZGyDaaR0TsYJfm/hBcVuWlATa0PQpRwaIOvG3wrkPL723q5JFOc8OJiYZp
+	XSewjPD76a7f5GBkonb0qI9kGP3pDxtF5euSgLkIhaEQ44Gp60w5XkqJMyuWY9Ig
+	oQRuf7G82BJ2cduNExV3H7wVkV/57MgIXK9Byr+ELVBT35IxxzGr0tW0YYgRW/aA
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsuq6wbst-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 14:37:54 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AAC74QA1731039;
+	Tue, 10 Nov 2026 14:37:53 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hv309gf14-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Nov 2026 14:37:53 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AAEbovp52167108
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Nov 2026 14:37:50 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 030CB2004F;
+	Tue, 10 Nov 2026 14:37:50 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9E2C020040;
+	Tue, 10 Nov 2026 14:37:47 +0000 (GMT)
+Received: from [9.39.16.14] (unknown [9.39.16.14])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Nov 2026 14:37:47 +0000 (GMT)
+Message-ID: <e6b47bd5-425d-4c8e-8c68-5a36d47bd977@linux.ibm.com>
+Date: Tue, 10 Nov 2026 20:07:46 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -131,267 +81,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261104-work-procfs-bugfixes-v2-32-bbf7d5546809@kernel.org>
-X-Rspamd-Queue-Id: 0F2F11F7E9
-X-Spam-Level: 
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-11.51 / 50.00];
-	SUSE_INTERNAL_BYPASS(-9.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_RHS_NOT_FQDN(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RCVD_COUNT_THREE(0.00)[3];
-	MIME_TRACE(0.00)[0:+];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	RCVD_TLS_LAST(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	ARC_NA(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[suse.cz:+];
-	R_RATELIMIT(0.00)[to_ip_from(RLpnapcpkwxdkc5mopt1ezhhna)];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[60];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	MISSING_XM_UA(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.cz:dkim,suse.cz:email,suse.com:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
-X-Spam-Score: -11.51
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/smp: Handle missing ibm,thread-groups in
+ parse_thread_groups()
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org, Nathan Chancellor <nathan@kernel.org>,
+        Kees Cook <kees@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        linux-kernel@vger.kernel.org, chleroy@kernel.org,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>
+References: <39282c731de90f47678952e471236ef22e9d4b15.1794317777.git.ritesh.list@gmail.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <39282c731de90f47678952e471236ef22e9d4b15.1794317777.git.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDA1NiBTYWx0ZWRfX3wPolIrCKx3z
+ eC2Is1llpoH8e7sHaXmTs8rRi6wggOnJG06b/y22Nqbl52ZrXe+U6G7W7le3/m9W7E5t7BEl/8b
+ jzzam+vENMI9F1O01w37XNphHtC2ZBU=
+X-Authority-Analysis: v=2.4 cv=HbCB3SE8 c=1 sm=1 tr=0 ts=6af32c43 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=iURFBnzjbH8NQLE5tzsA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: wG7wu85JICT-yZNSefg2kHbwI79dMQJT
+X-Proofpoint-GUID: 6LmSpO9jS-jUVEUuw8-Lx1LK0yyy9v_E
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDA1NiBTYWx0ZWRfXwFWcJGYgnnWk
+ jzFuk0HNwal1lHhsduDMiDPjKxesny+xa3M87XOSPlRt4r4d+0xFoq/HPk/tiSKmWnJv3YQFfTk
+ ukppsiI9BcdvfxRwZlO5vsIIp4zr1ozldRkpDhyHTk3Bbo01hnaVXznhi7QlRR5FnK6MPn+N8U2
+ CMN0T0ZTdnhB7SxdNSJ3hZ5YvVwn3yNSKm5jVaFksr0rtrRKM9Y+6/ChiCQBWYfF2d4ygOBCCW9
+ LRNz/6jYwI1lYZ3a4OjGOF6/lQUAh2VqkES5rO4RTLurXpVJTPD5qnSuWQ9aQLCXlu4/zd2J+ou
+ sYY98z9ZIkjlOIE4KM9NU5G/WI5dVgGTVdx+nR1KRd9kkS6NsUHMpWHTdeGeAbfJIwDI9QATrQ7
+ umsNTWzwDi+CioyHrlaZlm5mR2lV6zW0xIkgpt2Hg39e5QGRwcE0H0lE9DwKqt0nUuNF13UXq8n
+ VuNMhul21JXkxCh3u0Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-10_04,2026-11-06_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 spamscore=0 bulkscore=0 phishscore=0
+ impostorscore=0 priorityscore=1501 clxscore=1015 lowpriorityscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611100056
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed 04-11-26 18:47:18, Christian Brauner wrote:
-> proc_readdir_de() counts the entries of a directory and resumes a
-> listing at the number getdents64() stopped at. The entries are sorted
-> by name, so one that is added or removed in between shifts everything
-> behind it by one. Listing /proc/net/dev_snmp6 with a buffer that holds
-> ".", ".." and "lo" and adding a device whose name sorts before "lo"
-> makes the next call return "lo" a second time. Removing one that sorted
-> before the position makes the next call skip an entry instead.
+Hi Ritesh,
+
++cc nathan, Kees,
+
+On 11/10/26 7:13 PM, Ritesh Harjani (IBM) wrote:
+> Power systems can have ibm,thread-groups properly absent like in one of
+> the PowerNV Power9 boxes where there was a warning splat reported on
+> 7.4-rc2:
 > 
-> Since commit 895b4c0c79b0 ("fs/proc: fix uaf in proc_readdir_de()") an
-> entry that is removed while it is being emitted also ends the listing
-> right there. pde_subdir_next() finds nothing after an erased entry, so
-> proc_readdir_de() reports the end of the directory and the next call
-> resumes by number, skipping another entry. For /proc itself
-> proc_root_readdir() takes that as the end of the static entries and
-> moves on to the pids, so the rest of the static entries is missing.
-> And if the position is behind the last entry when a call starts
-> proc_readdir_de() returns 0, so /proc then lists no pids at all.
+>    WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1a0, CPU#124: swapper/124/1
+>    ...
+>    Call Trace:
+>     __kmalloc_noprof+0x490/0x690
+>     _kzalloc_noprof.constprop.0+0x1c/0x7c
+>     init_thread_group_cache_map+0xd0/0x2d4
+>     smp_prepare_cpus+0x2bc/0x484
+>     kernel_init_freeable+0x168/0x3c4
+>     kernel_init+0x34/0x1ac
 > 
-> So remember the name of the last entry a call emitted in the file and
-> resume at the first entry after it, like kernfs resumes after the node
-> it stopped at. An entry that was removed while it was emitted is
-> continued after by its name as well. If the position was moved by a
-> seek in between the listing counts from the start like before.
+> This happens because today we don't check for whether the properly is
+> present or not and directly pass the return value of
+> of_property_count_u32_elems(), to the allocator.
 > 
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Fixes: 895b4c0c79b0 ("fs/proc: fix uaf in proc_readdir_de()")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-
-Looks good to me. Feel free to add:
-
-Reviewed-by: Jan Kara <jack@suse.cz>
-
-								Honza
-
+> This went unnoticed because earlier kcalloc() caught the overflow due to
+> check_mul_overflow() check and returned NULL.
+> But since commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
+> conversions") switched this call to kzalloc_objs(), size_mul() saturates
+> the size to SIZE_MAX instead and we now get a warning at boot.
+> 
+> Bail out early if the property is missing or empty. Follow the return
+> value as documented in kernel doc of parse_thread_groups() function.
+> 
+> Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
+> Reported-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 > ---
->  fs/proc/generic.c  | 89 ++++++++++++++++++++++++++++++++++++++++++++++--------
->  fs/proc/internal.h |  1 +
->  fs/proc/proc_net.c |  1 +
->  fs/proc/root.c     |  1 +
->  4 files changed, 80 insertions(+), 12 deletions(-)
+>   arch/powerpc/kernel/smp.c | 4 ++++
+>   1 file changed, 4 insertions(+)
 > 
-> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-> index 9e59796349e1..588999058e66 100644
-> --- a/fs/proc/generic.c
-> +++ b/fs/proc/generic.c
-> @@ -87,6 +87,28 @@ static struct proc_dir_entry *pde_subdir_find(struct proc_dir_entry *dir,
->  	return NULL;
->  }
->  
-> +/* The first entry of @dir that sorts after @name. */
-> +static struct proc_dir_entry *pde_subdir_after(struct proc_dir_entry *dir,
-> +					       const char *name,
-> +					       unsigned int len)
-> +{
-> +	struct rb_node *node = dir->subdir.rb_node, *after = NULL;
-> +
-> +	while (node) {
-> +		struct proc_dir_entry *de = rb_entry(node,
-> +						     struct proc_dir_entry,
-> +						     subdir_node);
-> +
-> +		if (proc_match(name, de, len) < 0) {
-> +			after = node;
-> +			node = node->rb_left;
-> +		} else {
-> +			node = node->rb_right;
-> +		}
-> +	}
-> +	return rb_entry_safe(after, struct proc_dir_entry, subdir_node);
-> +}
-> +
->  static bool pde_subdir_insert(struct proc_dir_entry *dir,
->  			      struct proc_dir_entry *de)
->  {
-> @@ -278,6 +300,40 @@ struct dentry *proc_lookup(struct inode *dir, struct dentry *dentry,
->  	return proc_lookup_de(dir, dentry, PDE(dir));
->  }
->  
-> +/*
-> + * Where the next readdir resumes. The entries are counted, so one that is
-> + * added or removed in front of the position would shift what the next call
-> + * returns. The name of the last entry emitted doesn't move.
-> + */
-> +struct proc_dir_cursor {
-> +	loff_t pos;			/* the position behind the entry */
-> +	unsigned int len;
-> +	char name[NAME_MAX + 1];
-> +};
-> +
-> +/* If this can't remember the entry the next call counts from the start. */
-> +static void proc_dir_cursor_set(struct file *file, struct proc_dir_entry *de,
-> +				loff_t pos)
-> +{
-> +	struct proc_dir_cursor *cursor = file->private_data;
-> +
-> +	if (!cursor) {
-> +		cursor = kmalloc(sizeof(*cursor), GFP_KERNEL);
-> +		if (!cursor)
-> +			return;
-> +		file->private_data = cursor;
-> +	}
-> +	cursor->pos = pos;
-> +	cursor->len = de->namelen;
-> +	memcpy(cursor->name, de->name, de->namelen);
-> +}
-> +
-> +int proc_dir_release(struct inode *inode, struct file *file)
-> +{
-> +	kfree(file->private_data);
-> +	return 0;
-> +}
-> +
->  /*
->   * This returns non-zero if at EOF, so that the /proc
->   * root directory can use this and check if it should
-> @@ -290,23 +346,26 @@ struct dentry *proc_lookup(struct inode *dir, struct dentry *dentry,
->  int proc_readdir_de(struct file *file, struct dir_context *ctx,
->  		    struct proc_dir_entry *de)
->  {
-> +	struct proc_dir_cursor *cursor = file->private_data;
-> +	struct proc_dir_entry *dir = de;
->  	int i;
->  
->  	if (!dir_emit_dots(file, ctx))
->  		return 0;
->  
-> -	i = ctx->pos - 2;
->  	read_lock(&proc_subdir_lock);
-> -	de = pde_subdir_first(de);
-> -	for (;;) {
-> -		if (!de) {
-> -			read_unlock(&proc_subdir_lock);
-> -			return 0;
-> -		}
-> -		if (!i)
-> -			break;
-> -		de = pde_subdir_next(de);
-> -		i--;
-> +	if (cursor && cursor->pos == ctx->pos) {
-> +		/* Resume after the last entry emitted, wherever it is now. */
-> +		de = pde_subdir_after(dir, cursor->name, cursor->len);
-> +	} else {
-> +		/* Moved by a seek, count from the start like always. */
-> +		de = pde_subdir_first(dir);
-> +		for (i = ctx->pos - 2; de && i; i--)
-> +			de = pde_subdir_next(de);
-> +	}
-> +	if (!de) {
-> +		read_unlock(&proc_subdir_lock);
-> +		return 1;
->  	}
->  
->  	do {
-> @@ -319,8 +378,13 @@ int proc_readdir_de(struct file *file, struct dir_context *ctx,
->  			return 0;
->  		}
->  		ctx->pos++;
-> +		proc_dir_cursor_set(file, de, ctx->pos);
->  		read_lock(&proc_subdir_lock);
-> -		next = pde_subdir_next(de);
-> +		/* Removed in the meantime, go on after its name. */
-> +		if (RB_EMPTY_NODE(&de->subdir_node))
-> +			next = pde_subdir_after(dir, de->name, de->namelen);
-> +		else
-> +			next = pde_subdir_next(de);
->  		pde_put(de);
->  		de = next;
->  	} while (de);
-> @@ -348,6 +412,7 @@ static const struct file_operations proc_dir_operations = {
->  	.llseek			= generic_file_llseek,
->  	.read			= generic_read_dir,
->  	.iterate_shared		= proc_readdir,
-> +	.release		= proc_dir_release,
->  };
->  
->  static int proc_net_d_revalidate(struct inode *dir, const struct qstr *name,
-> diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-> index df873df9afc5..04f7ce2b24ed 100644
-> --- a/fs/proc/internal.h
-> +++ b/fs/proc/internal.h
-> @@ -287,6 +287,7 @@ extern struct dentry *proc_lookup(struct inode *, struct dentry *, unsigned int)
->  struct dentry *proc_lookup_de(struct inode *, struct dentry *, struct proc_dir_entry *);
->  extern int proc_readdir(struct file *, struct dir_context *);
->  int proc_readdir_de(struct file *, struct dir_context *, struct proc_dir_entry *);
-> +int proc_dir_release(struct inode *, struct file *);
->  
->  static inline void pde_get(struct proc_dir_entry *pde)
->  {
-> diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-> index b1f5eafb069a..dbcf87a257e1 100644
-> --- a/fs/proc/proc_net.c
-> +++ b/fs/proc/proc_net.c
-> @@ -351,6 +351,7 @@ const struct file_operations proc_net_operations = {
->  	.llseek		= generic_file_llseek,
->  	.read		= generic_read_dir,
->  	.iterate_shared	= proc_tgid_net_readdir,
-> +	.release	= proc_dir_release,
->  };
->  
->  static __net_init int proc_net_ns_init(struct net *net)
-> diff --git a/fs/proc/root.c b/fs/proc/root.c
-> index 7fbbe92bf73a..dfee1caa26f7 100644
-> --- a/fs/proc/root.c
-> +++ b/fs/proc/root.c
-> @@ -441,6 +441,7 @@ static const struct file_operations proc_root_operations = {
->  	.read		 = generic_read_dir,
->  	.iterate_shared	 = proc_root_readdir,
->  	.llseek		= generic_file_llseek,
-> +	.release	= proc_dir_release,
->  };
->  
->  /*
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 7a25eaa59e62..9a0f63e43821 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -824,6 +824,10 @@ static int parse_thread_groups(struct device_node *dn,
+>   	int i = 0;
 > 
-> -- 
-> 2.53.0
+>   	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
+> +	if (count < 0)
+> +		return count;
+> +	if (!count)
+> +		return -ENODATA;
+
+This zero count check is not necessary.
+
+Code doesn;t dereference thread_group_array if the count is 0.
+
+...
+         while (i < count && property_idx < MAX_THREAD_GROUP_PROPERTIES) {
+...
+out_free:
+         kfree(thread_group_array);
+         return ret;
+
+Which should naturally pass to kfree which is expected to handle ZERO_SIZE_PTR.
+
+No?
+
+>   	thread_group_array = kzalloc_objs(u32, count);
+>   	if (!thread_group_array)
+>   		return -ENOMEM;
+> --
+> 2.39.5
 > 
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+
+Nathan reported the same issue on QEMU.The same symptoms.
+
+https://lore.kernel.org/all/20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org/
 
