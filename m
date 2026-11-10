@@ -2,72 +2,84 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0197D606AA26
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 03:38:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86E2C60A2624
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 04:00:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZXKhegGN
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EyTKNIVs
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNsmq237lz2xfK;
-	Tue, 10 Nov 2026 14:38:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794281883;
-	cv=none; b=KOh6wlqKqYg93qbRCnqQjoLIB+7SAklaTbU5Wpb/2bFtwbO6P/Wc8PjsBZBE3zUNy0T79VgFECCsVGfjEi+gThuceAHPGezEXNJP9Gq2inYiNtqH1WSq1/4+Q9bdWK1aQDbhL1OcL1F6eMDqP+264Uoh0CdgTkAix0C8/LXapRGghFZM6R42GA9XW9Hp2VMlRl92dM59CuVBmLn3a5jk78jIpOYOSQ0Kjt6m+un+hCdpQHxInUFCGgcuyjV8f4SDdnSWAbr9xAlK4Lc9bWXuYlLOelt1vW+xpvJan4eEJecGeNdfpohuR89W8Cj+l4nMbiluyZBO2H7vYo2MInHMMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNtGt6JHhz2xnS;
+	Tue, 10 Nov 2026 15:00:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794283238;
+	cv=none; b=gsX+Koq+zLzUHba3z4LXqUdTy3xVhP6McgAJeFxD1ZcqLtV2loeNeUURdeNYhbRTG4ucE5FU2LkNCjCP3kzOpc+GRGbjQx7e0/slhJDjgVOdp8uWi3/2xXHfjiEJIhWuIaTwgHuwyxEdVmW2gwsymxcww9noIUIe2dIrLknWGjOBxFcob6/RjIqmryi/p6kgWQM7ceuvGzQDx7WR7ao6YTHg2zR2R0LCaqYS3QO1tiRpMWPkxun0f3R1k3i1eFfaVHL1jKherIbKdBmiZN4lmI86m5QoHmjRUMOJJtgkkH55ecNPWH9KMSH1sBgdNVEscDjAXE496/1kCggLT0haIg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794281883; c=relaxed/relaxed;
-	bh=RizbXeQwSS8Q6T8pRtftF5Z2CgoWFTnXtYNX9zCDglQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LAgd4SxyyRgqNJ4h0ECXtO2TvhCY+tTI/u0VuZf4o8k51SYr5lRs5GnDneSDBr+N7I1SzelBRcLDFZnke5OLObb5Yvfw60ubyQgZEjm4rI0SxgYgUl5D2ATVh2xqFzJpP8/yORFFJp65s1CvMuplETwWyT2ceERH9/ERekh21H55nVTUZxzZnXNqLBEY+eVUZ9a0E6KJl2TU5U6XdhcScQKUreHu97CSrmWNJ2ritazuZunpbmvx9w2RSg6yRo+ePcAiXFyycIR4ndCpdK3EbPannyjgWzTh0DwIgnQd1pHlbEaE01MvIJuPyCO46xPGmUZTHheDsqeaLvuUYKwPtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZXKhegGN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794283238; c=relaxed/relaxed;
+	bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=EL/7gQLYRW1Oy1abw2NdsHvSMcO47Mh7X2Ltq/lm2vrknERqA6ba2PFTmJOrNM4v+WaUbpF3tJOqhIvSAI/7FAgr2hk0vUIChZIj4De64+O/pM0uzQS5o2vtdeXih4j/NLXOZMmPJaTLM7otaaRLXVXRIaHU4rlrPMGydfE99ty1dxAZuoc7c1qfrFuC3uLb/w+BJWHgnJ/I8aP6nZWN9mEkYc4+BWicOm5phG2E6n4ogiCqNx29CpZGQ05N5DkRPHDUxI4B1VgP9YGJ6jmpxGDrjBHD7aB4kry6IQ+jrim+ipPNt3POg697WSarN6fwATKVCUHvkaEyAYx7B9FlXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EyTKNIVs; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::329; helo=mail-ot1-x329.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZXKhegGN;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EyTKNIVs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::329; helo=mail-ot1-x329.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x329.google.com (mail-ot1-x329.google.com [IPv6:2607:f8b0:4864:20::329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNsmp2f7tz2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 14:38:02 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA0idpc3480957;
-	Tue, 10 Nov 2026 03:37:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=RizbXe
-	QwSS8Q6T8pRtftF5Z2CgoWFTnXtYNX9zCDglQ=; b=ZXKhegGNUSSqlcBka8IlLn
-	reOXaigECu+ybMo/jzGozPuTBANd6cfhDW0IU0I0YH2cxcg2FVSi0ZDQ8jwkAC5a
-	o8aHmKoizH323tSYmhusHwCfPwrJHS4c+NEwJmG4LKWBYtdVl3PEbSDTi+B9Bw4O
-	0FoQ7APsGVp2aesyBX+SnMuLqqMW2b+gFz5+NpQGDpk52rmwu5FyBNy2pkX9kxCN
-	IjI9uwjCy2JRZlPluaw/CjBsat4WmLupghwM2JHl+ZOfkCxqrrye5spYRQ7kub00
-	xi7CbzxYmfzrd7resx2gahUk+oDbWQzYO0JChMGPAcJ4Pd4ei567F2jByfTZiJxQ
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsunt2yk4-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 10 Nov 2026 03:37:48 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA0nwmH4070475;
-	Tue, 10 Nov 2026 03:37:47 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4htghg4np5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Nov 2026 03:37:47 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AA3bkG58323622
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 10 Nov 2026 03:37:47 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CE8D45803F;
-	Tue, 10 Nov 2026 03:37:46 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 78DBB58061;
-	Tue, 10 Nov 2026 03:37:41 +0000 (GMT)
-Received: from [9.123.14.23] (unknown [9.123.14.23])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 10 Nov 2026 03:37:41 +0000 (GMT)
-Message-ID: <eacfdd0e-1e8a-453c-977f-d3717c22ed12@linux.ibm.com>
-Date: Tue, 10 Nov 2026 09:07:40 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNtGs6Wwdz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 15:00:37 +1100 (AEDT)
+Received: by mail-ot1-x329.google.com with SMTP id 46e09a7af769-8479f46ecd8so803283a34.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 20:00:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794283235; x=1794888035; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+        b=EyTKNIVsBjHIsyn9GJlsmKCRiCfOiqX+9R2S7uxHAIInRLwfO2qWK13TnzfQbJ6gSr
+         oDSf8f2yGewOv57cWoy6A0fSLGZGruYGwRaiLt5Jlz416O2s9BLWU4jYvhUZhIMCgso+
+         CTAGWsq7hDzAfzXwrikxppE4NAjXJ31QJPFHcOZ8qZ8xTq87R74vtMnHvFsc49O6eg1L
+         Obr7kcM0qQpzAzGQ2KHvNsdplaUG1MVMT+8EAkNdn9UixF9Pm5Nr/9QEYZf2hmO+z/TZ
+         X+T89cRiNz2P1DunSc5NPkFlatIjlc5v4oe2fQxAfFnMSAYHirHk72Agg0psl7E64y7j
+         OGSg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794283235; x=1794888035;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+        b=DH8U/CQZtPM1xiSEu/XU1thk4mfLzMfaMpLV+cZ9jeK/TPFhbDsI2ZXPdd2Is6b1uI
+         qyK4G66RTjqAiEDZ3kmsuDRajZvZ2hryL9KYnBQYVjEeaa2ljdOMWJbKXLbcks3A3ZI3
+         VxCV21ocVL95sJz4is65H1Kz/6yCYCyTcG5ZM5PlMIhMzFleC8ahcBzdvOlvUe4ANZof
+         PAzcEaT4OEwe4ovOOqZWw9ydhBS4JL5y9SyRq/iAvIVcJEPEDwRTyLPSvH8vdCgKket+
+         HLTA2X3BOMs0LFI51r83yZW8N0kLGCDSOxVBzDiXtiYVEbRpYjw0HnPngP+Ib2Nnl4DM
+         RVRQ==
+X-Forwarded-Encrypted: i=1; AL+hErHXoFeYheQMYm8uZ/zTgkVUIycCEcMjYPkM2SFeLs4Za2WQriip6QSV4usV9xm45vBClB5j7YGfyscPwgc=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+addQ4K2OiuF995nAWSty8jjt0Von7MsQTtHqfpnE9DoyTLV5A
+	xWFO06kWioTqi3DdAo+x5AM2GWdO6PCUxsSJmm8EPR8RawvVCQtQeIE+
+X-Gm-Gg: AYBFou1SUCymJVlP/QI2G/lPtCIE+KyD5sp9i5UTv0d7QsFfQOM58hiPmyVQ6qZEbTs
+	hprreFgYRv4/IMVqVf/5f07K8lAqY/COKmtjX+e1ACHknvEEglGXHL8/bv6pHJOUN2JpFxqu7b+
+	Mzhb9/nivhaSp7GgdJSUEZdR0aMIgcwFtOyQNG/48Ym+qysC5I9JadwiYmARBzkv9gLhD+dUSfb
+	1EFeHR5tj3KXm1WdqPBuqoqHwA0yoOeY3QGW61FLUWLozbFFMqbvKtpEi2Fbh4M+gFsyD/dD0lz
+	J93bSo2FZ1a+3KAC9cwwZljMSZmg74NZK4pmTAEYvZE+C2TTAH7ain/kCb4rDPV8BL7KqsX6eAV
+	9EAnSVAyvporHAdqWusgehMm8fEGR4wBKgyFTHBS0fVE4yNtXTZtduFE+Zc1WnbHuKK9nZ9tjl8
+	X+D2k76jbZlQatTjfZFDLGceZKQAXzAATyWebmqy1Ky5AHsKYKhl/QFKn/yhj70r/XdScdVgOmF
+	QQy4K756aCIXyDMkSBzkFz2CcQr5Er/hqx9EG+941hI70JJy6vgFrKuykDif3Xtra27vsgoWEyG
+	gTUIB0mdl5KuK2H4QplZW48jVky1Y6kx1cFSUbmggaVKMeimtLMoZkmT/z5FkKtwuCebkrT7Vv4
+	a59Wazj9Z1JlZafMVDgKl6xxfyIP9mf5VwfCbtq5Fy75+GwpXP3cWjbxaJqL+NmX1gDdWkSEfSp
+	Peo3bl4kzMRB5cHx48abrFT587DDyX9he+iX+WZS03iarJ/jx+QFrkhmYGisnJi+lwh/KlgzzJ
+X-Received: by 2002:a05:6830:906:b0:844:4959:e856 with SMTP id 46e09a7af769-860dc7c3282mr1426887a34.11.1794283235287;
+        Mon, 09 Nov 2026 20:00:35 -0800 (PST)
+Received: from [127.0.1.1] (174-29-1-49.hlrn.qwest.net. [174.29.1.49])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-860dcc1d759sm1028178a34.23.2026.11.09.20.00.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Nov 2026 20:00:34 -0800 (PST)
+From: James Hilliard <james.hilliard1@gmail.com>
+Date: Mon, 09 Nov 2026 21:00:16 -0700
+Subject: [PATCH v11 1/8] serial: 8250_omap: separate locked TX DMA
+ completion processing
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,108 +93,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 2/9] keys/trusted_keys: fix PKWM output buffer cleanup
-To: Jarkko Sakkinen <jarkko@kernel.org>
-Cc: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        James.Bottomley@hansenpartnership.com, zohar@linux.ibm.com,
-        linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-        nayna@linux.ibm.com, rnsastry@linux.ibm.com, stable@vger.kernel.org
-References: <20261105144320.357260-1-ssrish@linux.ibm.com>
- <20261105144320.357260-3-ssrish@linux.ibm.com> <auy450SsVheY_yCz@kernel.org>
-Content-Language: en-US
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-In-Reply-To: <auy450SsVheY_yCz@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDAxMiBTYWx0ZWRfX77wfdAw6OZKN
- jP/t5IIBCLmddI+wnXkRoDtnxUMIVYAEa1F4S102D5W192pH1ZIWJL8O9zPhUzi6mDeHOEnSdTb
- c4wlrhZGodzyncEvMd617okIFtlCrZNAqblAPZGVP/hC/kcVBV8Y4k9b+QZuak8vn3sd7M8RrOA
- 7PPpLkrD25YZJxBijmLStdkNuVyyXgHr57qaEo4IvLyGwlPf7BAF/drUyT9KZ2sWZKGvXzM6ufA
- 3NxHfpwBftZ8jdfWYfswl8wSrhKIJuJDBpLQES16Cj/eYcKzjRjm0dxdJZNQi3vViqwS3bvr9wf
- 1tp16xEHeh668b3RnEIZshAVTbMGPdK+fTXUYo6p9AehkPd6lfge6qFmnKuhOPTJDbtLoyHUrV1
- 5hJ2jltAUA/EGiGwncxBLzYu5RU4qFngqQoID7E7Oxaas9KUtyzLVvGBzW5c8pq1z5KPBcaKFJG
- ueNgrzRfkhmQcmF7wTg==
-X-Proofpoint-ORIG-GUID: NIx-aZp2D-AFmjTdtAtrrQOBx5IQHvFq
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDAxMiBTYWx0ZWRfX2V858s0WhzrR
- dHd89HgQnRzuOFHcP50QQ753QpWueEtEZfmHDnEZcyzieM5a85YPkXTaL3bqA8Y+VeGUGSdYM18
- XlyO6hG3e6G5TNoFs7bgVmG3E28nWVU=
-X-Authority-Analysis: v=2.4 cv=euZKXYpX c=1 sm=1 tr=0 ts=6af2918c cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=WH08Y0zQAg0zyyIRucIA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: S7C16z5zsO0DXYXtKNTprjsF-w-cRkVw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-10_01,2026-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 suspectscore=0 spamscore=0 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 impostorscore=0 adultscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611100012
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+Message-Id: <20261109-submit-serial-8250-dma-cancel-v1-v11-1-6364edca63d6@gmail.com>
+References: <20261109-submit-serial-8250-dma-cancel-v1-v11-0-6364edca63d6@gmail.com>
+In-Reply-To: <20261109-submit-serial-8250-dma-cancel-v1-v11-0-6364edca63d6@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+ Jiri Slaby <jirislaby@kernel.org>, Raul E Rangel <rrangel@chromium.org>, 
+ =?utf-8?q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>, 
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, 
+ Heikki Krogerus <heikki.krogerus@linux.intel.com>, 
+ Tony Lindgren <tony@atomide.com>, 
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
+ Richard Genoud <richard.genoud@bootlin.com>, 
+ Nicolas Ferre <nicolas.ferre@microchip.com>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+ Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
+ =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, Frank Li <Frank.Li@nxp.com>, 
+ Sascha Hauer <s.hauer@pengutronix.de>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ Fabio Estevam <festevam@gmail.com>, "Maciej W. Rozycki" <macro@orcam.me.uk>, 
+ Timur Tabi <timur@kernel.org>, Peter Ujfalusi <peter.ujfalusi@ti.com>, 
+ Vignesh Raghavendra <vigneshr@ti.com>, 
+ Patrice Chotard <patrice.chotard@foss.st.com>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+ linuxppc-dev@lists.ozlabs.org, James Hilliard <james.hilliard1@gmail.com>
+X-Mailer: b4 0.15.2
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Separate the port-locked completion processing from the DMA callback
+wrapper. Keep the shutdown check and locking in the callback, and retain
+the existing FIFO accounting, delayed register restore and THRI handling
+in the helper.
 
-On 11/5/26 10:42 PM, Jarkko Sakkinen wrote:
-> On Thu, Nov 05, 2026 at 08:13:13PM +0530, Srish Srinivasan wrote:
->> The PKWM seal and unseal paths unconditionally free their output buffers,
->> but the PLPKS helpers can return without initializing those pointers.
->>
->> Initialize the output buffer pointers to NULL to make cleanup safe on early
->> failure paths.
->>
->> Fixes: c99fcb0d735b ("keys/trusted_keys: establish PKWM as a trusted source")
->> Cc: stable@vger.kernel.org # 7.0
->> Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
->> ---
->>   security/keys/trusted-keys/trusted_pkwm.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/security/keys/trusted-keys/trusted_pkwm.c b/security/keys/trusted-keys/trusted_pkwm.c
->> index 422f752598e1..97ffec0ce1b7 100644
->> --- a/security/keys/trusted-keys/trusted_pkwm.c
->> +++ b/security/keys/trusted-keys/trusted_pkwm.c
->> @@ -82,7 +82,7 @@ static int trusted_pkwm_seal(struct trusted_key_payload *p, char *datablob)
->>   {
->>   	struct trusted_key_options *options = NULL;
->>   	struct trusted_pkwm_options *pkwm = NULL;
->> -	u8 *input_buf, *output_buf;
->> +	u8 *input_buf, *output_buf = NULL;
->>   	u32 output_len, input_len;
->>   	int rc;
->>   
->> @@ -129,7 +129,7 @@ static int trusted_pkwm_seal(struct trusted_key_payload *p, char *datablob)
->>   
->>   static int trusted_pkwm_unseal(struct trusted_key_payload *p, char *datablob)
->>   {
->> -	u8 *input_buf, *output_buf;
->> +	u8 *input_buf, *output_buf = NULL;
->>   	u32 input_len, output_len;
->>   	int rc;
->>   
->> -- 
->> 2.52.0
->>
-> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+Reviewed-by: Raul E Rangel <rrangel@chromium.org>
+Signed-off-by: James Hilliard <james.hilliard1@gmail.com>
+---
+ drivers/tty/serial/8250/8250_omap.c | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
+index 4805b644ccb1..b6f108d34854 100644
+--- a/drivers/tty/serial/8250/8250_omap.c
++++ b/drivers/tty/serial/8250/8250_omap.c
+@@ -1080,18 +1080,13 @@ static int omap_8250_rx_dma(struct uart_8250_port *p)
+ 
+ static int omap_8250_tx_dma(struct uart_8250_port *p);
+ 
+-static void omap_8250_dma_tx_complete(void *param)
++static void omap_8250_tx_dma_complete(struct uart_8250_port *p)
+ {
+-	struct uart_8250_port	*p = param;
+ 	struct uart_8250_dma	*dma = p->dma;
+ 	struct tty_port		*tport = &p->port.state->port;
+ 	bool			en_thri = false;
+ 	struct omap8250_priv	*priv = p->port.private_data;
+ 
+-	guard(uart_port_lock_irqsave)(&p->port);
+-	if (dma->shutting_down)
+-		return;
+-
+ 	dma_sync_single_for_cpu(dmaengine_get_dma_device(dma->txchan), dma->tx_addr,
+ 				UART_XMIT_SIZE, DMA_TO_DEVICE);
+ 
+@@ -1123,6 +1118,18 @@ static void omap_8250_dma_tx_complete(void *param)
+ 	}
+ }
+ 
++static void omap_8250_dma_tx_complete(void *param)
++{
++	struct uart_8250_port *p = param;
++	struct uart_8250_dma *dma = p->dma;
++
++	guard(uart_port_lock_irqsave)(&p->port);
++
++	if (dma->shutting_down)
++		return;
++	omap_8250_tx_dma_complete(p);
++}
++
+ static int omap_8250_tx_dma(struct uart_8250_port *p)
+ {
+ 	struct uart_8250_dma		*dma = p->dma;
 
-Thank you for the Rb, Jarkko.
+-- 
+2.53.0
 
-
->
-> Br, Jarkko
-
-Thanks,
-Srish.
 
