@@ -1,89 +1,122 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5140606A326
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 13:43:40 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E12960A383B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 14:19:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TZidMebF
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=24m00Mxy;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gWL5bCh6;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=24m00Mxy;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gWL5bCh6
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP7Cb2WfPz30gp;
-	Wed, 11 Nov 2026 00:43:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1232"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794318219;
-	cv=none; b=ESAoyiX0cUgiqhOuCEa7TTmczDoNBvuqTIhOlaNerTbkt8YWoLeVt95/ITPc5gnYhNqTZAb+Z/qidljLvJj49NGDYqhm8BDhMCY+TxZJGGb5FmAkMV1R3LM3BjpBAMNaXPHM5wsYF+S96nyvt2NNtqw3c9XKLfOk+KNsX3La7b7HgiV3ydqx+Eofgl2xz4nMoV/ABgepTogzsJyJvAJvW+SWHR4UcwIn6ORP8kc5lIkx/rFgxkV1C6L+M+QAprCEAxmi7+DTx8kHwEJ8Vs7m6R00MbfiX4WVEdYztJ2yaYTYm4lzmGe1sVAr/3xBS9Ntgp9wy/5y8LlNg4aLGjOvvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP81B5VRbz30C6;
+	Wed, 11 Nov 2026 01:19:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794320382;
+	cv=none; b=SC1lsaNf792n7E2xuVpeDBDGNHLUp3msrFrQDNUwLh+7m7EHb0vOAIoOUto9hTShFpHxn+6teKXyjJcs8tRpxCx0ISQGRdMktnPC1Hl+8l3E+l4z5/iCQLfJT//PeetJ6qy1awmgEATSBd5nW4zGHYbhGuLMeEDHbdd7h7uj8KMK/8+mWRHlwi1x48k7dbttLITgaRw/rs/VkmV7qGj7udvmTkJk674jeTsIz/3yZeMXcz+uln4kIYOdz3KbSQlyt/85H5e+FH58yIm/dBQwo09B4aFgsCzz6zM0Z5pyYOttGQ0mpJ2KmoZuC/OUrE1feBTsyDFMYObHUvJE9miDXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794318219; c=relaxed/relaxed;
-	bh=SF0VorXBRqQHhsbCyIkGXlS2ClFfeF3LBlFw4KZVLng=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=m5+88q4gx2h6fn9TbqKg/xug7du+G19ff7WABxs9qC/QckwBKiLRIFbQ1c62PxBmMPXWlE7r5gjwBLybwKDnnyh4iPgcmhrnfeD/u7NuBLMJ/71V2cs/yNakrTDfqdqe2reAmfjPDvZIFmfDMj6/8RiAbrg1T7qEbzmXVuuOgyVTenBHVRXDJh+Di2qrps8E1T+Googb/Zv8EAAmRhGnJbC3eoBRnaEJ7EpqGobdrqLLU354O1HZqw6XNSL23uapyFh9jeQXrnaEMVkcPME9PJtBZm0JnE52gA7bFEW+9BtT82fFzzrlR4pCK0aC6p7oj0NpX17tic0AqSQBPJXsug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TZidMebF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1232; helo=mail-dl1-x1232.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794320382; c=relaxed/relaxed;
+	bh=ey86SkVvx7i9NDOgarxUx2o/w+Rx/Wx0u51qrIOGmpM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=oZtx7E2GaLdWhJkHWTRaclWmZG4lBq2LQS0sgxhXJAo9C6kxqss4MaE3CZ9NOXb6412dZSw2X2UEIVBy+M+7qNrlRUaPscY/v1hbQZn3iAPoA2vw+MqW8mX8c4l0CvfQY8WP9mPm4HVyEVc4U7fPJ9I8b0D5MGUgBxmuVlgRakz0+NhkIZNK1NsVM0kIrf6CnBePkrS8LYjseyGZW3H9xOOJi50++LROJxj3NRha0ZGAZkxyYJWP3MZu6Ts3zd3fT4yWUcsc8EdLKRl9EHBTPf+WKxCbUw5FuBN/B2TeCGOG+AzOOLJzHLWISHfusU3z24GHzo33dk87NunaDVerEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=24m00Mxy; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gWL5bCh6; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=24m00Mxy; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gWL5bCh6; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TZidMebF;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=24m00Mxy;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gWL5bCh6;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=24m00Mxy;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=gWL5bCh6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1232; helo=mail-dl1-x1232.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1232.google.com (mail-dl1-x1232.google.com [IPv6:2607:f8b0:4864:20::1232])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP7CZ0jTkz30VV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 00:43:37 +1100 (AEDT)
-Received: by mail-dl1-x1232.google.com with SMTP id a92af1059eb24-1b3b4bcbfc9so1963091c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 05:43:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794318215; x=1794923015; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SF0VorXBRqQHhsbCyIkGXlS2ClFfeF3LBlFw4KZVLng=;
-        b=TZidMebFFWV8Cew0musAxMYxWYhLcK0AE1pTRq4GhB1FjP3CMeiG7fOPTR3+BKyB+S
-         VrEtO+JQ0LaZOddJuUGJhVZY3yINmhfN6JKOO5bZPsEWcle/ZP/7EboeXM6HOLIYaa8t
-         GZdcih2QuDeiVxZltUC5gL/aNnG56SUfSfCwjX/XkPkcEKqM4RYdCtW3VG93XD4oEjCY
-         9O2XJJH9sP+xkoeUMp2a28rH+ujU9Q+Jo9QkTeD7qVAoOk1gHIPe5WGjob6MJDzsKhKv
-         0s/Y1tA9Bn3rtt/2ZKhQJOZcIGn+jRD6fQ9EQ1kWG7pJeGbTbL0hpjd/ki0KFh3JsCkF
-         XT0g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794318215; x=1794923015;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=SF0VorXBRqQHhsbCyIkGXlS2ClFfeF3LBlFw4KZVLng=;
-        b=CgRFiwpNXCzn6vMX1P08lI3PQ3pq/NXocZlZp2VoKD0sqqMbyUGx2iWUMtalQTpfcJ
-         mMpoTM+Akc98hRPL9ETcQfjF/Ld1Ks/Wjz0qjbZ8ZjCHY6CqOd57FXqaUebB29OtxoBZ
-         bYZd09ffEssBlK7R7IyUSJsZj+gGdN1a3EceQ3YsWhMGIZZNtIvyT+amOE3Z+ln+kBQ5
-         As6bAFBrnwYvgh03hWu6/mtEmHu+nFgNtta2tObBcASNWVX+Yy+XHz9sh0EGE9cueOWL
-         qa1ptcdOBexCDkWujUtvIS9EHHoI+0jcuTWakY0Fzg81dJifWf536eO0Cc78WCl82LQr
-         n85A==
-X-Gm-Message-State: APuU4Z9hszmoElpUIB89MtxxWko3c/KAMS5EGfFkM/iAGKWH36anQLE1
-	m55kqK1tjyAx0WlRvQzofI0XM9YjKjjIoQbUdvNYHqpI9H2Z3c1ohVrL188Es3P/
-X-Gm-Gg: AYBFou2TiJm3SYckcUYXgK9121mc7zP1aoAWkjMfSW1jItZYAUiK03HRl9jMHC6LjLR
-	fddzIVUXsxx+1y+YsqFRLo3DvbW0tCXviIcHa06UAtAn4A1STNkiqvd92TGi9LfSa3NsBi0WgTz
-	mnMSKQVUt7YeIghMSVqbfmv/ixvahjEs8IGKc/m6lTa9Kpe8dA8rfKAnphYfxw8JAm21C17TDK3
-	sitJ6zFlvGNcrb2myAxp74cnYpUFhRYaOh+cbP8hgwHHfjNqJx/x7pTWYJ5CZENOffG+s/57yLH
-	bfhOBdn3phad1MZMq+piubsBP+NRmgbxy8NBNiqxCdsOvCszGrte23aDwoftrQ6+X9azsGsz8Da
-	L+AnJhou4ArPAmeJvS5FEn21MCGmafln+eQAzOsMsI27YHPSArdsdW6eBSwrxZY99941XQERotR
-	jW7iCKR87Iy5o9zmB3MaCVlQDCyWxT0wH2bRM/pAX7rH09zta8Y/zwGxWwtzL5qDiRYQBGoR15U
-	Kxx+4a8DEbwxapjHTNRn74bBcwxCxZedom/CtXDOjRsWU8X/WFTC/IZeqIjnkRFExqLiKzNQbSY
-	PqCmI26RxeW2EZf6g+XE12V0/F3/ggkdbg==
-X-Received: by 2002:a05:7022:458e:b0:1b3:b131:6a22 with SMTP id a92af1059eb24-1b3b5fcdbefmr5046056c88.7.1794318214706;
-        Tue, 10 Nov 2026 05:43:34 -0800 (PST)
-Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3751ff2ab59sm7500065eec.6.2026.11.10.05.43.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2026 05:43:34 -0800 (PST)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	linux-kernel@vger.kernel.org,
-	chleroy@kernel.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCH] powerpc/smp: Handle missing ibm,thread-groups in parse_thread_groups()
-Date: Tue, 10 Nov 2026 19:13:24 +0530
-Message-Id: <39282c731de90f47678952e471236ef22e9d4b15.1794317777.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.39.5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP8194mvzz308Q
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 01:19:41 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 8A12F21E31;
+	Tue, 10 Nov 2026 14:19:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1794320377; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ey86SkVvx7i9NDOgarxUx2o/w+Rx/Wx0u51qrIOGmpM=;
+	b=24m00MxyS14C4kCTYYtxKWJP25EBVNVIxLRshWhDnl2XZwRpRipDNZJw4Avu/J2svsqCMy
+	VTYT/SHAlqxbP0FIU7B9V7eV3/1rBXkEe/Lcm9f8ja9SENmigoj1MKRmnopRtQWBaY3OFh
+	eux20BDfQ6AJqBojuMAzQiJJg3QKDxU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1794320377;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ey86SkVvx7i9NDOgarxUx2o/w+Rx/Wx0u51qrIOGmpM=;
+	b=gWL5bCh6bmxfDaClyKTxrGr/cthAMhYHhVBSAgTvyrROUNgpSm1do5CLIUVQzQAzFJlTzk
+	zIhImlSyPcZvZwDQ==
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
+	t=1794320377; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ey86SkVvx7i9NDOgarxUx2o/w+Rx/Wx0u51qrIOGmpM=;
+	b=24m00MxyS14C4kCTYYtxKWJP25EBVNVIxLRshWhDnl2XZwRpRipDNZJw4Avu/J2svsqCMy
+	VTYT/SHAlqxbP0FIU7B9V7eV3/1rBXkEe/Lcm9f8ja9SENmigoj1MKRmnopRtQWBaY3OFh
+	eux20BDfQ6AJqBojuMAzQiJJg3QKDxU=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
+	s=susede2_ed25519; t=1794320377;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ey86SkVvx7i9NDOgarxUx2o/w+Rx/Wx0u51qrIOGmpM=;
+	b=gWL5bCh6bmxfDaClyKTxrGr/cthAMhYHhVBSAgTvyrROUNgpSm1do5CLIUVQzQAzFJlTzk
+	zIhImlSyPcZvZwDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 5517613479;
+	Tue, 10 Nov 2026 14:19:37 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id I5aLDPkn82qLGgAAD6G6ig
+	(envelope-from <jack@suse.cz>); Tue, 10 Nov 2026 14:19:37 +0000
+Received: by quack.suse.cz (Postfix, from userid 1000)
+	id D0CEC22536; Tue, 10 Nov 2026 15:19:36 +0100 (CET)
+Date: Tue, 10 Nov 2026 15:19:36 +0100
+From: Jan Kara <jack@suse.cz>
+To: Christian Brauner <brauner@kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, 
+	Linus Torvalds <torvalds@linux-foundation.org>, Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
+	Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, 
+	Eric Dumazet <edumazet@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
+	Greg Kroah-Hartman <gregkh@suse.de>, Joel Granados <joel.granados@kernel.org>, 
+	Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
+	linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-acpi@vger.kernel.org, 
+	linux-kselftest@vger.kernel.org, linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
+	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	netdev@vger.kernel.org, ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
+	coreteam@netfilter.org, kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
+	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
+	ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
+	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
+	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
+	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
+	sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
+	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
+	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
+	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org, 
+	Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
+Subject: Re: [PATCH v2 29/51] proc: don't walk through a non-directory when
+ resolving a name
+Message-ID: <okuebbxuf5q6xy452dlnxaqwainsafs5waulvn54j3vqxg2dhx@hh6ql7sg3pte>
+References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
+ <20261104-work-procfs-bugfixes-v2-29-bbf7d5546809@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,65 +130,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261104-work-procfs-bugfixes-v2-29-bbf7d5546809@kernel.org>
+X-Spam-Level: 
+X-Spamd-Result: default: False [-11.30 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MID_RHS_NOT_FQDN(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCVD_TLS_LAST(0.00)[];
+	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
+	RCVD_COUNT_THREE(0.00)[3];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	R_RATELIMIT(0.00)[to_ip_from(RL63fqwwx8ot6gmekemcs76f9d)];
+	MISSING_XM_UA(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_DN_SOME(0.00)[];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[60];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,imap1.dmz-prg2.suse.org:helo,suse.cz:email]
+X-Spam-Score: -11.30
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Power systems can have ibm,thread-groups properly absent like in one of
-the PowerNV Power9 boxes where there was a warning splat reported on
-7.4-rc2:
+On Wed 04-11-26 18:47:15, Christian Brauner wrote:
+> __xlate_proc_name() walks the components of a name like "a/b/c" and
+> takes whatever it finds for "a" and "b" as the directory to go on in.
+> It never checks that they actually are directories. So
+> proc_create("file/x") hangs x into the subdir tree of the regular file
+> "file". Nobody can look x up there, but remove_proc_subtree() on the
+> file removes and frees x along with it, behind the back of whoever
+> registered x.
+> 
+> pktgen passes the name the writer of "add_device" picks to
+> proc_create_data(), and only the part in front of the '@' has to name
+> a network device:
+> 
+>   echo "add_device lo@"   > /proc/net/pktgen/kpktgend_0
+>   echo "add_device lo@/x" > /proc/net/pktgen/kpktgend_1
+>   echo "rem_device_all"   > /proc/net/pktgen/kpktgend_0
+>   echo "rem_device_all"   > /proc/net/pktgen/kpktgend_1
+> 
+> The third write frees both entries and the fourth one makes kpktgend_1
+> call proc_remove() on the freed second one:
+> 
+>   BUG: KASAN: slab-use-after-free in proc_remove+0x8f/0xa0
+>   Read of size 8 at addr ff110001134c8e70 by task kpktgend_1/243
+>   Call Trace:
+>    proc_remove+0x8f/0xa0
+>    pktgen_remove_device.isra.0+0x118/0x500
+>    pktgen_rem_all_ifs+0xeb/0x1a0
+>    pktgen_thread_worker+0x1b42/0x7280
+> 
+> The files of a network namespace belong to the root of its user
+> namespace and these writes don't require a capability. So once pktgen
+> is loaded an unprivileged user can do this in namespaces of its own.
+> 
+> Treat a component that isn't a directory like one that doesn't exist.
+> All names with a '/' that the tree passes in as literals only walk
+> through directories. pktgen is fixed separately to not pass such names
+> in the first place.
+> 
+> Reported-by: Chris Mason <mason@kernel.org>
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 
-  WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1a0, CPU#124: swapper/124/1
-  ...
-  Call Trace:
-   __kmalloc_noprof+0x490/0x690
-   _kzalloc_noprof.constprop.0+0x1c/0x7c
-   init_thread_group_cache_map+0xd0/0x2d4
-   smp_prepare_cpus+0x2bc/0x484
-   kernel_init_freeable+0x168/0x3c4
-   kernel_init+0x34/0x1ac
+Looks good. Feel free to add:
 
-This happens because today we don't check for whether the properly is
-present or not and directly pass the return value of
-of_property_count_u32_elems(), to the allocator.
+Reviewed-by: Jan Kara <jack@suse.cz>
 
-This went unnoticed because earlier kcalloc() caught the overflow due to
-check_mul_overflow() check and returned NULL.
-But since commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
-conversions") switched this call to kzalloc_objs(), size_mul() saturates
-the size to SIZE_MAX instead and we now get a warning at boot.
+								Honza
 
-Bail out early if the property is missing or empty. Follow the return
-value as documented in kernel doc of parse_thread_groups() function.
-
-Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
-Reported-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
----
- arch/powerpc/kernel/smp.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 7a25eaa59e62..9a0f63e43821 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -824,6 +824,10 @@ static int parse_thread_groups(struct device_node *dn,
- 	int i = 0;
-
- 	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
-+	if (count < 0)
-+		return count;
-+	if (!count)
-+		return -ENODATA;
- 	thread_group_array = kzalloc_objs(u32, count);
- 	if (!thread_group_array)
- 		return -ENOMEM;
---
-2.39.5
-
+> ---
+>  fs/proc/generic.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+> index 4c3fcaf68ef4..6ac9c4c13897 100644
+> --- a/fs/proc/generic.c
+> +++ b/fs/proc/generic.c
+> @@ -170,7 +170,7 @@ static int __xlate_proc_name(const char *name, struct proc_dir_entry **ret,
+>  	de = *ret ?: &proc_root;
+>  	while ((next = strchr(cp, '/')) != NULL) {
+>  		de = pde_subdir_find(de, cp, next - cp);
+> -		if (!de) {
+> +		if (!de || !S_ISDIR(de->mode)) {
+>  			WARN(1, "name '%s'\n", name);
+>  			return -ENOENT;
+>  		}
+> 
+> -- 
+> 2.53.0
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
 
