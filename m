@@ -2,45 +2,45 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6C0E60A260A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 11:25:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95E1E60A2612
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 11:26:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=QExuCrRi
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NgWqlnkR
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP48g43M0z3bh4;
-	Tue, 10 Nov 2026 22:25:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.208
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794309955;
-	cv=none; b=oBCfqticiTCWLPiH6lIZ8w01wceS8h32oaGZUeYQp4A8lm5BdfLbyHX4EvZa4GaaqUkSKamfFPECX+gGW+Mcc3ocVRUZUDO5cyC2r22xYc5Q7dhlBu5EAQP1JWoq803bcMLp5PW6dw4U8hHY2zlUdKCdrMUVtThiC6WopdP0WtYippKwcvkBKrsQ7VZx26qHaP99v4qQxa4JylZca0oYNI1ODAhLoM5HAgG16FJGu2IocJTtNBWPtrGXrfx0BG2q6ixetd9oQ8JbRgsSzpMe8TZ5fWK/kuvNQ5Yo481nofCM+xRogUimi9eTMChyHyu2ov3LRdUtEKj5AJ6FNIFbzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP48z2SCjz3bjG;
+	Tue, 10 Nov 2026 22:26:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.228
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794309971;
+	cv=none; b=lSfrPmRftrKbdG6J0Hgkm+w42vNj/450fHAsCZiFrCRT+GVVJpEnRRMEFVByS4NiBnP938CoR83zexpvAqbOs0z2y6OQVjyQzAsJbgDnbSEyT/Xcvkq0dqWS0xN3xDY3wlplvaOT1d/t8az7y1VtDoAjo6WojIzbVEAnnFsF6nUvwLJPFa5PUBIe0uMzIIc5fE4knRmmclV6bnE1JQEul/7mwGrO0tSNf8HxNoWUtASmVAdUve/xWBtJ7Mxa3pky2YFDMxdE+U/uXrzVg0b/kR+zpbDVB+TUIxZ7waeHbrGHiZfzDs6JG12DZ7JhwPAbqCHSH4QNf//qzvwCwyMMSQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794309955; c=relaxed/relaxed;
-	bh=d8GPmNrrbDyVAn3i8pP3Irq5ZXZX7zbqtdgKc3xpyyA=;
+	t=1794309971; c=relaxed/relaxed;
+	bh=xXtS8nqPI8bMiiZsI5aMJRhf4Xi82nV2lL/o/RcncNM=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=dQMhydD3bL2d5nSzI320WGzsDogDSMj0cG920HmEVyZ6kRL9UcbmtEj4K5A5GZURoKAx2I2PlwZVSz2HvfE7X3tZMmNYGAFhveqGWWjhBsRQ5oY5OIjXsmMPyS18OwAL73n/B5eilxhPqUkAyjcX+/x3TRZT8wYj/Crv34VoCgmhSj4W5UQhyEO/jSHwj28u7UGJh+5tv643Ojt6n3nqo9eBwepR/OSZxazl2DEBhJwUOqIJWOiVh/CfXq/DOxarZSS0fcTErBbTK8x2qG6DuYeo/uKkEUW5mOuLR08bFmt/OAATAR2SyZ3wPEvdLRH3Vs4A4/upjIvePPY/QG87fA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=QExuCrRi; dkim-atps=neutral; spf=pass (client-ip=95.215.58.208; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version; b=czpOlVCqmm3M+1rqD57U7aWma0vneJsbhQfesqqh6QEUc2fMZB2/pCsgABt0MvrZtTFHmUo9KL+Yf8l8a/JGXvPKdFzPVPM3LeUqdiI2QbU1rRGEg6kz1BfmhYY6W/FVGRejR7+d055sTeWzcrh8kV6v0a66Q9HrCs/m4Qjce8E2D6HAYk7+zuoLHSch7lAN/C9PVvhLhJy1DoAxazE3VcQ2F3MuUr7kDGFdy/SRF9wLR8PpD2wtqeTitJDq+yeCB10Ka4HKUbmAPKlJBPf5CQNuyigJYS9sEY2v9wzkrYA9ab+lK7eWu+lXgC2DGMV3b0xHU2gzAzwIoZsG8FW5PA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NgWqlnkR; dkim-atps=neutral; spf=pass (client-ip=95.215.58.228; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=QExuCrRi;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NgWqlnkR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.208; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-208.mta1.migadu.com [95.215.58.208])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.228; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-228.mta1.migadu.com [95.215.58.228])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP48f2dDkz30hq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 22:25:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP48y0Cbjz3bb6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 22:26:09 +1100 (AEDT)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=kV3VwCyfCvJMLMAaZdOv60N3vXq9IpfkDxA+THuP2XI=;
+DKIM-Signature: a=rsa-sha256; bh=5qs+zHZlkyqRDMqx7SNWEDLyLXIGQ6DciwEgGF1OF3Y=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794309935; v=1; x=1794914735;
- b=QExuCrRik614pK3Nj/KOJe1vbFP8k6CElmR9Dgf8TsNOov9e8LeC5EO77D9b6PKJboOK+lFo
- 463b6I6kv05lBPHwC+AB+1iOCZa3/YFFRpdf/nI1Ys5KBlMHp0ZcrQb9Lj5OElSGUTmskUDxwET
- TC4Bp32r9YoNH2mkU7501V7A=
+ t=1794309951; v=1; x=1794914751;
+ b=NgWqlnkRqjCIk49MKFVio9mm9PWHktC4BBp1DK7KyfVUifUVLIxERfcDf17sWV83KCpahdcp
+ 4c6ilH8eenxZmHvJUJWbSzIiYvPLoT+q5CS3W9XMeTDe0nJRkxt95P/RRs+f71jAjRLScYeNQ2M
+ g70EFpXAULqpyxoh8lMGa7dk=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 1ad4c6caf1eb501e;
-	Tue, 10 Nov 2026 11:25:31 +0000
-X-Mizu-Trace-ID: 1ad4c6caf1eb501e
+Received: by smtp.migadu.com with ESMTPS id 0846a03f7f9c0cfe;
+	Tue, 10 Nov 2026 11:25:41 +0000
+X-Mizu-Trace-ID: 0846a03f7f9c0cfe
 X-Migadu-Flow: FLOW_OUT
 From: Hao Ge <hao.ge@linux.dev>
 To: Uladzislau Rezki <urezki@gmail.com>,
@@ -64,9 +64,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	kasan-dev@googlegroups.com,
 	linux-mm@kvack.org,
 	Hao Ge <hao.ge@linux.dev>
-Subject: [PATCH v4 8/9] powerpc: drop redundant unmaps of failed vmap mappings
-Date: Tue, 10 Nov 2026 19:25:45 +0800
-Message-Id: <20261110112546.261415-9-hao.ge@linux.dev>
+Subject: [PATCH v4 9/9] mm/percpu: stop unmapping the CPU that failed to map
+Date: Tue, 10 Nov 2026 19:25:46 +0800
+Message-Id: <20261110112546.261415-10-hao.ge@linux.dev>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20261110112546.261415-1-hao.ge@linux.dev>
 References: <20261110112546.261415-1-hao.ge@linux.dev>
@@ -92,50 +92,35 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-vmap_page_range() and ioremap_page_range() clear the PTEs they
-installed when they fail, so the vunmap_range() in remap_isa_base()
-and ioremap_phb() has nothing left to remove.
+__pcpu_map_pages() clears the PTEs it installed when it fails, so
+pcpu_map_pages() only has to tear down the CPUs it mapped before
+the failing one.
 
 Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
 Signed-off-by: Hao Ge <hao.ge@linux.dev>
 ---
- arch/powerpc/kernel/isa-bridge.c | 5 ++---
- arch/powerpc/kernel/pci_64.c     | 4 +---
- 2 files changed, 3 insertions(+), 6 deletions(-)
+ mm/percpu-vm.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
-index 5c064485197a..93029d85e6ea 100644
---- a/arch/powerpc/kernel/isa-bridge.c
-+++ b/arch/powerpc/kernel/isa-bridge.c
-@@ -46,9 +46,8 @@ static void remap_isa_base(phys_addr_t pa, unsigned long size)
- 	WARN_ON_ONCE(size & ~PAGE_MASK);
- 
- 	if (slab_is_available()) {
--		if (vmap_page_range(ISA_IO_BASE, ISA_IO_BASE + size, pa,
--				    pgprot_noncached(PAGE_KERNEL)))
--			vunmap_range(ISA_IO_BASE, ISA_IO_BASE + size);
-+		vmap_page_range(ISA_IO_BASE, ISA_IO_BASE + size, pa,
-+				pgprot_noncached(PAGE_KERNEL));
- 	} else {
- 		early_ioremap_range(ISA_IO_BASE, pa, size,
- 				pgprot_noncached(PAGE_KERNEL));
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index e27342ef128b..f74269636d5e 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -139,10 +139,8 @@ void __iomem *ioremap_phb(phys_addr_t paddr, unsigned long size)
- 
- 	addr = (unsigned long)area->addr;
- 	if (ioremap_page_range(addr, addr + size, paddr,
--			pgprot_noncached(PAGE_KERNEL))) {
--		vunmap_range(addr, addr + size);
-+			pgprot_noncached(PAGE_KERNEL)))
- 		return NULL;
--	}
- 
- 	return (void __iomem *)addr;
- }
+diff --git a/mm/percpu-vm.c b/mm/percpu-vm.c
+index 509d8901835c..59d3a336a6bd 100644
+--- a/mm/percpu-vm.c
++++ b/mm/percpu-vm.c
+@@ -252,10 +252,11 @@ static int pcpu_map_pages(struct pcpu_chunk *chunk, struct page **pages,
+ 	return 0;
+ err:
+ 	for_each_possible_cpu(tcpu) {
+-		__pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
+-				   page_end - page_start);
++		/* The failing CPU's partial mapping undoes itself */
+ 		if (tcpu == cpu)
+ 			break;
++		__pcpu_unmap_pages(pcpu_chunk_addr(chunk, tcpu, page_start),
++				   page_end - page_start);
+ 	}
+ 	pcpu_post_unmap_tlb_flush(chunk, page_start, page_end);
+ 	return err;
 -- 
 2.25.1
 
