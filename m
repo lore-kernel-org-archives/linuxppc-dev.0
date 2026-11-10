@@ -2,92 +2,92 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DCEFA60A381D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 14:41:57 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18B0F606A9CE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 14:42:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KPH4ZA4O;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=nAwA4w5o;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KPH4ZA4O;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=nAwA4w5o
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KX3USKj/;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/2pLOUfc;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KX3USKj/;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/2pLOUfc
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP8Vr4ZqNz30VV;
-	Wed, 11 Nov 2026 01:41:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794321716;
-	cv=none; b=RT9D79yMFrA/lm5xz/WosQkpR2p0E0TeRRD+2ISy0M+GIsHvTcjc3biX/qATOdWxchsN73fPi9hug5kuX6Z/+jfdyDEJECuE688tIaFHjOmHDp/1q2w9K0slwwI/iA4jn6TNF8KjoOlLCFzTqyOv8ViESqbiEQKaYUxI7JROP5u35Cm05eIQkiLCP7ECQNtme8VnfOOoGvuN9tizxNBlYzQtyBM56uaq1XuytVMJOpOQnJtJi1oL7iftZ6iXqEwKO1Dxkv+32kW2o8neNfxEJjI1Ot9D5eSiRIavf+pt4slovUcVbCRkqo/+avYfYrbXqvPQh6nP03i5+3FznABGtg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP8X061Vlz30VX;
+	Wed, 11 Nov 2026 01:42:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794321776;
+	cv=none; b=FG6khJ/1B+2hOn2KYt26iw04JoHMbaOIaO8ohUPVMb804WpZXDUzz6/u6KRU7wgvRwgbiwv9VPxcuwSdQzQU3Rn9cagpXuwxlQ5iSxxUv/tddk6qADjWqTjhbD0KjJH4S82w9Tlw5l9n99CTpWOw05DrAIMPotipeo726DrmbNmiqz2tkc7LjlhCYucQi3Kckuh+lMJon5tUK94UKgJT0/gfGpTBxJ8n1aT1/r5RpSlcMFgwz8hFTei2sU8l4xI/Rzqng01m/X7oKonEgQRepSMZ7m0p3vSienzw6xw7ZMsnpwirvZal0z/E8pyPKJkAL7ufQVA4X1ePhwq5tBgDnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794321716; c=relaxed/relaxed;
-	bh=qDtnp52mCOLGIeKAoTkP/VE9bDmOCKAJNKVe/si6vCg=;
+	t=1794321776; c=relaxed/relaxed;
+	bh=0B4qA1TkglN4OMx2OOtGC+4WxOgjbuwo6ZjpoXcLiI0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=g5fMYsQcXlwanUGVz0uEdpBPAgVfjnnfRs01G5NMPzur53HG55r8y6LvadzcHCtW9/0LqW9x9tynl2fNH1sH48YNDMHXk7++lvjdNFdp2KJcengPXvArNTY5p+uoj8vCICqiLNstvgKm3P2ivgMBtGmW2jb3RhYBxZYy9Dvnx43KkPfxJbP+lxKaGnTdJOwa4X4TdS6YS3wAprzYYOj3qSVY84B40O8PYfQdFwSFn+yu95Sp9B1eVw/j9xUTippan7kbEeLH7xE7k4Ye40Ec9f764Z6/uC1hFcD6WeJE/I+lBwkghqw3Mggl+9Ha4YV09j2TV2FecW+K1MPqzs4SYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KPH4ZA4O; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=nAwA4w5o; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KPH4ZA4O; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=nAwA4w5o; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
+	 Content-Type:Content-Disposition:In-Reply-To; b=NQDHQ3cS9C2uGi60JpNA2briG4jGF+nO7JTZUOGD+7bOFfldI7uuf14rZ9n5e1+aVhry3/3U5LwFU/HUVdxTHnqaJ8lkNHZT4ywFWkuRFfZ6TelSxfy298yXjBz3TWJVZ/cLfCJE0XZJFRZ18/3x+55vqAUWqQCEXGRz46vb5S7JB0gcbDtRiqkHYgWQZmgdDSmJSTYNllBpj733O85bGPt9i7R8b3ZZPMKfnm7AUdfXIngeGyPfr93HI0esgZydRgpp6Lx78YdjZ7y6x7C3GQ/yDHUbljXeMp51qbei4GFw3wBo0oE/J7jfUjLhExBtGIs5dt/eUdPm41Q8oUfgEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KX3USKj/; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/2pLOUfc; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KX3USKj/; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/2pLOUfc; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KPH4ZA4O;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=nAwA4w5o;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KPH4ZA4O;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=nAwA4w5o;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KX3USKj/;
+	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/2pLOUfc;
+	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=KX3USKj/;
+	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=/2pLOUfc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP8Vq6nzKz30V6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 01:41:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP8X00TlLz30VV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 01:42:56 +1100 (AEDT)
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 1F9C621EF0;
-	Tue, 10 Nov 2026 14:41:53 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 598A91F769;
+	Tue, 10 Nov 2026 14:42:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1794321713; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794321773; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qDtnp52mCOLGIeKAoTkP/VE9bDmOCKAJNKVe/si6vCg=;
-	b=KPH4ZA4OCUNQteAlThJVSMdVv+b5CITqUYVDYv0DTYGBh3lYfp14gNkrIBhN3QW8TrZ5Zu
-	8cw3fegXEqyg//sIFlGsygW3ZNppe5S6nwsQ0jNmzUxBYyv0WNVveJumfvFkFKzmvKemzb
-	QpaqM/pVXZxp2ljdJnBPVJc1vEVX1cQ=
+	bh=0B4qA1TkglN4OMx2OOtGC+4WxOgjbuwo6ZjpoXcLiI0=;
+	b=KX3USKj/BuUCPazH8t3noRkhKvNyS5Vl2sfPRRfBrVBNp1j8KEsgjtdwoDEfs+Fi37nQ68
+	vnsR7ycg2OeYqigI5LNHLalsHJ9KCDX9IcBSdyT+NAc3WsyWV3FKF78iAL2OBmuxWV0Xwz
+	g2i8xSSiqPdjbp3ohRC0gvCg0kyAyjo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1794321713;
+	s=susede2_ed25519; t=1794321773;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qDtnp52mCOLGIeKAoTkP/VE9bDmOCKAJNKVe/si6vCg=;
-	b=nAwA4w5op91jEWjfS+enW+W0YGrrCz6iJT8kEaFIkP6kTQL1V7Xx/i770Qaf/dBHb75kNs
-	cnRMKm7wWkaGMFCQ==
-Authentication-Results: smtp-out1.suse.de;
+	bh=0B4qA1TkglN4OMx2OOtGC+4WxOgjbuwo6ZjpoXcLiI0=;
+	b=/2pLOUfcw4Ranr2A4Pwh/sC+sB848L9X9w962zn/48Fcdt+Sh4cEXY+LMMlgvMsVazsfNO
+	Ql9bUyzc9/d9uBDA==
+Authentication-Results: smtp-out2.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1794321713; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1794321773; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qDtnp52mCOLGIeKAoTkP/VE9bDmOCKAJNKVe/si6vCg=;
-	b=KPH4ZA4OCUNQteAlThJVSMdVv+b5CITqUYVDYv0DTYGBh3lYfp14gNkrIBhN3QW8TrZ5Zu
-	8cw3fegXEqyg//sIFlGsygW3ZNppe5S6nwsQ0jNmzUxBYyv0WNVveJumfvFkFKzmvKemzb
-	QpaqM/pVXZxp2ljdJnBPVJc1vEVX1cQ=
+	bh=0B4qA1TkglN4OMx2OOtGC+4WxOgjbuwo6ZjpoXcLiI0=;
+	b=KX3USKj/BuUCPazH8t3noRkhKvNyS5Vl2sfPRRfBrVBNp1j8KEsgjtdwoDEfs+Fi37nQ68
+	vnsR7ycg2OeYqigI5LNHLalsHJ9KCDX9IcBSdyT+NAc3WsyWV3FKF78iAL2OBmuxWV0Xwz
+	g2i8xSSiqPdjbp3ohRC0gvCg0kyAyjo=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1794321713;
+	s=susede2_ed25519; t=1794321773;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=qDtnp52mCOLGIeKAoTkP/VE9bDmOCKAJNKVe/si6vCg=;
-	b=nAwA4w5op91jEWjfS+enW+W0YGrrCz6iJT8kEaFIkP6kTQL1V7Xx/i770Qaf/dBHb75kNs
-	cnRMKm7wWkaGMFCQ==
+	bh=0B4qA1TkglN4OMx2OOtGC+4WxOgjbuwo6ZjpoXcLiI0=;
+	b=/2pLOUfcw4Ranr2A4Pwh/sC+sB848L9X9w962zn/48Fcdt+Sh4cEXY+LMMlgvMsVazsfNO
+	Ql9bUyzc9/d9uBDA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id EE948134F4;
-	Tue, 10 Nov 2026 14:41:52 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 137DD1339F;
+	Tue, 10 Nov 2026 14:42:53 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id jkRDMDAt82pyMgAAD6G6ig
-	(envelope-from <jack@suse.cz>); Tue, 10 Nov 2026 14:41:52 +0000
+	id pC/yM2wt82q8MwAAD6G6ig
+	(envelope-from <jack@suse.cz>); Tue, 10 Nov 2026 14:42:53 +0000
 Received: by quack.suse.cz (Postfix, from userid 1000)
-	id 80FD72254E; Tue, 10 Nov 2026 15:41:48 +0100 (CET)
-Date: Tue, 10 Nov 2026 15:41:48 +0100
+	id 7821722550; Tue, 10 Nov 2026 15:42:48 +0100 (CET)
+Date: Tue, 10 Nov 2026 15:42:48 +0100
 From: Jan Kara <jack@suse.cz>
 To: Christian Brauner <brauner@kernel.org>
 Cc: linux-fsdevel@vger.kernel.org, 
@@ -112,10 +112,11 @@ Cc: linux-fsdevel@vger.kernel.org,
 	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
 	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, linux-debuggers@vger.kernel.org, 
 	Chuck Lever <cel@kernel.org>, stable@vger.kernel.org
-Subject: Re: [PATCH v2 36/51] proc: don't let NOMMU map procfs files
-Message-ID: <shez4l3sx2gonaj5peho6rtfckgiqom7cennfitxv34oceq4qf@csr6sjmey2yy>
+Subject: Re: [PATCH v2 37/51] proc/vmcore: don't let vmcore_cleanup() run
+ twice at once
+Message-ID: <q4w6yd2pk7g6uzqva7sivfusaavqfwsgh3f4m2y7lbp74dfgvr@unclx56ulwys>
 References: <20261104-work-procfs-bugfixes-v2-0-bbf7d5546809@kernel.org>
- <20261104-work-procfs-bugfixes-v2-36-bbf7d5546809@kernel.org>
+ <20261104-work-procfs-bugfixes-v2-37-bbf7d5546809@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -131,7 +132,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261104-work-procfs-bugfixes-v2-36-bbf7d5546809@kernel.org>
+In-Reply-To: <20261104-work-procfs-bugfixes-v2-37-bbf7d5546809@kernel.org>
 X-Spam-Level: 
 X-Spamd-Result: default: False [-11.30 / 50.00];
 	SUSE_INTERNAL_BYPASS(-9.00)[];
@@ -154,123 +155,64 @@ X-Spamd-Result: default: False [-11.30 / 50.00];
 	RCVD_TLS_LAST(0.00)[];
 	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
 	RCPT_COUNT_GT_50(0.00)[60];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.cz:email,imap1.dmz-prg2.suse.org:helo,suse.com:email]
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.cz:email,suse.com:email,imap1.dmz-prg2.suse.org:helo]
 X-Spam-Score: -11.30
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed 04-11-26 18:47:22, Christian Brauner wrote:
-> Every procfs file has a ->mmap since commit 786d7e1612f0 ("Fix
-> rmmod/read/write races in /proc entries"), whether the entry has a
-> ->proc_mmap or not. On NOMMU validate_mmap_request() takes that to mean
-> the file can be mapped. procfs has no ->mmap_capabilities so a regular
-> file gets NOMMU_MAP_COPY, and a private mapping never calls ->mmap at
-> all. Instead do_mmap() takes nommu_region_sem for writing and
-> do_mmap_private() reads the file into the copy with kernel_read().
+On Wed 04-11-26 18:47:23, Christian Brauner wrote:
+> vmcore_cleanup() has a single caller, fadump's release_mem_store() on
+> powerpc. That checks fw_dump.dump_active without a lock and calls
+> vmcore_cleanup() without one, and kernfs only serializes the writers of
+> one open file. So two tasks that write to
+> /sys/kernel/fadump/release_mem through different files run
+> vmcore_cleanup() at the same time.
 > 
-> Reading /proc/maps takes nommu_region_sem as well:
+> The first one removes /proc/vmcore and waits for its readers in
+> proc_remove(). The second one finds the entry already unlinked, returns
+> from proc_remove() right away and frees vmcore_list, the ELF headers
+> and the device dumps while those readers still walk them. Or both of
+> them free the same lists at once.
 > 
->   mmap(NULL, 4096, PROT_READ, MAP_PRIVATE, open("/proc/maps", O_RDONLY), 0)
-> 
->   do_mmap()                          // down_write(&nommu_region_sem)
->   -> do_mmap_private()
->      -> kernel_read()
->         -> seq_read_iter()
->            -> nommu_region_list_start()   // down_read()
-> 
-> The task hangs for good, holding nommu_region_sem and its own mmap_lock,
-> and every mmap(), munmap() and exit after that hangs behind it.
-> /proc/maps is 0444 so any user can do that.
-> 
-> Give the procfs files a ->mmap_capabilities on NOMMU that allows
-> nothing. That covers every entry and not just /proc/maps, procfs can't
-> know which entry's read takes nommu_region_sem. Mapping a procfs file
-> then fails with -ENODEV, like mapping a file without ->mmap did before
-> 786d7e1612f0. NOMMU never called ->proc_mmap() for a regular file
-> anyway, procfs never offered NOMMU_MAP_DIRECT.
+> Serialize vmcore_cleanup() with a mutex of its own. It can't be
+> vmcore_mutex, removing /proc/vmcore calls release_vmcore() which takes
+> it. The second caller then finds nothing left to free.
 > 
 > Reported-by: Chris Mason <mason@kernel.org>
-> Fixes: 786d7e1612f0 ("Fix rmmod/read/write races in /proc entries")
+> Fixes: b500afff11f6 ("fadump: Invalidate registration and release reserved memory for general use.")
 > Cc: stable@vger.kernel.org
 > Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 
-Looks good. Feel free to add:
+A bit sad but OK. Feel free to add:
 
 Reviewed-by: Jan Kara <jack@suse.cz>
 
 								Honza
 
 > ---
->  fs/proc/inode.c | 24 ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
+>  fs/proc/vmcore.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 > 
-> diff --git a/fs/proc/inode.c b/fs/proc/inode.c
-> index b7634f975d98..9933f03ab9fb 100644
-> --- a/fs/proc/inode.c
-> +++ b/fs/proc/inode.c
-> @@ -466,6 +466,18 @@ proc_reg_get_unmapped_area(struct file *file, unsigned long orig_addr,
->  	return rv;
->  }
->  
-> +#ifndef CONFIG_MMU
-> +/*
-> + * NOMMU never calls ->proc_mmap() for a regular file. It reads the file into
-> + * a private copy instead, with nommu_region_sem held for writing, which
-> + * reading /proc/maps takes as well. Don't map procfs files at all.
-> + */
-> +static unsigned int proc_reg_mmap_capabilities(struct file *file)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> +
->  static int proc_reg_open(struct inode *inode, struct file *file)
+> diff --git a/fs/proc/vmcore.c b/fs/proc/vmcore.c
+> index 1fe70c4ecc54..ccb795b85509 100644
+> --- a/fs/proc/vmcore.c
+> +++ b/fs/proc/vmcore.c
+> @@ -1764,6 +1764,11 @@ fs_initcall(vmcore_init);
+>  /* Cleanup function for vmcore module. */
+>  void vmcore_cleanup(void)
 >  {
->  	struct proc_dir_entry *pde = PDE(inode);
-> @@ -559,6 +571,9 @@ static const struct file_operations proc_reg_file_ops = {
->  	.unlocked_ioctl	= proc_reg_unlocked_ioctl,
->  	.mmap		= proc_reg_mmap,
->  	.get_unmapped_area = proc_reg_get_unmapped_area,
-> +#ifndef CONFIG_MMU
-> +	.mmap_capabilities = proc_reg_mmap_capabilities,
-> +#endif
->  	.open		= proc_reg_open,
->  	.release	= proc_reg_release,
->  };
-> @@ -572,6 +587,9 @@ static const struct file_operations proc_iter_file_ops = {
->  	.unlocked_ioctl	= proc_reg_unlocked_ioctl,
->  	.mmap		= proc_reg_mmap,
->  	.get_unmapped_area = proc_reg_get_unmapped_area,
-> +#ifndef CONFIG_MMU
-> +	.mmap_capabilities = proc_reg_mmap_capabilities,
-> +#endif
->  	.open		= proc_reg_open,
->  	.release	= proc_reg_release,
->  };
-> @@ -586,6 +604,9 @@ static const struct file_operations proc_reg_file_ops_compat = {
->  	.compat_ioctl	= proc_reg_compat_ioctl,
->  	.mmap		= proc_reg_mmap,
->  	.get_unmapped_area = proc_reg_get_unmapped_area,
-> +#ifndef CONFIG_MMU
-> +	.mmap_capabilities = proc_reg_mmap_capabilities,
-> +#endif
->  	.open		= proc_reg_open,
->  	.release	= proc_reg_release,
->  };
-> @@ -600,6 +621,9 @@ static const struct file_operations proc_iter_file_ops_compat = {
->  	.compat_ioctl	= proc_reg_compat_ioctl,
->  	.mmap		= proc_reg_mmap,
->  	.get_unmapped_area = proc_reg_get_unmapped_area,
-> +#ifndef CONFIG_MMU
-> +	.mmap_capabilities = proc_reg_mmap_capabilities,
-> +#endif
->  	.open		= proc_reg_open,
->  	.release	= proc_reg_release,
->  };
+> +	/* Not vmcore_mutex, removing /proc/vmcore calls release_vmcore(). */
+> +	static DEFINE_MUTEX(vmcore_cleanup_mutex);
+> +
+> +	/* Two writers of fadump's release_mem can get here at once. */
+> +	guard(mutex)(&vmcore_cleanup_mutex);
+>  	if (proc_vmcore) {
+>  		proc_remove(proc_vmcore);
+>  		proc_vmcore = NULL;
 > 
 > -- 
 > 2.53.0
