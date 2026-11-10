@@ -2,48 +2,102 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3046606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 10:04:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08FAA606AA4C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 10:14:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QT0hLtk9
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NzPKxJaX
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP2Lf2xYSz3bcr;
-	Tue, 10 Nov 2026 21:04:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794305066;
-	cv=none; b=lc6JPs9OB3An8uGlhFVlSfKSpSvND9yFPujNlzoSInKb+D4aYi5//ZZtWGU1MmO5Nyjw+tL8H+L2hko0a/ZNhLN+CYOR9mTiMh8/fph3PWCjntikFNIJApnKR+AFT6F9ayUFwK7ekYEF+4oc2e147wooP4/8j9h1BoEybYj/ADhm3pz1lpnWF/ps6cKrHxDM4GIntxTXO6Ov83oUMtqWvxxtJ8MXp+2aqlpT6UXRBYnIdVZWYbTHvWx5UJgNaJN+V8wurcFZ6BOow+AWgevHNZUDmGIp/Y34593I4QIDk5X79Mix0ppMZcbERXvzuvLsjPtDpY0cj3RePSscnusR0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP2Zc5Hc7z3bmS;
+	Tue, 10 Nov 2026 21:14:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794305688;
+	cv=none; b=e2lJtmnlMPIJlkRWItXZWEJudi4ipFjA+MCNSehoNUC8oB9tGzuYYpiIVPpBWbQaAyknJ/9KT5/X36dUvKzlSNb5Fd9wRjS45l/EcbApFykLoK1YXMwPWDhBIfV4LE5ko1NVe3AkHxibfQGpVkKmv8JafCpqYGUCEsVSR1Us2apvxetOyfdeAyXpuo2OX6H8NsBIFJykIp4Zk3UZr5UyPq0+17h1bC15xsShFD3dbtjYDkubufbDf3jTfyFfTU4ILsWm/J2Jlw93AZ2y4YC58aUfNdsb+Z1h+cerey16EkYBWdbHCm/GKMubq/vo9DRN9sir/GaApWO7igdzM/IREg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794305066; c=relaxed/relaxed;
-	bh=eY1DjQBxx9pGJujq6jDGfkVxNU4BxXGTTLJbRN2wf4U=;
-	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
-	 References:Date:Message-Id; b=iIrWV3A99SgKzBGBWcHUtHHDt3aIeP94PdpGAhKcGkVtE4gUtNKrCcwKTPdzuDBSlrfvx6nwSg2A0zYpQ9gvLGwvYVP99J+efTQjfR3HpNiQ72/FosCbukt/UOO2d1MPLXmRxacxPTkvPQgDP2E6pYIhTbdMMBQm1g0fBXoL5eF4Jk38JBiPpc4+VoN/2KcQeerB2WuwjBr45vy8f/7cL7n6xJV91am8fJm05wGe9Wglq7ZHUSL65vasu+Vi7T5tKY9q9zvNQRFry+Gf+4/EPrEU6r0p0aixEBKXWMYy1AI83Vh94r51Wgj4HfUZFZnw8Nk7ZRBCWv7fpkz+wyFA7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QT0hLtk9; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794305688; c=relaxed/relaxed;
+	bh=9WFltYRvNkpM0HMxRLJxGiCTEiP83WtKPHu+oXy3KTg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=SiUCTWkk2LwrS2xOYDSO9fKJMBOvROjcikJVifiT9KPNO7gEcnVvkA38/bCzS0QO5tA8RXtAjaOictFjMpLgHp6JUpzaQBz+sNUNYFXU+5ze3Me4EYXTe/rMgdBVXsfRe9LZ2rBX1K0XWxqfd/GX5CuGC3P2WcEt6KCaaMdBBjJ2eMwGc3cDJUJK8MvdaBhsKs8BXuRF+4WSvn/ypcDIIRC1r7hvh5UPs6eCTMUy/2d3B3CmXd/SSKFuXkQ/Wtskt+sNZt+cavleD1eYHOGdrL/p2goI38ZxqJc5wPsk1k+FYzoM1wY23lzQh3pC4Ct2LAAgj4rQALQeJiaXN3xXZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NzPKxJaX; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52c; helo=mail-ed1-x52c.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QT0hLtk9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NzPKxJaX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52c; helo=mail-ed1-x52c.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52c.google.com (mail-ed1-x52c.google.com [IPv6:2a00:1450:4864:20::52c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP2Ld3sjqz3bcj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 21:04:25 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 68EBE42EB0;
-	Tue, 10 Nov 2026 10:04:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A80651F0089F;
-	Tue, 10 Nov 2026 10:04:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794305063;
-	bh=eY1DjQBxx9pGJujq6jDGfkVxNU4BxXGTTLJbRN2wf4U=;
-	h=Subject:From:To:Cc:In-Reply-To:References:Date;
-	b=QT0hLtk9QO9NQkSAMafK//Ctz1CLu6QbM11Rc9ypRgZvHyr5B908aYtoNJaavFGGr
-	 0fInfPXPrGa6TWHGLogzkkxJ+Xx00GGNu+4+rA8qxV1XsW1X1hTqN6DD16TSa3JAKp
-	 zFkHqXG9t7lCkgbbuWrsooy4xekpacKz3RZeGeb/jw/+M3qMTK0+w0JDpZwYMFWKGh
-	 gQ6rTH8699FKSbnCwHqDJJrCqVSQyUMdoE56xaNNnc1h9qrqjX4Oq+tJRybK9TVJke
-	 XsntNYFGeRI83Yhcix3xoAuRHe6qn+3qze9Zkb5x2CzaRLiQXjUBcD/HiBTyyy2Dku
-	 wT9SVixRtBFow==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP2ZZ5rFbz3blr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 21:14:46 +1100 (AEDT)
+Received: by mail-ed1-x52c.google.com with SMTP id 4fb4d7f45d1cf-6b2237b596cso3959805a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 02:14:46 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794305678; x=1794910478; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=9WFltYRvNkpM0HMxRLJxGiCTEiP83WtKPHu+oXy3KTg=;
+        b=NzPKxJaXDeXxmGkTTFDG7CA7dgr22+WaifkWTnGFBOIHpQAdLSpDTaYt2u+sC/6Bn+
+         BOdts0+eGaoakOHtVRaIOiqQLhwvSz6oaTnAn8Q8+gMD2Uh4XnTbsavlt7lmwyyvyyeN
+         bX8tAIod0KqSbY5OtJKzy5wltGOI4F4VVMDMFC1JEnczWgBUlrGa8DO6jel1fZ8yNRmN
+         B1A8dGElXmuzfw+tUbSZyzor56TYV0qHuppPnWr1kZUOZnBaaevtuu1hPzvCrPZ+8QmX
+         O76gP/Ir/z15lHUfn5pEk7yiBdRaJnqcZi9ep/tqyknMgVuPFveEkBPuVEn6ATNo3iEF
+         cPLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794305678; x=1794910478;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=9WFltYRvNkpM0HMxRLJxGiCTEiP83WtKPHu+oXy3KTg=;
+        b=L7I1SotVcW/ECrELwT1e9HVhOYyp3T/juOamXC2CV6cxF3NDA0kLeTPDz7JtA7598B
+         tjXLcdaIjYA9kpBqqQw703OawGLmgypzGC0VSmhxmnMs+8MppS/atK67z59dQXX3ndXF
+         l7MDEs0bBITPY2Bp1Inc3vGp7CETefBXxpRxSRikocCg/FVTJSVah7fHC+61cWV1K978
+         NWqd51AW7X5R5Ny9UWBuq4/n2lSV4+bxYn+Z7OmRTQcBtptZsg1Bt+YDLU26YOP3x8SL
+         HXqG8Q78qBcvmuqmMYpI1P8ixBrm8scjaZRlgJ7ktGE9oBCPXt94MSQYDyPm5G53JgPO
+         405w==
+X-Forwarded-Encrypted: i=1; AL+hErEn6h3/5N0cZGNVYlGCnYAFFMZkNAHK8ChZAaMKlmyoGIE5t2Mq3+C+vk2pEANiuOCaNSZdxlhMFqiVKzs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z94PMagZ5IXoJaUxVZj6wSA/bUlsqAPJiB42AkuQnssNgdu4iAJ
+	5r1SWIPomQsrngWly5YFCdoGGQwsvOkn2/I2tuv7gVkr2P4IWPryuVd7
+X-Gm-Gg: AYBFou23GBTtl3sKvDAFApxl/H9fCTq3WK87PPGnUb4adxMxIk+79ekuqYAMlRQg6EL
+	Wgob3k4JvjdCbZD7Z6/b7m5GCs+mjQTn225fSRBhZR24v404hZbuGkFId1eM6LoK/MzOIPfEws3
+	aRiW8bm2+Y/Xwx7ifZ/eoK0XfTaE9G7VgWLMlElX2NRTosIVXLzUXENDoUzrWE71BsZOEIoifLF
+	h5/zW/kTcXUZU78+yZpsBsrdfH8QZHQTcIPBOZmJDnBfne3eKMrgnCliiDiaFVaXFJSaXlHrMRg
+	VnXneVtv0MXn6qdcD7G9FsGnUyK9HzSElafQ8K4kpSf+Hjv3D2LrEI0pcezKSP24zUbY7reLIyv
+	hfceU+2tfDWIGv1pSbwBhbzPIaKDvWvYyseIsu3OaLmVsgks6lvVVn93YVA8Uzz5X5DPPfRuGxk
+	MAAQTt5sZ+NCDP3FokqAjh4z42F11dRFjciwewJduz4yzRuv6xtVX/QBXzIey4DfoFACB18nk5u
+	ecAnUCFbf4jYPHzqort6wG0jJCWS9ePhBhKK5b8s/bE8dzOn0dWetWcloDehOXxAGng5MYmiRvh
+	M98tbwWMOqtCDQCRYKOPTaNezVekebvCh0QHRjvNsS808TIMf+OOQORZ7cu0wlHoT5lamVcfiMV
+	IxO/fDWFEvppo
+X-Received: by 2002:a17:907:944d:b0:c41:4c20:5a80 with SMTP id a640c23a62f3a-c504963ce05mr189793966b.44.1794305677695;
+        Tue, 10 Nov 2026 02:14:37 -0800 (PST)
+Received: from localhost (178-84-201-199.dynamic.upc.nl. [178.84.201.199])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c504a593eacsm90433466b.36.2026.11.10.02.14.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Nov 2026 02:14:36 -0800 (PST)
+Date: Tue, 10 Nov 2026 11:14:35 +0100
+From: Amir Goldstein <amir73il@gmail.com>
+To: Christian Brauner <brauner@kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
+	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
+	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-mm@kvack.org,
+	bpf@vger.kernel.org, linux-security-module@vger.kernel.org,
+	selinux@vger.kernel.org, apparmor@lists.ubuntu.com,
+	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
+	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-usb@vger.kernel.org, linux-erofs@lists.ozlabs.org,
+	linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH RFC 38/41] fuse: refuse files on pseudo filesystems as
+ passthrough backing files
+Message-ID: <avLui6Mpf8GbKbtc@amir-ThinkPad-T480>
+References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
+ <20261110-work-loop-pseudo-v1-38-4c998976c6c7@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,257 +111,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH v7 12/15] kexec: Add kexec_load_other_segments() helper
-From: Mike Rapoport <rppt@kernel.org>
-To: Jinjie Ruan <ruanjinjie@huawei.com>
-Cc: catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com, 
- chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com, 
- mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, 
- ritesh.list@gmail.com, sshegde@linux.ibm.com, pjw@kernel.org, 
- palmer@dabbelt.com, aou@eecs.berkeley.edu, alex@ghiti.fr, tglx@kernel.org, 
- mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
- akpm@linux-foundation.org, baoquan.he@linux.dev, rppt@kernel.org, 
- pasha.tatashin@soleen.com, pratyush@kernel.org, thuth@redhat.com, 
- leitao@debian.org, yeoreum.yun@arm.com, robh@kernel.org, 
- sourabhjain@linux.ibm.com, kees@kernel.org, coiby.xu@gmail.com, 
- Yeking@Red54.com, tangyouling@kylinos.cn, maqianga@uniontech.com, 
- zhangtianyang@loongson.cn, guodongtai@kylinos.cn, blum@kernel.org, 
- adityag@linux.ibm.com, hui.wang@canonical.com, sohammetha01@gmail.com, 
- guoren@kernel.org, gaohan@iscas.ac.cn, kai.huang@intel.com, kas@kernel.org, 
- vishal.l.verma@intel.com, piliu@redhat.com, jbouron@amazon.com, 
- mclapinski@google.com, me@linux.beauty, graf@amazon.com, bgwin@google.com, 
- x86@kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
- kexec@lists.infradead.org
-In-Reply-To: <20261026075201.699550-13-ruanjinjie@huawei.com>
-References: <20261026075201.699550-1-ruanjinjie@huawei.com>
- <20261026075201.699550-13-ruanjinjie@huawei.com>
-Date: Tue, 10 Nov 2026 12:04:05 +0200
-Message-Id: <179430504583.425130.15302016434972990362.b4-review@b4>
-X-Mailer: b4 0.16.1-dev
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261110-work-loop-pseudo-v1-38-4c998976c6c7@kernel.org>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Jinjie,
-
-> arm64, LoongArch and RISC-V duplicate the elf core header and initrd
-> loading.  Move it into a common helper with one arch hook for the boot
-> parameters; a failure releases everything added for the attempt.
-
-I like the idea of pulling out the common code, but I'm not convinced
-that the split you suggest is right.
-
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Baoquan He <baoquan.he@linux.dev>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Suggested-by: Mike Rapoport <rppt@kernel.org>
-> Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+On Tue, Nov 10, 2026 at 10:14:54AM +0100, Christian Brauner wrote:
+> The fuse server can register any regular file as a backing file. procfs
+> and binfmt_misc files are already refused by the stacking depth check as
+> both set s_stack_depth to FILESYSTEM_MAX_STACK_DEPTH. sysfs and the
+> other pseudo filesystems aren't. Reads and writes of the fuse file would
+> then be done on the pseudo file with the fuse server's credentials.
+> Refuse files on pseudo filesystems just like loop does.
+> 
+> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 > ---
->  include/linux/kexec.h | 15 ++++++++
->  kernel/kexec_file.c   | 90 +++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 105 insertions(+)
->
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index faba26f871a4a..de1d83ddc38bd 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -259,6 +259,21 @@ int kexec_kernel_verify_pe_sig(const char *kernel, unsigned long kernel_len);
->  extern int kexec_add_buffer(struct kexec_buf *kbuf);
->  int kexec_locate_mem_hole(struct kexec_buf *kbuf);
+>  fs/fuse/backing.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/fs/fuse/backing.c b/fs/fuse/backing.c
+> index 8c21a8a74efb..4e4fb810ddaa 100644
+> --- a/fs/fuse/backing.c
+> +++ b/fs/fuse/backing.c
+> @@ -147,6 +147,9 @@ static int fuse_backing_open_file(struct fuse_conn *fc, struct fuse_backing *fb,
+>  		if (inode->i_sb->s_stack_depth >= fc->max_stack_depth)
+>  			return -ELOOP;
 >  
-> +struct kexec_load_params {
-> +	unsigned long kernel_load_addr;
-> +	unsigned long kernel_size;
-> +	char *initrd;
-> +	unsigned long initrd_len;
-> +	char *cmdline;
-> +	unsigned long cmdline_len;
-> +};
-
-initrd and cmdline are already in image->initrd_buf, initrd_buf_len,
-cmdline_buf and cmdline_buf_len, that's where fops->load() gets them from.
-
-And the outputs are scattered: elf_load_addr goes to the image, the initrd
-address is passed as a separate argument to the hook, and LoongArch infers
-"there is an initrd" from initrd_load_addr != 0.
-
-
-
+> +		if (file_is_pseudo(file))
+> +			return -EINVAL;
 > +
-> +int arch_kexec_setup_other_segments(struct kimage *image,
-> +				    struct kexec_load_params *params,
-> +				    unsigned long initrd_load_addr);
-> +int kexec_load_other_segments(struct kimage *image,
-> +			      struct kexec_load_params *params, bool top_down);
-> +
+>  		fb->type = FUSE_BACKING_PATH;
+>  		fb->path = file->f_path;
+>  		path_get(&fb->path);
+> 
+> -- 
+> 2.53.0
+> 
 
-The call chain is now fops->load() in arch -> kexec_load_other_segments()
-in core -> arch_kexec_setup_other_segments() back in arch. That's a
-midlayer: the core helper owns the sequence and the arch fills a hole in
-the middle of it.
-
-The weak default is never used, all three users override it, and x86,
-powerpc and s390 build a helper and a hook that nothing calls.
-
->  #ifndef arch_kexec_locate_mem_hole
->  /**
->   * arch_kexec_locate_mem_hole - Find free memory to place the segments.
-> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-> index 62d4cba278a57..8b80f1186875b 100644
-> --- a/kernel/kexec_file.c
-> +++ b/kernel/kexec_file.c
-> @@ -1295,3 +1295,93 @@ int kexec_purgatory_get_set_symbol(struct kimage *image, const char *name,
->  	return 0;
->  }
->  #endif /* CONFIG_ARCH_SUPPORTS_KEXEC_PURGATORY */
-> +
-> +int __weak arch_kexec_setup_other_segments(struct kimage *image,
-> +					   struct kexec_load_params *params,
-> +					   unsigned long initrd_load_addr)
-> +{
-> +	return 0;
-> +}
-> +
-> +int kexec_load_other_segments(struct kimage *image,
-> +			      struct kexec_load_params *params, bool top_down)
-> +{
-> +	struct kexec_buf kbuf = {
-> +		.image = image,
-> +		/* Do not allocate anything below the kernel */
-> +		.buf_min = params->kernel_load_addr + params->kernel_size,
-> +		.buf_max = top_down ? PFN_PHYS(max_low_pfn) : ULONG_MAX,
-> +	};
-
-top_down does not describe a direction, it selects "RISC-V policy" vs
-"arm64 policy": the upper limit for all buffers, the initrd direction and
-the 32G initrd window.
-
-These are boot protocol constraints and they belong to the architecture.
-The 32G window comes from arm64 booting.rst and the SZ_64K alignment below
-is "largest supported page size" on arm64 and LoongArch. With this patch
-they become generic and RISC-V silently switches from
-ELF_CORE_HEADER_ALIGN to 64K in 15/15.
-
-
-> +
-> +	unsigned long orig_segments = image->nr_segments;
-> +	unsigned long initrd_load_addr = 0;
-> +	int ret = 0;
-> +
-> +#ifdef CONFIG_CRASH_DUMP
-> +	if (image->type == KEXEC_TYPE_CRASH) {
-> +		ret = crash_prepare_headers(true, &kbuf.buffer, &kbuf.bufsz, NULL);
-> +		if (ret) {
-> +			pr_err("Preparing elf core header failed\n");
-> +			goto out_err;
-> +		}
-> +
-> +		if (unlikely(image->elf_headers))
-> +			vfree(image->elf_headers);
-
-The headers don't depend on where the kernel is placed, yet they are
-rebuilt on every iteration of the arm64 and LoongArch retry loops. That's
-why the vfree() above is needed, and with the out_err path freeing them
-it's now dead code.
-
-Building the headers once and only placing them in the loop removes the
-leak instead of fixing it.
-
-
-> +
-> +		image->elf_headers = kbuf.buffer;
-> +		image->elf_headers_sz = kbuf.bufsz;
-> +
-> +		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
-> +		kbuf.memsz = kbuf.bufsz;
-> +		kbuf.buf_align = SZ_64K; /* largest supported page size */
-> +		kbuf.top_down = true;
-> +
-> +		ret = kexec_add_buffer(&kbuf);
-> +		if (ret)
-> +			goto out_err;
-> +
-> +		image->elf_load_addr = kbuf.mem;
-> +
-> +		kexec_dprintk("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
-> +			      image->elf_load_addr, kbuf.bufsz, kbuf.memsz);
-> +	}
-> +#endif
-> +
-> +	if (params->initrd) {
-> +		kbuf.buffer = params->initrd;
-> +		kbuf.bufsz = params->initrd_len;
-> +		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
-> +		kbuf.memsz = params->initrd_len;
-> +		kbuf.buf_align = 0;
-> +		/* within 1GB-aligned window of up to 32GB in size */
-> +		if (!top_down)
-> +			kbuf.buf_max = round_down(params->kernel_load_addr, SZ_1G) +
-> +					(unsigned long)SZ_1G * 32;
-> +		kbuf.top_down = top_down;
-> +
-> +		ret = kexec_add_buffer(&kbuf);
-> +		if (ret)
-> +			goto out_err;
-> +		initrd_load_addr = kbuf.mem;
-> +
-> +		kexec_dprintk("Loaded initrd at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
-> +			      initrd_load_addr, kbuf.bufsz, kbuf.memsz);
-> +	}
-> +
-> +	ret = arch_kexec_setup_other_segments(image, params,
-> +					      initrd_load_addr);
-> +	if (ret)
-> +		goto out_err;
-> +
-> +	return 0;
-> +
-> +out_err:
-> +	while (image->nr_segments > orig_segments) {
-> +		kexec_free_segment_cma(image, image->nr_segments - 1);
-> +		image->nr_segments--;
-> +	}
-> +
-> +	kexec_free_elf_headers(image);
-
-This drops segments added by the arch hook (DTB, RISC-V purgatory, arm64
-dm-crypt keys) without knowing anything about the state attached to them,
-like image->dm_crypt_keys_addr or the purgatory info. The hook, in turn,
-frees its buffers but not its segments.
-
-Nobody owns the unwind, so "a failure releases everything added for the
-attempt" is not quite what happens.
-
-The conversions also bury ordering changes in "simplify" patches: on arm64
-dm-crypt keys move after the initrd, and on RISC-V the initrd moves before
-the purgatory. And dm-crypt keys loading is not an arm64 boot parameter,
-x86 and powerpc use it as well.
-
-> +
-> +	return ret;
-> +}
-
-
-What I had in mind was to make the core provide building blocks and let
-the architectures compose them, e.g. a common rollback function that
-frees CMAs and drops segments above nr. The retry loops in arm64 and
-LoongArch image loaders can use it instead of open coding
-kexec_free_segment_cma() and nr_segments--. There also could be a helper
-for adding FDT for example and maybe some other common parts, like, say,
-efl headers.
-
-Arch's load_other_segments() could use these helpers and still define
-their own policy for segment placement.
-
--- 
-Sincerely yours,
-Mike.
+Reviewed-by: Amir Goldstein <amir73il@gmail.com>
 
 
