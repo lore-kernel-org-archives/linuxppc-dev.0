@@ -2,82 +2,82 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 06B1D606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 01:47:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48BA4606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 01:47:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nvb6h0of
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bJ3KvRWg
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNqK00jLrz2yD3;
-	Tue, 10 Nov 2026 12:47:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794275236;
-	cv=none; b=f2EbAjRB1XZgwPgHv0tGgawx8WSytVQ0RRpYf3/CSoW4LvRhnDdf4wF6NqFNE16YXDhHwNWGPC1nWZ8KxtgZTqaHYfSw8nk1kfZiKNWc8az34VmUD1SfJ5LGR6o9gZa/Y9Nteu5hiTeLDv1R9UyRZTFexYeFjPor6pDcbcukGcgdMfzJe+ISZ5VkTvnly76A+C5SH9vb1kx5JqcIH3Wjno++ZgNsUcPWXgHkaEJTTbZXGI0iPYhCcCRj/kEUvmzZrpDIcNUWNOo0MBHKfkuIDq24w/mcdMcw+UFXXXsF8HSvqvl3/N8yrf78qNbL5Ezenax5TBZpBFQfbzH5ZdjfsA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNqK20yDfz3bcJ;
+	Tue, 10 Nov 2026 12:47:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1136"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794275238;
+	cv=none; b=dmutigQKHKYF34HEi5cIylympMqfGg3bLxpiXBB13IPT7h+LmIUdU5atLmOhcXf61LHnIm5rr5rjNNNzhRR/OVdFVt58I7VblIrq+n/8anH1ueyqonrzSlGRmgij+ZFZJYNRn70yMs0w5ZNPXVDmZf/m1z4N4WCCraiaHdj/y4DRwS7Ahu8lCtLAGv5Xzsp/+ZuupDpkWL8Z9K6ne4B8IIX3LSNwqcOPVP6+g74LcLONzObqBThDmhr01bL02iXXKPRqoWTAj0qjBfM+vcFf8DMv1CL41Hjmqu6+3lob+LbK7RZkMeXAg3659Zid0FbrHIz8yKxFTpiptSeC6xgJ4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794275236; c=relaxed/relaxed;
-	bh=Et1r+gIQ8MTuvycC4HRAx5tJUodeAXGWjzSxkw1zFH4=;
+	t=1794275238; c=relaxed/relaxed;
+	bh=Bpjh/UZ7eC+Zc+giAfbKZXsslkVQ56T637TBtlmPJ+o=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=e66LtdUjDrEpYthSz51KpY47WL8m2HeCKHmuxMGcQkrrovw5YGYA5u85OOFkKlJEYqk0jS2zOaTLcHte+hyxSeSYyX4R+XMh4FJMBPtMSZysS6JJKBlBzAgQBqGBR7qVB44xVEOyt8UJgedwInZCpwR4jq+B23yPPhPbRW1kpFU056rR1y4oLYzMYey4HZ/o587dirGaRPvPchyGEM/t1fcjd3RiPLVSV+9q9+1mw+FD1QlGRTmfISysQje8eibrgCLaW6M2MY6SIzYoYe08pkJZ7hh2u6y34z0W29Hu+eg0/wbt2cRi+bxKS3/07iwo2VUEA5udL9yEGS+qIPbuZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nvb6h0of; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12d; helo=mail-yx1-xb12d.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=Zibkne8jQ2CRzSFK5l1QowlbTtIjf/Mf/E0VH6tA5ENfPBPBtEcuRR61DzynuLV6ZZdDP5gHlaSEjq1A2bNK2GsnzupLOCP6H/RfDGIRVYU2MzsoNw+LacmU9P3NdYZ3/zoT1jl/KwIgWs83IY5HRgc5GB9LxXuDmJuaPtwAEiwr7Rs6Anl1CV7etsua0Cc1kmZb+BEjvKiSarEkr7HNBbueg1l2s8zFn3PSv3Otki/2hHp9fIRFx4GEcjnIwPfuzmICPOaw/hgpGa2um6OjqtmjTOlxiyKz4nTkztUAqESd4vrH9Kjvju2xK1prVpAx94ZrBWGU4ypOBdzESprr/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bJ3KvRWg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1136; helo=mail-yw1-x1136.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nvb6h0of;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bJ3KvRWg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12d; helo=mail-yx1-xb12d.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12d.google.com (mail-yx1-xb12d.google.com [IPv6:2607:f8b0:4864:20::b12d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1136; helo=mail-yw1-x1136.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1136.google.com (mail-yw1-x1136.google.com [IPv6:2607:f8b0:4864:20::1136])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNqJz2K2Wz3bWX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 12:47:15 +1100 (AEDT)
-Received: by mail-yx1-xb12d.google.com with SMTP id 956f58d0204a3-67bef25eb92so2148750d50.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 17:47:15 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNqK12YN8z3bWX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 12:47:17 +1100 (AEDT)
+Received: by mail-yw1-x1136.google.com with SMTP id 00721157ae682-8b30477a320so11506067b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 17:47:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794275233; x=1794880033; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794275235; x=1794880035; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=Et1r+gIQ8MTuvycC4HRAx5tJUodeAXGWjzSxkw1zFH4=;
-        b=nvb6h0of6rPyGmdqNannj8MsHQ6BGQw7ZAoVQcGkCV2dovmGN65aRub9YScSKwVkoY
-         AxuWfSolsDoMu96/wsKeD3hMzhx5+WGpe04DWwVG48DXzUGa3F3s4JmfgIaluj7fA2RU
-         Of9G+xcwWB16xVYsnfbLq9ddlhYtvngGmaoSWp2tbXGRhHEONL/Odg36S63SLbC4wMPx
-         Opgeb6rxZv6hyhwriBL6lQAKWgYJXkx/wuXM/FWqk2fmNosAmk5wT1BEiQy15gqiugbS
-         sBBS3maVROctFjj0aWpqRk+7JWOA8tqVjtblSPa9/mdk2L/xQaudGcc8MkvOJrKvcWxj
-         TuOw==
+        bh=Bpjh/UZ7eC+Zc+giAfbKZXsslkVQ56T637TBtlmPJ+o=;
+        b=bJ3KvRWgFZg1EweF1ARUAQjVHSNLTWAQ/zsuVP5fArzwq0dXBrIqbqxzbaw5ln8nIY
+         Tniz3Y7YZFJarwGDrN8hxeJTtCtQiqKxA/RzUfljPOr+6H3G7WZmtZxscM3oXY47d2rp
+         d9wQm8eSdqiFeQ/q1GQmuwYdf7tRU2Cjyysl1QrPZWZF6KTFtgOIuM7pRJKp/wV9+SCD
+         hbOPuPCRZ0aADaIz3SkNMvxpGYosBFcJ4l6DMA6O8dhz8jWGQYFpz9dBvZG9qxLg3rJu
+         E1RcC0x8M6a8cgWwkkluBIjKD4R17UA2lH3TOeaal5mtJitgNvTkSaNuPur4g9hWhdGR
+         GPmg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794275233; x=1794880033;
+        d=1e100.net; s=20260707; t=1794275235; x=1794880035;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Et1r+gIQ8MTuvycC4HRAx5tJUodeAXGWjzSxkw1zFH4=;
-        b=qxIkY4a2Qr6VYjbUXSCE6/hZ2QIOKC/psMT9P4gehUzaIrCBTsPHSKXxWga1O8zRVf
-         gkXZVMX2LGT+ajyMvIjD/s61S5ZcwlP8D8TW5Hlh5yxktbQobgAa9byBCBV9InaQK681
-         ZtuUhVrBjxQdszX8wxuLtNiziahUjh4a6u/ey8Mrse4Y4azSCRmySCQCSVnl79OPf6MB
-         C2XiA8pMuaWP1L0LoOZFo3YSazsTbGbrQVkPX09O7a6lYPMVUWE46dnp0lOEgNZSr6hn
-         d4xVEDCjf1QaOejhO1Jf7X3IDwcvrCUJKuJoe2d44vuZBPHVCKriSq1tH1Nk3ou9YvnX
-         Orlg==
-X-Gm-Message-State: APuU4Z85cdRaxoeIoxNCRniYv+Bn0ORPtbltRf2Drum/444vNtrY8UQf
-	hIleUoVQSFlvKuyKi5m1G1O50mKvY2NmSRWPYkb2+tPlog9Vw8XEmrgOfbGyBimT
-X-Gm-Gg: AYBFou0l6Hu+oi23T+neByk8hI+v5UiN4G8x1KdMzY6o9k+d475AOpT/dY0C9iDkVte
-	bYaZ+INq6n4tnyzS1jAQ1X6WofseGtc5x9Hny/4Ft2Ge0ARBcl1jCyBcV/RK83rz314WN2BZ4b5
-	sLG7Z8UXwBaD0kH21fWRfIfNQCUV5XNTNNoreJkfSke9OBZLpzeuWiT+g5emLrguyulWv3uG9ju
-	EPkOMQQH0XvqwQ6VNoSi+0fkVn+Us2gREium2J87y7kouznJql9wQTKo1L6fCaOsF2PlOpwX9X9
-	AyKpVnq0a/C6fNB3aMdrjwVaCQIHnXzRyLaCMBiI2mnqTIQXyokF99q1Z8i6ezK/ta7DLDTHuIr
-	pd6f5mD7WFQ/d+b46a3YhTNs8w3WexKB0Bsvysu2t3T/gTbyRyGyGCvIVHQfjdurx2TIrDjGssy
-	inQxDwaskIUBOZE+nSwY10k+pePZM/WEL/NqKPZg5UEM5E1VsjoSDBWfPd/xxFT5HFwLaCQPQZb
-	tI1x22kOwK3lgRDBx9YNbecCwGBjzQbgjKwdY26PWsb3osTM9Ae+2lfcGL8EFXAE5hSYGNW803e
-	PX7vCqd07BavKyzaY7LYfoqHC1wLDvw/Lt5xyrQ/aWuoPGQ+8NUTgWSftSennoW2LVoXtRpZYOZ
-	KjTTO3WIRwQ==
-X-Received: by 2002:a05:690e:c49:b0:679:980d:996c with SMTP id 956f58d0204a3-67c570e9d29mr668665d50.54.1794275232987;
-        Mon, 09 Nov 2026 17:47:12 -0800 (PST)
+        bh=Bpjh/UZ7eC+Zc+giAfbKZXsslkVQ56T637TBtlmPJ+o=;
+        b=lF47w2fNr0dhKFWPD5dZX16pmvpx1YD7SwqkWzz0TCb9gtp1cgp2B+/4myecw7vzrt
+         Ila15Pe36D2rbHokLuoVQ/Csnpo6LzfMp3zAwUmfgtQGMMJTHgwt0hKF5N0jd+W3IQeX
+         SOAW6E5rM1ovDrXkcQoTVqYCenYbgEnm5KhcL7EnF9VQQSZdxL9DLR/mzD12Ttg/xPY7
+         8FGR0EKVl0XFEOjZTdCvZ9Io/XiEuja+46sSkxFdERGjrObKkODIIXhvXlyribG7n1tG
+         VAIj2qPKhMJnVyCEUO6liDtQ7S5CjEYyEJc4eHUYwbbXY63SF/hbEU0FEadKtZojNiHS
+         Ttdg==
+X-Gm-Message-State: APuU4Z/qx5L50sTsGwQMXzOKre9cSJ/BodFXs2rU5MOTJBel8QHq7ARj
+	wj70SZXXhXsg1ljg1aq0BAcMky77tiMnzqduiesOh0RrUxsjDYBctKLshjnRHUCL
+X-Gm-Gg: AYBFou283zIgx0pqFd86r4h2BEowtQjwAMqkoivk4P/xWxg2sH5LaMHn5pn0i+XTbBD
+	EYb3LT41SPkrkK0Sci89vrMoCDFHvqSiSH5ANkqaWNIzFPLGuylplkbDdoZuI58m8yD1Mo0QpZ7
+	sa36+8x4dSKLrKj22aYAGRk5IessrcQAwPB8FAOdN5RCgxOtb8uy00B9lpz0tHtFboSWssunOzK
+	aJXCvGxG4qWHfH/04As8jfpVgf4uo6i+ZlbkNxA4ld0EMgVMd8oLoYv27+DdwvWmul81xRrZlPx
+	UJ0bIGbXs4RsynND/XmQxUc6BWNgRwiAjPFeZmWv0sM1dtdVvH/XH93/5/DOe2tIzebvHOsGsZN
+	9E2OlRc1ulqhdD3L4Y2J0tbFx2nK+AplTZfW0tt9gFWdXaoHeykiXzwoNl4f3Y7RZdpw+iSmhcZ
+	eaoc/+1x9eRFmui85pRVfdmheg9VO2arTim2pW6CIUMEKmid6oVQjg1n5FpWUqZ8cBR9M9MGpOD
+	fs9d9K3PTd3qcNr/qqyPXw1e34RDa4qtxDh+24SS3XHImaFMfsAIAKGdP0mvBvFbRhWoYWllguE
+	cF1s3pVdLQvmkRCxI/FWD/Qbe4uLXFwR8qqYnbMV54a/tYpZX//ECxh6PJROKACqx5IBBDVnvzq
+	zkBZNlynAjw==
+X-Received: by 2002:a05:690e:c82:b0:679:9afd:c0c7 with SMTP id 956f58d0204a3-67c5680aef1mr689248d50.126.1794275235051;
+        Mon, 09 Nov 2026 17:47:15 -0800 (PST)
 Received: from localhost ([2600:1702:7a90:6f9f:8bc4:8aec:108d:7a04])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67c589e9b4csm693780d50.15.2026.11.09.17.47.11
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b3933e0d01sm8429667b3.22.2026.11.09.17.47.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 09 Nov 2026 17:47:12 -0800 (PST)
+        Mon, 09 Nov 2026 17:47:14 -0800 (PST)
 From: Matt Turner <mattst88@gmail.com>
-Date: Mon, 09 Nov 2026 20:47:04 -0500
-Subject: [PATCH 5/8] powerpc/perf: mpc7450: Add the PMC6 L3 events to the
- alternatives table
+Date: Mon, 09 Nov 2026 20:47:05 -0500
+Subject: [PATCH 6/8] powerpc/perf: mpc7450: Export the event format in
+ sysfs
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,7 +93,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261109-ppc32-perf-v1-5-a6e8a55b3b48@gmail.com>
+Message-Id: <20261109-ppc32-perf-v1-6-a6e8a55b3b48@gmail.com>
 References: <20261109-ppc32-perf-v1-0-a6e8a55b3b48@gmail.com>
 In-Reply-To: <20261109-ppc32-perf-v1-0-a6e8a55b3b48@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -104,14 +104,14 @@ To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  Matt Turner <mattst88@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1891; i=mattst88@gmail.com;
- h=from:subject:message-id; bh=l5OzSa/snacUuw4Hvm7vZ0uo46L9Lthln/uI94gjUHM=;
- b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLI+lU+5+3rXyqtMKy9KT6nycVtaX2x669insDbO+w8bS
- nh+bn+9rOMjC4MYF8NMMUWWuPWKLLPadiz1OS39C2YOKxPIEGmRBgYgYGHgy03MKzXSMdIz1TbU
- MwQydIziIXJ6DBqZxcWlqUW6aQVFDnn5JYklmfl5xXr5Bal5BekFemmZaSUZGflFxalAI/TyUkt
- MXR3djAwNTCwdLcycLBxNTZydnQyd3BwdnV2djCzNTQycLR1NXC3NGbg4BWCuuSbD8Jt1j2r9+7
- f5apctb2kVbS6YXl/9f4qJ1eP2STbP1s6OkOBjZFjR2G6rf2vdDqO3R5/OOXVZLu6VD3MDX83t3
- Xcb1nhe0GYCAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1914; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=L7btMy1nXBY1bg9NMBkHPlpV09dJ8lMXLGy4hYCTfyY=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLI+lU+5d/ne7k/x6j5Z3dE75bjXuh0Jeuf/1l2q4r6Wi
+ sz3aZlRHR9ZGMS4GGaKKbLErVdkmdW2Y6nPaelfMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
+ IZChYxQPkdNj0MgsLi5NLdJNKyhyyMsvSSzJzM8r1ssvSM0rSC/QS8tMK8nIyC8qTgUaoZeXWmL
+ q6uhmZGhgYuloYeZk4Whq4uzsZOjk5ujo7OpkZGluYuBs6WjiamnOwMUpAHPNewVGht49aXyL+8
+ 2uxjx+vydBfe7Rr9FTzm3kOX4x8YhESdviaTcZ/unYL77gpHX9v/DLyNqD9Vt49n9TMrgmu21rj
+ n2p0ZKfN7gB
 X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
  fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -122,53 +122,63 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-PMC6 repeats five L3 events at a second select value that the
-alternatives table doesn't list:
+The MPC7450 PMU has no format/ directory, so perf can take its events
+only as raw codes, and cannot set the threshold by name.
 
-  0x61f  L3 hits, also 0x503 and 0x603
-  0x620  L3 misses, also 0x514 and 0x61e
-  0x621  L3 instruction misses, also 0x505 and 0x605
-  0x622  L3 data misses, also 0x507 and 0x607
-  0x625  L3 touch hits, also 0x50e and 0x60e
-
-Each is the same event as the PMC5 code, so add them to its row.  The
-scheduler can then move them to PMC5 when PMC6 is taken.
-
-Not tested on hardware with an L3; the 7448 has none.
+Describe the fields of the event code: the PMC select (bits 0-6), the
+PMC (bits 8-10), the threshold (bits 12-17) and the threshold multiplier
+(bit 18).  A threshold event can then be written as, e.g.,
+cpu/event=0x12b,thresh=20/.
 
 Signed-off-by: Matt Turner <mattst88@gmail.com>
 ---
- arch/powerpc/perf/mpc7450-pmu.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/perf/mpc7450-pmu.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
 diff --git a/arch/powerpc/perf/mpc7450-pmu.c b/arch/powerpc/perf/mpc7450-pmu.c
-index 27337a03ebde..b2fe977cea16 100644
+index b2fe977cea16..9bed5c238f45 100644
 --- a/arch/powerpc/perf/mpc7450-pmu.c
 +++ b/arch/powerpc/perf/mpc7450-pmu.c
-@@ -185,18 +185,18 @@ static int mpc7450_get_constraint(u64 event, unsigned long *maskp,
- static const unsigned int event_alternatives[][MAX_ALT] = {
- 	{ 0x217, 0x317 },		/* PM_L1_DCACHE_MISS */
- 	{ 0x502, 0x602 },		/* PM_L2_HIT */
--	{ 0x503, 0x603 },		/* PM_L3_HIT */
-+	{ 0x503, 0x603, 0x61f },	/* PM_L3_HIT */
- 	{ 0x504, 0x604 },		/* PM_L2_ICACHE_MISS */
--	{ 0x505, 0x605 },		/* PM_L3_ICACHE_MISS */
-+	{ 0x505, 0x605, 0x621 },	/* PM_L3_ICACHE_MISS */
- 	{ 0x506, 0x606 },		/* PM_L2_DCACHE_MISS */
--	{ 0x507, 0x607 },		/* PM_L3_DCACHE_MISS */
-+	{ 0x507, 0x607, 0x622 },	/* PM_L3_DCACHE_MISS */
- 	{ 0x50a, 0x623 },		/* PM_LD_HIT_L3 */
- 	{ 0x50b, 0x624 },		/* PM_ST_HIT_L3 */
- 	{ 0x50d, 0x60d },		/* PM_L2_TOUCH_HIT */
--	{ 0x50e, 0x60e },		/* PM_L3_TOUCH_HIT */
-+	{ 0x50e, 0x60e, 0x625 },	/* PM_L3_TOUCH_HIT */
- 	{ 0x512, 0x612 },		/* PM_INT_LOCAL */
- 	{ 0x513, 0x61d },		/* PM_L2_MISS */
--	{ 0x514, 0x61e },		/* PM_L3_MISS */
-+	{ 0x514, 0x61e, 0x620 },	/* PM_L3_MISS */
+@@ -398,6 +398,31 @@ static u64 mpc7450_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	},
  };
  
- /*
++PMU_FORMAT_ATTR(event,		"config:0-18");
++PMU_FORMAT_ATTR(pmcsel,		"config:0-6");
++PMU_FORMAT_ATTR(pmc,		"config:8-10");
++PMU_FORMAT_ATTR(thresh,		"config:12-17");
++PMU_FORMAT_ATTR(thresh_mult,	"config:18");
++
++static struct attribute *mpc7450_pmu_format_attr[] = {
++	&format_attr_event.attr,
++	&format_attr_pmcsel.attr,
++	&format_attr_pmc.attr,
++	&format_attr_thresh.attr,
++	&format_attr_thresh_mult.attr,
++	NULL,
++};
++
++static const struct attribute_group mpc7450_pmu_format_group = {
++	.name = "format",
++	.attrs = mpc7450_pmu_format_attr,
++};
++
++static const struct attribute_group *mpc7450_pmu_attr_groups[] = {
++	&mpc7450_pmu_format_group,
++	NULL,
++};
++
+ struct power_pmu mpc7450_pmu = {
+ 	.name			= "MPC7450 family",
+ 	.n_counter		= N_COUNTER,
+@@ -411,6 +436,7 @@ struct power_pmu mpc7450_pmu = {
+ 	.n_generic		= ARRAY_SIZE(mpc7450_generic_events),
+ 	.generic_events		= mpc7450_generic_events,
+ 	.cache_events		= &mpc7450_cache_events,
++	.attr_groups		= mpc7450_pmu_attr_groups,
+ };
+ 
+ static int __init init_mpc7450_pmu(void)
 
 -- 
 2.55.0
