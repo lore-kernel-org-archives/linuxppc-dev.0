@@ -1,84 +1,82 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2E59606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 01:19:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B466606A332
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 01:47:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Y90r2emx
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EPHBzt7N
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jNpjJ5mv0z2xf8;
-	Tue, 10 Nov 2026 12:19:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::534"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794273588;
-	cv=none; b=GhU7yKAXusK1KIaXzjyIxQljV/hUAE8yKe2LET0UKdL3HVTnRKeAyaG4qfl3P5vJfI/ZG0K0rw9hHb6eblaS6sc7j201uuD1EJ3diS534Yy1Bub7jOk0BP/Mj5oDdmiy576viQlYUk+u37xzYHdrqAmlcMQgEwlJmyaOoQYeMRkm7IL14k/3kzW80+N6Fbyp8s7r4PTQfPOz4PXjBS7YkVsl706aVP0ow+6JAHHP+HM3tRpHwdQvbz+cb54A1N3sVierDtO0Ta1Yz1aGVOruOUfE8ArovfxYrW6h8/niTIswLQRbpJ/twzldfKEGQUZitfjcQ2h810ZnCLDjlvho2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jNqJr20Wyz2yCr;
+	Tue, 10 Nov 2026 12:47:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b131"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794275228;
+	cv=none; b=YaW9WyUpRot/uVNvsWkxYj+jNO4Uvghrjn3zz70porWrecubIg09hIBHBCmMsSuhK4iY6PaYpVKI4CDbpvumBK67GtpCM6LrF27c77gXa0nXUOibB5mC/ob7l6O/VnWpwVkU63vJGuo84gDuMxts7TmassMhvYiB6qjH9d50zop8zGZEm3FPYWwhppKvMDfYsZbcL8ez0/2tcJdayRjfXqKV8/b2H4haQ/CG9k+90uF59j/5Ny4KJhfY14Fj+2LwiKwRXCC61/7w4lRJ9DQ7xVhYgMljppZZnX1oAkcZ9/OTwe1IbkznAEnFa4+NCqzAgR0Rw9B8gUnPenbCyblc1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794273588; c=relaxed/relaxed;
-	bh=m2qXctBTC0OPADf0V2KkMb6r2GA0JgabIuFAMe6ERzQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JubY62jdYNjNKT6+y0Bq2Ulvu+3ouf98nT7qvP8hI/KgpkH+B+nSO99Bv90gwKHAizQSJpxVHHSlQ5UKAUfg6oVkRWNTbn41J6q0GZFiAqYXFZq2Zg+gTbzASBAEUZF2yPv6GMLbH29eXgZpIuFGoRVMh9tVGlqEt7VMq6uPAHwVuG2ODzvlOVqKe7FCG9ZdT8rFKVqVd+aWpd0RhPUQ7gpsr51dX433uPPOJEQjFy06Fbq/R1e1dS7SoF0jqyY/UR9Q2sM7EHHES9jE0d26b8vwJpD7khCnVIrLgDIeX95KqJ6aAxf7pc8yHApBWN0GZwHk0+DZOw9ujWS/i9iwww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Y90r2emx; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1794275228; c=relaxed/relaxed;
+	bh=vr6olQf0uNc0/a4nGcpEjf8EuC1NH5KXo4yVBRGMbwM=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Y0u3isc4u0YOeU5kuonU70Gzywxybry62E6unl8Tb7DbbeqZYcymtAvNABN3Mh238AYI9wCloKoEdqUK+LPVcZOQVHU2bD4/mU3jYYjrAxFLR2W6ZeL32aylqh/utwrRi4YvEPujUhhpahYc17MPh6VAl/JBJW0quN2XNYBkOeL3T12v0h128/RtlH5jQokplyEnyEIebob/h9ne/RiJudRVvwxj4LXYNsYYS5J16/NlPmfuzQPZ0WvWcWAsvvfMxyBnDkuYe5vnKPP2pnsJ6HVhijkF89vdNqEItVD7xATUjRGGdLGrxLqPMTYNLcfit9UmA+1QZtNbwYY7GftZ8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EPHBzt7N; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=Y90r2emx;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EPHBzt7N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b131; helo=mail-yx1-xb131.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb131.google.com (mail-yx1-xb131.google.com [IPv6:2607:f8b0:4864:20::b131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNpjG6CRLz2xQs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 12:19:46 +1100 (AEDT)
-Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-6b6e7a05225so2030750a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 17:19:46 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jNqJp4kdSz2xBb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 12:47:05 +1100 (AEDT)
+Received: by mail-yx1-xb131.google.com with SMTP id 956f58d0204a3-67c24619b19so1483168d50.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 17:47:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1794273582; x=1794878382; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=m2qXctBTC0OPADf0V2KkMb6r2GA0JgabIuFAMe6ERzQ=;
-        b=Y90r2emxjS+NIMaOkKgy4Jj202x4XD+VeErSRth4en90dOpIES0iQHT/E8ad5HBwyv
-         /COXJ5W9jc6WqZ/nEgrFoqSJ3iJ1Ay5+TkLLDU6zcourqn7GRIfnjX2hHTTEyum/RCfk
-         nMJB3xKmfSXVg+jce+GCx3qUjOBBUly6YMNHw=
+        d=gmail.com; s=20260707; t=1794275222; x=1794880022; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=vr6olQf0uNc0/a4nGcpEjf8EuC1NH5KXo4yVBRGMbwM=;
+        b=EPHBzt7NIXFJuProY2Ul4a0eoKKSmiaguq27qE2MqrkZ2eA/2uEslSUnX2S/bclP37
+         QpTeXAit8SCljzsKIc/U6QuDRrN9yHYzPC0I2VoKVSqeIJ/CAlcnQ2u6rXP8Aa+jcBhG
+         Nu5liWIo66bING8n3c1swDmIdBLlkHToRBKqyG2pNMeufDnpLazcrjh3RvniiT+hSI6k
+         JnSinCY1/206phpFlnERh7t/1sKTnOd7JFg+wpKUpfV4R7aNNKl0bj+tyfAGOrdsZS0H
+         uTHFEPym05pvsw3sgh77VSCMJFdKmLh31f9JVgLWyb903Qq2HxCs4YuGs3yZZY9AYhi0
+         mwOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794273582; x=1794878382;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20260707; t=1794275222; x=1794880022;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to:content-type;
-        bh=m2qXctBTC0OPADf0V2KkMb6r2GA0JgabIuFAMe6ERzQ=;
-        b=n5VjStYO/itYDG5dWGwJ7X97XWVc3F7z8woVmL+c7hZwGS4A5lFjSp4QMhO/FeH2Pe
-         Ibc23A+wlOYTUXifsyqiMopcfYHbvC+TQhVSkXkYT9dbU2s379tqyfQU7yysFkGJN1gL
-         7KIM+EamgJ+RWDrJaHUCvq+d89CXnE38mQb18zaDHUD3HCNoUM4d0F7S9Oy0/g74CD5r
-         4+KInpuGvAsei+1iM0uaYOSybMPoTrkXwyWWbzBSR7CFcyP5j0gLjxcl+WIkYy0AmPrm
-         sm9N2LTStXmEzbhWotv4lmLLDllVS9WRMRlxduI84GLachf9LQz3F21zmt/Y131NhPWO
-         vZHQ==
-X-Forwarded-Encrypted: i=1; AL+hErEasKCcjMA57MkNiUVBxAOq+01D9YSpI90uph4nPqbeKhBFwMCVpxGxcur8LqqHtUlzaTHOwuJt3Fpnt0M=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9jdVDnSOFAKYtwOB0ZVPN7vL+laYJqRlmtIy8KpEU7n2arXeIo
-	tyD9djemZ8scCmqJCjMfIwTyny90CQavUPM8KyOj8T9LPa79hDflO32NOq2vjE3TUxmEeZHJXNI
-	vyBp7JX1G+Q==
-X-Gm-Gg: AYBFou33jguw8gynM2ym9JfgoB5J2sUsLAObHB8gjHQv2kqZjNpPMgiVvEQL8P7tXV2
-	cq4BG7MxDQZZ4h8nW1vlhOyryL9vyLhIBkuEwziuY04+vHxXDakDlsHEAR+U+0HxKVeRqzFR3kG
-	K8FC1iUt6W7197QWb6k0sLrkAn6QCb8DE+ZpcsNBKD6TGfLxEv0SoR2qiuUhtWm+P8a39soQfdv
-	em4kLsd9URpMU3SvFWyQNwILr/QGFhlv+geszviE/wgANr8qNb9nd2ETkLHyDZaYgTSOwhKTCsY
-	y5u1WBRnNUznnX7jrKMs8zhUwFq2qd3hhspop9JPb+so6QHXqmmIoA3DfmV3lgkY8H9FAr/SPaK
-	kQUnkbcIS88Mn6NEIBYqckkXKFeo3aT/MGNbOcxGw8m+RWGg9p0vZQiLGrfzSAQWV47poSEt2sE
-	TNviE+OC7SMcA02GP7lYSGsFraAce2a0fFk2Qe4wLq7Yqvstw99lBnEVxfCPyl3PhjA6Xq3Ro8N
-	cLoePfREM/wlQLKSDso7CyfzoMfothG3rZadSpMlDuGbF/Q/1BnApK7+eXSa0TeMhiM5znGCZqG
-	s7xk8iO8k314JseCoKx2AZ5yGfCmLxOFJUHM7k9AbcNl4kayKt0siup6PJ64AIqSiCtpPKY/P/O
-	QUQ==
-X-Received: by 2002:a05:6402:c4cf:20b0:6b7:8b1:aa6c with SMTP id 4fb4d7f45d1cf-6b7564f9b43mr700304a12.10.1794273582054;
-        Mon, 09 Nov 2026 17:19:42 -0800 (PST)
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com. [209.85.218.47])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7578bcc9dsm448864a12.7.2026.11.09.17.19.41
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 09 Nov 2026 17:19:41 -0800 (PST)
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-c4c9abc1824so221597566b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Nov 2026 17:19:41 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErGWdgS2I2DRsfqy2d6SPYkTEjMbDH/7ntZt+ZOky0IEv8B6O89C+DFqDMAZldCJpra4w4EQvvXA3+PI5o4=@lists.ozlabs.org
-X-Received: by 2002:a17:907:9451:b0:c41:1750:59a2 with SMTP id
- a640c23a62f3a-c50495dfbd5mr87253466b.12.1794273275844; Mon, 09 Nov 2026
- 17:14:35 -0800 (PST)
+        bh=vr6olQf0uNc0/a4nGcpEjf8EuC1NH5KXo4yVBRGMbwM=;
+        b=r6ZufFBG7LPDBP2s+6NzfY6595Uivn5yIIUmxrCsqiWbep30HTCFNM7BEFybvbFNcT
+         r2u8M1R4wD7oWJOGD5fLPD8vNP0+jm5zY61KP5LlCFqj6SdJiDbRQauqHs2ML8tBqtOB
+         Q4tCYR+9K82yG3H6O4z+8b1u+WRHcpFaxmk8eT7yGzAV7l37QolL2tbyk352jdSygy56
+         HOOQsyW5eSj1C5qcErR2GkjZ+qwdrSKb2IWcbnoo5HUre6NZhSnSZ+pVhAHWeL2KZ1ym
+         qZb8AgLhEthig9hccTYKLFda6MbMSVADsQ5TSadp5HVqHr3IrswWl6dj0IPEA1OD69nS
+         BN3g==
+X-Gm-Message-State: APuU4Z+EVtf0bzGMy5PP6MVw1w/fpBR03Dbn8G4Z0J4DfIJgo2ohsiJi
+	w7eSHdIlJSpBAhED8RC4wtdRjLM3L9iET81X1c1v65BustvMK3j0hAistadjKBeJ
+X-Gm-Gg: AYBFou0kkVvu1fmefL7GjStZwtqhq/O6ZS4vZIhkWzTienfavbMDmj9aw3OSsAc4uY3
+	S/pasg9BV1XY2RHBVN3k9OuQZhSPeddCnR4v21W8GUiOYB91ZbbZ3k+OGcWaB7iAmprt+3+EBht
+	8giWdZR59OMr4+U3dhI3a/JDfiThU5FreS/uKJzHTIuXE3ngSs0Ha3ODaWrWdpK7HA3AF/6i6TP
+	Y2OOxCIM/gETRZl2NQFfqeq4yYZg0g7Ktol2oT34+2Utpo5ZMr462iEfhPJROk04YQ5Ux07gAEg
+	W3ZG0SHQIlpDGSuqvBSKDtY7+oW91EZVsRXP3AXLyGIzG+EbJHuYLgY5Um29kT5Ug7kCMETxh7U
+	YKBKd706JjG3t05k9Js7SANjEr3IsULEaZG1LEMTKS7Mc1/Mhfyt6ZOJX+xrm6OVjYbwQaK6nH2
+	6bkhZrQ585bkAysE4BM5odMj2dUHE740KGKe5fWPKbfC5ILVRYtPMwo3dd6mT316ZPI66jGQZdr
+	lv+mBcpSo6NvwX9TRo8Z4ZsdwL6yKJf2egmzhy7hrmW7X/l0zGkXEDgAh+aAO3+SSU8vKYZWi5V
+	uma+4WHk+n4uyPi6jXqGhiHI6DFC68tqnO0NTW4m0AQHceEZaGSngAorIttDPJJA5KlztjFewPI
+	iNbzlzoR0Gg==
+X-Received: by 2002:a05:690e:408d:b0:679:ab08:5285 with SMTP id 956f58d0204a3-67c568c72e6mr963184d50.82.1794275221980;
+        Mon, 09 Nov 2026 17:47:01 -0800 (PST)
+Received: from localhost ([2600:1702:7a90:6f9f:8bc4:8aec:108d:7a04])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67c589c6f24sm692080d50.12.2026.11.09.17.47.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Nov 2026 17:47:01 -0800 (PST)
+From: Matt Turner <mattst88@gmail.com>
+Subject: [PATCH 0/8] powerpc/perf: mpc7450: Event fixes, SIAR sampling and
+ sysfs event names
+Date: Mon, 09 Nov 2026 20:46:59 -0500
+Message-Id: <20261109-ppc32-perf-v1-0-a6e8a55b3b48@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,63 +90,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261104-work-procfs-core-v2-14-76ace653a773@kernel.org>
- <CAMuHMdVfakapgBK6TBhO1iWX8qzvLDk8jzRS=t2MVa5G=MCUeg@mail.gmail.com>
- <20261107-akteur-gemieden-eckdaten-21304d085e35@brauner> <20261108185953.28054fb3@pumpkin>
- <alpine.DEB.2.21.2611090504170.17804@angie.orcam.me.uk> <20261109214558.0d9d5228@pumpkin>
-In-Reply-To: <20261109214558.0d9d5228@pumpkin>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 9 Nov 2026 17:14:19 -0800
-X-Gmail-Original-Message-ID: <CAHk-=whsA3tKcUCBJDj_vmJ11rVGT9rivgnKjGRgMO21CPmCxg@mail.gmail.com>
-X-Gm-Features: AclHuK-x8jcOOQUqd2amGoGEAKER9jIFGaeL4LxxWAd0cGV7dz_RR64PtDogpPU
-Message-ID: <CAHk-=whsA3tKcUCBJDj_vmJ11rVGT9rivgnKjGRgMO21CPmCxg@mail.gmail.com>
-Subject: Re: [PATCH RESEND v2 14/23] proc: let procfs copy in writes before
- pinning the entry
-To: David Laight <david.laight.linux@gmail.com>
-Cc: "Maciej W. Rozycki" <macro@orcam.me.uk>, Christian Brauner <brauner@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, linux-fsdevel@vger.kernel.org, 
-	Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, Chris Mason <mason@kernel.org>, 
-	Jeff Layton <jlayton@kernel.org>, NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-	Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-	Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, Greg Kroah-Hartman <gregkh@suse.de>, 
-	Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, Jan Kara <jack@suse.cz>, 
-	Jan Kara <jack@suse.com>, linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-	linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, ntfs3@lists.linux.dev, 
-	platform-driver-x86@vger.kernel.org, coreteam@netfilter.org, 
-	kexec@lists.infradead.org, linux-pci@vger.kernel.org, 
-	linux-sound@vger.kernel.org, netfilter-devel@vger.kernel.org, 
-	dri-devel@lists.freedesktop.org, ibm-acpi-devel@lists.sourceforge.net, 
-	jfs-discussion@lists.sourceforge.net, linux-alpha@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-cifs@vger.kernel.org, 
-	linux-fbdev@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mm@kvack.org, 
-	linux-sh@vger.kernel.org, linux-usb@vger.kernel.org, 
-	samba-technical@lists.samba.org, sparclinux@vger.kernel.org, 
-	linux-m68k@lists.linux-m68k.org, linux-doc@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-atm-general@lists.sourceforge.net, 
-	Takashi Iwai <tiwai@suse.de>, linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MMQqAMAxA0atIZgMmioNXEYfapppFQwoiiHe3O
+ L7h/weKuEqBqXnA5dKi51FBbQNxD8cmqKkauOORqBvRLPaMJp5xzYF6DjRwWqEG5pL1/mfz8r4
+ fI+XZ9FwAAAA=
+X-Change-ID: 20261106-ppc32-perf-bfa132a142db
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Matt Turner <mattst88@gmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1783; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=+7BXvgmmUAJktVVUTJnPsJZ3PxH3Hy9JzygYzXxr5Gs=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLI+lU/2/FN3Z1FD/i6VJ15HRA/MWhaswvJpz8Wd2az/L
+ Fknr5rv3PGRhUGMi2GmmCJL3HpFllltO5b6nJb+BTOHlQlkiLRIAwMQsDDw5SbmlRrpGOmZahvq
+ GQIZOkbxEDk9Bo3M4uLS1CLdtIIih7z8ksSSzPy8Yr38gtS8gvQCvbTMtJKMjPyi4lSgEXp5qSW
+ mro5uRoYGJpaOFmZOFo6mJs7OToZObo6Ozq5ORpbmJgbOlo4mrpbmDFycAjDXzLjE8E+l8fUT64
+ syu28nLq8Qmb3l6V+LqX8KlDZNeuWkc1OtyoeH4X/0mgm9vXd8v555yX/29fy5/hbb9umZJ5WG+
+ QUIeFVf2scLAA==
+X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
+ fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 9 Nov 2026 at 13:46, David Laight <david.laight.linux@gmail.com> wrote:
->
-> Just that the cast would have to be:
->         u8 *foo = (u8 *)bar;
-> where 'bar' is 'char *', and I don't think you need a cast there when
-> char is unsigned.
+Patches 1-3 fix the MPC7450 perf driver's event tables against the
+manual (MPC7450UM Rev. 5, chapter 11).  The worst is patch 3: an
+alternatives row joins three different events, so perf can report the
+count of a different event.  In one test it was 374 times the real
+count.
 
-.. and just to clarify: 'char' is always unsigned in the kernel on all
-architectures since commit 3bc753c06dd0 ("kbuild: treat char as always
-unsigned") back four years ago...
+Patch 4 fills in the L1 data cache events, patch 5 adds the PMC6 copies
+of five L3 events to the alternatives table, and patch 6 adds a format/
+directory.
 
-            Linus
+Patch 7 takes sample addresses from SIAR on 32-bit.  When a counter
+overflows with interrupts disabled, the interrupted PC is where they
+are re-enabled; SIAR is not.
+
+Patch 8 names the events in sysfs.
+
+Tested on an iMac G4 (MPC7448).  The 7448 has no L3, so patch 5 and the
+L3 half of patch 8 are untested.
+
+Signed-off-by: Matt Turner <mattst88@gmail.com>
+---
+Matt Turner (8):
+      powerpc/perf: mpc7450: Event 0x30d does not use the threshold
+      powerpc/perf: mpc7450: Event 0x634 counts L2 prefetches, not L1I
+      powerpc/perf: mpc7450: Remove the snoop retry alternatives
+      powerpc/perf: mpc7450: Fill in the L1 data cache events
+      powerpc/perf: mpc7450: Add the PMC6 L3 events to the alternatives table
+      powerpc/perf: mpc7450: Export the event format in sysfs
+      powerpc/perf: Use SIAR for sample addresses on 32-bit
+      powerpc/perf: mpc7450: Export event names in sysfs
+
+ arch/powerpc/perf/core-book3s.c         |  55 ++++---
+ arch/powerpc/perf/mpc7450-events-list.h | 250 ++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/mpc7450-pmu.c         | 118 +++++++++++++--
+ 3 files changed, 388 insertions(+), 35 deletions(-)
+---
+base-commit: d68ce4e71248e1ff5af9654b407541d9260b3ba5
+change-id: 20261106-ppc32-perf-bfa132a142db
+
+Best regards,
+--  
+Matt Turner <mattst88@gmail.com>
+
 
