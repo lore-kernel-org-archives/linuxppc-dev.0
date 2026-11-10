@@ -1,83 +1,91 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34D79606A339
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 15:08:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D23DE606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 15:24:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L39VbUrA
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CzjDzgR5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP94x5cwcz2yNj;
-	Wed, 11 Nov 2026 02:08:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794323281;
-	cv=none; b=SMQmpOZPnFs1GSo+q3JP0jjVs6sq53XLcLQ+352CzjA2mhmMjnXpSIzu8+KOLC45AyEjHydLF+yDif1o3zCobL0zArbHjFeUf52UvGjQ7WBiL0/3FKn1JeKgIhlj863VLS0Tq89lxo6hfjImyOSJl2l5M+TE5LUiOLWWforEgNTCyHPm15qAKAJzszBR05oO+Yyxo7PW+XK18MPuNYBSBxZUO/uWQpo7gsRuLLVdjqY94Qz94y8LtSdhtpRfRYvH3UUTPdMwl/o7/Nw3g9cq6WRaNh7upcXlIIpWdzBjQqy6Z6DhfVTxm2tVsEe+5YLkQlG8EBkTuZPjiHJPNYke5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP9ST0Hlbz2yNj;
+	Wed, 11 Nov 2026 02:24:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794324296;
+	cv=none; b=hYryPXq+e27tjUuPFCLbLG2/8IN+55aoOCRNNAC29/Nwi/QfBptx26Zaq9sG58fB2lONQtiYKJhiWcqxl75PjCwa5Y8lsdcO1GRwB6SYNyhFg/2eTaZ7Zt36QUUDjhyOyUm/yuMJaHz6eKz+TCBjWuSlaSNDHT4TmYolWphmbyrGCI+F2liGGQWEXrIOtke7WoCTdGQIPe75/GlT9fSpDhadjs4sNko9hzSLwlUM8Bba6Rchl6yqBhAgPH/t12vM3OYdy+KfS/FGYEc0wja+yJ/8YTM985QiMDjvxJxyZFUYl1dLxp/9dSxVwdtU5Fh0yEVlMwEXJZagg1TQ411q0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794323281; c=relaxed/relaxed;
-	bh=JtM9UtzYhAWCxTCfoBKbcmHIR3U4Wq7tzdw7gboBY64=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YVOPBeZXY/DENV4eXdQaAbiLmS4AiS6YERrBJgliTx/hCQA4zUbJoNauJhcgCn6lZRDfwwNWTZslK3gh55hBxu7oMPwd5RS/5cTXYPT0QB7f1OSPMBfOJnwLZkedb+iXMv8LfHaNp4o5Ge2QZ6YytXOX0Q68HpFhRchvZ0iJrTZFI6W0J9scKu3qEeLHsfcecwHJD7PtE8VXUgfveQSQwKVUQtK4ueEOScUwjTxnZurbQkqSqTrpMH6cE9KrpBcL9FBbNxuE+x6meihlHc6qtK3Zvz6iRokn3XDHUgxP5bfM+kyF4/zx6xdPUC/FS+Bl905HKw06ds7KHhLHJsViLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L39VbUrA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=kaylovefoss@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1794324296; c=relaxed/relaxed;
+	bh=yZ/2fkbURm/euOen6SmjaXi4JzbG61hpQmv47R3Y1cU=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=bUvb5b/PSE6KxXxjbU6wZVRcECNPRjLS3bwMimUpPO1WxNIIH+GUGExYi9HJrkoGEXZ2nGY6dudFnoIrictRdF3TkpY4rbC5piwzy2KAwm02ciuhIgcjMI1PEgCl3pc4q5RyhXnMGy/PK2vB+PiQacN6OIjaM31ORruT5gt3dgnucppghRAxtfcoIT0q3ciuUD2J/ZVrD5HFnhC5CIKJg/YpveGKss9Fg5LIti36WXK/pIUopOYshm+Hi2BiFG3m4TqXREbBnIms2i8rGffgkc+VXfm9WjoOHP2KAP2gVVBJCBxTftOYbBG/Ku5FPrOQ/OQZGhyIx04nysJT1rJ/zQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CzjDzgR5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L39VbUrA;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CzjDzgR5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=kaylovefoss@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP94w23DYz2yDD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 02:07:59 +1100 (AEDT)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2e8da6ef7ddso12775905ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 07:07:59 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP9SR5tKdz2yMK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 02:24:54 +1100 (AEDT)
+Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-37000e7234bso3857815eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 07:24:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794323277; x=1794928077; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=JtM9UtzYhAWCxTCfoBKbcmHIR3U4Wq7tzdw7gboBY64=;
-        b=L39VbUrA9zqmT6T2zklJgi/i9F+Y/3ly5eRJ9lKEeiLaisxriqyLgYYWTG5/EEdR7h
-         17gyYsbEt1q6vbbhmqG7tWeVGMehc7lwhEcRvEPpdgryeTgjeFO40jlnUSy6bl0gDz3m
-         Tx6IR/1wUnwbKv9Ru+9MMerWh0s3eIjGa0qT+uXMxUOqxYTb9dRUIqYyZkCLM4NTKuph
-         eepQWskjZnCpsL3UOBwPDjPYda+UPVD0diglSHUFPSkNhsfmKf1qB0i4ALGUAWMWbzp8
-         fi8lA3pst9QaKpMhYT9rAU36N9rrAq3ygMxbxG3NYeAh911bDZAiNufrN995wCGYXcIE
-         UHNA==
+        d=gmail.com; s=20260707; t=1794324292; x=1794929092; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=yZ/2fkbURm/euOen6SmjaXi4JzbG61hpQmv47R3Y1cU=;
+        b=CzjDzgR5LuOPg5Ast6Cbea7J/IB4HPUs3+G7CWiR5XuTXVdhcDB2GmLnw+7CULMIWr
+         75u61Wl7DtuRYYtYDRuWzv19QTDec1lLgHF/1owgD/PklGkGfCBHNnhu67bk8yCJB5KA
+         mQpgPVBz2OEl5MxKBLyFdJ8K8wLLerdn77xlclSUmDuQ3H2oSd3KppEYX0W7aiGdBpJK
+         aQ4hraojWgY+XregItFqbkURsUMsOzEvyuDIvCQqbDaco/stTPgLAOVyrfOmPiZYOSu4
+         YFDFvMSRgbawAOoBrjwTQsWwF9rZSxWVSkvY7b3WtCsAROUBtkxd0IBWjqjbzgyUOR/8
+         Hoaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794323277; x=1794928077;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=JtM9UtzYhAWCxTCfoBKbcmHIR3U4Wq7tzdw7gboBY64=;
-        b=qTkMwLiFL6yQMYl0qWJ6xjWzX9vxyp32Y23gZ8wYp+D7UK5l9+p86otUpVjZW4dm2w
-         uvPc/QlpFHx7cr+eRD/llxf0dYy8B4bF49BcBBTZn6+lnSQUmMr+yfXPEg7PF2SqZGWE
-         v5kQOjMLlDfbzLNtWijQ3D3g9TmwKGqfg2T926AINEILlfuUT11+zFuouRg+XSDxlZAR
-         VHvxtI79IImXNtQWczIliDPXbeNUfozpV5wBgrnTGGbtgrftlgNZBZ/qlRGGFNIJirqm
-         Bck/cbK6QiSLjUa2kNetgGWDb/HmbzFj3K+qPVnpTrEne29/39c3cvPcs0QfLA9sImO7
-         dgcA==
-X-Forwarded-Encrypted: i=1; AL+hErFaNub/PW6YGDLldlRhzBXDCDngk5ZJ0ctS6nEM2ixBJpW2slmOUrThmZEk6zSdz/j1lnWmBpB6z1+6qgc=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/H9xkyKmAXDR9SRWHAY11Rz85fGcFhXYPbpeoqarlGJVax3hSP
-	cYi5tTb2/B/2fh2bUer2PDtGKQJRVY8tW4YwPwU833racqYHmFcdx5uR
-X-Gm-Gg: AYBFou0FzyzC++9aTzGXz/6DUJLWPh/7N8zIHId5d4+pdc3gMkuzKZJYoPHbdJRI/yW
-	NbpxIJrc/nOayI8JPcfWwAfFxdhtrHo2UT6AqwE24yT7n1olIVeAetVOkiyiBZOiAOM9pTUhJVO
-	lbeF+fnt0Q1B7FzvJwFdIfuk6Sd0aUa5/REjTCz/i2cdiX1s+4DbaLqV3x1B67BrsclEY6c2Be6
-	AKtRxZZvljEx+pb/9nct9Pq4S8SueI6eikD/LueAtrrrDReodx+p4691q0mmVaX+fCv3z+vlWt/
-	BW8NDZeFxLpjlielFYhBcUJV3ciI8GBv6pm2etQxXL/rTXgig4uycJDc+stM1onE/Up3XjgSEF/
-	ym1bTGLP+c9ahPMUlhGZtrveZT35mKnvNtjjL3Cad7z/G/sKp3k5hqc1t0lZBW3sAQ16EkV9IDT
-	ctg1aMbCWBN4ejj+IhMk4eX6JHf1c/H8UnCBOTT2sZrKAphgjlSiY58ONGPH6gQYD1sG+e1Q3KA
-	PygZ1gILveYg6f8gtwidTYN+cyXqQLyJembPFERFtRiGjCcjf1WEhhXpW6JVtk9I6+bM48BPEd2
-	31WZJcSISMNGPokSWulTQJQJxCBCEEL+T6bO8yes+SvEAO9KdZ+qIIvOf0+ZbvG3wbhjvaQ6UHk
-	x7DppepRwpNo=
-X-Received: by 2002:a17:902:d481:b0:2ed:1ef3:9ec with SMTP id d9443c01a7336-2edb9172a2dmr26826345ad.14.1794323276968;
-        Tue, 10 Nov 2026 07:07:56 -0800 (PST)
-Received: from [192.168.2.6] ([27.75.101.24])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2edb6d78dbcsm10397575ad.27.2026.11.10.07.07.48
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Nov 2026 07:07:56 -0800 (PST)
-Message-ID: <71f76e5e-ce24-4a71-863a-169ad262c510@gmail.com>
-Date: Tue, 10 Nov 2026 22:07:46 +0700
+        d=1e100.net; s=20260707; t=1794324292; x=1794929092;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=yZ/2fkbURm/euOen6SmjaXi4JzbG61hpQmv47R3Y1cU=;
+        b=o/QUBOe2w72iLd1L0rOPcdME/IdyzS+FFRGgcGBFIwhqiQ0hnd60ycxaKD4h3y6l03
+         p/nm4EvUYzyDipVCfvGED5jIYdNRwLzgknl5UsUItnFtWfOiQrtlzPre/JxZCBEbCPg/
+         gFQOPiniRLhoBLyZ4RVaXJ4jmVBAgGjvW7fQPUGq38ZlTUQFf520zDcWCo2NKFKjIlLT
+         8hHWpEjk+wkflW+MKiyLebNOWPd31sPz9EXjscbaJaLNdljh58d5OjNAwlp+538k2s1O
+         6qe0ZOW2c9gnQw5NVJlrTHt+mJqn1K3W9OEK0MtqLSMXTT01mncxfROL3YlW061GdZSl
+         e4iA==
+X-Forwarded-Encrypted: i=1; AL+hErGZ0rVy3X73LDoEHLohhFeM7WW8X3kRcl7MgUBeYCJ6AcSOYhAp59nSfYgobWLC2NJJ1FIz0ae1qQTU2j8=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8DbrWm1r+KvP0Vl0SGerak1vXpsq4Wi8OA3pDKrz7d9m0cXmdp
+	JKTWGzgV8N3I/e24pSeCnBGwASGYBZCAMi8ktUz1O+xU3IqdUKJw66dF
+X-Gm-Gg: AYBFou1W81UtLBc1GBC+dZmTXmSHIJzF9a6v87FOUglfthvI+rt+Z6tg0FBWJjT/CIW
+	xUkklNdKZFdGnzxJ1eWD4EFZSx6QeGPalhWeU5+YCdZ8Ng34DumM0UaJy7SVRdtqzq5okiWA5S0
+	UGRbJJzjsHhd3L4hlF8qMbZoTGjFRsI2RcypTCrVwnCezNunpPIvJXHqVnXZUbYk4VF+0b2Zxre
+	FhwjNF3W+RtXnbsQah/7Jwr+Z8cOH8GrGQpAhVr0AFCRHmO1U55PHS6lxL6/a98Ewym3F4OlK8m
+	KEabqWkql4SYK6mG5QVLWs2+W3+gA7klfEZLHuQ1u4gRSMGVf+kHv9Ew/L7n0aqZ47BDWsfE0pl
+	nJpdSGx5GGnQg07OM+vlVk2S3h7sDvwmtj0oRTM2M+kP2K1Q9m4tQ4cwHqUdysnPjr2SyhSBKMc
+	SwmrWbNIyNK5XpSi/EMxbRFiw6jhfLoAI2+yi5iqs9HnUxdrAJOXs58FkhjbSbpFkxaL3jqQh7k
+	p9Ysqf5GlNyGaujRJULU/kl27EEcmUXwvbYqIum5U3URjiKDeZcLZHTU+2Ds8pwNAfwS+lw5+9A
+	JSQSsLQBG0Ux2xhPUPfqE8aC/0x0
+X-Received: by 2002:a05:7301:430c:b0:36a:2382:7dab with SMTP id 5a478bee46e88-3751eb8b08cmr3765547eec.6.1794324290885;
+        Tue, 10 Nov 2026 07:24:50 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-375212e9e03sm16241137eec.23.2026.11.10.07.24.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Nov 2026 07:24:50 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Nathan Chancellor <nathan@kernel.org>, Kees Cook <kees@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, chleroy@kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/smp: Handle missing ibm,thread-groups in parse_thread_groups()
+In-Reply-To: <e6b47bd5-425d-4c8e-8c68-5a36d47bd977@linux.ibm.com>
+Date: Tue, 10 Nov 2026 20:53:37 +0530
+Message-ID: <o6bw90cm.ritesh.list@gmail.com>
+References: <39282c731de90f47678952e471236ef22e9d4b15.1794317777.git.ritesh.list@gmail.com> <e6b47bd5-425d-4c8e-8c68-5a36d47bd977@linux.ibm.com>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,75 +98,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC 36/41] nvmet: refuse files on pseudo filesystems as
- namespace backing files
-To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
-Cc: Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>,
- Josef Bacik <josef@toxicpanda.com>, Christoph Hellwig <hch@lst.de>,
- linux-block@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-nvme@lists.infradead.org, Alexander Viro <viro@zeniv.linux.org.uk>,
- Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org,
- target-devel@vger.kernel.org, driver-core@lists.linux.dev,
- linux-mm@kvack.org, bpf@vger.kernel.org,
- linux-security-module@vger.kernel.org, selinux@vger.kernel.org,
- apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org,
- netdev@vger.kernel.org, fuse-devel@lists.linux.dev,
- linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org,
- ocfs2-devel@lists.linux.dev, linux-s390@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- Amir Goldstein <amir73il@gmail.com>, linux-erofs@lists.ozlabs.org,
- linux-kselftest@vger.kernel.org
-References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
- <20261110-work-loop-pseudo-v1-36-4c998976c6c7@kernel.org>
-Content-Language: en-US
-From: Bui Nguyen Nhu Quynh <kaylovefoss@gmail.com>
-In-Reply-To: <20261110-work-loop-pseudo-v1-36-4c998976c6c7@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-14.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/10/2026 4:14 PM, Christian Brauner wrote:
-> The file backend takes any path that isn't a block device. With
-> buffered_io=1 that includes files on procfs or sysfs which then get read
-> and written by a kernel worker on behalf of the host. Refuse files on
-> pseudo filesystems just like loop does.
-> 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-> ---
->  drivers/nvme/target/io-cmd-file.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/nvme/target/io-cmd-file.c b/drivers/nvme/target/io-cmd-file.c
-> index dfa8aa46188c..71c69bac5394 100644
-> --- a/drivers/nvme/target/io-cmd-file.c
-> +++ b/drivers/nvme/target/io-cmd-file.c
-> @@ -52,6 +52,11 @@ int nvmet_file_ns_enable(struct nvmet_ns *ns)
->  		goto err;
->  	}
->  
-> +	if (file_is_pseudo(ns->file)) {
-> +		ret = -EINVAL;
-> +		goto err;
-> +	}
-> +
->  	nvmet_file_ns_revalidate(ns);
->  
->  	/*
-> 
+Shrikanth Hegde <sshegde@linux.ibm.com> writes:
 
-I noticed patch 41/41 doesn't include a test for nvmet. Would it make
-sense to add one with buffered_io=1? The test would need a pseudo file
-that can be opened with O_RDWR and supports both read_iter and
-write_iter. Otherwise, it could pass without ever reaching the new
-file_is_pseudo() check.
+> Hi Ritesh,
+>
+> +cc nathan, Kees,
+>
+> On 11/10/26 7:13 PM, Ritesh Harjani (IBM) wrote:
+>> Power systems can have ibm,thread-groups properly absent like in one of
+>> the PowerNV Power9 boxes where there was a warning splat reported on
+>> 7.4-rc2:
+>> 
+>>    WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1a0, CPU#124: swapper/124/1
+>>    ...
+>>    Call Trace:
+>>     __kmalloc_noprof+0x490/0x690
+>>     _kzalloc_noprof.constprop.0+0x1c/0x7c
+>>     init_thread_group_cache_map+0xd0/0x2d4
+>>     smp_prepare_cpus+0x2bc/0x484
+>>     kernel_init_freeable+0x168/0x3c4
+>>     kernel_init+0x34/0x1ac
+>> 
+>> This happens because today we don't check for whether the properly is
+>> present or not and directly pass the return value of
+>> of_property_count_u32_elems(), to the allocator.
+>> 
+>> This went unnoticed because earlier kcalloc() caught the overflow due to
+>> check_mul_overflow() check and returned NULL.
+>> But since commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
+>> conversions") switched this call to kzalloc_objs(), size_mul() saturates
+>> the size to SIZE_MAX instead and we now get a warning at boot.
+>> 
+>> Bail out early if the property is missing or empty. Follow the return
+>> value as documented in kernel doc of parse_thread_groups() function.
+>> 
+>> Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
+>> Reported-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> ---
+>>   arch/powerpc/kernel/smp.c | 4 ++++
+>>   1 file changed, 4 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> index 7a25eaa59e62..9a0f63e43821 100644
+>> --- a/arch/powerpc/kernel/smp.c
+>> +++ b/arch/powerpc/kernel/smp.c
+>> @@ -824,6 +824,10 @@ static int parse_thread_groups(struct device_node *dn,
+>>   	int i = 0;
+>> 
+>>   	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
+>> +	if (count < 0)
+>> +		return count;
+>> +	if (!count)
+>> +		return -ENODATA;
+>
+> This zero count check is not necessary.
+>
 
-Thanks.
+yes, not strictly necessary, but good to have. 
+
+>>   	thread_group_array = kzalloc_objs(u32, count);
+>>   	if (!thread_group_array)
+>>   		return -ENOMEM;
+>> --
+>> 2.39.5
+>> 
+>
+> Nathan reported the same issue on QEMU.The same symptoms.
+>
+> https://lore.kernel.org/all/20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org/
+
+I didn't notice this. Thanks for pointing it out. In that case let's drop
+this patch.
+
+-ritesh
 
