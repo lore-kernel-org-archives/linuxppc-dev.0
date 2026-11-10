@@ -1,73 +1,69 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A25B3606BF1F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 09:28:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E052A606BF01
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Nov 2026 09:49:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNH7JWBj
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=MDucNNo7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jP1YZ1szDz3dXT;
-	Tue, 10 Nov 2026 20:28:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794302930;
-	cv=none; b=TBNUGWrvK0QQDjpDDRWlA64CavRm84Ev9QNoESQyvBlfaiQftI2+1wSUD11GSf3hUONNGjsXFF+aUg+2c/qLSSX8FEtJRIHhUyz1VLOmn9fqB44B1A0NDhJGk0jd7/7/1H30HWcaCtQ1vVsduKc2q5TWykJBLq5Fvk3JwamePYSxJ0VMCQJo08hQgItVgdqXRP7EZP2eXJNgDrBxqnEConwr5kcBSHPw1/ZI6Mh3XyI6WB92nLuD4iVUirJymRHSco4gqFJETB1lJnxT2bGI5Wwr7hafcDne14L23d85aUbHyCtDGNn7OpEnGGQV7FMuJoqMXsdsIHfxjxcazXXucw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jP20t2SlJz3ds1;
+	Tue, 10 Nov 2026 20:49:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794304142;
+	cv=none; b=gHCHSwTuVfbUj9gmCVJmweSUzhFfCcxPVvW5Zy4YwvsKhdykC3k6k63jKGW5hrfvrwmvh+Ia12KYem0QCffFRiblcWwChEXVsKgxChOBh3QzHuVS01U9LQH08NtYRyEZQPNyWhJkWNgfpP+7Qx76xqrPynRMxlIV9etMJQK3dLOBLlSZSzSXORyYJu25G031WA1ap7F8tRIBlC3jAN4Qv/WAHYfUJiP/X1kx2q+sbt2ti6t/XybnpxNWQy+AVnO41g88PFCGZSC+kfeybvGdG3aYM4UI7jU2vWI7tZZjNZf+Z8nZIer987D30pdrXoHZCb7bMiE/eoNX3Pmcnb94Zw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794302930; c=relaxed/relaxed;
-	bh=m3p/DDXuAbdnnQuiur5i1eemlv0No7Pemm1h08DiR30=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HhvSe/BdEkuo58SwneNAejklpngOsBp7ftq8yIc23UacedTG4UYAlczaOJxbMI/PEblQYF9miNw9PBvd7aTSGsES3Ur/8ogMMC+5Kx4UCTZQtXiZmSCh0nA1e0fIylop1MbXoq73UZIfk4WA1Z6CgmB5NrMwsEtNBYuj7PsJnmPd+7wpCo+Psij8nvcyQ5+dgIPlEgirKB4XKt8aUP9enY3KNNNleytdROMjP3mvrnw+kCqB7I8vnq6ewgZ9Di5dNCUkfOnDIi8vUoRaYBIME62jHI2961NOPJwLIkHcFR6PO94YKSAu60AQAI4WE2c95BL1zpoodD49FCEggvaZRg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNH7JWBj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794304142; c=relaxed/relaxed;
+	bh=rEjQMrO5ewCoTXLRmyADdnQOxAz7KvPx22hj0G2OEWE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:MIME-Version:
+	 Content-Type:References; b=cQQQE9uZwjUgc2wVHIVMtqSVbY5sGIz0ZxJ8xkSBpoT87x2LF6eT9QmUt4UGDanJgDci4wV8Pf7R+N3tA9nQ18iwzTaWF5hFA+C+vxuoPRTk/AZ7sALRuJzx5v1BdxYNZpeA9kicvqgKnjH3uitXD1zeypMkV5ytpawWJsx2qa6UDrAlmJzKpwvlDzZr/1jR/qvrgaIPNOmX5ilpnvGuqPrqJ6167KXFeZu9iKVPgWBRlW2BF0YthfyXyRkK5l0GRH3gxA13YVB9M6Ca0iITXE9egPRSlU7XVnLhmwWIThjKyZGmgRxcUhF9X6mrhvh2FfA3TTeNoWNEoeLEHVp3bQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=MDucNNo7; dkim-atps=neutral; spf=pass (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNH7JWBj;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=MDucNNo7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com [210.118.77.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP1YY2Zvgz3dXS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 20:28:49 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA8EkeJ172632;
-	Tue, 10 Nov 2026 09:28:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=m3p/DD
-	XuAbdnnQuiur5i1eemlv0No7Pemm1h08DiR30=; b=bNH7JWBjDpfrXCniM6jbZY
-	urSiv2tl6E4orY10ZedBBa245qfEbepXIJw5iO4aqro/Jx7Ffw1QIT/K4/Fxhx/p
-	orA/2S4pd7gOTEDa+qji5DwdtylgKBknQpwB33MxnvkCKMzUOZ7IdU2REBRHy/Pz
-	/Pg/b6xulXyCfc9FiRMx2JDnRyP+wHxY+39jrCD6UoTZVJofGTSleEFy7zomJzLN
-	oYWMV6HHCiWJAKZ98G4pXhqhVToZPOB0vGFrY1eKSahC672Wc5fjGfjhoD9hOKxd
-	W0Um+aZftyR8ys6Z8KkcUfTivJCwpNtiss7iSdm1mCBc/FU3lb/gwDkAqn4ekujg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsunt46a4-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 10 Nov 2026 09:28:38 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AA7ntVX1406220;
-	Tue, 10 Nov 2026 09:28:37 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4htfak5yp0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 10 Nov 2026 09:28:37 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AA9SZv242140142
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 10 Nov 2026 09:28:35 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8A4802004B;
-	Tue, 10 Nov 2026 09:28:35 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 858622004F;
-	Tue, 10 Nov 2026 09:28:33 +0000 (GMT)
-Received: from [9.39.31.79] (unknown [9.39.31.79])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 10 Nov 2026 09:28:33 +0000 (GMT)
-Message-ID: <9da4b3b5-cc9d-4a55-9aba-b491f9b222e5@linux.ibm.com>
-Date: Tue, 10 Nov 2026 14:58:32 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jP20q4TZCz3dng
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 20:48:59 +1100 (AEDT)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20261110094849euoutp01c39c44ae3a4dcb456394f7bc2470d3ce~mphlLyUDT1103111031euoutp01T
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 09:48:49 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20261110094849euoutp01c39c44ae3a4dcb456394f7bc2470d3ce~mphlLyUDT1103111031euoutp01T
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1794304129;
+	bh=rEjQMrO5ewCoTXLRmyADdnQOxAz7KvPx22hj0G2OEWE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=MDucNNo71VMaNT7O/enXd9HnluaC/80BTpCOhfJ8K+Uagdw52U4RKdtIGbL4/liDG
+	 ptFVqFkZL0i1mzLXp8DlUFon5C1GkYlliT+bYX8+yZlUY/Scn0nEcUJ3vPCd1yTBQs
+	 p5Cp2NrvUEIKB4dXPwjULV+QtgwBpcqtZTFu6/oY=
+Received: from eusmtip1.samsung.com (unknown [203.254.199.221]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20261110094848eucas1p2577d7a3c60643a040e599dfa1bf97f08~mphksavJM2794027940eucas1p2h;
+	Tue, 10 Nov 2026 09:48:48 +0000 (GMT)
+Received: from AMDC4653.digital.local (unknown [106.120.51.32]) by
+	eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+	20261110094847eusmtip1a4cc499316373287c2b9575c277efdb8~mphj9NX-N0299202992eusmtip1c;
+	Tue, 10 Nov 2026 09:48:47 +0000 (GMT)
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+To: linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	iommu@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy
+	<robin.murphy@arm.com>, Christoph Hellwig <hch@infradead.org>, Thomas
+	Bogendoerfer <tsbogend@alpha.franken.de>, Madhavan Srinivasan
+	<maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
+	Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)"
+	<chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Chris Zankel <chris@zankel.net>,
+	Max Filippov <jcmvbkbc@gmail.com>
+Subject: [PATCH v2 2/7] xtensa: handle highmem pages in
+ arch_dma_prep_coherent()
+Date: Tue, 10 Nov 2026 10:48:22 +0100
+Message-ID: <20261110094830.2081847-3-m.szyprowski@samsung.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20261110094830.2081847-1-m.szyprowski@samsung.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,133 +77,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/smp: Handle of_property_count_u32_elems() error
- in parse_thread_groups()
-To: Nathan Chancellor <nathan@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin
- <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Kees Cook <kees@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <20261109-powerpc-smp-handle-count-err-v1-1-e777fde7f71a@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEwMDAzNiBTYWx0ZWRfX5WX+RPQynwG3
- 5JfEkkjN3w1cHQWMBKfFpcnBzPn1tTr5MKrxHNfcNe6S+QdbL7ZIZuLJWRS421ha7tRmuYgWIMH
- cV8nhZOxY0zqcoobfa1AWp/696CSUWFifnvmpyUA3xFjnudlMO+6buUvWmAj+N146kzeY1fa4Cf
- hpX2hBKdqIuISg9Dabxa0v5hNpJFRq1HgIGG3S745lB0yZwP9HcoTE1jayf5QnK48Y/TzZF9hhK
- ndTbiIvDKoo2pHGWpcLZX+VtBbmmcGqRrBEBghASRHF9uOJgo6JbN3t+TQIWWXyjC5SGE/N5VUH
- j7ZMtBkRpu691+TNdwlDEdZjnSC0FSRv+607UUjhcKGWOseO3J9SotD1KS3NRuzqaQB+5DAyghs
- mlhy94sFUZCwkz2JdIfoGIpmySdOLDbRpE2Zga8/zmu5WKFpxU3LKFBLadsQiyNIsOC5DzJ7QRj
- VD1KxB6gnxxVldkltzw==
-X-Proofpoint-ORIG-GUID: Vga60G3pp7sW2rY-UTzxIv8sw2-2Td04
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEwMDAzNiBTYWx0ZWRfX5i0Nsm4mcGSp
- KcR58Y/mAj5iy4nUvD2VMeP6bffa9wunKHfQnS4dAZ6an1z/T442qDrqRRF9WlfRW+ORPvTat22
- n5iLnCwicwuXoPCaRK5aFkvSnkPUIUE=
-X-Authority-Analysis: v=2.4 cv=euZKXYpX c=1 sm=1 tr=0 ts=6af2e3c7 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=vYq-qXZFh7psd1dCY8cA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: YTGGr8qHyJr6rGJQsWXMyujRdtHwZC5S
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-10_03,2026-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 suspectscore=0 spamscore=0 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 impostorscore=0 adultscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611100036
-X-Spam-Status: No, score=-20.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-CMS-MailID: 20261110094848eucas1p2577d7a3c60643a040e599dfa1bf97f08
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20261110094848eucas1p2577d7a3c60643a040e599dfa1bf97f08
+X-EPHeader: CA
+X-CMS-RootMailID: 20261110094848eucas1p2577d7a3c60643a040e599dfa1bf97f08
+References: <20261110094830.2081847-1-m.szyprowski@samsung.com>
+	<CGME20261110094848eucas1p2577d7a3c60643a040e599dfa1bf97f08@eucas1p2.samsung.com>
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Nathan. Thanks for the fix.
+arch_dma_prep_coherent() performs the cache maintenance on the address
+returned by page_address(). xtensa with CONFIG_HIGHMEM uses
+HASHED_PAGE_VIRTUAL, so page_address() returns NULL for a highmem page
+that is not kmapped, and the cache operation then works on the virtual
+range starting at 0 instead of the buffer, leaving any dirty cache lines
+of the buffer in place.
 
-On 11/9/26 11:30 PM, Nathan Chancellor wrote:
-> After commit 0af298e62e5c ("treewide: refresh kmalloc_obj()
-> conversions"), there is a warning on boot for several PowerPC
-> configurations in QEMU:
-> 
->    WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x174/0x1b0, CPU#0: swapper/0/1
->    Modules linked in:
->    CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.4.0-rc1-00262-g0af298e62e5c #1 PREEMPT(lazy)
->    NIP [c0000000006074e4] ___kmalloc_large_node+0x174/0x1b0
->    LR [c00000000060782c] __kmalloc_large_node_noprof+0x3c/0x150
->    Call Trace:
->    ...
->    [c00000000369fb60] [c000000000614ff0] __kmalloc_noprof+0x490/0x690
->    [c00000000369fbe0] [c000000000051308] _kzalloc_noprof.constprop.0+0x1c/0x74
->    [c00000000369fc00] [c00000000200b450] init_thread_group_cache_map+0xc0/0x2c4
->    ...
-> 
-> In this case, of_property_count_u32_elems() returns -EINVAL because
-> there is no "ibm,thread-groups" property. When kcalloc() was used to
-> allocate thread_group_array, the multiplication overflow check in
-> _kmalloc_array_noprof() caught that a really large allocation was
-> requested (as -EINVAL was converted to size_t) and returned NULL.
-> kzalloc_objs() has no such check, so the large allocation check in
-> __kmalloc_large_noprof() triggers the visible warning above.
-> 
-> Check if of_property_count_u32_elems() has returned an error and bail
-> out if so, clearing up the warning.
-> 
-> Fixes: 790a1662d3a2 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+Highmem pages do reach this function: dma_alloc_contiguous() can return
+a highmem CMA page, which dma_direct_alloc() handles by forcing the remap
+path and calling arch_dma_prep_coherent() on that page before creating
+the uncached mapping.
 
-Looks fine to me.
-Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Fix this by reusing do_cache_op(), which the arch_sync_dma_for_*() hooks
+already use and which maps highmem pages one page at a time with
+kmap_atomic(). For lowmem pages it does a single cache operation over
+the whole range, so the behaviour is unchanged there. A small wrapper
+is needed because __flush_invalidate_dcache_range() is a macro on cores
+with a write-through data cache.
 
-> ---
->   arch/powerpc/kernel/smp.c | 2 ++
->   1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 7a25eaa59e62..58824f5f4c80 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -824,6 +824,8 @@ static int parse_thread_groups(struct device_node *dn,
->   	int i = 0;
->   
->   	count = of_property_count_u32_elems(dn, "ibm,thread-groups");
-> +	if (count < 0)
-> +		return count;
->   	thread_group_array = kzalloc_objs(u32, count);
->   	if (!thread_group_array)
->   		return -ENOMEM;
-> 
-> ---
-> base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-> base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
-> change-id: 20261109-powerpc-smp-handle-count-err-b48b9ffd6e90
-> 
-> Best regards,
-> --
-> Cheers,
-> Nathan
-> 
+Fixes: 0f665b9e2a6d ("xtensa: use the generic uncached segment support")
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ arch/xtensa/kernel/pci-dma.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-Should the similar fix is needed here as well?
+diff --git a/arch/xtensa/kernel/pci-dma.c b/arch/xtensa/kernel/pci-dma.c
+index e1c00ec37eed..41467a1ba068 100644
+--- a/arch/xtensa/kernel/pci-dma.c
++++ b/arch/xtensa/kernel/pci-dma.c
+@@ -80,9 +80,19 @@ void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
+ 	}
+ }
+ 
++/*
++ * __flush_invalidate_dcache_range() may be a macro on cores with a
++ * write-through data cache, so it cannot be passed to do_cache_op().
++ */
++static void flush_invalidate_dcache_range(unsigned long start,
++					  unsigned long size)
++{
++	__flush_invalidate_dcache_range(start, size);
++}
++
+ void arch_dma_prep_coherent(struct page *page, size_t size)
+ {
+-	__flush_invalidate_dcache_range((unsigned long)page_address(page), size);
++	do_cache_op(page_to_phys(page), size, flush_invalidate_dcache_range);
+ }
+ 
+ /*
+-- 
+2.43.0
 
-arch/powerpc/platforms/powernv/idle.c:
-         nr_idle_states = of_property_count_u32_elems(np,
-                                                 "ibm,cpu-idle-state-flags");
-
-         pnv_idle_states = kzalloc_objs(*pnv_idle_states, nr_idle_states);
-         temp_u32 = kzalloc_objs(u32, nr_idle_states);
-         temp_u64 = kzalloc_objs(u64, nr_idle_states);
-         temp_string = kcalloc(nr_idle_states, sizeof(char *),  GFP_KERNEL);
 
