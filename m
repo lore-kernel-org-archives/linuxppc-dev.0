@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 497DE606A336
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:30:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 149DA606A333
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:30:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=A/Qgv401
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=S89Ev5TO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyqx4P00z3bkT;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyqx72Zkz3bl1;
 	Thu, 12 Nov 2026 09:29:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794436173;
-	cv=none; b=cdCpyjX83kpDvHTSgKtEyajsHk4cNVDguNSR+VLVtfiJX8jQ8fRnyUNvCTX9AkKKX0PjWwyuIV8pMdCzsr3ULqtFx/hTOwQtZfq6DcpoaeE1U9EdABsp+WABkpa/TA27E/ZNhYTav8tTiY3DRyIoQKn5FFmjApt58ks+WVsenlJWg7sJzPemkopzdH3vF8+knzxjId1hqSk6q3vLswdxGQUe1UbkVTeajvYCB6kZWDBIC+lekU1K4TaK7FOOoAkpNReiAPpTpmd3ON9lY+7WrfdltXs6LMXN9SrAQ9p2oc1CY23YITwThKPFuijPg9HUERAKg1JIY3lLNPmg4PwFkA==
+	cv=none; b=IfVd1kI+tJkjMewnHhKE/G2Ip51KxJiWX3s3ZHv4dZJkMCMIdu+E5M6QNnN+A/UlQ/c0pQEMOfCp//Uecq6eMAStE8XwF+8yzfporCxvoA08Kvu3t0t7Rhq0SGwJKNsSHsQr/nN+bimWfqQaFEsf8naskUA8keyTUeoK8zMSU7BA1AiS1qugatmEcSrPHKQzgKdnMAxYdNeS77Nmp7LHB3rQZvQq3Y9EzR0giNfMzsUhaO2r4AnEtpHaigZrY3TWFiWFCEbpTjZZdTc6V3ehYpwhLNy3cV9zB6HXX8kNDsadUT/Bm/PA0SgwWKSG5l5dZzFMCq18Y3KiVaXs3qJsag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1794436173; c=relaxed/relaxed;
-	bh=wBoZDHT0z6uhalEs33RytkDoGLTQdmaMj7+RO9mWG/g=;
+	bh=W87fSQlkCnHCOpy3utcFbD7aEeTD91fXvM7EUGmB8/Y=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eX5LE6BBC0CziG/ZpeMSkDNpIbUBeW95qmwjeopyH0p6LEw2dSihaGzmQvtzNSoo8aQe6eEmt23pbby46WgyCOFQGiNZ97mTOVe+jqyt4Wvudg/Kb1ebewij6/1C9nz3L/2sX0D++PzoCAEZnrRtbodbme0UVTDf0GXWPis9DnTlmHTOrF6iM1ai0jbIWtTVp8Mb0Iou5Mu2GwE6AY8JE/52C+J6pbVvqqzNDC5QG05e8ES/qTdL++MHN/+lZnStMgfVybxwH1WcTanafAmwOiSs4vwAy/iuv4eNyLuKBDwriRN51aCSsWLxVAkSXl1kTu3h52ZckNVJk7pubS57oA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=A/Qgv401; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+abad5507353db368323c+8480+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
+	 MIME-Version; b=Pa2C17Ks7As5AxvRPjtvtAT9bvTwzef6m2nVlFXF2i19Ppm/rtI73pdb5Lwla5qJkvAXfUqhG6TmF+UqiMnzTJ+JlWW7TEe/0JKMIGdlsqg7kvYNOuW/Ruupy5uo8wXiRIR16EG1OX/ZPQm2B+cObUTV3mW5EBP+pSAe8Sgvr/tFUzqxARwXObVV4ZOiIgN0SH3l//252gYzYF0aK2Tk2zGXLpSkmk3bCYwA3K2QuKtzg9nXYET3qHl8WmikBkbousKf85ctX8LijNtNm6Bw86T4jzSYPkA6WCSDpiASYfwOgSACyl4j8Ajnjw3PN+n/b5XGR6xoWsSnlD3BHdwekg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=S89Ev5TO; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=A/Qgv401;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=S89Ev5TO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+abad5507353db368323c+8480+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj27tJz2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:29:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj3MVGz30VX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:29:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
+	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=wBoZDHT0z6uhalEs33RytkDoGLTQdmaMj7+RO9mWG/g=; b=A/Qgv401Xd439MOoTlIWy/QCUX
-	KkI0CNA5bjK9uvI3mC7FrQPIsPnBsOl1WzcM4u6IBagrIswEGZc1a4vg8CwxqXx6hyKG/orjReKID
-	Lgczt9ZjgYx+asxZPytsfJVI2OLqITC/QhFGiKti2xuWx9ed+cgr+FDvQAmZZDzX+2VQojbOBusuL
-	KtmUSmkOk+recg6loelcyEIwFpy9jVHJobd1dJ6xW9UzdD5MVUmk7WccPuzwk+hkGgRPibC21NvUB
-	nT22ymAKXmFQ/02LEEAAorNIfLGw4es/AtlWw2jWalDpF5FIdRPnpYy1F3Fc17pZci3dPc+x68ZpS
-	vIhN9o4Q==;
+	bh=W87fSQlkCnHCOpy3utcFbD7aEeTD91fXvM7EUGmB8/Y=; b=S89Ev5TOPgWtVFvcEZ+48OAJIO
+	XHz1eDA+g6T6JYfr9wgyxYW44qIPA8sMuP2LBy3drm3Mq6Z16AUPK4cIEXJctn0e5AK/C/ii/1BPF
+	I8sHywp0m+SfQ0xUp4Ii92OiXPKnlcRyDIBGQF+a6OjjCamoqWClM6iPFWN+CGsFU0S6T+6yXOAEm
+	eOqyw+qJlVgYyC6BY/D3zJSWLRDxFfI0oJ4GoGkSwhknnUlc2HminKTDEuO4NmygkjAg2Fwc9SFRK
+	RWREfWfDrkmvA1BXZou0ErgSnapYQD/h+818v2lfgDVsrjTdwXB80aHIrnGH8dGLlsf4QdWgSC6r2
+	vKOpUNOg==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
-	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoa-0000000G3nw-0LUa;
-	Wed, 11 Nov 2026 22:29:12 +0000
+	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xRGoc-00000009dbZ-2ABi;
+	Wed, 11 Nov 2026 22:29:14 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000008G-3ZWT;
+	id 1xRGoZ-0000000007r-26M1;
 	Wed, 11 Nov 2026 22:29:11 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 07/16] KVM: x86/mmu: Free obsolete roots of all planes
-Date: Wed, 11 Nov 2026 14:29:02 -0800
-Message-ID: <20261111222911.477-8-dwmw2@infradead.org>
+Subject: [PATCH 01/16] KVM: s390: arm64: Pass plane_level to the kvm_set_routing_entry() stub
+Date: Wed, 11 Nov 2026 14:28:56 -0800
+Message-ID: <20261111222911.477-2-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -92,7 +92,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: David Woodhouse <dwmw2@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
@@ -102,56 +102,40 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-KVM_REQ_MMU_FREE_OBSOLETE_ROOTS lives in the request set shared by all
-planes of a vCPU. A fast zap (e.g. memslot deletion) invalidates
-*every* plane's TDP roots and raises the request once per vCPU, but
-whichever plane enters the guest next consumes the shared bit and
-frees only its own obsolete roots. The other planes keep an obsolete
-root with a valid-looking root.hpa, kvm_mmu_reload() does nothing for
-them, and every page fault bails out in is_page_fault_stale() with
-RET_PF_RETRY. The vCPU livelocks, taking the same EPT violation
-forever.
+kvm_set_routing_entry() gained a plane_level argument, and every
+architecture's implementation was converted except the stub in the
+arm64 KVM module on s390, which arrived in the same release. An s390
+build with that module then fails:
 
-Observed with a Windows VSM guest spinning at ~18k EPT violations/s
-after a memslot update during boot, with the root obsolete (inv=1
-obs=1) and the request already consumed (req=0).
+  arch/s390/kvm/arm64/arm.c:745:5: error: conflicting types for 'kvm_set_routing_entry'
 
-Service every plane twin in kvm_mmu_free_obsolete_roots(). The
-inactive twins cannot be running (all planes of a vCPU share one
-thread), so their MMUs are stable.
+Give the stub the new signature. It still refuses every routing entry.
 
+Fixes the s390 arm64 stub that "kvm: Pass plane_level to
+kvm_set_routing_entry()" did not convert.
+
+Fixes: https://lore.kernel.org/all/20260608144252.351443-38-joro@8bytes.org/
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202611102242.ywP1yvPR-lkp@intel.com/
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/x86/kvm/mmu/mmu.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ arch/s390/kvm/arm64/arm.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 89cec6dd757a..e8eb1e48df36 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -6401,8 +6401,20 @@ static void __kvm_mmu_free_obsolete_roots(struct kvm *kvm, struct kvm_mmu *mmu)
+diff --git a/arch/s390/kvm/arm64/arm.c b/arch/s390/kvm/arm64/arm.c
+index 64a609f087a8..0f0fab76e71a 100644
+--- a/arch/s390/kvm/arm64/arm.c
++++ b/arch/s390/kvm/arm64/arm.c
+@@ -744,7 +744,8 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e, struct kvm *kvm,
  
- void kvm_mmu_free_obsolete_roots(struct kvm_vcpu *vcpu)
+ int kvm_set_routing_entry(struct kvm *kvm,
+ 			  struct kvm_kernel_irq_routing_entry *e,
+-			  const struct kvm_irq_routing_entry *ue)
++			  const struct kvm_irq_routing_entry *ue,
++			  unsigned plane_level)
  {
--	__kvm_mmu_free_obsolete_roots(vcpu->kvm, &vcpu->arch.root_mmu);
--	__kvm_mmu_free_obsolete_roots(vcpu->kvm, &vcpu->arch.guest_mmu);
-+	struct kvm_vcpu *v;
-+	int i;
-+
-+	/*
-+	 * KVM_REQ_MMU_FREE_OBSOLETE_ROOTS is tracked in the request set
-+	 * shared by all of the vCPU's planes, so the plane that consumes
-+	 * the request is not necessarily the plane whose root is obsolete.
-+	 * Service every plane: the inactive twins cannot be running (all
-+	 * planes of a vCPU share one thread), so their MMUs are stable.
-+	 */
-+	vcpu_for_each_plane(vcpu->common, i, v) {
-+		__kvm_mmu_free_obsolete_roots(vcpu->kvm, &v->arch.root_mmu);
-+		__kvm_mmu_free_obsolete_roots(vcpu->kvm, &v->arch.guest_mmu);
-+	}
+ 	return -EINVAL;
  }
- EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_mmu_free_obsolete_roots);
- 
 -- 
 2.50.1
 
