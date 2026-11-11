@@ -1,108 +1,108 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 596C8606A321
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 07:54:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8CEFB606A331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 08:30:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KGrEuIKD;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YeRmKD15;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KGrEuIKD
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPbQF52G6z2xWR;
-	Wed, 11 Nov 2026 18:54:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPcCz6wm7z2y2h;
+	Wed, 11 Nov 2026 19:30:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794383669;
-	cv=none; b=QfJrDKmbizvAyvm7wCBqixP/YNAFHXyVj0QUdv62NKsXymdQoUqseNo27r8tV/dZuZf9LURqpsUh5wyPZd3z0EzuKqP4u3MEosBrOY9XMOq0iHsst/wmF9q0SAaSxuE4nQms2T3UH0Dg+A9Coh2+ALcWKNeZepZpWhylPzsslBsrObrpj7IVsmUTfa/jgA/j+cTSPULbyHcwHyQdaAWgM4fZ9vyUBxbXyiPeLfWmm1AePnXWDsKJCNPCAlXGJsAj4jK6hvVS9gzuqHITMxslbj/fDKDHCLUNkdbwILHeqzh3bmqb8a79i5WDbVZAPVuEgwQum0dTDmaxQcK51l1YPw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794385839;
+	cv=none; b=A8MnrHUPjQSEA2WRdLSgEBOHis1kjzsKOstIJU1oHJFe+T7bqrxv/aaarn5P9aDNSgmVMbMxgSINo6oPqYumJ1l274Kt0BYB7F/Ar9rd/vzNZfGThQ+yRhw1Awby/YcxjilktMLdXKfj9PXC5ZsaEgx4xt/rvtfeWJt5GCRBc0z8+EK071QoRYBje4fuxPS9TrkAFtmzLOrRgZ4dpFgb/zHVzScLZXy6vlN81EnGA247u6gTmmkecTbBqAQ6rBtxJD4XaIPx925xc2YhhGSfHErb/RmAZYa5O6qFjtW5LkLiKuPmRmZ48CMn7eugK3og+yK6uU1CFzb3D1GVyg2Zag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794383669; c=relaxed/relaxed;
-	bh=rMmIOYVl64Nfr02Tf6vKaYBHgvMLGqEBK3OO7jbaHrs=;
+	t=1794385839; c=relaxed/relaxed;
+	bh=mpfsiWos8F/vl9UH8UsPq3EZ0RisGA+Dhf9KlrFQ204=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y615pLe34HoW/Pmg/Cs0FffTeIyyAVpxtKeo9uTZXHCgYwlxwnIPTuXUGOW9hYUOTT7paT9qErWg2vZNKcVb3U4atnhj4RbfM1a0x2Kk5FjZsJUxUIk3peOqJg40BQIbj28Ym0hKUTPpfd4m8Zw2InVBpqvNXlUCCTBS3g53JnN/dBNC72LAbZEUMdAiEtpWDGGyfdLgVgailuwUfGMMRXwLMhyYJ5nnK81rVVQGMcser3P2dEoiLWa6w5VRtxCp1U1hyYohVohfOH1gserBPN9T/iJaRe34NXZKg7Fo6z2bJUAPflyVmrHsBoh+choPcC14LgzkbFHJQUg6tQOjbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KGrEuIKD; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YeRmKD15; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KGrEuIKD; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 In-Reply-To:Content-Type; b=ZVdi5HlPv5V98oyOeb21e8X7KChH1TqvV44NbnNvNwHqiR4l5qUjdpHIOcvmT9soSWaOf6iz6moqqHqnP+ozSce9pI5YhK7eTu/UBSwTmZMq7C7s8n/UrLGARyYSkMH8QPAiAb6SaACB3qHYqUilVooY3hupsSEkoxL1p3b76lqX0+6g5fWnafDVywOmAWb9mydo/b/tMPGASUOZV4RojONSdKTTFsNHiVaFyFM9hIws/bJvp5go6qdAGyeZewIIZCrlneW10qYMqLNpKgC5iFV0BmYPTgyDDdgOYwZ2PR588iJOVz+izhtimsI0D7b7LNmd+z4ARTIPwGN7DSfoHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KGrEuIKD;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YeRmKD15;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KGrEuIKD;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ta9ohRgJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPbQD0jZ8z2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 18:54:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPcCy0kyjz2xKQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 19:30:36 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794383662;
+	s=mimecast20190719; t=1794385833;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rMmIOYVl64Nfr02Tf6vKaYBHgvMLGqEBK3OO7jbaHrs=;
-	b=KGrEuIKD/hFyC68kL5L/Zdh9PDGrGhgfMDmCoJdSVwLauTAGKEBLXFlm34Y5QCuYlGGqbO
-	IiyTHttMAf5gWsgM+szorTRgn2y8iBIrK+93HXwxK5l9HNru/l9uThx9LbOXiaVSgn4EhF
-	zUcl+W/zvvU6CMh3Zt6nrH/dyhGYTf8=
+	bh=mpfsiWos8F/vl9UH8UsPq3EZ0RisGA+Dhf9KlrFQ204=;
+	b=Ta9ohRgJTa3g8zg+MOkNRM6p380ZaXf7a1MZHKT+SL1m4PbmiS7xGUUXEdFNvxPnY+cpMv
+	8ciw8jVgEdjFQBW8l3aH0GqgVR3A0TqfXTB0mc7swf7YRiBlL7s0Zaeie7+6mtQL/oX4Wu
+	X1zaj56v9fx7dYn9Y6+ZFkW//5iVGCI=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794383663;
+	s=mimecast20190719; t=1794385833;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rMmIOYVl64Nfr02Tf6vKaYBHgvMLGqEBK3OO7jbaHrs=;
-	b=YeRmKD15jWFUDh3OW4FPBhOfoC/T83Aq3k1OeAs82zXbnD0cArk6IJ+ENncqDYpd2+z5ys
-	pcIkzHwchIu5hdwKv7I2w3wGrvod0W/YOf0xSN9Wu8DJs/8FHUb6uQWmsbWWY909BZUG85
-	3fgRiHZ2P9310C27Ja1LomxCm9BwpwY=
+	bh=mpfsiWos8F/vl9UH8UsPq3EZ0RisGA+Dhf9KlrFQ204=;
+	b=Ta9ohRgJTa3g8zg+MOkNRM6p380ZaXf7a1MZHKT+SL1m4PbmiS7xGUUXEdFNvxPnY+cpMv
+	8ciw8jVgEdjFQBW8l3aH0GqgVR3A0TqfXTB0mc7swf7YRiBlL7s0Zaeie7+6mtQL/oX4Wu
+	X1zaj56v9fx7dYn9Y6+ZFkW//5iVGCI=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794383662;
+	s=mimecast20190719; t=1794385833;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=rMmIOYVl64Nfr02Tf6vKaYBHgvMLGqEBK3OO7jbaHrs=;
-	b=KGrEuIKD/hFyC68kL5L/Zdh9PDGrGhgfMDmCoJdSVwLauTAGKEBLXFlm34Y5QCuYlGGqbO
-	IiyTHttMAf5gWsgM+szorTRgn2y8iBIrK+93HXwxK5l9HNru/l9uThx9LbOXiaVSgn4EhF
-	zUcl+W/zvvU6CMh3Zt6nrH/dyhGYTf8=
+	bh=mpfsiWos8F/vl9UH8UsPq3EZ0RisGA+Dhf9KlrFQ204=;
+	b=Ta9ohRgJTa3g8zg+MOkNRM6p380ZaXf7a1MZHKT+SL1m4PbmiS7xGUUXEdFNvxPnY+cpMv
+	8ciw8jVgEdjFQBW8l3aH0GqgVR3A0TqfXTB0mc7swf7YRiBlL7s0Zaeie7+6mtQL/oX4Wu
+	X1zaj56v9fx7dYn9Y6+ZFkW//5iVGCI=
 Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
  [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-249-WxS0qgpdMe-7Qa9ijpUtUw-1; Wed, 11 Nov 2026 02:54:20 -0500
-X-MC-Unique: WxS0qgpdMe-7Qa9ijpUtUw-1
-X-Mimecast-MFC-AGG-ID: WxS0qgpdMe-7Qa9ijpUtUw_1794383660
-Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4a70b42bab0so29131555e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Nov 2026 23:54:20 -0800 (PST)
+ us-mta-269-bgXIAbduMt-1PiQlG4l-tA-1; Wed, 11 Nov 2026 03:30:31 -0500
+X-MC-Unique: bgXIAbduMt-1PiQlG4l-tA-1
+X-Mimecast-MFC-AGG-ID: bgXIAbduMt-1PiQlG4l-tA_1794385830
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4ad3d35e899so23757755e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 00:30:31 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794383659; x=1794988459;
-        h=content-transfer-encoding:content-type:in-reply-to:autocrypt
-         :content-language:from:references:cc:to:subject:user-agent
-         :mime-version:date:message-id:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=rMmIOYVl64Nfr02Tf6vKaYBHgvMLGqEBK3OO7jbaHrs=;
-        b=wgWLYB5gtglTzGKtpcLNhkKFDtoK1flpni56Mn2bklvuSMSaevbgXmxrpL6u8USYBD
-         0Pt7z41hisi26TEpeTcdRT6uEM8ERUchVEAQeLDZ3dqFcEeDChGNOb+JdvdaYpiTb1XT
-         cVR/E+b4o1bw+MNMXbp22fieeAN1I9ts9+EZD0TpnfGBFnwOPRXpmWVlZDHMMLDSK7xo
-         WbGirAS7ftNjw+OqQJ8qHXndZtBatkYlO/KpPTruvYvp8iaROsb57XSAbz3PUmq7HefC
-         B5k3YaC/+9v0AM5p/01/wLmZhDaPm7d/iQm619+BCWkMUUM7pIkVXr5B35YGqOhEFDuj
-         5xYg==
-X-Gm-Message-State: APuU4Z/zzXAkcUcgHSq9mlx8BpuymhFsksaqpD2gzRfYS+IebIx0d8q7
-	KzXlrzSC1pdNeHZl+EmjhMBRzBFpS/bzMwS9buFuSnlM76lKDHQpXR4ymCyGYar+IeWdmCsIEVb
-	Z9Iwvk1cwqyolJU2TFCga2mBwtDFCcxDUzKM5jchvW2MfQbdgMPsu/hzYdKYjbGx4L+s=
-X-Gm-Gg: AYBFou33EFWqrghU7kopzBHTfBhqwIWDtauqi+776UnYQid8AXonD2SRBWht6oHi63q
-	ri2ve3K49YSeAqEtZdjHocCEmL94vLY2EFCWyDQ3fMnM6LBt8ZT1/xzaanSc6kkbLiGUdKWIZxW
-	VK5yXgl8P2f89Kjr4pgaNqvZyZEvDejqHGsWNLzXhTOYJh7zBiHpoxK4fDCp8Au3twDLXuLZ9uW
-	8i3AMy/VG1axxAQjRhDJ46+9BQpUkt8pkDn5svlyHG5lg1ODS47rSiBel+/GxO6I1kf7vG2imFT
-	oAJNRNs5TQt66t2IQWT3Pfkc8lfFmNxRnVejbdPx/VAceL+C9Vzqyk2xy3lHb67OYr4DaOd5Ut5
-	+yDWJfESHy9y/pg+Uxxdo8qHBKWsvXjlBPWq5WzmFVv9/
-X-Received: by 2002:a05:600c:34d4:b0:4ba:cd:f45a with SMTP id 5b1f17b1804b1-4ba09376eb2mr27495335e9.14.1794383659670;
-        Tue, 10 Nov 2026 23:54:19 -0800 (PST)
-X-Received: by 2002:a05:600c:34d4:b0:4ba:cd:f45a with SMTP id 5b1f17b1804b1-4ba09376eb2mr27495005e9.14.1794383659316;
-        Tue, 10 Nov 2026 23:54:19 -0800 (PST)
+        d=1e100.net; s=20260707; t=1794385830; x=1794990630;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=mpfsiWos8F/vl9UH8UsPq3EZ0RisGA+Dhf9KlrFQ204=;
+        b=0QDc7PFJZoSTqqasgwCaACx6JPJplPTZOP9SMZy7ko5v6Zhk5aHkYF7ub0xuc+vNKy
+         32rRcpqZg6PWAoHmGS6+A6oEAq+QQzykhkM8xgnPQD9KWU97drzk6HuLtwj2KzuEhGjE
+         li4UTJBnPEyyvMW5gEBTDTvtYDwu3peiTY8FU0wfUDehRysRxpVlck+56/eEwdDkdA30
+         qZRsR9qbpNOmBdRYSR20+itQeSmKSN+I2wkIJvPjKr64Ec7ZwoZj52jIh+vM4S5M+Osh
+         JwR94oa5TQ0t3fDVpo6e2K91781xsVIC3d1dZ34fW+GEu3nc4qU11qohhbWivik3uUZP
+         AyAg==
+X-Gm-Message-State: APuU4Z+boHa4W40+XVylmGXBei2nURCXh8AqNYqiK35jKaT+ob7lRupT
+	H/9tvUXdQRu1210TUSUQbRm5eJFfB9SP8tw+LTh+RA9Vp46ssQvdgLU6cYk6eqnjC7w7i3VYMNF
+	ekwubZFmTnsmGx0Pv02GK4FA7a/7sGNINcrivfl6clCBqTSU495ohzqLc2mGeFv4JX2Y=
+X-Gm-Gg: AYBFou1ilpFB552qGBvIuqj+LB0mcz+geYMjNfd2pmEkQlYm2GysCihVsf6t9YVoUHn
+	fmRZPn4ESpmzsPQaq+JzayxXTPZ/Gp1MWSr1rMWpombgkJoMMXckVPudIqjlb+ZhFBhQTHnWNNc
+	8XWOI2JoyVVYQML1w01ebKXqOImViRGXG1jksQyFtEPCeEajR04ND2+nEQ84cF3p5xrcig1auY3
+	nWrYAaj5ga6gsAVBonwXPoOVdCH5QBhDDY6V/wQqt6f1c5ShVsynpEFTZH0g7o6sMuen9mF5pZm
+	1GzRtoBFcgNA0YuWTwU+u9fjPAs+MCMroM4QIz66+NhdhKxKVlbQF5r5R+z62SR5HwZpjb9UiUy
+	JsdSqbR0EecTo+So2gyYZrkpl16+hKUqZLKTFH4XpNKCP
+X-Received: by 2002:a05:600c:3554:b0:4a5:e6fd:65e5 with SMTP id 5b1f17b1804b1-4ba0937ded6mr26339985e9.31.1794385829959;
+        Wed, 11 Nov 2026 00:30:29 -0800 (PST)
+X-Received: by 2002:a05:600c:3554:b0:4a5:e6fd:65e5 with SMTP id 5b1f17b1804b1-4ba0937ded6mr26339535e9.31.1794385829582;
+        Wed, 11 Nov 2026 00:30:29 -0800 (PST)
 Received: from [192.168.0.9] ([47.64.115.75])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ba01d9df5csm144516265e9.0.2026.11.10.23.54.18
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4ba0951f237sm26744945e9.4.2026.11.11.00.30.27
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Nov 2026 23:54:18 -0800 (PST)
-Message-ID: <1346902a-67ba-49e5-9dfc-fc3990c3329d@redhat.com>
-Date: Wed, 11 Nov 2026 08:54:17 +0100
+        Wed, 11 Nov 2026 00:30:28 -0800 (PST)
+Message-ID: <620ad58f-50ed-4b0b-9d13-b4df34276448@redhat.com>
+Date: Wed, 11 Nov 2026 09:30:26 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,7 +121,8 @@ Subject: Re: [PATCH] powerpc: Link with -z notext
 To: Amit Machhiwal <amachhiw@linux.ibm.com>,
  Laurent Vivier <lvivier@redhat.com>,
  Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>
 References: <20261110154415.46220-1-amachhiw@linux.ibm.com>
 From: Thomas Huth <thuth@redhat.com>
 Autocrypt: addr=thuth@redhat.com; keydata=
@@ -168,15 +169,16 @@ Autocrypt: addr=thuth@redhat.com; keydata=
  yXFZ6TfE1hGKrDBYAm4vrnZ4CXFSBDllL59cFFOJCkn4Xboj/aVxxJxF30bn
 In-Reply-To: <20261110154415.46220-1-amachhiw@linux.ibm.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: V-YGknUykAIhBbw_RVwMaD0b021n4MdUGiFwTDRpbSk_1794383660
+X-Mimecast-MFC-PROC-ID: 3M6uCcNsMg0lb1FjwUGKTKaBBESJFPvCehRQTpZHo5A_1794385830
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
@@ -185,10 +187,40 @@ Am 10.11.26 um 16:44 schrieb Amit Machhiwal:
 > test binaries:
 > 
 >    /usr/bin/ld.bfd: error: read-only segment has dynamic relocations
-  Hi!
-
-This does not happen for me (using GNU ld version 2.46.1-1.fc44 from Fedora 
-44) ... which compiler and distro are you using?
+> 
+> The tests are linked with -pie and relocate themselves at boot (see
+> relocate() in powerpc/reloc64.c, called from powerpc/cstart64.S).
+> Newer GNU ld rejects relocations in read-only segments by default.  The
+> Makefile already checks after linking that only R_PPC64_RELATIVE
+> relocations are present.
+> 
+> Fix this by adding `-z notext` to the powerpc linker flags, as was done
+> for arm64 in commit 5d67db4e1860 ("arm64: Link with -z notext").
+> 
+> Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
+> ---
+>   powerpc/Makefile | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/powerpc/Makefile b/powerpc/Makefile
+> index 41e752b070bc..35fe58835726 100644
+> --- a/powerpc/Makefile
+> +++ b/powerpc/Makefile
+> @@ -78,7 +78,7 @@ include $(SRCDIR)/scripts/asm-offsets.mak
+>   
+>   FLATLIBS = $(libcflat) $(LIBFDT_archive)
+>   %.elf: CFLAGS += $(arch_CFLAGS)
+> -%.elf: LDFLAGS += $(arch_LDFLAGS) -pie -n
+> +%.elf: LDFLAGS += $(arch_LDFLAGS) -pie -n -z notext
+>   %.elf: %.o $(FLATLIBS) $(SRCDIR)/powerpc/flat.lds $(cstart.o) $(reloc.o) %.aux.o
+>   	$(LD) $(LDFLAGS) -o $@ \
+>   		-T $(SRCDIR)/powerpc/flat.lds --build-id=none \
+Another thought: Why are we only using -pie for the LDFLAGS, but we rather 
+seem to compile with -fno-pic in the CFLAGS? That looks weird ... I guess 
+the -fno-pic is required for certain targets (s390x and the non-EFI builds 
+of the other targets?), but maybe we should only add it only where it is 
+required and compile the targets that have relocation code with -fpie in the 
+CFLAGS instead?
 
   Thomas
 
