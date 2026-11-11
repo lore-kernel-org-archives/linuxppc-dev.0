@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F7DE606A337
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:30:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDE45606E218
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:30:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=f+ZXiJ1E
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Fn8DRH0P
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyr01c9xz3bmq;
-	Thu, 12 Nov 2026 09:29:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794436176;
-	cv=none; b=V2uuzDVw0hLKfpGLIo9zs6eaTdcT6DiD2BX8SCwE5oj73w1pEWU83zXtLIwdJ+7RKw0xPy1nf23LcSSg2Irygi7d8SwJOP4CsrMzSMhgE+Bab2Ta3dG3usr/1yGmyeIP6jh7jUD0rb8k+PkvBWHXff1zwaXYho/z6NjOlekqR0pInPSS/g4VoIEiZJAmLz4V02CXzGe9VUvyEU91sXrgDgiya6xbRBR1MVVlIROeezK4668z/Ml1MYgkJZFwzSRkdUee30Ot6cNl1HbzEGXboiYx3hYhashsoILeZiyCXzw/qYlofNDUB2UE9/fzgUq4hWwFQAhYpEmX5PhXyufITA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyr14KrFz3bqC;
+	Thu, 12 Nov 2026 09:29:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794436177;
+	cv=none; b=NMUv2XX3cUNCovurvv4xoThScBYahiByqb2JglFL8BYmctAhj9+Du9KWyYDAFp24cGoQS7RnNahYeaVvnd3UodHmdCrG/ErMvx/EudHOsmYQo8sJjKnA0zt+YCz8dM355868Ux7bSVq/4auIEQFA/ik7SUMz/n5Rc4W7wMazSThiCHfEnY8tS5pB/OidXEIDmUcl9ilFWqtTq1K09jEMRJKTddyhAmquLfJDLTVjwVQ8pWDdkPzkpKRy5t5/FlX8Rts5ChkzoQ9XqP/B9+inYVY6vIxMASLUZwF+469QJvkgd5nQ5kFaWcmFToRZu15IhE+rS7qVT/aZG90FkyROhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794436176; c=relaxed/relaxed;
-	bh=JaNk7OEYJEumDm+gccWLZZ4A2vbsU0ZFt9jBxsRtaJM=;
+	t=1794436177; c=relaxed/relaxed;
+	bh=AUQ62nciiYmS/RrmAlFykNNXWeaUW8xe6NLNrO4/KVo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XL1IWZ/JbvxmyxNvVK1DStDbVFd7wD2QxQ+vs0KfO/oZ9JbbjHtbwScXuu3Fc1jlctFq1gsdiSQuUvppy1//VzkKxMGszpDHdlsEwtEkfNysHqD2WQex064IWjo94w80hmHAnbKWb+OCvmJDE4YaEZcPogYvHscCbqr8cI797nUGByuwOZXMrLtdJaNMQmV59s4+HYEEpn1QY83iZrBSe5KeHHkaoe88o9iopRJJxl2/Y5oYGXpLdJnZ21W6dsJtwu1KmIk0ovmNFQo1ihiYANzNx/UBT3O33NEPtoP90pfNiYvtxEaFtXMd18e/OUAZiJOeKzQRe6ko3xvr03Dw0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=f+ZXiJ1E; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+abad5507353db368323c+8480+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
+	 MIME-Version; b=Qrh7iyBpzlY7KfRPkTT/4R/nBFc+MlmMKzP1sXYUSkYRbH+MA16eVt/iuSQXYbQg6KWi7cbS3OuHh9D/xUECq+9GEHaDDqPM6I0/ohemMSjBw3Jsd9Hf7ugBYPXvVVoQ7SRpbFC8o7ig5I95eO3GcI19RXlgVchQ0wb67XxI1DRk/8XPFuwfa4kDJYsZsKCc2UmpHOT4Cr4+W12jgjEsDFhzkk8Zv87ENuXwI0CnuWVbLQYazuwwXfxwwxD36j8GEdgrsIE4r41hEu7WQ6Sa+zzAsAPbGT+kqN6s63gQ2uw4TdDGOJ46l/fsBoikSP1BS5Ttye0BhTgcLfRSobPJ/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Fn8DRH0P; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=f+ZXiJ1E;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Fn8DRH0P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+abad5507353db368323c+8480+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj23Xzz2yKn
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj3H38z30V6
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:29:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
+	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=JaNk7OEYJEumDm+gccWLZZ4A2vbsU0ZFt9jBxsRtaJM=; b=f+ZXiJ1E15LXl2si0WRvwLcl4f
-	wo/9va1fMYYV7u8Tr+5HxPMNSTYQtI8AhWEo7a0AVikbihPeaV1fIeXPN5pqpy78KCQY04kYw4W4j
-	YifJPlucAI04Wfub++b5/ARizA2/Th+VrBSwCmD+1jH5kKrlVGV3FjYIyAn9gXqm3sqJC1reqLN7e
-	OAtfTi5Vo7k5ptuoEdABeHPAkIt2J+Y9VXaS+mpAfGHKl0BFsu0uflqhQWPuP8m557MVu4QRgznVB
-	vMnPjbxxSShlqqjSgDE+BQh1vwFu1/2/Oz8Rzzlier1KQmhIbHEsAmgZsJna86PcdXzfQz0hbVwod
-	DGZp334Q==;
+	bh=AUQ62nciiYmS/RrmAlFykNNXWeaUW8xe6NLNrO4/KVo=; b=Fn8DRH0PTa38iOsEBJZ/OUfQD9
+	aVZwxWfunFhokJy6jRyVHWPE/SZdTjjj5mS9P2dtOOLB3kbsMqfPtHSYU0xq5yFTXxypah/+XGGF3
+	N7afAQPYvUbY7RUt5lHYO35uK6t/cDCciZlbe2O7VZ77kmR80C63VDqTvGpmKNideEtKb35aBaAqt
+	WS7ginmGocYjO7UmBWs5LSafERe671Ua1SyM1nWc61zjSDsOiHVocC7I/f7g+cvnWlbSsZAaBEP5b
+	Auf6I4HOU2j0UGGaLlz81j6WnSg4SK4hOpG9efS2EaLrMu1RwHm/QiT0S3Leo3+0kZa/NBi8xQBeP
+	VFGEwBGQ==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
-	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoa-0000000G3nq-0589;
-	Wed, 11 Nov 2026 22:29:12 +0000
+	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xRGoc-00000009dbY-2AQN;
+	Wed, 11 Nov 2026 22:29:14 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000008C-3KMB;
+	id 1xRGoZ-0000000007y-2Xj3;
 	Wed, 11 Nov 2026 22:29:11 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 06/16] KVM: x86: Widen the plane vCPU fd ioctl allowlist
-Date: Wed, 11 Nov 2026 14:29:01 -0800
-Message-ID: <20261111222911.477-7-dwmw2@infradead.org>
+Subject: [PATCH 03/16] KVM: planes: Report KVM_MAX_PLANES from the system fd
+Date: Wed, 11 Nov 2026 14:28:58 -0800
+Message-ID: <20261111222911.477-4-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -92,7 +92,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: David Woodhouse <dwmw2@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
@@ -102,198 +102,87 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-A VMM that puts an initial VTL context on a higher plane cannot finish
-the job through the plane vCPU's fd. kvm_arch_is_vcpu_plane_ioctl()
-refuses the ioctls it needs, while the one capability ioctl it does
-admit, KVM_ENABLE_CAP, reaches *every* vCPU capability handler.
+KVM_CHECK_EXTENSION(KVM_CAP_PLANES) on the system fd returns a
+hardcoded 1. The KVM_CAP_PLANES opt-in added later in this series takes
+its ceiling from exactly that query, so a VMM following the documented
+negotiation concludes it may request one plane, and never enables VSM
+at all. Return KVM_MAX_PLANES there instead.
 
- - KVM_GET/SET_MP_STATE: a plane vCPU for an AP starts in
-   wait-for-INIT like any non-boot x86 vCPU, and nothing ever sends
-   INIT/SIPI to the higher plane of an AP. The VMM has to mark it
-   runnable itself.
- - KVM_SET_GUEST_DEBUG: single-step and breakpoints on a non-zero
-   plane. The debug exits surface through the plane-0 KVM_RUN loop
-   like any other plane exit.
- - KVM_X86_SETUP_MCE: mcg_cap is per vCPU and every twin starts with
-   the KVM_MAX_MCE_BANKS default, so programming plane 0 alone leaves
-   the planes disagreeing. Hyper-V shares MCG state across VTLs.
- - KVM_ENABLE_CAP: accept only the audited capabilities on a plane fd,
-   the SynIC pair and the two CPUID-enforcement toggles, which change
-   state that each twin keeps separately. Anything else gets -EINVAL, as
-   non-allowlisted ioctls already do. The nested paths behind
-   enlightened VMCS and direct TLB flush have never been audited for
-   plane_level > 0, and without the filter any future vCPU cap would
-   work on planes without anyone having decided that it should.
+While there, move the id bound check in kvm_vm_ioctl_create_plane()
+under kvm->lock. Every KVM_ENABLE_CAP path that changes
+kvm_arch_max_planes() takes that lock, and the limit only ever grows,
+so an unlocked check could at worst spuriously reject a create racing
+KVM_CAP_SPLIT_IRQCHIP. Checking under the lock just makes the bound the
+one the plane is actually installed against.
 
-KVM_SET_GUEST_DEBUG on a higher plane can set KVM_GUESTDBG_BLOCKIRQ
-there, but the VM-wide APICv BLOCKIRQ inhibit is recomputed over
-kvm_for_each_vcpu(), which walks plane 0 only. The inhibit then never
-rises for a higher plane, and a plane-0 update drops it while a higher
-plane still wants it. Recompute it over every twin. Nothing reaches
-this yet (multi-plane VMs are SEV-SNP only, which inhibits APICv
-anyway), but it would bite as soon as planes and APICv could coexist.
+Found by a local Sashiko review.
 
-api.rst marks the new ioctls, and KVM_ENABLE_CAP, as accepted on all
-planes, and lists the capabilities a plane fd accepts.
+Fixes the system-fd KVM_CAP_PLANES query in "kvm: Implement
+KVM_CAP_PLANES".
 
-The KVM_ENABLE_CAP filter was found by a local Sashiko review.
-
-The KVM_X86_SETUP_MCE part is from Mushahid Hussain.
-
-Co-developed-by: Mushahid Hussain <hmushi@amazon.co.uk>
-Not-signed-off-by: Mushahid Hussain <hmushi@amazon.co.uk>
+Fixes: https://lore.kernel.org/all/20260608144252.351443-29-joro@8bytes.org/
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- Documentation/virt/kvm/api.rst | 14 ++++++++-----
- arch/x86/kvm/x86.c             | 38 ++++++++++++++++++++++++++++++----
- 2 files changed, 43 insertions(+), 9 deletions(-)
+ arch/x86/kvm/svm/svm.c |  5 ++---
+ virt/kvm/kvm_main.c    | 15 +++++++++++++--
+ 2 files changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index 6c701cda61ef..d21378183c51 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -1494,7 +1494,7 @@ documentation when it pops into existence).
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index 1848136f3bb9..1c63eb3fcdc0 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -5522,9 +5522,8 @@ static unsigned svm_max_planes(struct kvm *kvm)
+ 	 * state: KVM_CHECK_EXTENSION(KVM_CAP_PLANES) reaches here with no
+ 	 * lock held, while __sev_guest_init() sets and rolls back
+ 	 * sev->active/es_active/SNP_ACTIVE under kvm->lock.  The VM type
+-	 * is fixed at creation, so the lockless read neither races the
+-	 * rollback nor lets the limit change under KVM_CREATE_PLANE's
+-	 * pre-lock bound check.
++	 * is fixed at creation, so the lockless read cannot race the
++	 * rollback.
+ 	 */
+ 	if (kvm->arch.vm_type == KVM_X86_SNP_VM)
+ 		return sev_snp_max_planes(kvm);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 8550303f5757..0136156df252 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5375,7 +5375,12 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ 	case KVM_CAP_PLANES:
+ 		if (kvm)
+ 			return kvm_arch_max_planes(kvm);
+-		return 1;
++		/*
++		 * The system fd reports the ceiling a VM may opt in to via
++		 * KVM_ENABLE_CAP(KVM_CAP_PLANES); a VM fd reports what the
++		 * VM actually has.
++		 */
++		return KVM_MAX_PLANES;
+ 	default:
+ 		break;
+ 	}
+@@ -5587,6 +5592,13 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
+ 	struct file *file;
+ 	int r, fd;
  
- :Capability: KVM_CAP_ENABLE_CAP
- :Architectures: mips, ppc, s390, x86, loongarch
--:Type: vcpu ioctl
-+:Type: vcpu ioctl (all planes)
- :Parameters: struct kvm_enable_cap (in)
- :Returns: 0 on success; -1 on error
- 
-@@ -1515,6 +1515,10 @@ do support it, it only works for extensions that are supported for enablement.
- To check if a capability can be enabled, the KVM_CHECK_EXTENSION ioctl should
- be used.
- 
-+On x86, the vCPU fd of a plane other than plane 0 accepts only
-+KVM_CAP_HYPERV_SYNIC, KVM_CAP_HYPERV_SYNIC2, KVM_CAP_HYPERV_ENFORCE_CPUID and
-+KVM_CAP_ENFORCE_PV_FEATURE_CPUID; any other capability fails with -EINVAL.
++	guard(mutex)(&kvm->lock);
 +
- ::
- 
-   struct kvm_enable_cap {
-@@ -1549,7 +1553,7 @@ for vm-wide capabilities.
- 
- :Capability: KVM_CAP_MP_STATE
- :Architectures: x86, s390, arm64, riscv, loongarch
--:Type: vcpu ioctl
-+:Type: vcpu ioctl (all planes)
- :Parameters: struct kvm_mp_state (out)
- :Returns: 0 on success; -1 on error
- 
-@@ -1632,7 +1636,7 @@ whether the vcpu is runnable.
- 
- :Capability: KVM_CAP_MP_STATE
- :Architectures: x86, s390, arm64, riscv, loongarch
--:Type: vcpu ioctl
-+:Type: vcpu ioctl (all planes)
- :Parameters: struct kvm_mp_state (in)
- :Returns: 0 on success; -1 on error
- 
-@@ -3779,7 +3783,7 @@ handled.
- 
- :Capability: KVM_CAP_SET_GUEST_DEBUG
- :Architectures: x86, s390, ppc, arm64
--:Type: vcpu ioctl
-+:Type: vcpu ioctl (all planes)
- :Parameters: struct kvm_guest_debug (in)
- :Returns: 0 on success; -1 on error
- 
-@@ -4623,7 +4627,7 @@ capabilities will have the corresponding bits set.
- 
- :Capability: KVM_CAP_MCE
- :Architectures: x86
--:Type: vcpu ioctl
-+:Type: vcpu ioctl (all planes)
- :Parameters: u64 mcg_cap (in)
- :Returns: 0 on success,
-          -EFAULT if u64 mcg_cap cannot be read,
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 25f574bfbb32..cd0e9b6cf8f7 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3416,6 +3416,25 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
- 	if (cap->flags)
++	/*
++	 * Check the limit under kvm->lock, where KVM_ENABLE_CAP sets it,
++	 * so a concurrent cap enable cannot change it between this check
++	 * and the installation below.
++	 */
+ 	if (id >= kvm_arch_max_planes(kvm) ||
+ 	    WARN_ON_ONCE(id >= KVM_MAX_PLANES))
+ 		return -EINVAL;
+@@ -5595,7 +5607,6 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
+ 	if (!kvm_arch_irqchip_in_kernel(kvm))
  		return -EINVAL;
  
-+	/*
-+	 * KVM_ENABLE_CAP is accepted on plane vCPU fds, but only the caps
-+	 * below have been audited for plane_level > 0.  The nested paths
-+	 * behind eVMCS and direct TLB flush have not; refuse those rather
-+	 * than implicitly extending every current and future vCPU cap to
-+	 * planes.
-+	 */
-+	if (vcpu->plane_level) {
-+		switch (cap->cap) {
-+		case KVM_CAP_HYPERV_SYNIC:
-+		case KVM_CAP_HYPERV_SYNIC2:
-+		case KVM_CAP_HYPERV_ENFORCE_CPUID:
-+		case KVM_CAP_ENFORCE_PV_FEATURE_CPUID:
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+	}
-+
- 	switch (cap->cap) {
- #ifdef CONFIG_KVM_HYPERV
- 	case KVM_CAP_HYPERV_SYNIC2:
-@@ -3468,6 +3487,7 @@ bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
- {
- 	switch (ioctl) {
- 	case KVM_ENABLE_CAP:
-+	case KVM_SET_GUEST_DEBUG:
- 	case KVM_GET_DEBUGREGS:
- 	case KVM_SET_DEBUGREGS:
- 	case KVM_GET_LAPIC:
-@@ -3480,6 +3500,8 @@ bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
- 	case KVM_SET_ONE_REG:
- 	case KVM_GET_SREGS2:
- 	case KVM_SET_SREGS2:
-+	case KVM_GET_MP_STATE:
-+	case KVM_SET_MP_STATE:
- 	case KVM_GET_VCPU_EVENTS:
- 	case KVM_SET_VCPU_EVENTS:
- 	case KVM_GET_XCRS:
-@@ -3488,6 +3510,7 @@ bool kvm_arch_is_vcpu_plane_ioctl(unsigned ioctl)
- 	case KVM_GET_XSAVE2:
- 	case KVM_SET_XSAVE:
- 	case KVM_GET_REG_LIST:
-+	case KVM_X86_SETUP_MCE:
- 		return true;
- 	default:
- 		return false;
-@@ -9355,19 +9378,26 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_task_switch);
- static void kvm_arch_vcpu_guestdbg_update_apicv_inhibit(struct kvm *kvm)
- {
- 	bool set = false;
--	struct kvm_vcpu *vcpu;
-+	struct kvm_vcpu *vcpu, *v;
- 	unsigned long i;
-+	int p;
+-	guard(mutex)(&kvm->lock);
+ 	if (kvm->planes[id])
+ 		return -EEXIST;
  
- 	if (!enable_apicv)
- 		return;
- 
- 	down_write(&kvm->arch.apicv_update_lock);
- 
-+	/*
-+	 * KVM_SET_GUEST_DEBUG is accepted on every plane's vCPU fd, and
-+	 * kvm_for_each_vcpu() only walks plane 0: look at every twin.
-+	 */
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
--		if (vcpu->guest_debug & KVM_GUESTDBG_BLOCKIRQ) {
--			set = true;
--			break;
-+		vcpu_for_each_plane(vcpu->common, p, v) {
-+			if (v->guest_debug & KVM_GUESTDBG_BLOCKIRQ)
-+				set = true;
- 		}
-+		if (set)
-+			break;
- 	}
- 	__kvm_set_or_clear_apicv_inhibit(kvm, APICV_INHIBIT_REASON_BLOCKIRQ, set);
- 	up_write(&kvm->arch.apicv_update_lock);
 -- 
 2.50.1
 
