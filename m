@@ -1,96 +1,96 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 271CB606A327
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 20:45:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86C1D606A321
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 21:04:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=KEEpeY2R
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=bjlk2HdB
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPwWj1twhz2ylm;
-	Thu, 12 Nov 2026 07:45:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::834" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794429921;
-	cv=pass; b=JfFQ3TVzCWtzHrvHGQscbU6mdgUI7AqWc4UfqHp8fjixxVbWLCOTsV7ETGfyR9O85uz7tS0yeya+pfXBHwesOhONhLONo5JPiwjsQSVcBCKz0WRQ2W9tC203NiHSMzt4wSwanc1szRo7ioldXrr2geCTX7tPki9kb7rrbyYSyPymGgGkeiX0s+phjS3vrr4Iu2KOhFEmjIzLqNmZNXg05nWdoYpAXBnkMaN9kLTcJ45raG7eggnpIk6Ma5ckLHfLJbFlPwNZtWKRBRRHhLDLsNOkSyDrIqjpaWApyvnVBwhSm9URTUE5U34QnplJGC8Gbka6dBCCP2oGVcSYUg7RlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPwxQ6stLz2xLm;
+	Thu, 12 Nov 2026 08:04:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82b" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794431050;
+	cv=pass; b=MCluJZhjPPlprMl8MugsTt67LjWsmYYhdzBG5xYiKGpojEyjLY3CidlWrxtMPEsK/a8DOIsYHHRFiGjF17wNNJlWH/0v7XtDnqtTldpTh5wfOyprAQnqs3Kd2Ekk4yGUGP285B8ySzwvzfZLij1YS0syDrsXT3gQnaiVqn0FI5Eoam+UXZBmMrg0t8BZFxkxgTNuq+E4F7FsNvT1nNBRLcYJX2ST24cCKmyZZloxQNVAAo4lmghPOAwPQTtnnIL8J+8qllUsi+tdJYnWhnj2+pRJx78lX7hcfCObnOQ/I4XJmjjy/ixMqKy5fBowzmU9s/fQDhrFvTkQd1eLzZktIw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794429921; c=relaxed/relaxed;
-	bh=ejReHMBjl59d9ux/+j0JWqbuls8q6pULA6fL9qb3kCo=;
+	t=1794431050; c=relaxed/relaxed;
+	bh=7jfAi01Q4CRlBo14NA8JUFvh8yBOtjDMjluJPzC/jYk=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=f8vPvXXbN9sECmGoNaff4GLv0UIprn3PiWykrU7v9a04wxFWZlK1sKQNjoejKJEXMrVM7469J6JHGtmQ/H8fXh37iDoUAX9knD7zxOGm8x4duvGm8OUg0cDWShRBuT0Xg6SbeWf/ythduZnQOkkDRffLUqkUll3xeKF519DtS0VzqDFXXI1ztNDtQd0UWof3bFskwwdKH+IQf39eG1iTmSncse32xxrU1BzjdWMBiJAdxbvUGfgsIS7tc4s0Z7of15JIpmBbyjPLF9+1+6gf/qUCkSWEkC+pHVn0Y+QuCn2rEV3gSbywtpiNjgWGKjQo0H2Swq7eiBjqFS39I4eaYA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=KEEpeY2R; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+	 To:Cc:Content-Type; b=Pis0Gamw8Wy9b7ElMR4WG20e3TYe6gXISC9a4fhYF/H8WYDvhZOUA1bEwbq27F6GsNIuE+nxyLhHYSEHWZYEkrTq9xvypVDQ8psshjPqbXA7bGIM1d+OLbmqeLfqM7jl20bTCSO562qewYgw7bFkn9ugkN9Iix5D2a3HIoiq4Wm00p/IEYBzB+yoe5A1JSl7Pq3ghsoBYIZHFJVZKKhCoxehVvz1fyeRXx9cNUwOJwnnPRQr/ocKI4KARVNQBMCxMxsURrpFriuHJsp25JvRPRTQ1RUhyBo+HmJ/mJAH8WaVkGljj/9dESXYPIKm1lsUv+nOkIVE0YtqYIYolVl2ug==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=bjlk2HdB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=KEEpeY2R;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=bjlk2HdB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82b; helo=mail-qt1-x82b.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82b.google.com (mail-qt1-x82b.google.com [IPv6:2607:f8b0:4864:20::82b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPwWg3RTRz2y1W
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 07:45:18 +1100 (AEDT)
-Received: by mail-qt1-x834.google.com with SMTP id d75a77b69052e-535f598d126so46931cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 12:45:18 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794429915; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPwxP5734z2xBK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 08:04:09 +1100 (AEDT)
+Received: by mail-qt1-x82b.google.com with SMTP id d75a77b69052e-533202fe429so9051cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 13:04:09 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794431047; cv=none;
         d=google.com; s=arc-20260327;
-        b=AfogiBrx/7nG3qmRqCzFB9zuijFAfsbAM/qSQ578FrfpRWHX5I7qmZ2uDFK3xYO25P
-         WFOivfTH7WrNfxEGSquA58pLiNhzVshEkrEzRmUIU2DFxmHACFhxC4JYhwWcqqSfFcrg
-         X0pOAY4KPGLjrKqKVW+SeMZvyN29riWoKxCc6H+przI4905zpRwrf4k1j3SXFON2KEI0
-         bAxajmuacAvhHQyvIjDhtvmWACcxabZW6ZBawMLSkCf+muJoFowN6dIomjJE1bzKRwDw
-         mvONziw3bbrw2tSOnFb0wrMa18bV5QH75Ubk8AQYkg4EQxKqDIVbRbAR569m4nQkdmQg
-         2ifg==
+        b=frPlU7DSxf3+jeexVKO9u4qfR/OXnjO0t174rUR5FfsMRLvONmQeXfN4is7CP4iug4
+         g9R2NrsKJacD6AWyz18I4BjnfIQyKMvu+3djlSRqC/6uyubc4MviZl2ME2kr1PW1Utez
+         4qDzPa40iqsmABNaTqDWPTwbYjhlpNTmXd6pYsG7DjfQfH7pJQA7jOsNXUk/DX6yha+B
+         OwdJsslFkFdvqX3GvPS0dKDbDpFG9mR4ZxcNaGIftvQy0H3Q6twTBkvLfvcoZuBD43wx
+         rkMHghF7g0GMTngERGvGfzHf7kzDqKMPAhfaDuXevsTu8fcRprm+xY/XA82Xpn8habau
+         Swew==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=ejReHMBjl59d9ux/+j0JWqbuls8q6pULA6fL9qb3kCo=;
-        fh=y0aWDAojF1IbL24Bi+pPuUyiSdTJEwCAX5B10eDb4I8=;
-        b=pxB4IE7yJ9QfwrPxinQGh8du4gRym+XIWrRk0mSfVbJCf+toESYl1fUnWnhGkl+b4O
-         pFaXITamkvli7csb2vV5SUjd5AxDb6E8EjzZl3kGaTqkPZoK2dHLqWaJuXmrDwf4xpq7
-         6FgVk1kUWLmsXxmKeqkhYvcv8llKa6gv18QZhG+BdfgN7hA5xphPcmSXh9+fgiWYLWM3
-         CMKVSt6Wao8GhNx/5CTC9qKASBg7NyvKqMPjSKZA7LoxSOsYsDXomNfIGFE63WaD6nB3
-         Dwy7++qaAMosQ7Wed6RjU9/4Pv61+Eqquqsw9jGcLVpwrJvUukI7KrFY0pRenk7ompG0
-         qrgg==;
+        bh=7jfAi01Q4CRlBo14NA8JUFvh8yBOtjDMjluJPzC/jYk=;
+        fh=vpctSWffQWZTwDqFRe050zUc3MLh/6l2wGmMWjvV3bQ=;
+        b=g/A0kyMSIc6kWvJUo4dRC8XKs71vFDBuUEGqX/0fEHV2GMEvSfCqo88h/VuCo9bzt1
+         +k1hrW+MCcPZF5S1U3//SMZ9dM0YZBuqM1avWJVRGkEYLlmzaWWnUGVGlgbN/HILaRUF
+         qt+19yJKTxrhr75ZIiJG3ohwsMWkLqdNWV++zWBCnonHT8qW/5tp6RodEaRme3veFqOO
+         iUu1bPbEyrSiKZw7lyFFnhC7FdT7SlMPK500Xm34UY+Lhmf6P7GRnLdTTW/oBVObF2Ek
+         yWseIGvs/V7q5j8hilO9yd2UeuezdG//b8X6MruriuVkrYUziYHnax2HC4rJyxwU5bxk
+         3ZcA==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1794429915; x=1795034715; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1794431047; x=1795035847; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ejReHMBjl59d9ux/+j0JWqbuls8q6pULA6fL9qb3kCo=;
-        b=KEEpeY2RwqPYpJTMEwCTXwCHeUoz4c81lEC3DxRitodxIx9GvpVKOi1uqIE8c0vp1Z
-         A6Gx3cnD5tzfLGQ6YGK/KwCC5BjLLrZEFYXaIvQZdODJ7CaCS8a7gJ3OsRfKFDSVT+7z
-         vSHyxW4pa80pOfz2mhftPW/cyN2CKgAgKooEldY/Tz1hQoXcf1fKoxx4WC4s3ADUd8O1
-         Sw6xMTQy4RqDHvFSZZgq1YU6xZQ01Mm8+QB8JI1Q6T1bnod1YsAs0GNtU/FApgWiaHnM
-         XllVN4Sy/YjkVGcJ8FcfY2h3vNoG/ZJE5x6p1IIlAk8NBNO7QOR/a+rJwTiHOQ9mlf9J
-         CYGw==
+        bh=7jfAi01Q4CRlBo14NA8JUFvh8yBOtjDMjluJPzC/jYk=;
+        b=bjlk2HdBD07wvoITdbBl8eWbsnFR51TBi+OnG0JXxsyqMSPBAEiGH1UdsnOarmyx6J
+         smLmUIINbABBwf172YkFl8bB6s8JkiFMgh2iyxpue5wEn6OS/apI/AxcldHqpC6FMHCj
+         4oL3dMswiYHh8hqGd+vInIFLwp27blpj61rFLOzWeOCJjh/uj/45VHWouls+sb6s5i3P
+         xsRHClHgpalySTITIYxBFDTXFZdovkPjlWqeY6Inh1fypBbUi/tbpOVel1SjthnvwII1
+         nWWQ8dwkyvQrdz4kT0rc/plW8KFGKj/fQY7/3aqBzL4Ltdl9Fq2m+TYzHlpU6vWIbcE9
+         vPRg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794429915; x=1795034715;
+        d=1e100.net; s=20260707; t=1794431047; x=1795035847;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=ejReHMBjl59d9ux/+j0JWqbuls8q6pULA6fL9qb3kCo=;
-        b=qOcH1DDPQ4Cp4JeGtUDhQ+n1wVlQfsleiHTz51iCQD8vBChgPZJce4XHuirrB9jp6T
-         N0mfv+cygbVuJMFsYuvP/aNlqFjT1ZlpkR43o/Gh4wEJtWTpHZqQNomkpOcrieU8LJ9I
-         C87gNxP0covObooBYN9mAMqcGTgSxUk/C8XfW0AfXgmo2gzDZOKPJhOIvBL6GWSL8/UG
-         LZzdrwNqWOx490GPUKwpcSH42wzlFdYJ9Omzwtk9Vd1t009cHDvOd8uV8YLuOUlE18xu
-         lgaaGeSiLVDuSi3P5irKGPYT80hzOXUNFtoXH9dtYn4O0Q4xSZbTh77yYyV+d0oHfsq3
-         xB+Q==
-X-Forwarded-Encrypted: i=1; AL+hErEbh58HFKGQfKCQfMDZP+x7rjLpf7VEi1OTIDBQZ6a4aen10qx4YVUMkibSWkLnRA4xe2b5eSbMVsvKQCs=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/YNsSqxjYwj/1+7m384v9qhIP+b8QVcQhXa5PS0j9NunvRYKn2
-	daomV1YeLwxnTnWv14791oLqgPrR8kS/lc66rkhvfj8VuEBb3kSPv5u/DoGWxxMq87/lgLFegPG
-	Clg7NvDAcLVIdKnTLVXOLd4xtFOHelHFWrOMSF6h+
-X-Gm-Gg: AYBFou1AImPA6MY5dBWLVDiAeRM961nIS2IflvdtMmoVmeQa8liPu6rRNiz/4M3UJUZ
-	c+tEJRo0D4B07kwBgMyxopUcBXM6s+9bDmE79Mi6e/yOvmVkyIrZl/95kmvCexSvAYVUsdd6NdN
-	lRys+6VIaWU6k744ALTHWPp2SZZ1FiMbcIGWJe5mhHYjPczaz33uMzxjbXQNkrRFd+M3V01K9Q+
-	xe5kidyhAkA+Nd3BWnSxzanPHhTfcI5yhB2f7n827BH8JS0uruXG1zJoUjMSgTxVg1eSOc0voSA
-	EyeMTHAO/y4vGN+wctm4bVfjIsWqIB6KQwJdJ+xkADhFGgt6Xjg2E/HUFOy12t1oIO4SU39QDsO
-	qA3IBWJ59mktcnKRfexKhr/aQVFx5LOIyr2XSLhdcQZQmTpZsQ7P+mSKvpf+ewxOEWvAMVXeKtT
-	aYBDLzQYSglsaPwI0JfIGQ6qX5
-X-Received: by 2002:ac8:5c84:0:b0:534:d386:c3f1 with SMTP id
- d75a77b69052e-5598d505571mr488441cf.9.1794429914175; Wed, 11 Nov 2026
- 12:45:14 -0800 (PST)
+        bh=7jfAi01Q4CRlBo14NA8JUFvh8yBOtjDMjluJPzC/jYk=;
+        b=VKQ1Y5ir9ye5hrYlJUan7pduyINsupUwE6lkx8o46vx5yBd/kk/GKIGg+fxS42lGsu
+         Wo+yjOf/YpHX7ySC7sQF6X99uQQ71eh0vXx47tCFvCtatt3jFadE2lCFKquYhoqsGn9C
+         WEIhkRI+XF984GeYN9uh4l6TzxdV7baZtVCHbrI/+e2Up/2F5+4hPzWRX4BmeYcDcE0g
+         Zsueb60waNc3yP2EQtqsCGm04oh/DXOzs0p0H7QUT2IN5SpgFI3Li7TX/LR1btpps6Sb
+         kJDE6leZyREMyxqTsxm7M2B02gTxhcBqSh7Gees4ExO9Jy4fA8RoR0ti4nCup3KC/bZ1
+         VY2w==
+X-Forwarded-Encrypted: i=1; AL+hErFdc/5Z+EMRKM8fZ1cWKbo4TB6OJeF1g2nl+JRUuM9F8zOeUzzYkOtnWgcZyP+vcXeD+fTXWfJoyOTHWBg=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8otcw9zZr4WvCRlBahIoNVWUhjUXDCgewihCjzl3Gv3YJS20wh
+	d5O/dZztYMUQSidWA90woGCGPfJnvzUjbgNddv1I5bfvJlR0pz/ewXHqHGt2jl80kQSYkm/wdoO
+	iH6c9vm02M7CAetUe6xUCZNr5bB2Qz+R1KQ7/srUW
+X-Gm-Gg: AYBFou2yS9ihOt5RMydWrEW8iaD90rk/LOI918AHQAZ4bH/P+7tl+01MCR3NYl6frOa
+	Onz8RnEzDmPaDSKBnVtBVM1QotvunhCRMS/IOqNHD9aQ48mvw3d4XKYOa5hHgWaX5JZT/do9MLj
+	EJ8HoX0zxQOk+QIc6wNPlj3qTvpMHx4cp77Fug5r+sPbDgCWOkBqfVCFm5hS5f2WThSB5PLz8O+
+	4LX3rVg+eVLASaYMO3a19pGbsVrNIUVSY7ZM03rzZVCK1eZxdUdfgs4y79aEw3fHqeb9CM4c248
+	mCeNNisymFWuiriqPnIDBf+1jvqsrvfb254xwzu+HsEysSpL6p9Kvb3qNDkIoRrR8ZD/6TQtbCv
+	2Ad62vqQ6SVLBJ88y717mOUy65eb8G8mq3GjxTfxE2Woh0ksEyTKQrIyLY6QA0+WL8uOfVYz89t
+	IvTaUZWwaa55+tv7G9O/Bcmrw4
+X-Received: by 2002:a05:622a:2612:b0:530:e00f:7768 with SMTP id
+ d75a77b69052e-559670434c8mr4152141cf.0.1794431045881; Wed, 11 Nov 2026
+ 13:04:05 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,13 +104,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261110112546.261415-1-hao.ge@linux.dev>
-In-Reply-To: <20261110112546.261415-1-hao.ge@linux.dev>
+References: <20261110112546.261415-1-hao.ge@linux.dev> <20261110112546.261415-2-hao.ge@linux.dev>
+In-Reply-To: <20261110112546.261415-2-hao.ge@linux.dev>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Wed, 11 Nov 2026 20:45:02 +0000
-X-Gm-Features: AclHuK-ZSzUbXpuTPMxX4-S9gb3Y2E-tjBJBsqLyAoT0xCfZuwy_cCHQcxiXGC4
-Message-ID: <CAJuCfpEUVDVZ53Pe3uzUVU_=4V3vipCLqY8jo_CC5kA_ZJSnEA@mail.gmail.com>
-Subject: Re: [PATCH v4 0/9] mm/vmalloc: fix up vmap error handling
+Date: Wed, 11 Nov 2026 21:03:53 +0000
+X-Gm-Features: AclHuK9dy2sCAhDvi6AKjzXMWgnJES78GwGzZ1LsZZk9UkuHFg5q24wLvar7eig
+Message-ID: <CAJuCfpHjSZhPPpRudAdrDPzz8dGK=Mx62CYCNoO4MC9OhnGd=A@mail.gmail.com>
+Subject: Re: [PATCH v4 1/9] mm/kmsan: undo the shadow mapping when the origin
+ mapping fails
 To: Hao Ge <hao.ge@linux.dev>
 Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>, 
 	Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -119,97 +120,67 @@ Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Potapenko <glider@google.com>, 
 	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>, 
 	Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org, 
+	stable@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On Tue, Nov 10, 2026 at 11:24=E2=80=AFAM Hao Ge <hao.ge@linux.dev> wrote:
 >
-> __vmap_pages_range_noflush() and friends can install some PTEs before
-> failing and leave them mapped, and the kernel callers do not agree on
-> who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
-> roll back what they mapped before the failure, while
-> vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
-> __vmalloc_area_node() rely on the mapping functions cleaning up and
-> do not call anything like vunmap_range() themselves. When the same
-> range is mapped again, the attempt hits the leftovers and fails with
-> a warning in vmap_pages_pte_range(). A leftover huge pmd is worse.
-> During the retry, vmap_try_huge_pmd() calls pmd_free_pte_page() on
-> it, and the x86 implementation cannot tell a leaf entry from a page
-> table and frees the mapped page.
+> kmsan_vmap_pages_range_noflush() first maps the shadow pages and then
+> the origin pages. If the second mapping fails, the first one is left
+> mapped, and the callers do not roll it back. The next vmap of the
+> same metadata range hits the stale PTEs again and fails with a
+> WARN_ON() and -EBUSY in vmap_pages_pte_range().
+>
+> Undo the shadow mapping on that error path, the same way
+> kmsan_ioremap_page_range() cleans up after a partial failure.
+> __vunmap_range_noflush() only clears the PTEs; nothing has touched
+> the shadow mapping, so no TLB flush is needed.
+>
+> Fixes: 47ebd0310e89 ("mm: kmsan: handle alloc failures in kmsan_vmap_page=
+s_range_noflush()")
+> Cc: stable@vger.kernel.org
+> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+> Reviewed-by: Dev Jain <dev.jain@arm.com>
+> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+> ---
+>  mm/kmsan/shadow.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> diff --git a/mm/kmsan/shadow.c b/mm/kmsan/shadow.c
+> index 0c88d89bf0d6..2166086d3dc3 100644
+> --- a/mm/kmsan/shadow.c
+> +++ b/mm/kmsan/shadow.c
+> @@ -258,6 +258,10 @@ int kmsan_vmap_pages_range_noflush(unsigned long sta=
+rt, unsigned long end,
+>                                             o_pages, page_shift);
+>         kmsan_leave_runtime();
+>         if (mapped) {
+> +               /* Undo the shadow mapping set up above. */
+> +               kmsan_enter_runtime();
+> +               __vunmap_range_noflush(shadow_start, shadow_end);
 
-Please note that there is a new function called
-vmap_pages_range_batched() which should also unmap its incomplete
-mappings on failure. This function was introduced by a patch called
-"mm/vmalloc: map contiguous pages in batches for vmap() if possible"
-in mm-new. I think it should be handled by this series as well.
+Sorry, there is a problem here. You introduce "can_resched" check to
+avoid calling cond_resched() later in the series (in patch #7), but at
+this point __vunmap_range_noflush() can be called with GFP flags which
+do not allow blocking. Before recent Ulad's change called "kmsan:
+remove hard-coded GFP_KERNEL flags" this function was called only with
+GPF_KERNEL but now that's not the case. I think you can move
+introduction of can_resched flag into this patch.
 
-checkpatch.pl also complains about "Reported-by: should be immediately
-followed by Closes" on some of the patches, which can be easily fixed.
-
->
-> After discussing with Suren and Ulad [1], we move the rollback into
-> the mapping functions. A failed vmap leaves nothing mapped, and the
-> callers no longer clean up after it.
->
-> Patch 1 is the KMSAN part. The shadow and the origin of a range are
-> mapped by two separate calls, so the rollback there has to cover
-> both. Patch 2 is its disabled-KMSAN counterpart. Patches 3 to 5 bug
-> out on an unaligned range at the entry of the three range walkers.
-> Patch 6 only flushes the cache once the mapping succeeded. Patch 7
-> adds the rollback to __vmap_pages_range_noflush() and
-> vmap_page_range(). Patches 8 and 9 drop the powerpc and percpu
-> cleanups that are not needed anymore.
->
-> Changes since v3:
-> - drop v3 patch 3. The clamp papered over the caller bug, a bad
->   range now BUG_ONs at the unmap entry
-> - drop v3 patch 4. The reworked walk (24bbe1c56f63a) propagates
->   the errors already
-> - drop v3 patch 6. The walk below checks the range already
-> - the map side checks moved from the pte level to the entries of
->   vmap_range_noflush() and the walk, and became BUG_ON, in line
->   with the unmap side
-> - rebase onto the walk rework, commit messages updated accordingly
->
-> [1] https://lore.kernel.org/all/20260915070001.113559-3-hao.ge@linux.dev/
->
-> v3 link: https://lore.kernel.org/all/20261026080329.140244-1-hao.ge@linux=
-.dev/
-> v2 link: https://lore.kernel.org/all/20261019054531.87652-1-hao.ge@linux.=
-dev/
-> v1 link: https://lore.kernel.org/all/20261009063619.112313-1-hao.ge@linux=
-.dev/
->
-> Hao Ge (9):
->   mm/kmsan: undo the shadow mapping when the origin mapping fails
->   mm/kmsan: skip vunmap_range_noflush when KMSAN is disabled
->   mm/vmalloc: BUG_ON() on an unaligned range in vmap_range_noflush()
->   mm/vmalloc: BUG_ON() on an unaligned range in
->     vmap_pages_range_noflush_walk()
->   mm/vmalloc: BUG_ON() on an unaligned range in __vunmap_range_noflush()
->   mm/vmalloc: only flush the cache after the vmap succeeded
->   mm/vmalloc: undo partial mappings inside the mapping functions
->   powerpc: drop redundant unmaps of failed vmap mappings
->   mm/percpu: stop unmapping the CPU that failed to map
->
->  arch/powerpc/kernel/isa-bridge.c |  5 +--
->  arch/powerpc/kernel/pci_64.c     |  4 +-
->  include/linux/kmsan.h            |  8 +++-
->  mm/kmsan/hooks.c                 | 21 ++++++---
->  mm/kmsan/shadow.c                |  9 +++-
->  mm/percpu-vm.c                   |  5 ++-
->  mm/vmalloc.c                     | 75 ++++++++++++++++++++++++--------
->  mm/vmalloc.h                     |  6 ++-
->  8 files changed, 94 insertions(+), 39 deletions(-)
->
+> +               kmsan_leave_runtime();
+>                 err =3D mapped;
+>                 goto ret;
+>         }
 > --
 > 2.25.1
+>
 
