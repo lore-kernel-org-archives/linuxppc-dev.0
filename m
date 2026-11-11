@@ -2,84 +2,84 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59A25606A8BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:16:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A313B60A381F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:16:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sh1T2Kw+
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vbfrehSq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyY32Yyyz2ylm;
-	Thu, 12 Nov 2026 09:16:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::36"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794435399;
-	cv=none; b=VkTZy7g2mKc9o/NgYaJ8NJo7CB31309w5iuBINujCOuF/ta7qPEs6Nc9jn+oAh0SF+3Idc7YdiwL2uf5WLvO1Q6If7Z8TlZsHwp/R3IAOwzTv5s7dTWWaDf+/8Q0uvV3lQoKVgv7pbcyyc9AUcsJal4cxSoxdJGigeUokfwsNvNmgbCZIMRT5fnfIwuBObSOXm3x+/9OydH+5g0TYfXRragYKuoLK8S1+q65/bgFdAryvDwGkp+X+eedjIndp4vtxwe6kdIJpSmY7jLE6v2rWpwptUygHAGQp2VgIv3GOvHiwd6947bqz2qTMJkdwenwoMQnYNQrEhfOTXxFk4Pa3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyY601D9z3bSn;
+	Thu, 12 Nov 2026 09:16:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::34"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794435401;
+	cv=none; b=c5XlOXC63qKOoLdgtWi7NjRwwZGTT6GbZsgOyiY1QBchs2y4LFds5Grh4orleeqmddagUQ+7GSXHS4qGpgXe3w372grTaOBL3Tjncfd08D5wozRUp21rqmqtPUJYyW3LkXOdSPWiO/7M/z+WipuvIvxnbw+XaIYbgS5Kun+12m96j+YY//cOHq1YNWW6cD3yHmp2jeKuY0IIwvkeRalQyL768Yr8s2SFwpDfx+9ePwhxkm7Lb9wC1Knuw1/rDp5fGZ+0iB7wUlCZBYDiaG3uSUCpcAR6K+v/Uih7uoKe0hyzs6/QoRUuiXPZmiH3QUUM3SFarcdcuKIaamrkYzQ3qw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794435399; c=relaxed/relaxed;
-	bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
+	t=1794435401; c=relaxed/relaxed;
+	bh=RLeox9UCna+JAgQJPZ2ik+qyzedm8mitCUwWv3Rb40k=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Yag1r9OrNgnwvws7+yTXra/0qQUf/xm5ppc0GVF+8Nd2gRlA1tUfsppKBA5tzG2+tXFUNXX87CH3aSO0YRFq1SK3Uzre6LWJJeExpt4XCg8Eo+VRLYHw/2nP4APkTQ/02xYds7JiQPePq3m5Feoy2nzRAXTCCO21BYew3F0yDUIvClnw2OVNiw/GxB84MkySLUbInn5GmdkIqIDgILfImQgcjw58hSI/+JzWia46EXivhXjyPGQocZaAOLHjOL7xG92809dH9QMfQ2PliFJTNNrce18B8xHeaX9nZC2OKNwP5XH+DqFrEDrST+FIj1NeAUNJAae60u+9/JkEyaXk6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sh1T2Kw+; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=K5JC3/hKIoXELO79NruSptOOD3Pky2iMM1WorgefD2nuXJIxQzceCAG/QD+y2Hd8Fq3UWFjeB1HxuzSxDkOf6i5McnYyEkeDrpRycKK5ZihbZ+QGYlPJa7iMsoYvcS0m8vhh9Ha8y9ucccr4+rQmka87SLYLxx7mfNu1UAJNWI8t1rQqQPZ56S6JXv0i1hTIYL3dEgIJGi7aP0S7KvlYI6UGqWIvbJbR/tCPuBfrUBf83VnWmWAtnZqV1yDwpvNIQ5orRjhZrHI+UcdH+ECvNUXIrT60ZdfBsP2DeLdHr6Y9C3F79AFWSzqnoJj7Wz3dbmgwSAEgd1OT9MJsGPh1gA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vbfrehSq; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::34; helo=mail-oa1-x34.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=sh1T2Kw+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=vbfrehSq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::36; helo=mail-oa1-x36.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x36.google.com (mail-oa1-x36.google.com [IPv6:2001:4860:4864:20::36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::34; helo=mail-oa1-x34.google.com; envelope-from=james.hilliard1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x34.google.com (mail-oa1-x34.google.com [IPv6:2001:4860:4864:20::34])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyY23MZcz2yLY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:16:38 +1100 (AEDT)
-Received: by mail-oa1-x36.google.com with SMTP id 586e51a60fabf-4ada9579947so2180925fac.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 14:16:38 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyY457Czz3bQm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:16:40 +1100 (AEDT)
+Received: by mail-oa1-x34.google.com with SMTP id 586e51a60fabf-4adae3eb4d3so1536327fac.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 14:16:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794435395; x=1795040195; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794435398; x=1795040198; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
-        b=sh1T2Kw+Q6U/9cHTGRGhBeZiQZzRujtPeazSczVvSnBUy7k+M2BDPf9A2BMz4ZRkWV
-         UXtDzYvxMQOWO7UhW/9lfpdDaoaTONl34b12z68ZFqY8NThz7k9rshf1/pA9dnKcv5ou
-         0/YadOtlB305qiT6x9BdONEf8hyz1GPkMckww3bEtIWxyQDCsB//gtunho6GGAmNKrpH
-         aOazM+2B5+MkCekcdDxTsi8dAN39nGb0a9tVrmFyVILNWiiAL9gl/aRv3F7mWBvVHWld
-         avhPifGdg+Ju3h6ppEMxbk05GDjQDZUyiDxe/8C3YOw63tkKIJkqboIcS3PvsFu7vTGo
-         MiCg==
+        bh=RLeox9UCna+JAgQJPZ2ik+qyzedm8mitCUwWv3Rb40k=;
+        b=vbfrehSqi3WRzPV8ESafaC3LXP3YhHjc0CouQLuWnJ6jk7IK4BkNwJds6VVCizUgW6
+         5AwWl1psezoTLbecZRFmWjaOIg69mljU336z2eQChcUVoeIgJX/1GIjPGVXZXZ9a5STr
+         S5689UY8FRwW+Rn2D2h7iQdbnz6MTNvzNKMDgqYRbW9fYpUIwS3nejkAbaXtieEHfSg6
+         4tDLk6fgq4ZjEvsj/x/WxPtbcaNNEo2efnG4V2JDZfZtE4CvyTx8yHRM0MEJAxHgeIHE
+         lzXK5nXUAjgvZyGcxmqS34qvP3ppGZbupC8g50v6jLwa4OOb3dz3rb531vElN+2BBEdN
+         ZNrw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794435395; x=1795040195;
+        d=1e100.net; s=20260707; t=1794435398; x=1795040198;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=+f3wqnZmmj2eYXbJU0o1qM9Y+NCisSMFy31udWGduqg=;
-        b=E43BnPDwSBQAyRumCTIdObyuYJrSdf1NGVMtVhAtbI4KcfstHoH/R+ZVLeWGIQSMOw
-         eG5vYJZICxVW3oleq3SzhWeLoyYCk+sZreBoVp6Hl8V+AztRf63Ljh4Ue1RGyd/AWSpc
-         xoOlA+6yjm5gVwAGmHxRxkaQxd6X+cSZprtX7A5D9BpzP4XfUeUJuYs7p56Epp2nF580
-         Z7FrrqN0Kvy55XV81NQuU59+Gig7czvZMRJ86F/a7ErITUkBq7qBqwkV0cJuzEGwD4K9
-         oGFFF1KWF+b89I0aW4FdYc/TEhAQxIxRqLi5/Ns8ts6QcScEaVpDxVssg1jasf3EdeT8
-         l2fw==
-X-Forwarded-Encrypted: i=1; AL+hErHn6GKFuq89a79aHu9FkRgkhQlpJeTHf8MWg9RV3fHpenT5cvFPrj34qKzY4zUgCp5NKaZ42G3pQj2vgeE=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8Nwk7Vhcy0AHaVwaThOCyyUX3nKRhY6dJAzKXmWwxO8AD3+G2w
-	MOye1DfTIGVp7RLaGaMA9FG3y98D+Ws1D5gbNnsRYu4IJHpeLy3/66vU
-X-Gm-Gg: AYBFou2e/hcNRApSuScBjwHgOlUsRsIL9dvw0iOV5BtB9r9NShZnCQTSqiE2LeNdmWI
-	7TAb78F67CLx0YAC3RWOmSbuEHRBo9Q58lkGhIDfCnbEK/ib6s/Pm3m96lez2WcnBZAgys+gIYg
-	tGmYDaQk3xqqN0mNSCAM5K8r4gGv75NHEq6ZcmoQCry2LjYVwTAF0zKTkWw2T3b4bpkuUOK/t6a
-	n9SHiUaqXRzygyyGsXE+gVD7sAwsWvBqdDMTqGFmj1BlPhLRGQqOnDI5fYaVeEj4WRa+1JKQTrf
-	7brSXk9ZC5oWPFSfnQBBptceBAGbtwQbu0RQZNpsuGzyzOuUOu+hHGNO8/f3l6b/1FKhQvn41oG
-	pYsLYkRyF12WAzBPYf4ZQoyYeif94lUEAPTmvhk+mW9oeMcQeUDKCata/0wMKiqxbwXvMT70ENL
-	ypIkjex7ZcbsK+3hHGkRXjOkdNjjOSSursPCXzEH/+k2rQ6dK1zPvOTXQmo2+Zzna88OLDzomBH
-	EwJliHvj/NtkrsTTQn78SVn0y8x8FTN93rn2FO1lDfWwk0YR60uxMpodD5muI/r26gPgdiqA6Cc
-	GsCEmDG3XAFOWLSjK7xCY0BqzaUEmo4ra36I5/IIyfP6VABCcFlT4qL9wZ7QpAnvy8xInXE+unJ
-	OcsiRaPG96XgVx1s5yD94COtPAFD9NCMKWqT5Xjf2rU6mjW0kAQZtDTq08eh4rWXb49i3Y6XiKx
-	eiEWEFr6l+yUXV2/JRF5a68/L2rdDWecQgEBjqDWFGz8BnZZeSBGyLRf1SeJPlzO/gqMHiOTl8
-X-Received: by 2002:a05:6808:e8d:b0:4f1:7c39:8a7c with SMTP id 5614622812f47-56b982286b5mr3254065b6e.62.1794435394806;
-        Wed, 11 Nov 2026 14:16:34 -0800 (PST)
+        bh=RLeox9UCna+JAgQJPZ2ik+qyzedm8mitCUwWv3Rb40k=;
+        b=uns2ByRiEpOjceb7aCHz9Nlt+r8gNMPNRDVV8MiXCRb2yEDpqIB5cf4vOhhj5pSWCp
+         Q0zy+i2+qFrYJQXlTFCufWm8rhiuDHA+vEjF4aSC9YEDzrWJURuBO6ZgyYGwrBRNI8wt
+         OTZBTs33slt1he7xohFHgdSOBbf+EN/r6yvn9xas1XGbJEl1xh6d7nv6cyFTzbLb85ky
+         Gc/7PsU4yKuNnDXobi05olArj8sALNA+G1rqjYquwENe5yaeE1pWGwSsFDpFRrAVsuj6
+         W8Z3jbsg3FvXp0QofiosKYn2y0QbrBcdVKUYcV1vkUKw30/0gx+4uaMcTpIARijqgU5A
+         4u7g==
+X-Forwarded-Encrypted: i=1; AL+hErFwU6feQdIzFFZ8b6IYA+nTlo3SwbHzglt31w+HXdwNUe24NcPbuPszdKijJr+b8AK+RBiCLDq0zw8bXqY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+hqgvAzOGT7n4XpdIRCc+sPuGlsbEqxyvbQ6Q4CUA7ho9yARNR
+	tZw7HWlfJ2/7SlG/bbBM8r2L4E0mNt33h/yqsmKc5mqm5i38AdhsNcy8
+X-Gm-Gg: AYBFou1pURG9lGWZUr5SKqBsNQjTBr01aMdKV7kEFq6i2kTz7wTTdYFs26ePtaxlfa0
+	zR8NGEDZA4FT9GTBT85V0QfdzSm0tRm7N2bsSRNm7SsAxpwMCF5EnkmzHutMGd5NWTA5Bq/8F6a
+	WYnZOXFP1hNr/u9yt0Kjt7GLBcts84SjAW6/yN3izpHAqlqad2nzzhsJwQuO7yLbbusncthWBqS
+	mAc/hq8Jx18Br6ljwtLzbPBHLKaaumZ+aI+/i2UIb3QdysA7jcJFgJYZYZBRwkuJzdJGkrZ0Dn8
+	wD+mIiqWuz5/Lw3g1xnvhac5V+4yAdQmChQde45O9VxX/ze7nEKmlqaj5qtF8FPsuqSKSaO3oTh
+	oEkMacpyipQ+Z2TSiEhL3lKC8CbGIDL0xytHT8xaO7hvnPiWxnZCkVbLTjeypJSKLg7yGrjOsJQ
+	bCe4qu6jE38nsCanPsdOwaTFPoSb2FmWaOV47KgWblJpcLLhATKVFvOq4rJ6OZPVOVb+xcvmL3N
+	fNUfHnOLw4EJh9jBVjl07pvfxMNCI5/QApdbt8iL2VYxuE24tckVeM7lUSxaKMwkuvFXFn9zS1R
+	DAhOAd694rqlCpRoeqpC65s4WfAvBqxf2F1u3MmqxqQeNrNOfY07hoEwWBYvyxAD22Sj1GP13iO
+	yI4YxsreOsFi8DXO6Uaua5wj6+LV3098gg3YOn5QeO6CyNU6xgCHPfHsLyhnvEskfkvxIuHH9Mo
+	hnkfMF0P0k2ES0FffSoZKlj7xZyy01nKNpEkZ8SWwQGmcqjFR6770=
+X-Received: by 2002:a05:6808:1a01:b0:4d6:92d4:c806 with SMTP id 5614622812f47-56b987289b0mr3147119b6e.62.1794435397786;
+        Wed, 11 Nov 2026 14:16:37 -0800 (PST)
 Received: from [127.0.1.1] (174-29-1-49.hlrn.qwest.net. [174.29.1.49])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-56902ae38ecsm5917498b6e.1.2026.11.11.14.16.33
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-56902ae38ecsm5917498b6e.1.2026.11.11.14.16.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 14:16:34 -0800 (PST)
+        Wed, 11 Nov 2026 14:16:37 -0800 (PST)
 From: James Hilliard <james.hilliard1@gmail.com>
-Date: Wed, 11 Nov 2026 15:16:26 -0700
-Subject: [PATCH v12 1/8] serial: 8250_omap: separate locked TX DMA
- completion processing
+Date: Wed, 11 Nov 2026 15:16:28 -0700
+Subject: [PATCH v12 3/8] serial: 8250_omap: serialize RX DMA completion and
+ flushing
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,7 +95,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261111-submit-serial-8250-dma-cancel-v1-v12-1-9e3456bc2555@gmail.com>
+Message-Id: <20261111-submit-serial-8250-dma-cancel-v1-v12-3-9e3456bc2555@gmail.com>
 References: <20261111-submit-serial-8250-dma-cancel-v1-v12-0-9e3456bc2555@gmail.com>
 In-Reply-To: <20261111-submit-serial-8250-dma-cancel-v1-v12-0-9e3456bc2555@gmail.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
@@ -129,60 +129,91 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Separate the port-locked completion processing from the DMA callback
-wrapper. Keep the shutdown check and locking in the callback, and retain
-the existing FIFO accounting, delayed register restore and THRI handling
-in the helper.
+Moving RX DMA locking out of __dma_rx_do_complete() left the DMA
+completion callback calling it without rx_dma_lock. Shutdown and runtime
+suspend flush RX under rx_dma_lock but without the port lock, allowing
+these paths to overlap the callback's buffer accounting and flip-buffer
+insertion. RX submission and UART interrupt handling also require the
+port lock.
 
+Take rx_dma_lock inside the port lock in the completion callback. Hold
+the port lock around the shutdown and runtime-suspend flushes, matching
+the existing interrupt-path lock order. Assert both locks in the common
+completion helper and the port lock at the flush entry point.
+
+Fixes: 789898416749 ("serial: 8250: 8250_omap: Move locking out from __dma_rx_do_complete()")
 Reviewed-by: Raul E Rangel <rrangel@chromium.org>
 Signed-off-by: James Hilliard <james.hilliard1@gmail.com>
 ---
- drivers/tty/serial/8250/8250_omap.c | 19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+ drivers/tty/serial/8250/8250_omap.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
-index 4805b644ccb1..b6f108d34854 100644
+index b6f108d34854..5e114dd8f9bf 100644
 --- a/drivers/tty/serial/8250/8250_omap.c
 +++ b/drivers/tty/serial/8250/8250_omap.c
-@@ -1080,18 +1080,13 @@ static int omap_8250_rx_dma(struct uart_8250_port *p)
+@@ -771,8 +771,10 @@ static void omap_8250_shutdown(struct uart_port *port)
+ 	guard(serial8250_rpm)(up);
  
- static int omap_8250_tx_dma(struct uart_8250_port *p);
+ 	flush_work(&priv->qos_work);
+-	if (up->dma)
++	if (up->dma) {
++		guard(uart_port_lock_irq)(port);
+ 		omap_8250_rx_dma_flush(up);
++	}
  
--static void omap_8250_dma_tx_complete(void *param)
-+static void omap_8250_tx_dma_complete(struct uart_8250_port *p)
+ 	serial_out(up, UART_OMAP_WER, 0);
+ 	if (priv->habit & UART_HAS_EFR2)
+@@ -898,7 +900,7 @@ static int omap8250_rs485_config(struct uart_port *port,
+ #ifdef CONFIG_SERIAL_8250_DMA
+ static int omap_8250_rx_dma(struct uart_8250_port *p);
+ 
+-/* Must be called while priv->rx_dma_lock is held */
++/* Context: port lock and priv->rx_dma_lock held. */
+ static void __dma_rx_do_complete(struct uart_8250_port *p)
  {
--	struct uart_8250_port	*p = param;
- 	struct uart_8250_dma	*dma = p->dma;
- 	struct tty_port		*tport = &p->port.state->port;
- 	bool			en_thri = false;
- 	struct omap8250_priv	*priv = p->port.private_data;
+ 	struct uart_8250_dma    *dma = p->dma;
+@@ -911,6 +913,9 @@ static void __dma_rx_do_complete(struct uart_8250_port *p)
+ 	int			ret;
+ 	u32			reg;
  
--	guard(uart_port_lock_irqsave)(&p->port);
--	if (dma->shutting_down)
--		return;
--
- 	dma_sync_single_for_cpu(dmaengine_get_dma_device(dma->txchan), dma->tx_addr,
- 				UART_XMIT_SIZE, DMA_TO_DEVICE);
++	lockdep_assert_held_once(&p->port.lock);
++	lockdep_assert_held_once(&priv->rx_dma_lock);
++
+ 	if (!dma->rx_running)
+ 		goto out;
  
-@@ -1123,6 +1118,18 @@ static void omap_8250_dma_tx_complete(void *param)
+@@ -977,7 +982,8 @@ static void __dma_rx_complete(void *param)
+ 	if (dmaengine_tx_status(dma->rxchan, dma->rx_cookie, &state) != DMA_COMPLETE)
+ 		return;
+ 
+-	__dma_rx_do_complete(p);
++	scoped_guard(spinlock, &priv->rx_dma_lock)
++		__dma_rx_do_complete(p);
+ 	if (priv->throttled)
+ 		return;
+ 
+@@ -995,6 +1001,8 @@ static void omap_8250_rx_dma_flush(struct uart_8250_port *p)
+ 	unsigned long		flags;
+ 	int ret;
+ 
++	lockdep_assert_held_once(&p->port.lock);
++
+ 	spin_lock_irqsave(&priv->rx_dma_lock, flags);
+ 
+ 	if (!dma->rx_running) {
+@@ -1811,8 +1819,10 @@ static int omap8250_runtime_suspend(struct device *dev)
+ 		}
  	}
- }
  
-+static void omap_8250_dma_tx_complete(void *param)
-+{
-+	struct uart_8250_port *p = param;
-+	struct uart_8250_dma *dma = p->dma;
-+
-+	guard(uart_port_lock_irqsave)(&p->port);
-+
-+	if (dma->shutting_down)
-+		return;
-+	omap_8250_tx_dma_complete(p);
-+}
-+
- static int omap_8250_tx_dma(struct uart_8250_port *p)
- {
- 	struct uart_8250_dma		*dma = p->dma;
+-	if (up && up->dma && up->dma->rxchan)
++	if (up && up->dma && up->dma->rxchan) {
++		guard(uart_port_lock_irqsave)(&up->port);
+ 		omap_8250_rx_dma_flush(up);
++	}
+ 
+ 	priv->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
+ 	schedule_work(&priv->qos_work);
 
 -- 
 2.53.0
