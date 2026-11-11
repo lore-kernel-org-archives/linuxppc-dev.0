@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8BC21606D4C3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA3B8606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=SuaqGxGm
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyqp0GJ1z30WS;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyqp0Nkyz30WT;
 	Thu, 12 Nov 2026 09:29:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794436165;
-	cv=none; b=ITgUinlEIG5kLxE3lMc07lS8hUkI6iqgRAv1lVVkl8lZU12SGIQkpD0kzdOmASZA4glhLUPjBtBnHLz7XlqPP5g47cz1ZGDf+DJMP2s+73wM+sJkLCpK+im6lpgvpSMd2uW886XQw7LjwXPkpreJT34chL/bpwq/eVYfIRaDfLFQu2hpupe1W5xrat0xGYZmzFfE6tXb3/dpfTgTbYlV1MdsKBiYh+Oo8S5KHNuLfmmdHONffHewJFKUobb01nU4WWJpIPmQEWRgG3Hg8RKDdu0ysNx1iKd2D+eU6FOIK+ZfZ+96o+E9W8ijPlLtDjtKuQ3155G/9b5i4dvvBsUoJg==
+	cv=none; b=DFFJWc5NVdSVbiMaY/RM9CHRaEt5ZFTgAEV1RekiYLEtehJR+vmsAZ9tNw8FFV/emUpewMSH5x2OTaT+hIRxRlvJeuoIYjxlqOlF/l1xNKYHBfAT4/vlSCUyYtv3OApLRDvecYWEmA73E1uNUD9Ll4PgedI1kNYQDENavfVA8JFsUJuKSKlJn//TelS4C46DL/kFbSwHGmKsAedZYx8DVGCaH/gsAPaOAOns7uf7G1x3oUN80ISNrQsLtR5f+7YNi6cZDvkHDfxC1zs7so5Xr43G8UvevGvVvO7sQglmcYeTBbTFc5vj37VTxv0DiirvQlRZdGLUn6x2ASVkz6uk1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1794436165; c=relaxed/relaxed;
-	bh=7RHV+rjBkPO4VUSCvrUXysZFgfDWuM9lOqjoSxGasSw=;
+	bh=hNcFDdx6SEsMQ2wb+0TdBub7tg0kF/xbhNU9Q5R/+fI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fSWUtr+rbHYJin137+z6LAC9VL2e3KbAWqDyG6nQX8wfhK/nin+anJol6FHWKr6JGO0GpR/iBdvb2S1idZlzGLf3IyfRvFjyB77gwkg0ZWjdN+1NpHViOTIv5Vw7TIPn0E7jrNMAd+Y5W2dr5kq47pSjIdhTA8OI3yV7IUGcivM4JdzbRaAwkmV8JgrLz4ArlA1XNONhBTeVfFUpAlL3wwS/4DKgh49IFcOtblTf1XZxwybnmd7T3Qin1eUqQZh1ogKyrpnv8kk5Cet2F3CFVUuwAoXuIoEep5TNClfqqqtDDz1s9zmlmCz5LP1gBeZi10PSRfq5OU/AjUu+3FP4rw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=SuaqGxGm; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
+	 MIME-Version:Content-Type; b=YbMdhRKDynq8r0TepenoF1+AmPWSDTZAH+2EWo4C34h9oO9fItKBpf9t3XY4aTbc68Cqx87W3do6NTK3n32gUsD4TIN/LUYbvR5KrXuszX94vV8Y4K9tPqM7LzetffNNqnz2H1goh5UfcJ7Zk1w4dJFpUMRAl1bencmF4bmEzeOlMckvnky2P//9oeT+CODDruGkVE+unHDpGfQi1p2cAys0SB3qGXAfgTMy6oUvJ7zMbdyr/uI7TXPFAxZna0Q4pA57O1edKldZYwG6tDcp5SnRiT5lEgG4j7Cbaip504G+8evdKUzv0U3UIAsEnsGA3tSDNSVY0L+hk3oPXZy2xQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=SuaqGxGm;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj3JWWz30VV
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj3QWmz30W5
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:29:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
-	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=7RHV+rjBkPO4VUSCvrUXysZFgfDWuM9lOqjoSxGasSw=; b=SuaqGxGmXc2Sfykyn+Q4BHtYCo
-	Ba8kq40ST/H4RXlkceuSOEEAoWHxlToKg7EvDFMz7Of3AKdrouUCu5B2hbC+Lg3pn0cUnu/bOt8HW
-	Ua0cHnHe1JlVGiH83Al5U/FJUBecJp17Qu1eA6+7HjsBcYNtcVEzVJkaz5T+h9Xr5Z7wWFn2VZ8U7
-	pOQVK9rwu25yw688zAaOeGtbkIbJK8bX0z8K/hrQ1d2SGVjx/R8ke3lAAJ+i78hC4l23wE6SRpUQ4
-	B9EAPBNdaCf18Ket7fEZkpoIXOFrXYWtX7AZ+oiAaGKF6HFna4IJwpKJ97HFpdvi6abTRPIjbupIB
-	w12K+HLw==;
+	Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:
+	To:From:Reply-To:Content-ID:Content-Description;
+	bh=hNcFDdx6SEsMQ2wb+0TdBub7tg0kF/xbhNU9Q5R/+fI=; b=nWz1gFPieTMjS6ZWY7nAHM/nOJ
+	syw4NbeMkSO0aHt+eO0M1dMge7tZNU7ehYKvmryl84z8rwj+DmAtGbpkvydeEKAcnNNw7+jYyD5t4
+	5sxuulgOozKiHvuBZx2/ltbcOJucbl3aEMjTjPGGZtuwMFAUW+4UIl/9RnjpEs5wzYs//JOQCxVfe
+	Z5vV95kf3tW2bfUmND973isg/ref1Y14Ui9VcW5OAU9bFdTYvOD/IO7iUOyLzG5ENC+BD8ktH62+N
+	CNhTo0V4MYK/g3P3FYB65jEOYAjZy162p7oL8xg+UySIOd4jizNQ1HXVfvs38/yhP7RmuPdZR+eB6
+	2JplI6gg==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoc-00000009dbb-2A2g;
+	id 1xRGoc-00000009dbX-29VX;
 	Wed, 11 Nov 2026 22:29:14 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000008K-3uiS;
+	id 1xRGoZ-0000000007o-1y0L;
 	Wed, 11 Nov 2026 22:29:11 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,13 +70,12 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 08/16] KVM: planes: Publish a new plane only once KVM_CREATE_PLANE cannot fail
-Date: Wed, 11 Nov 2026 14:29:03 -0800
-Message-ID: <20261111222911.477-9-dwmw2@infradead.org>
+Subject: [PATCH 00/16] KVM: Fixes for the Planes + SEV-SNP series
+Date: Wed, 11 Nov 2026 14:28:55 -0800
+Message-ID: <20261111222911.477-1-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
+In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
- <20261111222911.477-1-dwmw2@infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,131 +89,123 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: David Woodhouse <dwmw2@infradead.org>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-kvm_create_plane() publishes the new plane in kvm->planes[] before
-kvm_vm_ioctl_create_plane() can still fail at anon_inode_getfile(),
-and the error path freed the plane without unpublishing it. Anything
-that later reads kvm->planes[] reaches the freed plane, and VM teardown
-destroys it a second time.
+I rebased Jörg's KVM Planes + SEV-SNP series¹ to 7.4-rc2² and used it
+to add VSM support³. Here's a batch of fixes.
 
-Unpublishing it on the error path is not enough either. Some readers of
-kvm->planes[] take no lock: the SEV VMPL-switch target lookup takes the
-level from the guest, so it can pick up a plane that is published and
-then freed with no grace period in between.
+Thirteen of the sixteen apply in order, without conflicts, to the
+kvm-planes-v7.1 branch. The other three need what has landed upstream
+since v7.1: patch 1 fixes the s390 arm64 KVM module, which only
+arrived in 7.4; patch 12 touches the PID-table clearing in
+vmx_vcpu_free() from b41f2ca6c060; and patch 16 extends the VMSA
+invalidation from d1a3c2162334.
 
-Publish the plane in kvm_vm_ioctl_create_plane() only after
-anon_inode_getfile() succeeds, so a failing create frees a plane that
-no reader has ever seen. kvm_create_vm() publishes plane 0 itself,
-before the VM is reachable. The store stays smp_store_release(), and
-the lock-free readers (MSI delivery and the SEV VMPL target lookup) now
-load the pointer with READ_ONCE() to pair with it.
+The ones that matter:
 
-Found by a local Sashiko review.
+ - 01 s390: arm64: Pass plane_level to the kvm_set_routing_entry() stub
+   The arm64 KVM module on s390 kept the old prototype; the kernel
+   test robot caught it on the rebased tree.
 
-Fixes the error path in "kvm: Implement KVM_CREATE_PLANE ioctl".
+ - 05 Initialise Hyper-V state on every plane vCPU
+   kvm_set_cpuid() passed the plane 0 vCPU to kvm_hv_vcpu_init() for
+   every plane, and a twin created late got vp_index -1.
 
-Fixes: https://lore.kernel.org/all/20260608144252.351443-30-joro@8bytes.org/
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- arch/x86/kvm/irq.c     |  5 +++--
- arch/x86/kvm/svm/sev.c |  2 +-
- virt/kvm/kvm_main.c    | 16 ++++++++++++----
- 3 files changed, 16 insertions(+), 7 deletions(-)
+ - 08 Publish a new plane only once KVM_CREATE_PLANE cannot fail
+   A failed create left a freed plane in kvm->planes[], where the SNP
+   VMPL switch could still find it, and VM teardown freed it again.
 
-diff --git a/arch/x86/kvm/irq.c b/arch/x86/kvm/irq.c
-index f3044aec7188..26912161997e 100644
---- a/arch/x86/kvm/irq.c
-+++ b/arch/x86/kvm/irq.c
-@@ -235,7 +235,7 @@ int kvm_set_msi(struct kvm_kernel_irq_routing_entry *e,
- 		return -1;
- 
- 	kvm_msi_to_lapic_irq(kvm, e, &irq);
--	plane = kvm->planes[e->msi.plane_level];
-+	plane = READ_ONCE(kvm->planes[e->msi.plane_level]);
- 
- 	return kvm_irq_delivery_to_apic(plane, NULL, &irq);
- }
-@@ -260,7 +260,8 @@ int kvm_arch_set_irq_inatomic(struct kvm_kernel_irq_routing_entry *e,
- 
- 		kvm_msi_to_lapic_irq(kvm, e, &irq);
- 
--		if (kvm_irq_delivery_to_apic_fast(kvm->planes[e->msi.plane_level], NULL, &irq, &r))
-+		if (kvm_irq_delivery_to_apic_fast(READ_ONCE(kvm->planes[e->msi.plane_level]),
-+						  NULL, &irq, &r))
- 			return r;
- 		break;
- 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index fd7605e47216..32a4ba4ffdbb 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -4249,7 +4249,7 @@ static int sev_snp_ap_creation(struct kvm_vcpu *vcpu)
- 	vmpl = array_index_nospec(vmpl, SVM_SEV_VMPL_MAX);
- 
- 	/* Obtain the target plane and vCPU */
--	target_plane = vcpu->kvm->planes[vmpl];
-+	target_plane = READ_ONCE(vcpu->kvm->planes[vmpl]);
- 	if (target_plane) {
- 		target_vcpu = plane_get_vcpu(target_plane, apic_id);
- 	} else {
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 95de904f0c61..d256bbf301f4 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1252,8 +1252,7 @@ static struct kvm_plane *kvm_create_plane(struct kvm *kvm, unsigned plane_level)
- 	if (kvm_arch_plane_init(kvm, plane, plane_level))
- 		goto out_free_plane;
- 
--	kvm->planes[plane_level] = plane;
--
-+	/* The caller publishes the plane in kvm->planes[]. */
- 	return plane;
- 
- out_free_plane:
-@@ -1312,7 +1311,8 @@ static struct kvm *kvm_create_vm(unsigned long type, const char *fdname)
- 	BUILD_BUG_ON(KVM_MEM_SLOTS_NUM > SHRT_MAX);
- 
- 	/* Initialize planes array and allocate plane 0 */
--	if (kvm_create_plane(kvm, 0) == NULL) {
-+	kvm->planes[0] = kvm_create_plane(kvm, 0);
-+	if (!kvm->planes[0]) {
- 		r = -ENOMEM;
- 		goto out_no_planes;
- 	}
-@@ -5627,13 +5627,21 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
- 		goto put_kvm;
- 	}
- 
-+	/*
-+	 * Publish only once nothing can fail, so that the error path frees
-+	 * a plane no reader has seen.  Pairs with the READ_ONCE() of the
-+	 * lock-free readers of kvm->planes[] (MSI delivery, SEV VMPL
-+	 * targeting): the plane's fields must be visible before the
-+	 * pointer is.
-+	 */
-+	smp_store_release(&kvm->planes[id], plane);
- 	kvm->has_planes = true;
- 	fd_install(fd, file);
- 	return fd;
- 
- put_kvm:
--	kvm_put_kvm(kvm);
- 	kvm_destroy_one_plane(plane);
-+	kvm_put_kvm(kvm);
- put_fd:
- 	put_unused_fd(fd);
- 	return r;
+ - 10 Keep current_vcpu in sync in vcpu_load()
+   A reschedule inside an ioctl on a plane fd put and loaded the wrong
+   twin, and a failed twin create left current_vcpu dangling.
+
+ - 11 Load each plane twin while updating it after KVM_SET_CPUID
+   On VMX the vendor callback wrote the twins' controls into the
+   caller's VMCS.
+
+ - 12 Leave the IPIv PID-table entry to the plane 0 vCPU
+   A twin has the same vCPU ID as plane 0, so creating or freeing one
+   repointed or cleared plane 0's entry. Latent for now, since planes
+   inhibit APICv.
+
+ - 13 Leave TSC matching to the plane 0 vCPUs
+   Each twin counted as another vCPU with a matching TSC, so the master
+   clock could never come back on.
+
+ - 14 Derive runtime CPUID bits from the executing plane
+   OSXSAVE, OSPKE, APIC, MWAIT and the XSAVE sizes follow per-plane
+   registers, but the table they live in is shared.
+
+Three things I've noticed and *not* fixed here:
+
+ - The AVIC physical ID table is indexed by vCPU ID too, so it has the
+   same collision as the IPIv PID table in patch 12. It's masked while
+   APICv is inhibited for planes, as it is today.
+
+ - A host-side TSC write on plane 0 (or KVM_SET_TSC_KHZ) after the
+   twins exist doesn't reach them. Fixing that means loading each twin,
+   and I'd rather agree how before doing it.
+
+ - For Jörg and Tom: the SNP VMPL switch stops the current plane with
+   kvm_vcpu_set_plane_stopped() and no latch, so KVM_GET_PLANE_RUN_STATE
+   reports it as STOPPED, and a VMM that saves and restores that value
+   turns it into a userspace stop. Does VMPL want a notion of
+   KVM-initiated suspension of its own, or is that the intended
+   contract?
+
+¹ https://lore.kernel.org/all/20260608144252.351443-1-joro@8bytes.org/
+² https://git.infradead.org/?p=users/dwmw2/linux.git;a=shortlog;h=refs/heads/vsm2/planes-fixes
+³ https://lore.kernel.org/kvm/20261017122501.610248-1-dwmw2@infradead.org/
+
+David Woodhouse (14):
+  KVM: s390: arm64: Pass plane_level to the kvm_set_routing_entry() stub
+  KVM: SVM: Derive the plane limit from the immutable VM type
+  KVM: planes: Report KVM_MAX_PLANES from the system fd
+  KVM: Guard the per-plane KVM_SIGNAL_MSI cases with __KVM_HAVE_MSI
+  KVM: x86: Initialise Hyper-V state on every plane vCPU
+  KVM: x86: Widen the plane vCPU fd ioctl allowlist
+  KVM: x86/mmu: Free obsolete roots of all planes
+  KVM: planes: Publish a new plane only once KVM_CREATE_PLANE cannot
+    fail
+  KVM: planes: Kick the running twin's pCPU, not the request target's
+  KVM: planes: Keep current_vcpu in sync in vcpu_load()
+  KVM: x86: Load each plane twin while updating it after KVM_SET_CPUID
+  KVM: VMX: Leave the IPIv PID-table entry to the plane 0 vCPU
+  KVM: planes: Annotate the lockless twin-publication protocol
+  KVM: SVM: Make KVM_REQ_VMSA_PAGE_RELOAD per plane
+
+Mushahid Hussain (2):
+  KVM: x86: Leave TSC matching to the plane 0 vCPUs
+  KVM: x86: Derive runtime CPUID bits from the executing plane
+
+ Documentation/virt/kvm/api.rst  |  21 ++++--
+ arch/s390/kvm/arm64/arm.c       |   3 +-
+ arch/x86/include/asm/kvm_host.h |   3 +-
+ arch/x86/kvm/cpuid.c            | 128 +++++++++++++++++++++++---------
+ arch/x86/kvm/cpuid.h            |   6 +-
+ arch/x86/kvm/hyperv.c           |   7 +-
+ arch/x86/kvm/irq.c              |   5 +-
+ arch/x86/kvm/mmu/mmu.c          |  16 +++-
+ arch/x86/kvm/svm/sev.c          |  29 ++++++--
+ arch/x86/kvm/svm/svm.c          |  10 ++-
+ arch/x86/kvm/svm/svm.h          |   2 -
+ arch/x86/kvm/vmx/vmx.c          |  10 ++-
+ arch/x86/kvm/x86.c              |  87 ++++++++++++++++++++--
+ include/linux/kvm_host.h        |   7 +-
+ virt/kvm/kvm_main.c             | 115 +++++++++++++++++++++++-----
+ 15 files changed, 365 insertions(+), 84 deletions(-)
+
 -- 
 2.50.1
 
