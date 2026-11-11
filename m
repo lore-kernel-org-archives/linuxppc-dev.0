@@ -2,126 +2,110 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7A68606A324
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 11:16:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8711E606A33A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 11:53:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=ST3uKl4t;
-	dkim=pass (2048-bit key, unprotected) header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=hEm8u6O5
+	dkim=pass (2048-bit key) header.d=fujitsu.com header.i=@fujitsu.com header.a=rsa-sha256 header.s=fj2 header.b=UpmG4/Pt
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPgv85Qnqz2y2h;
-	Wed, 11 Nov 2026 22:16:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=148.163.139.77 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794395780;
-	cv=pass; b=SU8S5EmgmU1wNQJBlfGEZDTZ5TruRs1IkXQ84stDhSykw7a3198823eHI7BR/ohv8kK373AB1L4jWRFI/btJhodV2aj8W8CSrQg09KNVCW5yp9kZKqmu8+5+M6lkvhouigkO0oRv5cqd/2GiPxw/aC/OCHbrX1kub173d6eTW22+8pB/cqyMr7nOXdQOOLqUFp19vLdSxUX1srSbDmMU3HMEjtjFFBj20yDhSthg/WyypbTaD0QpLTs4Rmazgc5eeCnxPFvTOzVfGwWfObcqLv0cxzuk7rq5jF2DjAhq0d6e+D73lTQ7Ix23Z+ZM1/b+rqEG5UgrtSnSTNF90uQY3g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794395780; c=relaxed/relaxed;
-	bh=ihQMTmjkyvTUyMrpW0BOFCJ1LHuEdZbM2Yi2/Xc5PxU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=TFIhWKW8BKSnkytmsqxePZrXqZ+IQBxiXfG9+jBjxBHsLfigWfApYplvppC1hN8QSVmJ8mHHrddVbAQ8IpdGRTHqAIQ+ncZsm9Lyx3+cMhcX3mrefkxXqZEmpAk7MbMHy2ZbOFvTDz4vPmuJx1i8UPXPqnP4iMxbvsI/bv+WFmjpLlnVUF3McfxCloseD+Zlsw/ZqZWo+xjn2l2s9cGY7Yzz6EMy+9Me5K5pEzzJ5TwIVXUNuPHvPtTmVrch2TXbC9oXXagnW35TE35EngoyZRIUDLRe73LULE92Gs3KiBxQ9bzJLsl2t+4HuGfz0fNBizk2xyMQ6aoZjRQgHIaAZQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=analog.com; dkim=pass (2048-bit key; unprotected) header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=ST3uKl4t; dkim=pass (2048-bit key; unprotected) header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=hEm8u6O5; dkim-atps=neutral; spf=pass (client-ip=148.163.139.77; helo=mx0b-00128a01.pphosted.com; envelope-from=nuno.sa@analog.com; receiver=lists.ozlabs.org) smtp.mailfrom=analog.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=analog.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPhk16DPHz2y8W;
+	Wed, 11 Nov 2026 22:53:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=68.232.139.117
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794398009;
+	cv=none; b=IKj+Ad+VQmqSJDdaR/XoUIJrQPn2dUNF4thorP6mfpLBzLkBfEOb2L3Sp1Xt+iqgZhD8lYPmki1XLZUz/twiIynMvlyPjyn+0jew1sTrEXUvl/x+HAB4mohdqBdJF6KKbKLktH3GrprAPpsA8tlaIWJczlJFwouLoqVIVG9lDBxmt0vtGXgc13O6vIrySPAgzHPMDaMpIqPmOVOWcRsn5dOypxROnyRk398y2dAibvn3JV20gvQ4oz9N2BVWzvJkXq4FpTL/Dxkm3XCaYcg+zav07iMIFi+O/Jdgm2HqJAxIShK/qwpg9AY580/hJHWkXEEIvLAwsVBastXawtCg1A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794398009; c=relaxed/relaxed;
+	bh=LHx3sOu0nRc26uMaGdX5eIGUhuQ24/CQDwrvILlx8g0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=k8wmNTb+iv4AX9oAkJR3ZgpAG2TbBnuU5kReBb9PFeetBlp4aPTOL/l1yxPwl3H3IBEcrBLby7yZmevjIRZhR0uSPhkVJYFOCvoVEB1V87rRjSnA7fyAR5ZFGBGHWXg/uj8j6JDY8rI9JWOcZ9Wlbb7G6LrpVGOrRerJlZrTAj2mSDjw7n4Rq94F13ocaDrhyp358Lt24w5VhywRc6BLuTxKITK5rDof2aTBCEgtS4w734znmLdPSrsUvglkQjhpGCC0zdUJQjYRFiAnJGIE52+EKvObPeuZ4f0RKOrCE7WBvUr0HSVMcp5ucN6sF0FzdNur1ubpEI8hlZfEnncvdA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com; dkim=pass (2048-bit key; unprotected) header.d=fujitsu.com header.i=@fujitsu.com header.a=rsa-sha256 header.s=fj2 header.b=UpmG4/Pt; dkim-atps=neutral; spf=pass (client-ip=68.232.139.117; helo=esa4.hc1455-7.c3s2.iphmx.com; envelope-from=enju.kohei@fujitsu.com; receiver=lists.ozlabs.org) smtp.mailfrom=fujitsu.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=fujitsu.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=vtelectron.com header.i=@vtelectron.com header.a=rsa-sha256 header.s=DKIM header.b=ST3uKl4t;
-	dkim=pass (2048-bit key; unprotected) header.d=analog.com header.i=@analog.com header.a=rsa-sha256 header.s=DKIM header.b=hEm8u6O5;
+	dkim=pass (2048-bit key; unprotected) header.d=fujitsu.com header.i=@fujitsu.com header.a=rsa-sha256 header.s=fj2 header.b=UpmG4/Pt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=analog.com (client-ip=148.163.139.77; helo=mx0b-00128a01.pphosted.com; envelope-from=nuno.sa@analog.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2393 seconds by postgrey-1.37 at boromir; Wed, 11 Nov 2026 22:16:17 AEDT
-Received: from mx0b-00128a01.pphosted.com (mx0b-00128a01.pphosted.com [148.163.139.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fujitsu.com (client-ip=68.232.139.117; helo=esa4.hc1455-7.c3s2.iphmx.com; envelope-from=enju.kohei@fujitsu.com; receiver=lists.ozlabs.org)
+Received: from esa4.hc1455-7.c3s2.iphmx.com (esa4.hc1455-7.c3s2.iphmx.com [68.232.139.117])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPgv54c6Xz2xqr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 22:16:16 +1100 (AEDT)
-Received: from pps.filterd (m0375854.ppops.net [127.0.0.1])
-	by mx0b-00128a01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AB94cca3040587;
-	Wed, 11 Nov 2026 05:35:49 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vtelectron.com;
-	 h=cc:content-transfer-encoding:content-type:date:from
-	:in-reply-to:message-id:mime-version:references:subject:to; s=
-	DKIM; bh=ihQMTmjkyvTUyMrpW0BOFCJ1LHuEdZbM2Yi2/Xc5PxU=; b=ST3uKl4
-	tPzrTD2g5BaK2U7Uw5mkllTPQ5cjLX9PGYK2/G9fKkk7fVF5yRDAKm/YBm8BtWXR
-	JpZCJ9WrfV5zymCSnEwwXo1JSJniJ/C5kV00wyAChs5d9bZMQ3fkO1Mey1ZIP4cQ
-	0KlA/DE0gQPr2el7kWBs++OgHBSaYThWSTpB0AzSOI0OkZMWP1Y1rHSbnw4Y+RvN
-	p4WojSDKNJtsqHtyH/usYvtGRQ9w4V82Ayjw5n0/qhBEk2klrn4LVMBa07KZIsjk
-	dEhuaarSWHjQZW6sjZY7/dnNCF0Zhk7MuxP6sz14kuiZi3AkXMuKSdAbmJqAaZzp
-	9XMuDrSauWCkQPQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=analog.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=DKIM; bh=ihQMT
-	mjkyvTUyMrpW0BOFCJ1LHuEdZbM2Yi2/Xc5PxU=; b=hEm8u6O5V5I2rKyUM8AAh
-	Y9p4FH4dXHdgXtyRbOliIBvPMX1hcdxpd0zQsOhSI0S/h6ftc6JPn8TpRSYI20xy
-	wUifPSqBp65ME9dLJ5oZhDiyBfbfR6neYGoE0aXifQfa8t/oTvTeoIDYutFMXOmI
-	yjG4ZrehNpVdQOsgWdvTSQihjO9+C5m8Nbk18Q5LhQi8wvJBDHUNV8wf+IUA+7YA
-	wqJtv7GJMbhU9keQ2K1KzvppfMO3Btk32NOjUJfwn8XCrWRDOXAF2//YhhknJq7K
-	fdpVU5knuareBLhdSNQ7dw8yX0ACABGPlthKT9yzmzJlO0/qB5sgNly/3BKK9RLF
-	Q==
-Received: from cy3pr05cu001.outbound.protection.outlook.com (mail-westcentralusazon11013020.outbound.protection.outlook.com [40.93.201.20])
-	by mx0b-00128a01.pphosted.com (PPS) with ESMTPS id 4hvg58j2c9-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 11 Nov 2026 05:35:49 -0500 (EST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=kvNJ+xWOC9ynfMVF+huvznmyxMzOpicIKMNtx7I6diGKZS1Ajs30nwB8qm9PzegnMPGF7Bv4Z0ueuSTy+/Uk9RfjH8pz2Fjj3IcfDZiL2taDbUv29MvoIb6axDpDRAFx5BY6HMSnLxUDD1Th07Ca7uCYyLmGyMaUV5XVwbjNkCU7waUK0NIXZRatYWlUIzDofBWh26H0SSvvPxKDJrEVkMW22rQjVLOxqKXB77E1JjsAy9rylLmDFUunfNbqA3wnIcIEnt9tuAhqQ//X227abSpALNTs+DRVNf2oYxCRxOBPH8hXgLiKqmjWrW5zVuLB6P/JI7/g3n/uzpKKiWkGfA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ihQMTmjkyvTUyMrpW0BOFCJ1LHuEdZbM2Yi2/Xc5PxU=;
- b=RSP3u2M9V3Aflm3g4J8TUWZW3OKcn9nmBWO4/8E+dp6e09GFpnMOtfoJxBj6WeqOqLfYHqxzUny/3XDEpvNXvAU1GR5lLH8BTji+nxJl8MYkFqu4TQaq3f0u60ITH0N98hYmEOVWpqFIEPH6LnQ3J4TagJjXaz8yPwhhGvz8r+kqEaZaXunOdwdVfn307cl0wBERU7556h4rfsarxjloV/SVBJ8o7sCjUM+fSjgU0ir0ZFeksTOisAikg8x4rfbfKyzCLRMRA0hfcAEIvyEfRDAeMucH6Xdj26JonP+8N/KnthcU4dk5thnpkTd+uZpBrEinPY58XbMVesEfX2x9Tg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=analog.com; dmarc=pass action=none header.from=analog.com;
- dkim=pass header.d=analog.com; arc=none
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=analog.com;
-Received: from SJ0PR03MB5469.namprd03.prod.outlook.com (2603:10b6:a03:28a::17)
- by SA1PR03MB6339.namprd03.prod.outlook.com (2603:10b6:806:1b6::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.9; Wed, 11 Nov
- 2026 10:35:46 +0000
-Received: from SJ0PR03MB5469.namprd03.prod.outlook.com
- ([fe80::2a19:76b2:e731:8c5a]) by SJ0PR03MB5469.namprd03.prod.outlook.com
- ([fe80::2a19:76b2:e731:8c5a%6]) with mapi id 15.21.0592.012; Wed, 11 Nov 2026
- 10:35:46 +0000
-Date: Wed, 11 Nov 2026 10:37:12 +0000
-From: Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jonathan Cameron <jic23@kernel.org>, Svyatoslav Ryhel <clamor95@gmail.com>,
-        Arnd Bergmann <arnd@kernel.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Bartosz Golaszewski <brgl@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Conor Dooley <conor+dt@kernel.org>,
-        Daniel Thompson <danielt@kernel.org>, Helge Deller <deller@gmx.de>,
-        devicetree@vger.kernel.org,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>, Lee Jones <lee@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>, Linus Walleij <linusw@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
-        linux-fbdev@vger.kernel.org,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-media@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        linux-sound@vger.kernel.org, linux-watchdog@vger.kernel.org,
-        Guenter Roeck <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
-        llvm@lists.linux.dev, Mauro Carvalho Chehab <mchehab@kernel.org>,
-        mfd@lists.linux.dev, Michael Hennerich <michael.hennerich@analog.com>,
-        patches@opensource.cirrus.com, Pavel Machek <pavel@kernel.org>,
-        Rob Herring <robh@kernel.org>, Sebastian Reichel <sre@kernel.org>,
-        Support Opensource <support.opensource@diasemi.com>
-Subject: Re: [PATCH 08/14] mfd: remove unused aat2870 driver
-Message-ID: <avRCbtfKg4WkSP1u@nsa>
-References: <CAPVz0n0ryOns2sCJE_jFana9MVzwEj1QZuPEa8FNhGbHXnMB+A@mail.gmail.com>
- <11652e5e-053e-45b0-98a0-0c1cb2aeedc4@app.fastmail.com>
- <20260912232047.19c4cb10@jic23-hlaptop>
- <avM5EnC9yujUZcCO@nsa>
- <991009b6-e62b-46bd-9a0b-43c3b7a6d10a@app.fastmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <991009b6-e62b-46bd-9a0b-43c3b7a6d10a@app.fastmail.com>
-X-ClientProxiedBy: MR1P264CA0118.FRAP264.PROD.OUTLOOK.COM
- (2603:10a6:501:50::25) To SJ0PR03MB5469.namprd03.prod.outlook.com
- (2603:10b6:a03:28a::17)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPhjz6McDz2y2h
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 22:53:27 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=fujitsu.com; i=@fujitsu.com; q=dns/txt; s=fj2;
+  t=1794398008; x=1825934008;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=HCCipxtjnPjwYW8DIXAeMVHDqScHm74Hg2zPPlBSipM=;
+  b=UpmG4/Pt6qDpsxip0swbDY7aLmTQEqaRE6zbHWo2WDvgwpMRi898jwz2
+   OheEz/RvMgl/wf7PTIRYCte8D2L8GfBnLDvxX7kLIkxhkjZhpogvPQF7m
+   5CKZvMCiNufymQc1tL7MDndSXbZTYXaJSpLMlJ/rif/5VGNuwmmJzTjDn
+   xsUYCuP+MkURD7tHrekauosvTP3YjJZqWa323oj/Ta/RIXEhqxNfiq3fu
+   bQHh2SJVH1fBG3JXGqdlQtNH9JefcdckYY3atL/aUczRjzV3b3MiQ1jgM
+   0SMtPiiQPR3lrx+IeiXCuW4n4Q3PbAcTAavCvT2FLaurhUSpfZg7soZIB
+   Q==;
+X-CSE-ConnectionGUID: ikC+KU1IQWC6wOnSmViT8A==
+X-CSE-MsgGUID: Kl8hS0gZSQCDcNhPeUaynA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11962"; a="260954464"
+X-IronPort-AV: E=Sophos;i="6.27,207,1786978800"; 
+   d="scan'208";a="260954464"
+Received: from gmgwuk01.global.fujitsu.com ([172.187.114.235])
+  by esa4.hc1455-7.c3s2.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Nov 2026 20:53:22 +0900
+Received: from az2uksmgm2.o.css.fujitsu.com (unknown [10.151.22.199])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by gmgwuk01.global.fujitsu.com (Postfix) with ESMTPS id A090BC05E15
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 11:53:22 +0000 (UTC)
+Received: from az2nlsmom3.fujitsu.com (unknown [10.150.26.199])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by az2uksmgm2.o.css.fujitsu.com (Postfix) with ESMTPS id 4F59818002D0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 11:53:22 +0000 (UTC)
+Received: from FCCLS0092175.localdomain (unknown [10.9.86.149])
+	by az2nlsmom3.fujitsu.com (Postfix) with SMTP id 52B3F101BB7F;
+	Wed, 11 Nov 2026 11:53:02 +0000 (UTC)
+Date: Wed, 11 Nov 2026 20:53:00 +0900
+From: Kohei Enju <enju.kohei@fujitsu.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, iommu@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>, 
+	Jonathan Corbet <corbet@lwn.net>, Shuah Khan <skhan@linuxfoundation.org>, 
+	Randy Dunlap <rdunlap@infradead.org>, Mark Rutland <mark.rutland@arm.com>, 
+	Marc Zyngier <maz@kernel.org>, Steven Price <steven.price@arm.com>, 
+	Suzuki K Poulose <Suzuki.Poulose@arm.com>, Jiri Pirko <jiri@resnulli.us>, Jason Gunthorpe <jgg@ziepe.ca>, 
+	Mostafa Saleh <smostafa@google.com>, Petr Tesarik <ptesarik@suse.com>, 
+	Alexey Kardashevskiy <aik@amd.com>, Dan Williams <dan.j.williams@intel.com>, 
+	Xu Yilun <yilun.xu@linux.intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Stefano Stabellini <sstabellini@kernel.org>, 
+	Russell King <linux@armlinux.org.uk>, Huacai Chen <chenhuacai@kernel.org>, 
+	WANG Xuerui <kernel@xen0n.name>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	Jiaxun Yang <jiaxun.yang@flygoat.com>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Alexandre Ghiti <alex@ghiti.fr>, Andy Lutomirski <luto@kernel.org>, 
+	Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
+	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	x86@kernel.org
+Subject: Re: [PATCH v6 6/8] dma: swiotlb: Centralize memory-encryption pool
+ sizing
+Message-ID: <avRKiCBs81XSYMqW@FCCLS0092175.localdomain>
+References: <20260924060756.1325156-7-aneesh.kumar@kernel.org>
+ <asVs3doaJ4WrT3M2@willie-the-truck>
+ <asYZFXGyafRjjBS0@arm.com>
+ <asYiOgskwi8JYLe_@willie-the-truck>
+ <yq5awlrt3dwo.fsf@kernel.org>
+ <yq5av77c92oo.fsf@kernel.org>
+ <aseRzPshcoys7AJS@arm.com>
+ <yq5ao6d48dqr.fsf@kernel.org>
+ <auR0fT1yrKQ9wbm8@FCCLS0092175.localdomain>
+ <yq5a8q3d9oe6.fsf@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -135,165 +119,195 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SJ0PR03MB5469:EE_|SA1PR03MB6339:EE_
-X-MS-Office365-Filtering-Correlation-Id: ff02e511-b8fc-49ec-6f59-08df3fdf8b69
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|1800799024|366016|376014|7416014|261028144727099003|261026140227099003|261026121527099003|261021135927099003|261022105027099003|261022075727099003|11063799006|4143699003|56012099006|10067099003|22082099003|18002099003|261009223027099003;
-X-Microsoft-Antispam-Message-Info:
-	Ni986ctO6xiSDH3Tse7H/tfhVmcpySoYJQ3H79C2XabCPTdWQnt85qbb/EPtTU5I9mlKHg8Xjeqh76av3uUdOMGWIC7OrEdMHSYWQmCGvDZsuHwf66vb3bi9Q1e8bTxVy2pdnfyCjSadFsvoZgJkXJ6mNiz38Azwc1PmsxG2v0acEr50FAeNmbfnSAPSPvr0QM3GpHYBJVOCIXtpm++Xh/i3+KnUAZm6zPCVXDxdlczdc6o/LRaGq52oh9DDFp16C4YWNpjTaqdf2+Mir40DxaCI2RqOl/4gOdtl1tRHnWWFZKzBVUVcxQ+KwZ9bwWOpTHilZEwx1hhu0fwlClOvAavjIHh5PTDRXwxSecCXm4WEZQW4W261NHR1TEGbLG+172xf8MxK0SsTkZFtOAofN2xhckM4Lz02XzEuYoET6rCCk8ROfiqIgoqfEpfvdB+GPMFEiOKqe5JtJekOj51n/X5+ruY1Y8lzmxXd2qxAMLqOeI7yDbfGsC9By0FG3Fs0yp3VhbFqltYAoXyODBuw/7pzqkCH50ZNRuxDsWwyUeph5wiz+uyaiCla6B6Xg0EKZLuUh1Q2MN7au0z9MpyeZ3SHax91OJ1fuQ4s1ZjspsXckpZ85etRBUyQ7Zacv9qr7v8cwHH8Z2Itu2JNxiRHjqCQ4FpIbW4QvLughHszwnY=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR03MB5469.namprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(1800799024)(366016)(376014)(7416014)(261028144727099003)(261026140227099003)(261026121527099003)(261021135927099003)(261022105027099003)(261022075727099003)(11063799006)(4143699003)(56012099006)(10067099003)(22082099003)(18002099003)(261009223027099003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?d1ViWFYyUm10SndZL2tmMk9qYUdBR3BiTUNMc2l4SzJyZzY1L2NhbHFxYkZp?=
- =?utf-8?B?cTlyZHFpdGNid2dDdHNUdm5oVllxWlNBNEl5S3cyTXZJclZoRlhGUEJqWTRl?=
- =?utf-8?B?a1lsQU05anNVVnNaOERJWVQzWXo0K2wxcXUzRE5QVVF1M2hLd21pWXdQMm9N?=
- =?utf-8?B?Q2NLbWlqWEpMYjU0MnRCNCttdjJoQkx6L1dMeitFR2wyUjlkV2tuQkRmLzZx?=
- =?utf-8?B?cmlicFVsZDV6bkFhMHRwNnN2VjZLNVplRkRiNWpxbXBDOG5JSUc1eExHV2Ju?=
- =?utf-8?B?aytIby83VDl1VUVwYWxNd2IzME9OSGJhb3RpR1J5WFIzSGRGZ3BjOE9yWWRJ?=
- =?utf-8?B?M1kzZUJmOW5RQU9SYi9xdVJ6a2IwWHVha1JqVlNBbHRJK3V1NHMyZFh4aHJE?=
- =?utf-8?B?R1N1UktHeWF0M253elJlR3Z6RjJPYndhUXJ6a1EwYS9CbllFS2JNL0hPV3dx?=
- =?utf-8?B?OS85MGJpVmFVN3h5VURQUC93d3pMZzRtN0R4NlE4dHNvRlBMUk5mZ3lSbTZ5?=
- =?utf-8?B?cmFRT3BrdFUyNTJLLzFVdi9DVzVSUGN2SmZxODI5RmlYMWwwVE1CVmRvSy9y?=
- =?utf-8?B?OVo0clhYMnBJL01rMytlOGFiY0VNbzBQcGZtbnc3d2cyVmF6bEY1M2duK3pj?=
- =?utf-8?B?REYwNENheHVIaFFUVFFWYUpJQUtJOEllNXViU3lGTVBhWEpFWDRyS0htNWgy?=
- =?utf-8?B?VjR0ajRKVmNOYTM1QzZjZW1aVTZoZEsyUzVGZmt4dTRDeFF6UVlBaHlreTR3?=
- =?utf-8?B?cFRxY1RFK3dRZ1d3TWE2cWVwTHE1bUQrNUxHeGFtcENXb0o2b1dsck5ZRUpV?=
- =?utf-8?B?Z0pwWGtNbUJZN1J0dHpTZlJBV09HWVVJNndyVjZUWFUzSzlER3FXMGsrNTJC?=
- =?utf-8?B?b2pETWxRdXl1S2NSZHFQS00vbHZpd3Q4U0t3UWszREUrU1RFM2Q5SGxaZFNM?=
- =?utf-8?B?MW5HQWRsYVRyeUVGREZxZHB1UktiTFdocWs3SXpmcVo1MmFzaWdIRTBmVHE0?=
- =?utf-8?B?cmwrY1plZUVuVFVZbmFCano5WkN5aG93SzZIMDB0QThOM1hJY2RIb2dMVkl2?=
- =?utf-8?B?bTlwMDgwTEVZeERpakRiTFUzZHNSZXN3SFVyWDNtZm1aWFd5VTg5KzBvanVF?=
- =?utf-8?B?cnNFUFh1S3dGYXAxUWFxblpZTm1VM01WZmQ1VlIyTllFOGFjYWVPblNHMHlV?=
- =?utf-8?B?VG5SZmVObk10aE5SUCt1ckJweHdFZzA3YldqYTlwUDJQVTM3L0V2N0NBeDhJ?=
- =?utf-8?B?UE5DbWRZUk10cTlMUXUyMjZhdmhLL2RKV3RHMzRLQTJ5amdhdmN3WE5BZ0Vs?=
- =?utf-8?B?K24vZjFDVHZRZmt5anErVTBIRWpsdHZ1WEtjU0YxTENHM0o4RmxOUzZYWTYv?=
- =?utf-8?B?R0JCZ3liUDNFRzdzVzVFRkdTdDJjazFjM2ZHN0ZxN3R1VHZBdytaYWJIRExr?=
- =?utf-8?B?aDNxNmFuSkR4ZVFkaGE4aExybVdUTWxya3hHYVFRZXc1T1Z5RW5hbWQ2dWFq?=
- =?utf-8?B?ODVPZC9tT1A3ZW5aVFpTTWZzWk1WcjcyMTY4R055czgxdVMrVFZpZWdhSGtD?=
- =?utf-8?B?UXhobjJVbU1RYVFreGtuZkF0SWNmcmV0QTIxTWE5TUpEaUV2TjdYYjFvb2du?=
- =?utf-8?B?ak1CWlBJV3Bqc09qZUhiV2FKQTdLU3R3Ym51RmZEeEN6NVdNQ0NZeVdJQk90?=
- =?utf-8?B?MWZ1NVAzQ1gxeVRrRFZZTkQ2VjF6K2pWMDBqWXk1a0dCNFp1bkJsT2UrUUxr?=
- =?utf-8?B?bDZlcWQveW9HLzQ1Q0FjWGNyUUxVcGFxN1NNTXgyYXZkRU1mbE03SitvTGdj?=
- =?utf-8?B?SVBXa0poZjVTY2Z2dVQyS0RHckZxcTdONGIwdFBjczU3NTBwTUh4aXFQYVpq?=
- =?utf-8?B?Qkd3Q1FNTnhmVGtFQUxtTU5qQ0g3VEJyMVRMdkhUV0lrY0krRURFOG5CZTQ3?=
- =?utf-8?B?UlIxaEdoZUt1Mk1IQWJjQWU0R0oyYWNMSTlBck12dFRnVm02R2F6NkdYU0kz?=
- =?utf-8?B?b2lZS0RiYkxYdFJHaDRxbnM4REtHUStmN3MySDNHdy9McUNkSEZUMlhRRkpi?=
- =?utf-8?B?VnZNdlFtZDNoZ0QxcTZ5N3RYTlBENk1kVTc5SDNPN3BkZTlNbjZaOU54Z08z?=
- =?utf-8?B?ZzFRdTBKUVpKRFk4QkVSVlBVbm1vK2xHbGl0QThua1Y1SGtVSm12cVF1WFZQ?=
- =?utf-8?B?em14S2FleXd1ZVF3U3FPbUx5QW1FOEN0WFVFSy9QZEdCaGtDTlh3Zk1KZDVS?=
- =?utf-8?B?TjFNNWkvQ3I1UHljcTc4ZUNSb0dsM0JEVVM1ZGNEV1I4S0hmMXZNOWFYTDVr?=
- =?utf-8?B?WXNkRVdJdVFNSE5uVXZlL0NvSzRJcGtwOHpUVkozeEg1UnM0blExZz09?=
-X-Exchange-RoutingPolicyChecked:
-	W+IllVXtlti+SuvFyHZSOC4dpe9oFwDwjqKLpDHixfMNwIH59ZyADSlF3Ar48BRayEfYXyUbcIqsnPSZuj+rR8S0JaOKhnL5ZXLLjYLXAu4uwCghUKa6IoWwvwqk2jRX1cxDowaMsdCDFw3UCILR29htCT9kumWy/rg69w5fZplWHR3H7S4aAUPkYq9Ybdo2aF2My1gPQ/NAYYk/tK4q88NQqLpykOiiP/h0IrzIlZKaKfP3x1JlFuHSQPPKnVvLFco0+s+Oxf/1fkPfuwOql48AhwXZG2DxTkMyb1LulQYUArv8DGnxlDp5UUH8k5/uRdz79aQ/xKT+Qj4JcFG+WQ==
-X-OriginatorOrg: analog.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ff02e511-b8fc-49ec-6f59-08df3fdf8b69
-X-MS-Exchange-CrossTenant-AuthSource: SJ0PR03MB5469.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 10:35:46.2098
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: eaa689b4-8f87-40e0-9c6f-7228de4d754a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: lkZZ4GHOLwT0NDovxtJImfi5rremL5EZodQabi+HMvKcU7afzC37SoRQSaIlw9DWKN4MeSnnNGsjpEDsvDYUEQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR03MB6339
-X-Proofpoint-ORIG-GUID: DdqhZe60zaGeSLLR4y0zqnA7uRg5oi5T
-X-Proofpoint-GUID: DdqhZe60zaGeSLLR4y0zqnA7uRg5oi5T
-X-Authority-Analysis: v=2.4 cv=Cooq4X4D c=1 sm=1 tr=0 ts=6af44505 cx=c_pps
- a=H6CWIJr9C+/oc5/J52O/6Q==:117 a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19
- a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19 a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19
- a=xqWC_Br6kY4A:10 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=M51BFTxLslgA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=0sLvza09kfJOxVLZPwjg:22 a=iZSIUCweCk2Oy3QsdGPA:22
- a=VwQbUJbxAAAA:8 a=AIbcN7bpn11A85WRVH0A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTExMDA0MSBTYWx0ZWRfXyKcWHrlxz6Ni
- CY5EY4ARhXPOXEflqD35Tiw2cQnVzCq2Q99DcK1Ahrof9UB/OpT5ERtN+NIGnX4+VFHtRXSegMv
- IRIaFfyu1jTbyk8hahBerknpsSLvfPH6xxMfnrWEjl57NZxFhFYY
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTExMDA0MSBTYWx0ZWRfX/rJlk7y9I93V
- O3iHuWnAl+rHD47/S/8OD3di5C22mbviWl01UzNEy4BO+V2rYJ9zHXqYORrK/2R0iBtoJHhs8sY
- kHJsYmy+ddVOvczABdFBC7cdg4jHJCRnC0eD2aHV6J1yIP7aC2uZYHFdJpx7+39gtcWUI+B+k96
- WDAeHQPNbRjOktS8l9TLhjzAsnuNs16bhgZTQ2QQ8LJ+0SOYzJlp2oReTf8AMeVqzThcT+Ka/Sc
- exdQbfz8pZNZDeKiVxVz83acIc4eROivgsgY7Te29s4SbC/H+vzlVci1TG/3xW438WcKWOmLgb9
- jTqO65a5QiDtosZ6HGfjz2C8hHENnc31hSqN1Mw7Jv9L1XWbPvfuRLSGnysT9hNdyseklfVbjnP
- mzjI6mAo5zCiuLu4NRIkMBMNOROiZzVDydbPC2ivRDAnRvd/F9/xnbgnADxbhlyMoLVxU6KnRrf
- X93BXPB+ODwcyToplaQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-11_02,2026-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 suspectscore=0 phishscore=0 clxscore=1015 lowpriorityscore=0
- priorityscore=1501 malwarescore=0 spamscore=0 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611110041
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <yq5a8q3d9oe6.fsf@kernel.org>
 X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 10, 2026 at 05:12:28PM +0100, Arnd Bergmann wrote:
-> On Tue, Nov 10, 2026, at 16:39, Nuno Sá wrote:
-> > On Sat, Sep 12, 2026 at 11:20:47PM +0100, Jonathan Cameron wrote:
-> >> On Thu, 10 Sep 2026 20:14:15 +0200 "Arnd Bergmann" <arnd@arndb.de> wrote:
-> 
-> >> > drivers/iio/adc/ad7793.c
-> >> Maybe. Analog devices ack needed.
-> >> 
-> >> Production part but this one indeed fails to probe.  Analog
-> >> folk, do you want to fix this one up?
+Hi Aneesh,
+
+On 11/01 09:47, Aneesh Kumar K.V wrote:
+[...]
 > >
-> > Given it's production we should fix. Looking at platdata seems to nicely
-> > fir in DT. Issue is that I don't have HW with me to test. So I'll maybe
-> > just remove platdata and assume some defaults.
-> 
-> Sounds good. I already dropped my removal patch for this one.
-> 
-> >> > drivers/iio/frequency/ad9523.c
-> >> Maybe. Analog Devices ack needed.
-> >> 
+> > Hi Aneesh,
 > >
-> > Hmm we definitely use this one and we have OF support out of tree with
-> > likely some DT abuse of what can be in DT or not. Not sure if I have
-> > some HW around but we'll need to fix it.
+> > I can reproduce the CCA regression discussed in this thread:
+> >   https://lore.kernel.org/all/yq5azeyxyfol.fsf@kernel.org/#t
 > >
-> > In general for ADI parts, I think we can drop the ones that are not
-> > recommended for new designs. All the others I tempted to say we should
-> > keep. Naturally we need to fix all the drivers that do not compile
-> > without platdata. And for the ones with defaults we can also just remove
-> > platdata and use the plain defaults.
+> > The guest runs out of SWIOTLB slots, causing disk I/O to fail and
+> > preventing the guest from booting.
+> >
+> > I would like to test the fix on real CCA hardware. Could you please Cc
+> > me when you respin the series? I follow LKML, but I may still miss the
+> > posting by chance.
+> >
 > 
-> Ok, I'll leave it alone as well now.
-> 
-> I currently still have patches to remove adp8860/8870 (backlight), ad7877
-> (touchscreen), ad714x (touch) and adxl34x (input, not the iio one), which
-> are currently unusable with DT but are all listed as in production.
-> 
-> I assume you want to fix all of these and keep them in the kernel,
-> but possibly still remove the adxl34x and only keep the IIO driver for
-> that part?
+> The conclusion was to either use CONFIG_SWIOTLB_DYNAMIC or swiotlb kernel command line
+> option
 
-Yes. And yes, seems to me the input driver has not reason to be in tree.
-The IIO should be the one to use.
+Thanks for the clarification.
 
-> 
-> I also have patches to remove platform_data probing from ad5761, adf4350,
-> ad5791, ad5421 and ad5504, these all have DT support.
-> 
-> See 
-> https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/log/?h=board-remove-7.4
-> for the updated series. I hope to slowly get through that. Let
-> me know if you want me to skip any more of those patches.
+After reading this whole thread, I agree that dynamic sizing would be
+appropriate.
 
-Thanks for taking care of this. Let me know if you need any help with
-ADI related parts.
+However, currently some distributions do not enable
+CONFIG_SWIOTLB_DYNAMIC. Users of such distributions would therefore need
+to rebuild their kernels with the option enabled. This is not a
+practical solution for many users, particularly cloud users who use
+kernels provided by their distributions or cloud providers.
 
-- Nuno Sá
+Specifying swiotlb= on the kernel command line is also not particularly
+user-friendly. It requires users or cloud providers to choose a fixed
+value in advance, without automatically taking into account properties
+of the VM, such as its memory size or whether it is a confidential
+guest.
 
-> 
-> Thanks,
-> 
->     Arnd
+I do not think the existing heuristic used for x86 CoCo guests is
+necessarily optimal, but a fixed swiotlb= value chosen by each user may
+be even less appropriate.
+
+Overall, I would prefer the dynamic sizing approach. However, I believe
+the initial pool size still matters.
+
+Also, as Catalin pointed out earlier in the following message:
+
+    https://lore.kernel.org/all/ann6noRzoPLL9kDY@arm.com/
+
+the arm64 adjustment also reduces the target size used for dynamic
+pool allocation, since both the initial pool and dynamic allocation
+currently use default_nslabs.
+
+I am testing the patch below to decouple the initial pool size from the
+dynamic allocation target. It adds swiotlb_adjust_initial_size() for
+callers that only want to reduce the initial allocation, while keeping
+the existing swiotlb_adjust_size() semantics for callers that want to
+adjust both sizes.
+
+Thanks,
+Kohei
+
+--->8---
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index 4e7682dfe366..80a2c171895f 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -349,7 +349,7 @@ void __init arch_mm_preinit(void)
+                unsigned long size =
+                        DIV_ROUND_UP(memblock_phys_mem_size(), 1024);
+
+-               swiotlb_adjust_size(min(swiotlb_default_pool_size(), size));
++               swiotlb_adjust_initial_size(min(swiotlb_default_pool_size(), size));
+        }
+
+        swiotlb_init(true, flags);
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index 070ee69eabb3..7dd9fcec90a5 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -189,7 +189,7 @@ void __init arch_mm_preinit(void)
+                 */
+                unsigned long size =
+                        DIV_ROUND_UP(memblock_phys_mem_size(), 1024);
+-               swiotlb_adjust_size(min(swiotlb_default_pool_size(), size));
++               swiotlb_adjust_initial_size(min(swiotlb_default_pool_size(), size));
+                swiotlb = true;
+                swiotlb_flags |= SWIOTLB_ANY;
+        }
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index 5f24edf47b68..c1984ee12355 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -190,6 +190,7 @@ size_t swiotlb_max_mapping_size(struct device *dev);
+ bool is_swiotlb_allocated(void);
+ bool is_swiotlb_active(struct device *dev);
+ void __init swiotlb_adjust_size(unsigned long size);
++void __init swiotlb_adjust_initial_size(unsigned long size);
+ phys_addr_t default_swiotlb_base(void);
+ phys_addr_t default_swiotlb_limit(void);
+ #else
+@@ -232,6 +233,10 @@ static inline void swiotlb_adjust_size(unsigned long size)
+ {
+ }
+
++static inline void swiotlb_adjust_initial_size(unsigned long size)
++{
++}
++
+ static inline phys_addr_t default_swiotlb_base(void)
+ {
+        return 0;
+diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+index 2c57b49ac7c0..211fefb32fb5 100644
+--- a/kernel/dma/swiotlb.c
++++ b/kernel/dma/swiotlb.c
+@@ -99,6 +99,7 @@ static struct io_tlb_mem io_tlb_default_mem;
+ #endif /* CONFIG_SWIOTLB_DYNAMIC */
+
+ static unsigned long default_nslabs = IO_TLB_DEFAULT_SIZE >> IO_TLB_SHIFT;
++static unsigned long dynamic_nslabs = IO_TLB_DEFAULT_SIZE >> IO_TLB_SHIFT;
+ static unsigned long default_nareas;
+ static bool swiotlb_cmdline_size_set __initdata;
+
+@@ -152,6 +153,8 @@ static void swiotlb_adjust_nareas(unsigned int nareas)
+                nareas = roundup_pow_of_two(nareas);
+
+        default_nareas = nareas;
++       dynamic_nslabs =
++               swiotlb_calc_nslabs(dynamic_nslabs << IO_TLB_SHIFT, nareas);
+
+        pr_info("area num %d.\n", nareas);
+        nslabs = swiotlb_calc_nslabs(default_nslabs << IO_TLB_SHIFT, nareas);
+@@ -254,6 +257,7 @@ setup_io_tlb_npages(char *str)
+                /* avoid tail segment of size < IO_TLB_SEGSIZE */
+                default_nslabs =
+                        ALIGN(simple_strtoul(str, &str, 0), IO_TLB_SEGSIZE);
++               dynamic_nslabs = default_nslabs;
+                swiotlb_cmdline_size_set = true;
+        }
+        if (*str == ',')
+@@ -290,7 +294,7 @@ unsigned long swiotlb_default_pool_size(void)
+        return default_nslabs << IO_TLB_SHIFT;
+ }
+
+-void __init swiotlb_adjust_size(unsigned long size)
++void __init swiotlb_adjust_initial_size(unsigned long size)
+ {
+        /*
+         * If swiotlb parameter has not been specified, give a chance to
+@@ -305,6 +309,12 @@ void __init swiotlb_adjust_size(unsigned long size)
+        pr_info("SWIOTLB bounce buffer size adjusted to %luMB", size >> 20);
+ }
+
++void __init swiotlb_adjust_size(unsigned long size)
++{
++       swiotlb_adjust_initial_size(size);
++       dynamic_nslabs = default_nslabs;
++}
++
+ void swiotlb_print_info(void)
+ {
+        struct io_tlb_pool *mem = &io_tlb_default_mem.defpool;
+@@ -507,6 +517,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
+                pr_info("SWIOTLB bounce buffer size adjusted %lu -> %lu slabs",
+                        default_nslabs, nslabs);
+                default_nslabs = nslabs;
++               dynamic_nslabs = default_nslabs;
+        }
+
+        alloc_size = PAGE_ALIGN(array_size(sizeof(*mem->slots), nslabs));
+@@ -889,7 +900,7 @@ static void swiotlb_dyn_alloc(struct work_struct *work)
+                container_of(work, struct io_tlb_mem, dyn_alloc);
+        struct io_tlb_pool *pool;
+
+-       pool = swiotlb_alloc_pool(NULL, mem, IO_TLB_MIN_SLABS, default_nslabs,
++       pool = swiotlb_alloc_pool(NULL, mem, IO_TLB_MIN_SLABS, dynamic_nslabs,
+                                  default_nareas, mem->phys_limit, GFP_KERNEL);
+        if (!pool) {
+                pr_warn_ratelimited("Failed to allocate new pool");
+
 
