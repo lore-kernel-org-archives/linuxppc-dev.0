@@ -1,59 +1,60 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DC6F60A2607
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 06:23:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F00C606A331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 06:23:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=vcok2eOE
+	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=dvZA/CL5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPYP66wRJz2xWR;
-	Wed, 11 Nov 2026 17:23:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPYP829sjz308H;
+	Wed, 11 Nov 2026 17:23:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c207::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794378202;
-	cv=pass; b=EcxNzX9TQn5NdA4RC4pr5ZAqehMTJcvhKWmLpi10K4j0Ho5a0qSk5rESz9I+ZLUnidHGsSXS2EylhpSe0YEJYZNR/xwVmxSxL7f5wFTPvOJkV+BJWAV9szu754McCEJ/wKf0r7t8JWoTnFtqNN+sanCZMjWHZBLrgn+rO5SLBVwj8BesE8JmXNvsAMRX43j00r3eLMhhz1ibqYxr+4HLAksA00jP3jn1PJgG8Np8I8dkvWD2ShZ5T5OBMmSph8YNgYJMazsElXyEkMBd4N8bkc8nZpJuSl770oFoPA8IvwAbr/1pgdAhN9zDnx1vPdxnnTNm+j59uw2PSmy5bBkX7w==
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794378204;
+	cv=pass; b=NYHnXJfdTulbYQDv2dSuFxX7YwtAJH+JDyK+KTghK7u0g2nehHzT8JIjmJKarW0E5n97WFC864Ywti5DA+0DhioabITGVp+htotVFue5F0ugu8uJltWL6UPrDugPEmUSlfYpBZ5PiPU0qazc4i5Km8WYyT55Bo+IEJ1rmAkciJObB6ZH2z/+sO04Zsrb8Mg8kMtNL+qMA9Zf1qs1xheVW1y74j4zbTkE0DUMy8EREJYPAhxiULWMQNmoAgiW1xHgmiUuQFNZQ2YnNnS9RLjLqEPgIqGFj+o4aZ4SxZdk8XKmO41qwuhyp9V8dT88cMevGnrt8pGAhqZrVdhDjT1E8A==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794378202; c=relaxed/relaxed;
-	bh=0pnwXejhk1n8WCza1W3ydKGUAUIWhfGXOr70MqEVUkY=;
-	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=ASTPKuBpNzIoEVCjhr3e5m3HJ5I7Vj4n39rfUWK6K90VkP0Qf0f0VjzsWsO0DxCe+ZhShXC8x/hUFdYcx8W32l49yXNaXxYmkhiY/ZK9782A1AKghuBpsEvRo8moJwpbcQWuZ0lvRj7IAaw44juDDA9Z7Mj/0gcT0hn8la9dT4VbxEW5A6JPSyPLR/2Pt8z3MDiurLbJU0XEPeSP5Zn1U80j0mB5KhqotNWjacUW6c53SMjAI/8+9wqRm54N4LhWZTbT3YDOvBGS0/+3A53YyQViuRMnjoZvqNC9tIruocEsgoPw5GaDOWEsmb/hqLxh1Cx6N/ydpdItn/cqjqFXJQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=vcok2eOE; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
+	t=1794378204; c=relaxed/relaxed;
+	bh=WwlXh3LktFHI7zSBsD/SZac3qhtr52wShddo+pQGDSs=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=YQvF3SIZs+z3x30o+VPN20vRgtYRh6nlUfmvro7LrFmoahAYNt7W/Npv001FWZ1UJu25B8RLKawzYWU9DKEexJUKMyF4xpQvMLE89LkwT+d9ZT+U5io/1vQWV2asymgREMKDuT/DTQTN0ImTLjqJ1aEUl4VoKzM3fXx4CsjI7cyFE8fBfK5HhN39iQQsca1TX1QHpIFImDQi7NbQYPQhDJN8esGYZcHGoflEA/PphC2WGcqMJvrKTHvxtj+A4Yw/68DfO6qEEMAeWWoHI7GRESL6KJbSrC/NrzdXOOoshQMoEXEI0W1wlnOF791FCCItRREtBycBwCizyIVfyfG3dg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=dvZA/CL5; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
 Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=vcok2eOE;
+	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=dvZA/CL5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c207::3; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=wei.fang@oss.nxp.com; receiver=lists.ozlabs.org)
 Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c207::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPYP52TdXz2xGg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 17:23:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPYP71bnKz2yKn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 17:23:23 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=y9EGbsjHqSXfhSfoUe9M6xDoeb30sAOyMO7wYexIt/2LnHyMmBDQqE5MULjxGU8OTAprBeMG31Vte3PqqFWOsqRjVmJ8o8ziy6PYF5XU5IG2wEZgnbYZ3ALTGvrI0HepcPxqZq5JBYcy9AZZQuRl0yAqlFuEFdgzmWt54C95OiZDAJFBNq4e74oPsWHSWJg07Hp7vfJQJSVGvgp/3AvVuUrMg1polvfp8augwpUy5WXscVHKOpMDBiwvsMAq+cDuAJBKfb9pSUGgi6Q0/1Yqwy1iiLTkSnvx4RSPiOqZ5YPRj2hyhb8T9rvi+keqqVNQh1JQn5DL3KMQtIVXnWC/Ew==
+ b=as2qgT5NypNCxEIJOhzDdLj82ypj59M9ZnrA9tBb3hXTS4f2G4D/a+wceDdiU4AYGDuk6XvJ5zxK4nv5+LXiZVE4368lDfOuNR6XvsxsGZQTY2qnh9PUhhckfCYR49VJlW3fdR348W3cNWNILzNLvF04x5gwvVjaLfrVmA/uHriqO1+yEX/SFSr9xUgEmIhpyKvHbQPnzFA38ZSy0jv492Y7xTTMZwJJlczl9KXXQqrZSGDeBbSNrYdXNCI6o/8J4BKba2R8wvYC4rndECvvVgPGabNZfQBOE9s+L9w1//fOnaDfS2lFWxtGdXMtNxbRDYuyUCOoHj507xKL+v0dXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=0pnwXejhk1n8WCza1W3ydKGUAUIWhfGXOr70MqEVUkY=;
- b=ZXx4G3b7ISH/tjLhgTUDZGA6dNWTQEdIK+BeOFBzj52WolC3f2wRZ+NnO4zZyjhjdF5WsY0HBaL9EXY4WtLmcUfoVOSDS0kwnRRXOC/Dr20zrTSasq/h2Nfsw/z+LbrejliHMPOJ5xTqVIUdQqiQNMNGEnxehjDpr4EPn8XceghNZyHJp7SF6K7TVZ161I6DlvQLJD8I4COflXNeGXXOMtdKF1tpmLBLZ0oKpRSd2bBi6wbtZFWjqp9SmZP9IvVxWgaCAgJYaBm52tPmu8A8DvD9q+h9uHsl+rXlo3t4HKLDZWoMnHz7KsqcWU9zGKSRcpbC9m83uuqdYwq3BNj5uA==
+ bh=WwlXh3LktFHI7zSBsD/SZac3qhtr52wShddo+pQGDSs=;
+ b=goA+nb8N9IMxEDrPUSIKQaA4wr3KSm9im+PHjXzhUqcWcJ+orBOQwfDy38nMj3qTUuSxAXX/RIXyZHt6SrzxFHXN4cWBZ/CGh9E2sgawb9nQ+/8+DPSFzShdN6MyIBx6CTH9/mXJX47obu1RC5tNIjxbxYAkOwDlZ7/JSp7AWSSfrS+F7RFdHDwBWnB/AYGCPrIh+A+hNyPBQqThA/GsQbc43cpUSr8335EFhf4b+twFxXazT9jlSCN6B2HJXbU+pe5WO1k6N8BtFQXmx/CQcO6R9qUgjsOxgx+22TOwa1wgMSgorv5h18o33J2BYVCNJtTGKEHQZJb7s7FOoyChew==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector1-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0pnwXejhk1n8WCza1W3ydKGUAUIWhfGXOr70MqEVUkY=;
- b=vcok2eOEO4eKfX8cx15BW/CDZtbjoUSiwSbGg5N7/UbI098jtxAi5viE1cRcD2pGc3nqOaOvGKXDbN/cajy/AJ+oACLKQS7GbVJrsYjeB2IOBi3FEe7I/4iZ/hf9KTVdTM1dIMaHzZNG5usEiiL4HjLl4hDHENifjx9IDxU/ncjyOHEsBCORKxIO3qAim068188IPf2pYyCA6DDrWynnuje7Y2ORf0VQCz4B2X2HGcqLlcE10HDeSwGJRySNvOH/yv83lw6nIYyQFCcA1F59F+wz7Jh1Y3IQizVlH4sV6Eoed+QacDGn+NCH28RO4+SKiNPM1DGS4P9eWIwDxkPIow==
+ bh=WwlXh3LktFHI7zSBsD/SZac3qhtr52wShddo+pQGDSs=;
+ b=dvZA/CL5+sbdGiWsbpCYHQiyCCNH7gGEEIWW5rKtbwNp04JHUd0ZX9pt04DwcggKF8brVeyGB83DgS/r7JVXtjs8UcqMt+tOFSsYK9MMqetmxpo2h3z+q/uo3sFkpi6PIaRj/W3Ciamg5i7yBwl8C0o+J42TT8unZDCLvie4MmAlPbV2OFqyWIl8/aZajqGTPtALTgaZk2NIACUx6GwzoOSvqnN/Hod0oi6nDzscuCojfolQHyjsN/LrKS1fSUvYg5ZAPZecom5C7n2IIjjcu45vDl2jkGN+UKtShFIebuVpyCBYwNooCUMRhaugi3SUquVxsuhcfMYFsM0FGfKyNQ==
 Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=oss.nxp.com;
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
  by VI0PR04MB10543.eurprd04.prod.outlook.com (2603:10a6:800:25a::20) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.8; Wed, 11 Nov
- 2026 06:23:01 +0000
+ 2026 06:23:07 +0000
 Received: from VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74]) by VE1PR04MB7216.eurprd04.prod.outlook.com
  ([fe80::a9a5:cf83:dbe8:1f74%6]) with mapi id 15.21.0615.007; Wed, 11 Nov 2026
- 06:23:01 +0000
+ 06:23:07 +0000
 From: wei.fang@oss.nxp.com
 To: xiaoning.wang@nxp.com,
 	andrew@lunn.ch,
@@ -73,14 +74,17 @@ Cc: wei.fang@nxp.com,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v7 net-next 0/9] net: dsa: netc: add PTP support for NETC switch
-Date: Wed, 11 Nov 2026 14:27:44 +0800
-Message-Id: <20261111062753.1397582-1-wei.fang@oss.nxp.com>
+Subject: [PATCH v7 net-next 1/9] ptp: netc: use ioread64_lo_hi/iowrite64_lo_hi for 64-bit register access
+Date: Wed, 11 Nov 2026 14:27:45 +0800
+Message-Id: <20261111062753.1397582-2-wei.fang@oss.nxp.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261111062753.1397582-1-wei.fang@oss.nxp.com>
+References: <20261111062753.1397582-1-wei.fang@oss.nxp.com>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: SG2P153CA0013.APCP153.PROD.OUTLOOK.COM (2603:1096::23) To
- VE1PR04MB7216.eurprd04.prod.outlook.com (2603:10a6:800:1b0::22)
+X-ClientProxiedBy: SI1PR02CA0024.apcprd02.prod.outlook.com
+ (2603:1096:4:1f4::12) To VE1PR04MB7216.eurprd04.prod.outlook.com
+ (2603:10a6:800:1b0::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,143 +100,206 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VE1PR04MB7216:EE_|VI0PR04MB10543:EE_
-X-MS-Office365-Filtering-Correlation-Id: be8ea51b-8042-499e-052b-08df3fbc3c2b
+X-MS-Office365-Filtering-Correlation-Id: 65dfa1bc-8eee-49ab-8a0e-08df3fbc4004
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|23010399003|7416014|376014|1800799024|366016|19092799006|921020|261026121527099003|11063799006|261026140227099003|261102123227099003|261021123027099003|261009223027099003|261021121427099003|261102130727099003|261022105027099003|261028144727099003|56012099006|10067099003|18002099003|6133799003;
+	BCL:0;ARA:13230040|23010399003|7416014|376014|1800799024|366016|19092799006|921020|261026121527099003|11063799006|261026140227099003|261102123227099003|261021123027099003|261009223027099003|261021121427099003|261022105027099003|261022075727099003|261028144727099003|56012099006|10067099003|18002099003|22082099003;
 X-Microsoft-Antispam-Message-Info:
-	G3EVO1SQwUOQbSvPPWvD79avjhEt5tJbYTW1yaJSYZ6opu9SMFDrdsZ+CLJP6gYJ7z5LFgC9JMyPfxBeDC1hz/VX+/sM+Zua1Ba5f3CX7YqaAN1qYSaYrtzsyMa3l4V7nmfx514L9eUAJBFGqsv5IA2lFHcEzSDUl3kmopIJONDV7vDH0pFs1XLONAKd4972pulW6gfZOmdmuObQamvLis58QypqZlvI1QMtBfmKx3Nx7Ji3rvBUo2+zqF7KjkaDyNmvxxxxSrsz3WT9Y80KmgYobH2qyIgKlN2t2rPrAXRsAhk5+5PAqpymoIC7zSUDTJOPyy/2OQs8XlBzZHKAGicOFRLdjY1fFxjqdFAzmVMyFtoTFFGk4ws8vvEuZpgEv4mpOs7NAolc5ryiURUHI4/8CwR4yIF9JMgpqS4hPDik+Tnjtk0DWio6ATb+PTo8CVDWbrN3/51qdW6sn5bzWuAQ/aCqZ39HdHrA4AW4UJo2oGtFFAhEro9rUYWmwg/yf7E7Z0Tjf0puVKIcxwCHblty5650iTUqbUsaq7+ogYMYpwtYYCzv55CVjNwDtLduzdltJ2jqSuA8vrqDcv+YFBeTqpJ0D4Wup0kQ5mDArgnzWPmQ+aoR6sEyldH3WLOj7nFidWRTmdn6Ep0wUKYBoSa0Kkybfn5R7Pnk8f6rCVA=
+	9G3xvHxZD92h6hp31DlX6UCAK+knpWe18KH+Vdon2FnfMm3WSe1cjT+Yv1jhN5/1t9iNmY8sAJ+Nzer/oqYWpfCz3u4ZlzWQruoH3Vgw6Kb1uDh+AA3UZ7ax8xUOh9mws7eT9qMomSNakXdWtrHPl+kVnamWr8rjJF+avnoAET8oe27Mnzc3xC+TRo3H0T1P5xzTTOl9ZShwr+suZX2hqX9vi5KaszKbbGJO3cVCqIIgnaHN836QLwe9b7goqc1RYyokeey53jXK11f2VyBRuQ+gUOIXdJAdlijJwIq5FAKKeORoPNZIlgc/K04fJHHpWGiBTaiczHAEirtPbcx9xF++s0mWZgfzk4eELhLM2Zs9Pp1h3aHaiHj46FmgbmbqmOAT2lU3J5q7K8hU9+ben6xj5YBhZEcLY2jWts1nnWj0NCL8AwPJmMWYIgE4RmgORZiS4eNk9ijTH7La8FieIktw+Mf+lUi9fI93timM4WEO5nSGkH0h1kEzHcA+Kfi+K8qI82WiUm/Z2viYdwOP5NeAI6/Dq65V95tW50iXRaY5rXWd1l3D88U8D70BAPwp0tTsjHqsDAB5k18LRbrIEXW4jv+jZkwl3XxZukDxoOXQ1d3shNASo/SNJtxlWQEH5oetJ18TWN8eb9wF0AuxomGv9M/3c8hTmhY29h69U2+6dHxxPOkiH2xMRNDVx1dnLrVr8szNs8+wLGg/NJfgUw==
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(1800799024)(366016)(19092799006)(921020)(261026121527099003)(11063799006)(261026140227099003)(261102123227099003)(261021123027099003)(261009223027099003)(261021121427099003)(261102130727099003)(261022105027099003)(261028144727099003)(56012099006)(10067099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VE1PR04MB7216.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(1800799024)(366016)(19092799006)(921020)(261026121527099003)(11063799006)(261026140227099003)(261102123227099003)(261021123027099003)(261009223027099003)(261021121427099003)(261022105027099003)(261022075727099003)(261028144727099003)(56012099006)(10067099003)(18002099003)(22082099003);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?/xevy80/ZOm4uI2Mq8rI2ghYMonSK693bGKSewMp0O31+dZwgKHx9DhqUeiQ?=
- =?us-ascii?Q?rmkpCuMXUR8zh6nUIe45o/pbjweyMxDtPdr0M3fkF7Dw4RTsCoFLkIqoPsOV?=
- =?us-ascii?Q?qmznhSYxKT5JAUuBS4cdOFd3chMO4a+H7zyG033VQhBwM2Oo9dO+EMS1e70y?=
- =?us-ascii?Q?+4tqqNH6khQ3ocaWV5tq06LGtbWvV90pZF/iWeR7d8ZJI7ArFgisjDKXT331?=
- =?us-ascii?Q?l3VQ6V5iBbWyvIpXYaa2koUptk0D+P38wzRVU4gYNljRjRpeQYGBvZSbY0F/?=
- =?us-ascii?Q?mLvtGTPLE9QBynHnngzPqWFSPFryURWzSp2lEnU1qtdJANuOXyKwwf4zUG1N?=
- =?us-ascii?Q?eMYYomPLPj1kfiUopp7PlUEgGQf7+mkd9+Dto2TjarjWbpT03D/VeEq807BK?=
- =?us-ascii?Q?SeCE9bIdXdlZurU4wACNCLmlbtFFhDET8nnwtqrAssTHZG8gZnIgqlf+yxBP?=
- =?us-ascii?Q?DTKyXLwuP1wc1TustVrmtKm9NA2aMaqFA7/+Cz+H+bGprdMg6Lekey/TSXVU?=
- =?us-ascii?Q?+Efuf641AeOKcWWvVOwb8M6MGscQX0VwkazRzqkntWKN54LwnyfuO+gmk8nw?=
- =?us-ascii?Q?NzYaR/5GlBnc4wMzKZ2wQu1zifoWbBVNE6KQJhqDNQrOpstx8wz0YLN7SB2q?=
- =?us-ascii?Q?zb5jrgaOit+Y5R8rnipwinEFMJnZQFzZOb7XddV8OvtHSxwkxxhqxtHTEgFA?=
- =?us-ascii?Q?m9y7sSTkFLvXaMw40DBTVzws4gn1svoY2WF6uLBYXwCnsaVEw2P5d94i3Y69?=
- =?us-ascii?Q?3UmZQQwyG1Gs8wO+6kMMKK2c/zO/eEBXWSMwXBzTwgRVamM5RYfASnfMS1Pp?=
- =?us-ascii?Q?4WlfPCkNOhudf/SBNbUYRvm7v9ihJ+O9yyUeMzJ0L3QmtCh5BIv9PA1TKtJA?=
- =?us-ascii?Q?tvjRFKAqXn83gGvm4JQScQPfLwmHlLgNurnU4jpUuQPySrprXrmAQ3/f11Yk?=
- =?us-ascii?Q?6O+kfD9BYWigrIoJGjouRAAUg+V9LbtT8+1LW8DGaEnWyeqNoXfnJAeCNBwU?=
- =?us-ascii?Q?DM2jppwMHZQPSzTlim7A8nMo+oTc8lDXpjqs3jyj++sFUnusa7xRXyzatzxj?=
- =?us-ascii?Q?KHKi9CVaIHOpdtg/a7hlDL31T6yjLfTBa57Of07OvZzf/0bkYGMuNWmAHTNi?=
- =?us-ascii?Q?yytYxv6inP7XfrMNgAKQ4O7hx1I3vCCx6AwXcC6tRZKEgcnQk3sfcEi4Hafb?=
- =?us-ascii?Q?XF9Sjkf6/sIxvI2zlhubFHfhVbdyslzHsv50ygqkx2AQn1bDiqUhptxE8px5?=
- =?us-ascii?Q?CdZ/Vwild0DX5phLvd3OSB9NMw3Smxixjzdxvo7xBGr/d4fMufp64/Ma+z4K?=
- =?us-ascii?Q?lKM7B7X6z8q+JagaUAASXB0BRtg1uxp5rg3dE13xgDhGIhsshOXrTy4HXPUZ?=
- =?us-ascii?Q?Opew80gHcs3TyC5EcMN2J1iKpKD1WIwVHu+9jw+G6WppAnYWUWP1r8CpE3Mt?=
- =?us-ascii?Q?q16JM8zI21Phus+6oVNoKRxRUe98UoZ8KbFsNo9OISynrsrAvruJs5JbkR6S?=
- =?us-ascii?Q?NbXB/sweF79aJ1duhVBCdSelEzNQ6h2zCq+1BFIgRgw1V82kjjldn02iadDq?=
- =?us-ascii?Q?91bJk4NKgbHfaE0REnkKBeYJgCECZfie7uIuOgtuRt2SWkP8Jy7MFM+t8MWw?=
- =?us-ascii?Q?Fo/uWIaD/zcYeAwuVlSG8aDEmynML2QH9oKunkY1kSk22K/OchfdgaqYT+hQ?=
- =?us-ascii?Q?VxzFrIPT/St0uyPRgmwEGWDyXyCXhASIjJelxQZZaaQ0q1raCcq71ZUmEkpe?=
- =?us-ascii?Q?xkMtFNaTQ69C5s9cpOHfMN4hIn6qhRdYcHlvmoyjcD+0XIJMd4/F?=
+	=?us-ascii?Q?2na9MvlBCqZm0phWOWlhMq91n/g0gu2iO3Db5czNrO9Y19NSK/MmVqdGmK36?=
+ =?us-ascii?Q?HVmfYxxAy3YGsHzzWuIrfLTW2KVfP578JieudlD59VX/EP3wQw4UD+97lAlX?=
+ =?us-ascii?Q?s1QRJT1MO65zvB9uc35hIyDeRh/zdvb1CKxbEdDsPclz3s4fdsE4yG+qRGWB?=
+ =?us-ascii?Q?FGeOKVmSNrImDkpQcJlmhMbm6DrT2TDfFVTgTVeT/SNY2JDI0agdhWtu/bv+?=
+ =?us-ascii?Q?c30EYxpQ5XO9uMOl1sWMHWLvIQ258iiQ5/pv+kYD5NUnamRuYsW5nvIoECek?=
+ =?us-ascii?Q?dUrg5qiHi9lt/cLkhYQw3ViIUoNrxXSZDT8oO8A6J+GW2Jf67xha5R0pLq8p?=
+ =?us-ascii?Q?Cm2OhZwpxPwPvpJ/AraHCZldI0X4NeOqG7+b1HCUM84dKx3bEXDPtmRBUv4t?=
+ =?us-ascii?Q?PqoHdEaD5dWFKNM2QDIymYmacRk2E2zF9SiQX1J1HKkp1TS7+QSri5aV/1HT?=
+ =?us-ascii?Q?72rGiCFGfzXwZeN2etvGbZFXw0rqUgYKudVuM2+Xm+7Xg9wMBUb/xLEEj98b?=
+ =?us-ascii?Q?Dz8Qi/hhlBAADwuVwXzExynH6NOOt2m5yqkWGRbPsNb2n71BmDJR1sjBL56S?=
+ =?us-ascii?Q?mwL0zc2XE9fRakvS/H3toD/IjEVxGB7srULJ4ADLyzOMJM6Eabv5RqQO4eIz?=
+ =?us-ascii?Q?ALVOILHz2ua5a32UjmsBdPui4dGP2ojexNUshu5Iu9lxQQsS0dd/pUt1lcMo?=
+ =?us-ascii?Q?DPtpC+QAKhcYr3VHu6MfCH7e5GYXnmpP4zZJtpr2ALz5C/zAcqUpc4CBP2iV?=
+ =?us-ascii?Q?qrHZd6XczgJoCur/NQq/sjcDOX9p6gi/mbgAdE3YG5DiqNcBxfF6sHxl0vAv?=
+ =?us-ascii?Q?ptecBfTtum3vXD4ek93sgwT8r/NSrDLzyfyLQJ/QDJpRJQsygpZ+TQuTyVIa?=
+ =?us-ascii?Q?LKxXrZzBCQpJjIEEItpGbiqs3Avx/mCmv6jZMmgH4aaCnkozPIf0T2ShSlsC?=
+ =?us-ascii?Q?herk+F3auJEvbfIde+ItqMGXyCVD3R8gZBQqmgNM4Lxkokk3z/059QPgCs7h?=
+ =?us-ascii?Q?wc/xOYpsu0y0w5/bc4gYbmSKv5mCuPOstm+KE2SzFhNIDnW+oKwtJOf0MGlx?=
+ =?us-ascii?Q?GOWeA3cXWgeerf45aI5S8iqLERO0YdxTRl6U3pHUg2VM8UwK9FIZfum1EfDt?=
+ =?us-ascii?Q?Law2u6xh+uL2pbIEvqIm7sArTMxRgA54ebpegDGP2s3mPrRCLmGAQQzGCmma?=
+ =?us-ascii?Q?8ElVTqboVi9/oryx2fqJQ+0zkhEmzwVKtBCM2TNNk6eu6+hKdbEmkg5HDURm?=
+ =?us-ascii?Q?77+vEjgHH9y3aF2V64seKeZxydaGWzaFQEVRT9KilLlp/YR4UtUG1Q6L27Vl?=
+ =?us-ascii?Q?0QhPyU2GsCC5SslBk4enCIN70bCqswlEMT0wQHb6W2xWjjpnb1q7SKZDnjOw?=
+ =?us-ascii?Q?H/F0/UNU6P+P/IF4/fKh4olx4ggHVYeAp/AxX2Y4eAc1V6zsACR5kscKMu1Q?=
+ =?us-ascii?Q?Z3/MTf7yXEoJ4ADoI8I2oUIOZmXXhiQJIsU2UYFzDKjuA4SlNoWofPwrSbxi?=
+ =?us-ascii?Q?TamV6amIfrHPGPk4U/B4IARE/CUebeZnUfYySQgD4bccxHa+hU44BF3xxCOF?=
+ =?us-ascii?Q?itauxx6/ljC7UOMcElAXLleQhV8byyAiEBgBtz4B1c0FccrZHcGE4Ul1Kjk3?=
+ =?us-ascii?Q?N7lAGPTLyJVKvgw/cEqklo+s0UbR7wspjFNYfRyXsVM6YC29wbdqUkj5o5Wc?=
+ =?us-ascii?Q?Pnhr4L+R+/xT6gKxjlsajwbz6GvddLTQgd/kGc1hQX2KnSsrTfffXJv+qztm?=
+ =?us-ascii?Q?uWec1aM0wLjkb5wLxuspK1dJPRGblO6kQzHU4VMy0WIsR3reg/4t?=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: be8ea51b-8042-499e-052b-08df3fbc3c2b
+X-MS-Exchange-CrossTenant-Network-Message-Id: 65dfa1bc-8eee-49ab-8a0e-08df3fbc4004
 X-MS-Exchange-CrossTenant-AuthSource: VE1PR04MB7216.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 06:23:00.9545
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2026 06:23:07.1884
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: fqf9vEjvuA2dizVdNXaK102H1H3r14Qy5P9GQNiZWpS+D6oUKQ1HXjNqhG+sixBTIqFxzdMg9zSc3MO0v+c520wmFUwTJUqGvXOipuv1X8tZ5Ut8ddmfth5U3+3GRKGN
+X-MS-Exchange-CrossTenant-UserPrincipalName: peF98AbDyHKzFGMFsnZneaAoZDQg8LytPUN013dFugzFQAmqcOGk2R+kGKelLouGqRTWvw3W8o2Jta7dyFNBBhXsSxEkWhww6NjT8KOYncJk/lGUZH4BRpNZ1JWd3P76
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB10543
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 From: Wei Fang <wei.fang@nxp.com>
 
-This patch set adds PTP timestamping support to the NETC switch, so that
-the switch ports can be used for IEEE 1588 PTP synchronization.
+Replace the open-coded 64-bit register read/write sequences with
+ioread64_lo_hi() and iowrite64_lo_hi() helpers. Introduce two new macros
+netc_timer_rd64() and netc_timer_wr64() that wrap these helpers and use
+them throughout the driver. This reduces boilerplate and makes the intent
+of each operation clearer.
 
-The NETC switch has no time registers of its own and instead shares the
-PTP time of the NETC Timer, which is a separate PCIe function driven by
-its own driver. The first 3 patches prepare the Timer driver for this
-role: tidy up its 64-bit register access, drop an ineffective reset, and
-export netc_timer_get_current_time() so the switch driver can read the
-current PTP time across the driver boundary in a race-free way.
+The high-half register defines (NETC_TMR_*_H) are kept to document the
+register map; they are not used directly since netc_timer_rd/wr64()
+address the 64-bit register pair via the low-half offset, relying on the
+hardware layout where H is always at L + 4.
 
-The switch redirects PTP frames to the CPU through the ingress port
-filter table (IPFT). A few patches harden and simplify the existing IPFT
-and host flood handling first, then enable the ingress port filtering
-lookup by default so PTP filter rules take effect without extra software
-tracking.
-
-On top of that groundwork, the switch driver gains RX timestamping and
-both flavours of TX timestamping. Timestamps are carried between the
-hardware and the driver through dedicated switch tags: the ingress and
-transmit timestamps ride in To_Host tags, and per-frame requests ride in
-To_Port tags. Two-step TX matches a queued skb clone against the
-timestamp response echoed back by the hardware. One-step TX defers the
-Sync frame to a per-port work, where the driver reads a fresh PTP time
-and writes it into the Sync frame's timestamp field, then programs the
-single-step register and transmits the frame so the hardware can add the
-residence time to the correction field on the wire.
-
-Together these changes let standard user-space PTP stacks drive hardware
-timestamping on the NETC switch ports.
-
+Signed-off-by: Wei Fang <wei.fang@nxp.com>
+Reviewed-by: Linus Walleij <linusw@kernel.org>
 ---
-v7 changes:
-1. Rename in_probe to configured in struct netc_switch
-2. ptp_ipft_eid[] is initialized for every port, next to ipft_hf_eid
-3. Return -EOPNOTSUPP when netc_get_phc_index() is negative in
-   netc_port_hwtstamp_get()
-4. Initialize onestep_state to NETC_ONESTEP_PORT_INACTIVE in
-   netc_port_ptp_init()
-5. Drop the netc_port_enable_onestep() call from netc_port_enable()
-6. When the frame is not known to be a one-step Sync, set *twostep to
-   true instead of dropping it
-v6 link: https://lore.kernel.org/imx/20261103021024.3121936-1-wei.fang@oss.nxp.com/
-v5 link: https://lore.kernel.org/imx/20261012095924.1129312-1-wei.fang@oss.nxp.com/
-v4 link: https://lore.kernel.org/imx/20260918072852.501420-1-wei.fang@oss.nxp.com/
-v3 link: https://lore.kernel.org/imx/20260831082335.1184605-1-wei.fang@oss.nxp.com/
-v2 link: https://lore.kernel.org/imx/20260808032146.2335723-1-wei.fang@oss.nxp.com/
-v1 link: https://lore.kernel.org/imx/20260728104548.3301214-1-wei.fang@oss.nxp.com/
----
+ drivers/ptp/ptp_netc.c | 72 ++++++++++++------------------------------
+ 1 file changed, 21 insertions(+), 51 deletions(-)
 
-Wei Fang (9):
-  ptp: netc: use ioread64_lo_hi/iowrite64_lo_hi for 64-bit register
-    access
-  ptp: netc: remove unnecessary pcie_flr() call in probe
-  ptp: netc: export netc_timer_get_current_time() for cross-driver use
-  net: dsa: netc: tie setup resources and reset to DSA setup/teardown
-  net: dsa: netc: use entry ID instead of pointer to track host flood
-    rule
-  net: dsa: netc: check return value of ntmp_ipft_delete_entry()
-  net: dsa: netc: enable ingress port filtering lookup by default
-  net: dsa: netc: add PTP two-step timestamping support
-  net: dsa: netc: add PTP one-step timestamping support
-
- drivers/net/dsa/netc/Kconfig          |   2 +
- drivers/net/dsa/netc/Makefile         |   3 +-
- drivers/net/dsa/netc/netc_main.c      | 404 +++++++++---
- drivers/net/dsa/netc/netc_platform.c  |   1 +
- drivers/net/dsa/netc/netc_ptp.c       | 895 ++++++++++++++++++++++++++
- drivers/net/dsa/netc/netc_switch.h    |  67 +-
- drivers/net/dsa/netc/netc_switch_hw.h |   5 +
- drivers/ptp/ptp_netc.c                | 136 ++--
- include/linux/dsa/tag_netc.h          |  38 ++
- include/linux/fsl/netc_global.h       |  10 +
- net/dsa/tag_netc.c                    | 228 ++++++-
- 11 files changed, 1619 insertions(+), 170 deletions(-)
- create mode 100644 drivers/net/dsa/netc/netc_ptp.c
-
+diff --git a/drivers/ptp/ptp_netc.c b/drivers/ptp/ptp_netc.c
+index 19ca99d80e95..376b3b0d1a38 100644
+--- a/drivers/ptp/ptp_netc.c
++++ b/drivers/ptp/ptp_netc.c
+@@ -127,6 +127,17 @@ struct netc_timer {
+ 
+ #define netc_timer_rd(p, o)		netc_read((p)->base + (o))
+ #define netc_timer_wr(p, o, v)		netc_write((p)->base + (o), v)
++
++/* The 64-bit timer registers consist of a low (L) and high (H) register pair.
++ * Hardware requires a strict access order: for writes, TMR_xxx_L must be
++ * written first, which latches the value into a shadow register; the write
++ * to TMR_xxx_H then atomically transfers both shadow registers into the live
++ * counter. For reads, TMR_xxx_L must be read first to capture a coherent
++ * snapshot. iowrite64_lo_hi() and ioread64_lo_hi() enforce this L-before-H
++ * ordering.
++ */
++#define netc_timer_rd64(p, o)		ioread64_lo_hi((p)->base + (o))
++#define netc_timer_wr64(p, o, v)	iowrite64_lo_hi(v, (p)->base + (o))
+ #define ptp_to_netc_timer(ptp)		container_of((ptp), struct netc_timer, caps)
+ 
+ static const char *const timer_clk_src[] = {
+@@ -136,66 +147,28 @@ static const char *const timer_clk_src[] = {
+ 
+ static void netc_timer_cnt_write(struct netc_timer *priv, u64 ns)
+ {
+-	u32 tmr_cnt_h = upper_32_bits(ns);
+-	u32 tmr_cnt_l = lower_32_bits(ns);
+-
+-	/* Writes to the TMR_CNT_L register copies the written value
+-	 * into the shadow TMR_CNT_L register. Writes to the TMR_CNT_H
+-	 * register copies the values written into the shadow TMR_CNT_H
+-	 * register. Contents of the shadow registers are copied into
+-	 * the TMR_CNT_L and TMR_CNT_H registers following a write into
+-	 * the TMR_CNT_H register. So the user must writes to TMR_CNT_L
+-	 * register first. Other H/L registers should have the same
+-	 * behavior.
+-	 */
+-	netc_timer_wr(priv, NETC_TMR_CNT_L, tmr_cnt_l);
+-	netc_timer_wr(priv, NETC_TMR_CNT_H, tmr_cnt_h);
++	netc_timer_wr64(priv, NETC_TMR_CNT_L, ns);
+ }
+ 
+ static u64 netc_timer_offset_read(struct netc_timer *priv)
+ {
+-	u32 tmr_off_l, tmr_off_h;
+-	u64 offset;
+-
+-	tmr_off_l = netc_timer_rd(priv, NETC_TMR_OFF_L);
+-	tmr_off_h = netc_timer_rd(priv, NETC_TMR_OFF_H);
+-	offset = (((u64)tmr_off_h) << 32) | tmr_off_l;
+-
+-	return offset;
++	return netc_timer_rd64(priv, NETC_TMR_OFF_L);
+ }
+ 
+ static void netc_timer_offset_write(struct netc_timer *priv, u64 offset)
+ {
+-	u32 tmr_off_h = upper_32_bits(offset);
+-	u32 tmr_off_l = lower_32_bits(offset);
+-
+-	netc_timer_wr(priv, NETC_TMR_OFF_L, tmr_off_l);
+-	netc_timer_wr(priv, NETC_TMR_OFF_H, tmr_off_h);
++	netc_timer_wr64(priv, NETC_TMR_OFF_L, offset);
+ }
+ 
+ static u64 netc_timer_cur_time_read(struct netc_timer *priv)
+ {
+-	u32 time_h, time_l;
+-	u64 ns;
+-
+-	/* The user should read NETC_TMR_CUR_TIME_L first to
+-	 * get correct current time.
+-	 */
+-	time_l = netc_timer_rd(priv, NETC_TMR_CUR_TIME_L);
+-	time_h = netc_timer_rd(priv, NETC_TMR_CUR_TIME_H);
+-	ns = (u64)time_h << 32 | time_l;
+-
+-	return ns;
++	return netc_timer_rd64(priv, NETC_TMR_CUR_TIME_L);
+ }
+ 
+ static void netc_timer_alarm_write(struct netc_timer *priv,
+ 				   u64 alarm, int index)
+ {
+-	u32 alarm_h = upper_32_bits(alarm);
+-	u32 alarm_l = lower_32_bits(alarm);
+-
+-	netc_timer_wr(priv, NETC_TMR_ALARM_L(index), alarm_l);
+-	netc_timer_wr(priv, NETC_TMR_ALARM_H(index), alarm_h);
++	netc_timer_wr64(priv, NETC_TMR_ALARM_L(index), alarm);
+ }
+ 
+ static u32 netc_timer_get_integral_period(struct netc_timer *priv)
+@@ -500,22 +473,19 @@ static void netc_timer_handle_etts_event(struct netc_timer *priv, int index,
+ 					 bool update_event)
+ {
+ 	struct ptp_clock_event event;
+-	u32 etts_l = 0, etts_h = 0;
++	u64 etts = 0;
+ 
+-	while (netc_timer_rd(priv, NETC_TMR_STAT) & TMR_STAT_ETS_VLD(index)) {
+-		etts_l = netc_timer_rd(priv, NETC_TMR_ETTS_L(index));
+-		etts_h = netc_timer_rd(priv, NETC_TMR_ETTS_H(index));
+-	}
++	while (netc_timer_rd(priv, NETC_TMR_STAT) & TMR_STAT_ETS_VLD(index))
++		etts = netc_timer_rd64(priv, NETC_TMR_ETTS_L(index));
+ 
+ 	/* Invalid time stamp */
+-	if (!etts_l && !etts_h)
++	if (!etts)
+ 		return;
+ 
+ 	if (update_event) {
+ 		event.type = PTP_CLOCK_EXTTS;
+ 		event.index = index;
+-		event.timestamp = (u64)etts_h << 32;
+-		event.timestamp |= etts_l;
++		event.timestamp = etts;
+ 		ptp_clock_event(priv->clock, &event);
+ 	}
+ }
 -- 
 2.34.1
 
