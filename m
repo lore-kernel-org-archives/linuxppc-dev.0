@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA3B8606A32D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27C5E606E209
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Nov 2026 22:29:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=r831SIFp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyqp0Nkyz30WT;
-	Thu, 12 Nov 2026 09:29:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794436165;
-	cv=none; b=DFFJWc5NVdSVbiMaY/RM9CHRaEt5ZFTgAEV1RekiYLEtehJR+vmsAZ9tNw8FFV/emUpewMSH5x2OTaT+hIRxRlvJeuoIYjxlqOlF/l1xNKYHBfAT4/vlSCUyYtv3OApLRDvecYWEmA73E1uNUD9Ll4PgedI1kNYQDENavfVA8JFsUJuKSKlJn//TelS4C46DL/kFbSwHGmKsAedZYx8DVGCaH/gsAPaOAOns7uf7G1x3oUN80ISNrQsLtR5f+7YNi6cZDvkHDfxC1zs7so5Xr43G8UvevGvVvO7sQglmcYeTBbTFc5vj37VTxv0DiirvQlRZdGLUn6x2ASVkz6uk1w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jPyqs15sQz30VV;
+	Thu, 12 Nov 2026 09:29:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794436169;
+	cv=none; b=f+JGNJFPQpMyAlyruIkPO3a2DWDeH9lyBB9rw5jkrANZPpTvFGomd2jgS8VyPOY2vGC/by98IBkB4VW/QSk7ubNHyuDS/3OTNFC2hHDm45aWvyKwrmJ1xyDR37kLBkwsf6/pBMACHyPeqcuON7juTIrkapIIsVSvghzpVK1fxD6dBZO1VN6aVlmP87g1M0l00uBS4LNGBCVSVLoMHVYICnojGOukPtjrjOoSogGw+sHVNHjlY2sAWO4NKvnZmEQrAIkGOt7JGKnWVDRJQgOabtflKzSnZJ78f24CbqyBWFAhAyS5yNqlkzoggAEfl50G+sUViNct+XmfQ3k/Zr/lxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794436165; c=relaxed/relaxed;
-	bh=hNcFDdx6SEsMQ2wb+0TdBub7tg0kF/xbhNU9Q5R/+fI=;
+	t=1794436169; c=relaxed/relaxed;
+	bh=5oGviVXaj4yIpvPzalC/+nOH5ZvHArwTVGOnk6W3OXc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YbMdhRKDynq8r0TepenoF1+AmPWSDTZAH+2EWo4C34h9oO9fItKBpf9t3XY4aTbc68Cqx87W3do6NTK3n32gUsD4TIN/LUYbvR5KrXuszX94vV8Y4K9tPqM7LzetffNNqnz2H1goh5UfcJ7Zk1w4dJFpUMRAl1bencmF4bmEzeOlMckvnky2P//9oeT+CODDruGkVE+unHDpGfQi1p2cAys0SB3qGXAfgTMy6oUvJ7zMbdyr/uI7TXPFAxZna0Q4pA57O1edKldZYwG6tDcp5SnRiT5lEgG4j7Cbaip504G+8evdKUzv0U3UIAsEnsGA3tSDNSVY0L+hk3oPXZy2xQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
+	 MIME-Version; b=Lrnf7F5e5YY4C2JWqJlPlczyyTy2CaploycMoXrdzuTUUZOsT30qcydAjsKI/JZM4B34uKz1/lr8i66Ak2W3dzBSIi/B2z6ybvW9AOcwq+H1Ff5D/3DSykG/Cw2rLVmUiAGqm4du+pJWamH4ITACSoljlKS2EeGjLv0qmhF8hYEPTTjtTvz5kL99aSRnUo0EITF7I0YZOGS61HfHGTSjGUpxTL7sxxirIJ6wD66VQemGZMVzcx1wFk0qWJxe5et5jjyUOyYRM3DE0k6KsSsk+CCmYsJheJs2p6Pi11wlpGom7ZHN7OaKjbvv4AVmkta1UMSr8+p9YzfuEZDjDLKuhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=r831SIFp; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+abad5507353db368323c+8480+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=nWz1gFPi;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=r831SIFp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+6fbd95a72608138381e9+8480+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+abad5507353db368323c+8480+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj3QWmz30W5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:29:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jPyqj2QgZz2yqs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 09:29:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:
-	To:From:Reply-To:Content-ID:Content-Description;
-	bh=hNcFDdx6SEsMQ2wb+0TdBub7tg0kF/xbhNU9Q5R/+fI=; b=nWz1gFPieTMjS6ZWY7nAHM/nOJ
-	syw4NbeMkSO0aHt+eO0M1dMge7tZNU7ehYKvmryl84z8rwj+DmAtGbpkvydeEKAcnNNw7+jYyD5t4
-	5sxuulgOozKiHvuBZx2/ltbcOJucbl3aEMjTjPGGZtuwMFAUW+4UIl/9RnjpEs5wzYs//JOQCxVfe
-	Z5vV95kf3tW2bfUmND973isg/ref1Y14Ui9VcW5OAU9bFdTYvOD/IO7iUOyLzG5ENC+BD8ktH62+N
-	CNhTo0V4MYK/g3P3FYB65jEOYAjZy162p7oL8xg+UySIOd4jizNQ1HXVfvs38/yhP7RmuPdZR+eB6
-	2JplI6gg==;
+	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
+	Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=5oGviVXaj4yIpvPzalC/+nOH5ZvHArwTVGOnk6W3OXc=; b=r831SIFpUymlUnTYb61dln9ahD
+	0eq+3vHkta/eyOr8OjQOrTXs4PQ2Z5nkgjHTKRBoFGNNESSqbK1xW1kMm5l6ehPgP1uky4tadiaqu
+	G/LFt5CqsbRhH4+LSNf2Flu74ncwO/CqIBRgm4xFye0GNhuOlTHjWMGrg0O4AT3Yqo0JAHoucKw9s
+	zmSiXequaXXxhDsMvMqtpW+qRETgkLIw6BUPW9RX1/NfDs1owEHdfQstQY/e8+JeLH+B8nTQHw686
+	w2YkvByQxjnQnrL/OsQFTnkSY5h/aKlBE/Tjt2cCGWegc0Csc7Iz4QOgWEbfIWcoXvYQ/WYep07ko
+	EICQHRSQ==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
-	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRGoc-00000009dbX-29VX;
-	Wed, 11 Nov 2026 22:29:14 +0000
+	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xRGoa-0000000G3nz-1WjJ;
+	Wed, 11 Nov 2026 22:29:12 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRGoZ-0000000007o-1y0L;
-	Wed, 11 Nov 2026 22:29:11 +0000
+	id 1xRGoa-0000000008e-0kHG;
+	Wed, 11 Nov 2026 22:29:12 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
 Cc: Paolo Bonzini <pbonzini@redhat.com>,
@@ -70,12 +70,13 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [PATCH 00/16] KVM: Fixes for the Planes + SEV-SNP series
-Date: Wed, 11 Nov 2026 14:28:55 -0800
-Message-ID: <20261111222911.477-1-dwmw2@infradead.org>
+Subject: [PATCH 13/16] KVM: x86: Leave TSC matching to the plane 0 vCPUs
+Date: Wed, 11 Nov 2026 14:29:08 -0800
+Message-ID: <20261111222911.477-14-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20260608144252.351443-1-joro@8bytes.org>
+In-Reply-To: <20261111222911.477-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
+ <20261111222911.477-1-dwmw2@infradead.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,123 +90,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: David Woodhouse <dwmw2@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: David Woodhouse <dwmw@amazon.co.uk>
+From: Mushahid Hussain <hmushi@amazon.co.uk>
 
-I rebased Jörg's KVM Planes + SEV-SNP series¹ to 7.4-rc2² and used it
-to add VSM support³. Here's a batch of fixes.
+KVM enables the master clock when every vCPU has a matching TSC, judged
+by nr_vcpus_matched_tsc + 1 == online_vcpus.  online_vcpus counts a vCPU
+once, but each of its plane vCPUs synchronizes its TSC at creation and
+counts as another matching vCPU.  With one higher plane the count can
+never equal the number of vCPUs again, the master clock stays off and
+kvmclock loses PVCLOCK_TSC_STABLE_BIT.  Among other things the Hyper-V
+reference TSC page then breaks: KVM writes sequence 0 to it, finds the
+clock unstable and leaves it that way.
 
-Thirteen of the sixteen apply in order, without conflicts, to the
-kvm-planes-v7.1 branch. The other three need what has landed upstream
-since v7.1: patch 1 fixes the s390 arm64 KVM module, which only
-arrived in 7.4; patch 12 touches the PID-table clearing in
-vmx_vcpu_free() from b41f2ca6c060; and patch 16 extends the VMSA
-invalidation from d1a3c2162334.
+The planes of a vCPU share its TSC.  Give a plane vCPU its plane-0
+sibling's TSC offset and generation, and leave the matching count and
+generation changes to the sibling.  The offset the caller computed is
+ignored: it comes from the VM-global matching window, so it differs
+from the sibling's whenever the sibling is not in the current
+generation, or on a host with an unstable TSC, and a host TSC write on
+a plane fd would otherwise move the twin's TSC away from plane 0's.
 
-The ones that matter:
+Fixes the TSC match count for the plane vCPUs that "KVM: Implement
+KVM_CREATE_VCPU ioctl for planes" creates.
 
- - 01 s390: arm64: Pass plane_level to the kvm_set_routing_entry() stub
-   The arm64 KVM module on s390 kept the old prototype; the kernel
-   test robot caught it on the rebased tree.
+Fixes: https://lore.kernel.org/all/20260608144252.351443-34-joro@8bytes.org/
+Not-signed-off-by: Mushahid Hussain <hmushi@amazon.co.uk>
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+---
+ arch/x86/kvm/x86.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
- - 05 Initialise Hyper-V state on every plane vCPU
-   kvm_set_cpuid() passed the plane 0 vCPU to kvm_hv_vcpu_init() for
-   every plane, and a twin created late got vp_index -1.
-
- - 08 Publish a new plane only once KVM_CREATE_PLANE cannot fail
-   A failed create left a freed plane in kvm->planes[], where the SNP
-   VMPL switch could still find it, and VM teardown freed it again.
-
- - 10 Keep current_vcpu in sync in vcpu_load()
-   A reschedule inside an ioctl on a plane fd put and loaded the wrong
-   twin, and a failed twin create left current_vcpu dangling.
-
- - 11 Load each plane twin while updating it after KVM_SET_CPUID
-   On VMX the vendor callback wrote the twins' controls into the
-   caller's VMCS.
-
- - 12 Leave the IPIv PID-table entry to the plane 0 vCPU
-   A twin has the same vCPU ID as plane 0, so creating or freeing one
-   repointed or cleared plane 0's entry. Latent for now, since planes
-   inhibit APICv.
-
- - 13 Leave TSC matching to the plane 0 vCPUs
-   Each twin counted as another vCPU with a matching TSC, so the master
-   clock could never come back on.
-
- - 14 Derive runtime CPUID bits from the executing plane
-   OSXSAVE, OSPKE, APIC, MWAIT and the XSAVE sizes follow per-plane
-   registers, but the table they live in is shared.
-
-Three things I've noticed and *not* fixed here:
-
- - The AVIC physical ID table is indexed by vCPU ID too, so it has the
-   same collision as the IPIv PID table in patch 12. It's masked while
-   APICv is inhibited for planes, as it is today.
-
- - A host-side TSC write on plane 0 (or KVM_SET_TSC_KHZ) after the
-   twins exist doesn't reach them. Fixing that means loading each twin,
-   and I'd rather agree how before doing it.
-
- - For Jörg and Tom: the SNP VMPL switch stops the current plane with
-   kvm_vcpu_set_plane_stopped() and no latch, so KVM_GET_PLANE_RUN_STATE
-   reports it as STOPPED, and a VMM that saves and restores that value
-   turns it into a userspace stop. Does VMPL want a notion of
-   KVM-initiated suspension of its own, or is that the intended
-   contract?
-
-¹ https://lore.kernel.org/all/20260608144252.351443-1-joro@8bytes.org/
-² https://git.infradead.org/?p=users/dwmw2/linux.git;a=shortlog;h=refs/heads/vsm2/planes-fixes
-³ https://lore.kernel.org/kvm/20261017122501.610248-1-dwmw2@infradead.org/
-
-David Woodhouse (14):
-  KVM: s390: arm64: Pass plane_level to the kvm_set_routing_entry() stub
-  KVM: SVM: Derive the plane limit from the immutable VM type
-  KVM: planes: Report KVM_MAX_PLANES from the system fd
-  KVM: Guard the per-plane KVM_SIGNAL_MSI cases with __KVM_HAVE_MSI
-  KVM: x86: Initialise Hyper-V state on every plane vCPU
-  KVM: x86: Widen the plane vCPU fd ioctl allowlist
-  KVM: x86/mmu: Free obsolete roots of all planes
-  KVM: planes: Publish a new plane only once KVM_CREATE_PLANE cannot
-    fail
-  KVM: planes: Kick the running twin's pCPU, not the request target's
-  KVM: planes: Keep current_vcpu in sync in vcpu_load()
-  KVM: x86: Load each plane twin while updating it after KVM_SET_CPUID
-  KVM: VMX: Leave the IPIv PID-table entry to the plane 0 vCPU
-  KVM: planes: Annotate the lockless twin-publication protocol
-  KVM: SVM: Make KVM_REQ_VMSA_PAGE_RELOAD per plane
-
-Mushahid Hussain (2):
-  KVM: x86: Leave TSC matching to the plane 0 vCPUs
-  KVM: x86: Derive runtime CPUID bits from the executing plane
-
- Documentation/virt/kvm/api.rst  |  21 ++++--
- arch/s390/kvm/arm64/arm.c       |   3 +-
- arch/x86/include/asm/kvm_host.h |   3 +-
- arch/x86/kvm/cpuid.c            | 128 +++++++++++++++++++++++---------
- arch/x86/kvm/cpuid.h            |   6 +-
- arch/x86/kvm/hyperv.c           |   7 +-
- arch/x86/kvm/irq.c              |   5 +-
- arch/x86/kvm/mmu/mmu.c          |  16 +++-
- arch/x86/kvm/svm/sev.c          |  29 ++++++--
- arch/x86/kvm/svm/svm.c          |  10 ++-
- arch/x86/kvm/svm/svm.h          |   2 -
- arch/x86/kvm/vmx/vmx.c          |  10 ++-
- arch/x86/kvm/x86.c              |  87 ++++++++++++++++++++--
- include/linux/kvm_host.h        |   7 +-
- virt/kvm/kvm_main.c             | 115 +++++++++++++++++++++++-----
- 15 files changed, 365 insertions(+), 84 deletions(-)
-
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index cd0e9b6cf8f7..f9adb4e81ebc 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1366,6 +1366,35 @@ static void __kvm_synchronize_tsc(struct kvm_vcpu *vcpu, u64 offset, u64 tsc,
+ 	if (vcpu->arch.guest_tsc_protected)
+ 		return;
+ 
++	/*
++	 * The planes of a vCPU share its TSC and online_vcpus counts the
++	 * vCPU once, so a plane vCPU neither counts as a matching vCPU nor
++	 * starts a generation; its plane 0 sibling speaks for it.  Nor may
++	 * it perturb the global matching window (last_tsc_ and
++	 * user_set_tsc): KVM_SET_MSRS is accepted on plane fds, and a TSC
++	 * write on a plane fd moving the window would corrupt the next
++	 * plane-0 write's match decision.
++	 *
++	 * Take the offset and the generation from the plane-0 sibling,
++	 * which exists by construction for a plane twin, and ignore the
++	 * caller's offset: that one comes from the VM-global matching
++	 * window, which may belong to a different vCPU's generation, and
++	 * is recomputed from elapsed time on an unstable host.  A host
++	 * TSC write on a plane fd therefore leaves the TSC alone; plane 0
++	 * owns it.
++	 */
++	if (vcpu->plane_level) {
++		struct kvm_vcpu *sibling = vcpu->common->vcpus[0];
++
++		kvm_vcpu_write_tsc_offset(vcpu, sibling->arch.l1_tsc_offset);
++		vcpu->arch.last_guest_tsc = kvm_read_l1_tsc(vcpu, rdtsc());
++
++		vcpu->arch.this_tsc_generation = sibling->arch.this_tsc_generation;
++		vcpu->arch.this_tsc_nsec = sibling->arch.this_tsc_nsec;
++		vcpu->arch.this_tsc_write = sibling->arch.this_tsc_write;
++		return;
++	}
++
+ 	if (user_set_tsc)
+ 		vcpu->kvm->arch.user_set_tsc = true;
+ 
 -- 
 2.50.1
 
