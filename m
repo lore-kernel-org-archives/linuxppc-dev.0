@@ -2,70 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34BA7606A32D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:27:35 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2887606A321
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:34:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kHiIB1bW
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mNl2+90y
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQKQs6Kltz308H;
-	Thu, 12 Nov 2026 23:27:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794486453;
-	cv=none; b=CDVKScsL6EMNTp8p2wzzE5187cbTSInSZQaUFvsbZfe4/Ivh7OFsu8FhbG+kR38Ljg/qDIB35cKNbpgtsKGb5dfk6Vtwd6ONDvScvba9yhBtYQF6lQ/j0coMw7Ji55/8DIplAkFPSbRZcv+MVJ1VYcp/UgmuT2dwxNTIMpaYul2Aiuihq69cCaYmJ9ZMXhHrAVCFUEYNVWxqFQBQfBnItFBaSOn92h5B2N8vFPeCsrxtwfVik63WsuXI9Apt4N5lUc+h1005Qh++9nmmLj+uzDENVAK7jXbnzNRTs4Q+74cilxDTxsD2Z7AfMb2cMTxWPksy/pxlroCopT2NC1VRCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQKZS3ZP5z2ynW;
+	Thu, 12 Nov 2026 23:34:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794486848;
+	cv=none; b=HckbV2xS3dKsN0P21LWQRc0rpDCxtkiY8zu5fpphyPfbP4VmK+rXWww5yu2P0SRxmj+Czn1hAyc4t0fAkDSdTYxn/eAA2YwTyWvoe79Pyqm/jFcpJGFfWYEwi1g9YgDHVcCaamdWodbaMgHAccIWhWtyszv4EhUy0rUjfNm0V3MvTcNZZeEtsoO9bCOSEOf/5EN6CIzgWIJFbC4TF2AVuy7s57sIGPTk6pnG8pY8EqL9K9jLixOLOtZTmIpx/+ej1MaUaKgW5/cmV4OH76sJ7SnbKsMeX24b31YAjmspU2Ly0YUxrCKhgAzv0vQJe0uI0EWt6Z2WhM5/p9wbxn9oIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794486453; c=relaxed/relaxed;
-	bh=6zIF2mscWWNdqPdPpywMELCgP+4wYM3ffEmTeqpAw4o=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=TQwi5VdiocX0pf8IG/vPGPxLqJ4TobEjaRkMQ9MD5zuRD2S+YMw4fNXmwlWttwyQs07aQ6o1D706TgnGFSpdtqaAaJS58QoPn2/20gitXuUzip520SJMOafIjW4BwksLo+ny8KdYhE0nPnr1J1hjo7rzGqfSUGlDIdHx6UaTT84m7Pq2XbX+0tk2Ct9z8XosVnHSKjF+QsEfPPIL9G+EwRN4xgkeiK639wbzLz8xdrxmo32Wu35ErYDA1Q5LyBkh9qSYLGcuQC0zNO43Gygz5APHta+an+EFex4Kf3jEYlAT6Hb0IRLNAxo2jn8gJt4xCG7UG3CJwYXV8uC3TCoNFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kHiIB1bW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794486848; c=relaxed/relaxed;
+	bh=NLfvAl+y+GjjcH9CNw/4ElIGTmELHExYwuG632+gsLo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=chXhbXC76NIbYkYwqtNB2vfTxH1ltRPImnFRBkixppzyynR4nHqBoQRG5dmt4M9Dlla8LYLIa3XX2N1uhCU2EpmW3pzMaPNt38PwJ8PY9GeRGkRSuepXatVhd6V31drMANVpLqIhM+RHz6bbwr6HWh6YjwTT3goCOQ15l52FAzRBdQBJOqTHMRUkKdjdYZ0+wIUmrdyqzMPdjrkNbQzbNYB/bzENgWDi7JOn6+It5DRYeKB9JEckiKbdNPfdaaV6nNxANq3ZnizdkaCznuhHPWnQMAfmtPkVbdJ2jrQRA8DnqULxVywrTf/3SoY0UAJ+knlf9rzXzorfpfITxwvC8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mNl2+90y; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kHiIB1bW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mNl2+90y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQKQs0xRMz2xly
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:27:32 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2iL0A1214781;
-	Thu, 12 Nov 2026 12:27:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=6zIF2mscWWNdqPdPpywMELCgP+4w
-	YM3ffEmTeqpAw4o=; b=kHiIB1bWyrkRYoH21DvGNfwM6coLugLCAeOYLOo+0O6I
-	MSRSgK+Eb0gb7F9h3zi336apegwmAMLE1efwDWvP3D5plkxNxy6CKrC1VisMoz40
-	4QuDUsxiBwYjOrAbQPOSHZSaU9Q8/wjXf6gEPzfuZZ1W4K+hEubHrTVXQowhdIys
-	ZNnIy2KjW2NDm30seSVwjYETbJpam8hTWn05YoG99D1kvIfJiudEDy6ROUwHU3+L
-	IfBerHM3bvrMI4hv4HOHOaFjtlteTKORAGBhNxsVY4Y80msceYTTnB+Gk2XiQyj/
-	ttCvSNJILlFas7/Gqdm/wFYt0WT10a4ezX5PNLffEw==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsuntfdu4-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 12:27:26 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC8Lvmf097884;
-	Thu, 12 Nov 2026 12:27:25 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hvkq0w7sr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 12:27:25 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ACCRPWQ26346036
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Nov 2026 12:27:25 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F066D58059;
-	Thu, 12 Nov 2026 12:27:24 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 31E5058055;
-	Thu, 12 Nov 2026 12:27:22 +0000 (GMT)
-Received: from [9.61.240.49] (unknown [9.61.240.49])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Nov 2026 12:27:21 +0000 (GMT)
-Message-ID: <bc84cb05-55fe-43e7-9a6e-e6bbf2f5a9ff@linux.ibm.com>
-Date: Thu, 12 Nov 2026 17:57:20 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQKZR4R3Tz2y8F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:34:07 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6769B63734;
+	Thu, 12 Nov 2026 12:34:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5D2D1F00A05;
+	Thu, 12 Nov 2026 12:33:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794486844;
+	bh=NLfvAl+y+GjjcH9CNw/4ElIGTmELHExYwuG632+gsLo=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=mNl2+90yrOnioBRhxRyXJL0FYDN2ojhE2hQJmHGJhO120AvUHPL9+18HhuJPScpkr
+	 3rOnCv3yR3j3k5V5XXExWDKfShv+OWRKf2FvQqtW7ckfxRp5OxpY5BjSPcSsEDHIOI
+	 8LNA7XaAaenbCfO+lIDQtFXgGlIwl+HNGqUR28hdRP3wM9FCAxNSalihFtn3X+byuA
+	 yXdgdq1MCSYltVqooCuakopVO/xe7D7fpcjG/D+gItfFGUaCfSSwIOhGtmZf8qLgT0
+	 arCGIH27msFG+pfhcuGQY5S/Ytb3YIxkI6oVeHTVEAw0y6zz3TOFJzm6E3Jd3mvulD
+	 ABZfMy26eYUQA==
+Message-ID: <fe58d4ad-0410-4525-a1dc-2cfb2ce1d52f@kernel.org>
+Date: Thu, 12 Nov 2026 13:33:56 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,100 +60,113 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Content-Language: en-GB
-To: mszeredi@redhat.com, Shuah Khan <shuah@kernel.org>
-Cc: luis@igalia.com, amir73il@gmail.com, linux-fsdevel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, nandinih@linux.ibm.com
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [BUG / BUILD FAILURE] selftests/fuse: build failure with libfuse <
- 3.17.0 (RHEL 10 / fuse3-3.16.2)
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDA0OCBTYWx0ZWRfX0JfJ6hzcRhBo
- 3pYzaJxWCP83/cPc0kLSsIDPYdNyeWt8FbyWRuQat9/3XZ2iKw95G177cPiCqpYJ2tf8vfzAK1v
- BHUHeQT9VgxLgGwtPrIW9XG86dP5iBk9B5urNmoApmLLUyRuMn+HNtbu02fmAG5TY2vp3OPZqyA
- lYbrdVyHDqkVjH2vWQDVu6H23HDWtNhzb+wKoKn4jLPSWu5ZvcMgejzDYz+SR0mbaEx7jrcqXhV
- 59ToqtEZ+KD40OVTp6DTSbo9QFxaACTg/HYhdMyfuKZdrqJq5wIe1mnBmLOdocp+3QsK9gpkciT
- Q5yZPCcCbmMUVabGdk38GTXGmzNZgPgByNPKrbZJD+Jprcfmtf96OjG/LhIVdEODuP1oKOi907q
- y5OBDT7ZhqsQ25ZZfoXeJWd5zdFXoTALrJ1PwmK98nNgaS83KhJSo8fqYHSY4ku91IJ9Dmgim4J
- N7wmogzN8iSjaOwOHgg==
-X-Proofpoint-ORIG-GUID: 5QlD2gsgulIE-MaNq1rxj5110MS0lzWu
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDA0OCBTYWx0ZWRfX1UvpJ0LrrdRE
- OpEqesTwMy+Eh2HcYAyPJoXqePAAbBSe49rAX4i57i0CGqUSXarIJFXCqGxB9WRn6sNrcEGJ+5A
- CYKwysiMIwfglqKSSzW7MubjHd6u080=
-X-Authority-Analysis: v=2.4 cv=euZKXYpX c=1 sm=1 tr=0 ts=6af5b0af cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=G8bnuFaaA9ZLbBnholgA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: ADQL8XVHLD3II553328d1E9yRtxsIZum
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1011 suspectscore=0 spamscore=0 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 impostorscore=0 adultscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120048
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=4.0.1
+Subject: Re: [PATCH v2 4/6] mm: drop HIGHPTE support altogether
+To: Mike Rapoport <rppt@kernel.org>, Arnd Bergmann <arnd@kernel.org>
+Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andreas Larsson <andreas@gaisler.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Jason Gunthorpe <jgg@nvidia.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Matthew Wilcox <willy@infradead.org>, Malin Jonsson
+ <malin.jonsson@est.tech>, Richard Weinberger <richard@nod.at>,
+ Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+References: <20261112112528.1116405-1-arnd@kernel.org>
+ <20261112112528.1116405-5-arnd@kernel.org> <avWo4NrAPX8BisCY@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <avWo4NrAPX8BisCY@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-
-Hi Miklos, Luis,
-
-
-IBM CI has reported a build failure, while building selftests/fuse, due 
-to missing definitions in libfuse3 headers.
-
-Environment:
-
-OS: RHEL 10 (ppc64le)
-Kernel: upstream (linux-next / mainline)
-libfuse package: fuse3-devel-3.16.2-5.el10.ppc64le (pkg-config 
---modversion fuse3 -> 3.16.2)
-
-Build Errors:
-
-In fuse_acl_cache_test.c & fuse_symlink_cache_test.c:
-
-fuse_acl_cache_test.c: In function ‘fs_init’:
-fuse_acl_cache_test.c:105:17: error: implicit declaration of function 
-‘fuse_set_feature_flag’ [-Wimplicit-function-declaration]
-   105 |                 fuse_set_feature_flag(conn, FUSE_CAP_POSIX_ACL);
-       |                 ^~~~~~~~~~~~~~~~~~~~~
-make: *** [../../lib.mk:226: 
-/home/upstreamci/linux/tools/testing/selftests/filesystems/fuse/fuse_acl_cache_test] 
-Error 1
-
-In fuse_mnt.c:
-
-fuse_mnt.c: In function ‘test_readdir’:
-fuse_mnt.c:51:35: error: ‘FUSE_FILL_DIR_DEFAULTS’ undeclared (first use 
-in this function); did you mean ‘FUSE_FILL_DIR_PLUS’?
-    51 |         filler(buf, ".", NULL, 0, FUSE_FILL_DIR_DEFAULTS);
-       |                                   ^~~~~~~~~~~~~~~~~~~~~~
-       |                                   FUSE_FILL_DIR_PLUS
-make: *** [../../lib.mk:226: 
-/home/upstreamci/linux/tools/testing/selftests/filesystems/fuse/fuse_mnt] 
-Error 1
+On 11/12/26 12:54, Mike Rapoport wrote:
+> On Thu, Nov 12, 2026 at 12:25:26PM +0100, Arnd Bergmann wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> With both x86 and arm having dropped CONFIG_HIGHPTE support, no
+>> architecture is left using it, so remove the remnants in common code.
+>>
+>> It is likely that further cleanups are possible in the page table
+>> code but those are not obvious from the config options.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> ---
+>>  include/linux/hugetlb.h | 5 +----
+>>  include/linux/mm.h      | 1 -
+>>  include/linux/pgtable.h | 9 ---------
+>>  3 files changed, 1 insertion(+), 14 deletions(-)
+> 
+> With this and arm HIGHPTE patches applied there are still a few leftovers:
+> 
+> $ git grep  HIGHPTE
+> arch/arm/configs/vt8500_v6_v7_defconfig:CONFIG_HIGHPTE=y
+> mm/memory.c:     * Dumping the PTE would be nice, but it's tricky with CONFIG_HIGHPTE,
+> mm/pgtable-generic.c: * kmapped if necessary (when CONFIG_HIGHPTE), and locked against concurrent
+> mm/userfaultfd.c:        * index ordering when CONFIG_HIGHPTE is enabled. We mapped dst_pte
+> 
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> 
 
 
-If you happen to fix this, please add below tag.
+With these gone
 
+Acked-by: David Hildenbrand (Arm) <david@kernel.org>
 
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+-- 
+Cheers,
 
-Regards,
-
-Venkat.
-
-
-
+David
 
