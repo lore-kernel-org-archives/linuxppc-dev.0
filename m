@@ -2,91 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1EFED606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 06:52:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F226606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 07:01:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qThjBClT
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=owLrm7cB
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ9zp4TVzz2yKn;
-	Thu, 12 Nov 2026 17:52:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1033"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794466326;
-	cv=none; b=msGY5+suklOzJ+M0DC9t7IN78hJJcP5iXTW8WjjHA3IiMpUy+RNeo0Mf1ZqOHF9jSxGrXBYzmBt7I6ETpxslUcnhBvGXOJnrWaQgRFhRy46KC7Xshq8G8+Dmho3yAtIf3Uxh+oIXniGBjoFJCCwpWrgKlxRHX8QT617A/ESZPuzcWf+sZdrRJw+ICOt1EafuT2P2+jS0TSjggBW9cowOLjez9ArPnlWxGOoU6oZTkLAf4qm51F1Q0xNmcEbqhQDYIJD4Q1bExqwK440pefWc/3MaiyOXQfrfKV6PzQUiC/mtb7e69So2T+gIPaQmH5v+BBHRjkDrxdIieaRDaFNd9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQBB246fLz2yKn;
+	Thu, 12 Nov 2026 18:00:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794466858;
+	cv=none; b=ZzMf0X+DJyYkSbqzH+lNZxiYfLpeOC5IEmBY2e05uGQ5JQxoHa3M9K5Fo1twgEQIQLUhtZBrBAUSyHpRB1Jwn9nt9HaI0FJ4Xc3c4sem885LQUA5E+llxoEjwJ/SexbW4pF7ezsh3InzvI0Ct7Pom4eVigRia4pEu7s4xk7TgKLTeeFIbVuYm3uM+jLNYlmLCuY77a1iUsxFCKma8MRr5cRWW9JxL+MFiRxF/8GbZaV5HT3P85jEzV4j8bWiW2PB9aV5fb9WwbLvrilJfyS6pF2vmEUjU4wpw1dDXVbriLfKg/b/akEk/Ze+OuxPu2xOu48txAljLywLkNzUmTT8OA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794466326; c=relaxed/relaxed;
-	bh=D3JLsp1QTj4757jMDwdQmMwnwAa2ZsC4IeFz9uGfVhA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DPP9KupplTcooGkfXSaNrJQXZ/0icUxTHu1kD58oZJ9nlekgonHBAl2rBtjfqnpKNOv/z99HpgK6ALxI3TS1cqemKLOg4pa4orlY/QUkYnrQfdgBJc+y1Rjz2qL50ZZHO9EtvikNcFexDrBZmqDU9+O64dNBckrgBSDEIRfF+CU9POwfpm7036bmv1M82IS603UxuE4sEnHbCEkmYvjAHtZXDb1umaTKjHVRTNEzWE4fuhkgdu6HVHcohXhd7PIlRb5YdcoAUnIYPpUI0FfQ/HfW2nIE2Leg0ZuZZLmvBU7HEU5SspVkHxkU9wqzF2ivj4Ml0mzG2IyGJisqnHiqWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qThjBClT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794466858; c=relaxed/relaxed;
+	bh=J4xIggD0g8SlhhtdOwMFrAXrBVevW/MmjFyooXoSNeE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Jt7btISvHTRoWHP9poT9RPeOWQH8zaF6XzdxV+ks2hxjMChGK5221gf+h31lUIgQ3K8WX1iSiUXfWODMssa3tfKaLvocLRY37TyUcKplXPlqrADGUgA8+foFBgoU04fGMGpBHsNxIv28c4PBK7YIFiQWDXcXjISJE4/tz0iqZswI5M6Ex6XC5nYRDC4iFKjkBdA+iv4Mes01A/pT+uvWHQEYmIovqOG7vDivQYWNTDf+Gx2oa3WMAXA8c2CiPhdmqINzeXnO+/H9jGcQnD2otZ0JpMjwLaQq70T7yk4tfg6K8qWne7NumdN50/aFIaUkzz/M4knZOOjxVAj28J+dmw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=owLrm7cB; dkim-atps=neutral; spf=pass (client-ip=95.215.58.30; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qThjBClT;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=owLrm7cB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.30; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-30.mta1.migadu.com [95.215.58.30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ9zn1nnZz2xmV
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 17:52:04 +1100 (AEDT)
-Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-3b179528d56so1023366a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 22:52:04 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794466321; x=1795071121; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=D3JLsp1QTj4757jMDwdQmMwnwAa2ZsC4IeFz9uGfVhA=;
-        b=qThjBClTBdkPiAhnV7R0kp/e0uZq1s/IjOGJ+Bi/YtIrWeyryb3X8CW3flIZ3ytoAu
-         LJLfhxKYFB0xxg+EDKEfEGZsEYaSuO/GPNPh6Hvhpo0toC/mdC9uwfyHwvM3TO/oE/Om
-         WV10Rg2rALP9uyPzUSJTxRoMoU2/pXA+zhaq6qWCvv8qjNAkPoMVpM4e5Z22P4m1r8qG
-         hpwiP2mtmnBgUhurEFr0aqeKRBGeLGuW9WSAyMdWIwpLFWGeEY+5+OTUsxfDC6ABLMp0
-         vgDnB8NZ6csPxujc32cwJC4GjRZQt5AcgsPzB59El3oGiw+uJPmguQPrgD21Fd0a9Xhh
-         tDcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794466321; x=1795071121;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=D3JLsp1QTj4757jMDwdQmMwnwAa2ZsC4IeFz9uGfVhA=;
-        b=kqL6P+KQdbjsFz1G/B8ZeNEyQfLLj5JDo+fEasZTfIsVXxWPQVCrqEcGoFHE0PG2pd
-         XheOjUw1EpaGzUDspBiO6bLjIgv/n0Vw6NDVKDofJJf6GNQ+A19tMPZJ4GtTFojeFbbj
-         jxqbu73y4GILPP+8FbqU2J7pBs5GhEFnJ8VuPNSnJTM+N3Yi6IpERE0fUkd3puVQlUW4
-         bscMooFBdt3Q+Usup8qWCeGHP5uUwvM2ZRYnLU0nA0MxHoZUHqx2MsQRLBn7hQ+HEtcT
-         OuQNlzvUDNk4GdT0Pshox44B/ku5QjQm9uMxK724lf0+QyaHRsKo5RtUyDhYPgqx1hjn
-         lm9w==
-X-Forwarded-Encrypted: i=1; AL+hErENWsx+zNSrOqdR5qJwnQnkqiS+BbsnFjpkH7q7Rbvi2Y9QgoCJryb0uSGB9Jm7wKUV7b7T2UF3Kt8YppI=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/FyR1oQF69uL14ycAxM4652dpIX5eOmnMWsY9qMOHF/7gRYWRh
-	StIsvulK1ARZilmI0uh65zUYXAMGNqy8uMmXftUEjJs1/plioN18tXow
-X-Gm-Gg: AYBFou3p6wbtJVdOmRDpjEoF/1k0S8Fux3C5Bet3iVuWDEU8bmVZF9KP6oCeg5K79vl
-	VipXZGjgrVbKu0vfj9x8DcIXEqAOavjJup7vef/jUD89P7BRXcVpvhgBV/xgU2dpOaLSv8bAV/7
-	++3c+mTLuzq1qb3hfd9GKmaFcxQfL0nyKgR1wVFvK8Xe9kBGIFQkr1BiLFO7AlsALp1HXNl+8ts
-	d7k38n7QhvKnYrbjsNCRMh3P3FO5sQlnm0Kyrn7kd3gL9nA0fl6sQ5pN5dVsrOUU4KjCjQuJvFV
-	N60qWUqHNGfNYD4cv+HzPK1gif1WAuWHHWMT21FRCDcdCBPbZb4/aLUIruNT7XiQYqUzNcfVuG4
-	M4ckNfSBSICGmUVtnBha3g+fevipddnMA1dTVCSKIHsOVqi73dkVjpwZF0IjRkvZCliOH/+SecR
-	Xr9OwMQ+Nhj4Um+HAVBruAE1+GaNPZOSeOMssmo7SvmxN37SgZyJPtGk62IaRvaDw4fLrrdKsIG
-	Exp3VazDdk365M60gQnnWP1Y3umNejxbsxb4tDBxcUXlkgDZ8aGuvwv92/Uj61ulmfVec74gHbh
-	H3ZQt94ZpTm/frVEgXrb01Aered0908202HJYUaHg+5FDdSY8IjsEo8+Jk4unu2NbghjVMyeZw=
-	=
-X-Received: by 2002:a17:90b:224b:b0:3ab:c674:d83c with SMTP id 98e67ed59e1d1-3b182f1fdd0mr4254605a91.27.1794466321050;
-        Wed, 11 Nov 2026 22:52:01 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b197d0f6e0sm3052617a91.9.2026.11.11.22.51.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 22:52:00 -0800 (PST)
-Date: Thu, 12 Nov 2026 12:21:53 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	chzigotzky@xenosoft.de, mpe@ellerman.id.au, npiggin@gmail.com, 
-	christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, msuchanek@suse.de, 
-	ritesh.list@gmail.com, harshpb@linux.ibm.com, gautam@linux.ibm.com, 
-	amachhiw@linux.ibm.com, venkat88@linux.ibm.com, nnmlinux@linux.ibm.com
-Subject: Re: [PATCH v2 1/3] powerpc/irq: Add ppc_hard_irq_disable()
-Message-ID: <avVh_YWoIgomwEP1@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20261110053238.3794500-1-sshegde@linux.ibm.com>
- <20261110053238.3794500-2-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQB9z5y7lz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 18:00:54 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=IWVkZhORY9imY5FneS+keJKgSYCeTxoJHysJ7YNaF+Y=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794466836; v=1; x=1795071636;
+ b=owLrm7cBfzN1UV7R16E1C54SoQ6uEbb9iF8oE9Q5nwcgoWHQirDw5gp7jkGwGjeLafzaGCP1
+ Te46sEi7bhxP9cwDDRW2wHBKzqLnYx5iq1pmrfxW0YYJxKqEKpde6mzEEQo7PWPyTvt+znR0GhH
+ xNDE2eDuB7safnAL4u5eo6JM=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 5f9d5e168c7f5611;
+	Thu, 12 Nov 2026 07:00:23 +0000
+X-Mizu-Trace-ID: 5f9d5e168c7f5611
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <4ad546a2-66c5-4b74-a221-d9e8c1006c73@linux.dev>
+Date: Thu, 12 Nov 2026 15:01:48 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,70 +57,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261110053238.3794500-2-sshegde@linux.ibm.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 6/9] mm/vmalloc: only flush the cache after the vmap
+ succeeded
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
+ Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org,
+ Sashiko <sashiko-bot@kernel.org>
+References: <20261110112546.261415-1-hao.ge@linux.dev>
+ <20261110112546.261415-7-hao.ge@linux.dev>
+ <CAJuCfpHReBDoXj_U3Dy2hksj63KyHNBm4gS+wtR_ywidyJ8mfw@mail.gmail.com>
+Content-Language: en-US
+From: Hao Ge <hao.ge@linux.dev>
+In-Reply-To: <CAJuCfpHReBDoXj_U3Dy2hksj63KyHNBm4gS+wtR_ywidyJ8mfw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 10, 2026 at 11:02:36AM +0530, Shrikanth Hegde wrote:
-> Add a flavour of interrupt disable which could be used in
-> multiple places which also takes care of lockdep in both 32 and
-> 64 bit archs.
-> 
-> On PPC64:
-> - Disable hard interrupts using hard_irq_disable. It takes care of
->   lockdep and tracing. local_irq_disable only alters softmask's state.
-> 
-> On PPC32:
-> - Interrupts are hard disabled with local_irq_disable. It also takes
->   care of lockdep and tacing.
-> 
-> Subsequent patch uses this API in KVM code to avoid the warnings.
-> Wider use of it is possible, but it will be taken subsequently.
-> 
-> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/hw_irq.h | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index b7eee6385ae5..075442366e1e 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -516,6 +516,23 @@ static inline unsigned long mtmsr_isync_irqsafe(unsigned long msr)
->  
->  #define ARCH_IRQ_INIT_FLAGS	IRQ_NOREQUEST
->  
-> +/*
-> + * Hard-disable interrupts while keeping the IRQ tracing state
-> + * consistent.
-> + *
-> + * On PPC64, local_irq_disable() only soft-disables interrupts, leaving
-> + * a window where an interrupt can be recorded in irq_happened before
-> + * interrupts are hard-disabled.
-> + *
-> + * On PPC32, hard_irq_disable() does not update the IRQ tracing state, so
-> + * use local_irq_disable().
-> + */
-> +#ifdef CONFIG_PPC64
-> +#define ppc_hard_irq_disable()	hard_irq_disable()
-> +#else
-> +#define ppc_hard_irq_disable()	local_irq_disable()
-> +#endif
-> +
->  #endif  /* __ASSEMBLER__ */
->  #endif	/* __KERNEL__ */
->  #endif	/* _ASM_POWERPC_HW_IRQ_H */
-> -- 
-> 2.52.0
-> 
 
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+
+On 2026/11/12 08:30, Suren Baghdasaryan wrote:
+> On Tue, Nov 10, 2026 at 11:25 AM Hao Ge <hao.ge@linux.dev> wrote:
+>>
+>> vmap_page_range() and __vmap_pages_range() call flush_cache_vmap()
+> 
+> New vmap_pages_range_batched() function has the same issue, so needs fixing too.
+
+Ack. will do next version.
+
+> 
+>> before they even look at the error code. A failed mapping is never
+>> used, so the flush is pointless at best.
+>>
+>> According to the Sashiko review it is worse than pointless on UML:
+>> flush_cache_vmap() there is flush_tlb_kernel_range(), which syncs the
+>> PTEs into the host OS. Flushing a half-installed mapping therefore
+>> leaves host mappings behind for a range that was just freed again.
+>>
+>> Only flush when the mapping, and for vmap_page_range() also the KMSAN
+>> metadata, is fully set up.
+>>
+>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>> ---
+>>  mm/vmalloc.c | 8 ++++++--
+>>  1 file changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>> index 0565cbfe325c..3f98056f8c7e 100644
+>> --- a/mm/vmalloc.c
+>> +++ b/mm/vmalloc.c
+>> @@ -369,10 +369,12 @@ int vmap_page_range(unsigned long addr, unsigned long end,
+>>
+>>         err = vmap_range_noflush(addr, end, phys_addr, pgprot_nx(prot),
+>>                                  ioremap_max_page_shift);
+>> -       flush_cache_vmap(addr, end);
+>>         if (!err)
+>>                 err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
+>>                                                ioremap_max_page_shift);
+>> +       if (!err)
+>> +               flush_cache_vmap(addr, end);
+>> +
+>>         return err;
+>>  }
+>>
+>> @@ -758,7 +760,9 @@ static int __vmap_pages_range(unsigned long addr, unsigned long end,
+>>         int err;
+>>
+>>         err = vmap_pages_range_noflush(addr, end, prot, pages, page_shift, gfp_mask);
+>> -       flush_cache_vmap(addr, end);
+>> +       if (!err)
+>> +               flush_cache_vmap(addr, end);
+>> +
+>>         return err;
+>>  }
+>>
+>> --
+>> 2.25.1
+>>
 
