@@ -1,71 +1,49 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1E13606A324
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 06:06:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B939606A327
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 06:26:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n/GkPa/t
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xdv6OXXd
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ8zX3RFmz2yKn;
-	Thu, 12 Nov 2026 17:06:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794463608;
-	cv=none; b=MDKO8NtD12uWDJn5QsxLytOdq80j/yqGvPJB+d6rt9N6ghDopBq8Faj3L4LFs1RbJSOwgDieX+FIz3EbOYFCAxwliuZBB0oBry8keOrCvQpkXmpHdS5t30RX6D4AGhpwZM56fDvKJMv5D3CjyA+5E3ubLObCPPImdW/dIGBPzx9M+2blSkDfhGY91HE4SFI2equF7OteT+H2WMOqMk5sticxbx869fju8JuENusgoNihEno6nQprU1Ea6Q1EFVLLdT/Kkv+ozVPJzlziolvo9Sqs5YnQfGHRZ4ff1Bm1EJNfyFI8kOipllQX4LhqeabnBEahPh/bJ1QAt19LaVaumQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ9Qk5vlRz2yKn;
+	Thu, 12 Nov 2026 17:26:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.36
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794464814;
+	cv=none; b=Ma2CZ9xjf0k+J0X7p53E6O36ijDEUwh8TqxLm4CfyFpI44qRxetGAqr1xMrNv5/m+V+2TSWksvLjEfY/YDr4lEhMTUHAbjxbEwWXKGVWVFhsJGfBIDJyV4oiP4slBncE/tCWTP0GhT1Cg/i/M0H5vaEaAev6oTLN1lcwdbYsh8NENPfQj8r8jfuwXaCFJvZKG6KWvfI9ZmVIgtRFoyTX7FQpDEcqcfIcwq3Bd0Ux1Wui/HWd6QYDYmdMats+ifVvyAVt6S9oMk1o/HGTChIAeOWvSroZP7oZx1rW77bNiqJ++uUEoY1uLJwSUAL2z+8noMnXQJJw656jA9n3E1ayzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794463608; c=relaxed/relaxed;
-	bh=ISTKPlrhU90UkBMn1+nIifs9OVjpnasWZN/BkeSsoco=;
-	h=Message-ID:Date:MIME-Version:To:From:Cc:Subject:Content-Type; b=Td3+QFxfJWDuz2KDR4vs2dFJ7UYn2fyA4gikOYPUTDmUBz2VFgPmrvXy5IGSc2H+3PLt3Ratv5SaDMJZYnbwiNPSgr4zMwBw/3Oxay/5HlFMbh4yf+IOwP3yz6DrQQXOEz2OHWXYFRko+DDa+wCKD/lQnLlgGHUy3zF5XFxC/GR/qNwK0v2lugSwprNU3RyNO8pYgKu6J9+v4gwxrlH4u9utatu1rBCS0V2uKsxffgphdLVj+hcd58FW3CPdKOFx0aS/0xS7rkxAn2kMSctmolSFnyR4TrXjseJOO6mtPcdsGRhDQKQIaSv281r8s5pOMIqq8lJ2gbwhAuSsYbSyUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n/GkPa/t; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794464814; c=relaxed/relaxed;
+	bh=FzuBWSCpGeQukn6FXOSBWpNu0IM30YG8f/xbcMJEj9M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fxwCBq17ZTgcDKyzE+G08OzMzzB9LR5aTSzIrRTpQ0o2pxTLxs2evah6az2uSr7TAuLPrvWNPU6w8HMewY2lpyJzmd7Et21lif2AyusIcK12pmfn9lXBIVZJkxe0sc5ijlI5lpglJKGG1+KEs2qL+ZVCHXw0Fup26KiniZPOe7u6QoTw0jetkrYoCRXoDh4Ah/shOK8rmzaaQPVivmb7JXr+Y3tgawn0oclNirYi0o+ivzmOF2ic505Ped+bOTcVBt/6j4gfNpLFdKmfqUzo1aOIHo6nH53/W1FuqCfw2kJAN6f9VoT2bK8BwHTA3VhKtzlR/GNraYSr8xaBZJustg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xdv6OXXd; dkim-atps=neutral; spf=pass (client-ip=95.215.58.36; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n/GkPa/t;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xdv6OXXd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.36; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-36.mta1.migadu.com [95.215.58.36])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ8zW3vqNz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 17:06:47 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2iYUo3054106;
-	Thu, 12 Nov 2026 06:06:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=ISTKPlrhU90UkBMn1+nIifs9OVjp
-	nasWZN/BkeSsoco=; b=n/GkPa/trXpk/R+ADlSs+inV46MWuj/rs0M77nGq3M+s
-	tobFMRNpLAoLe4y8NO+CcTRl0ahkAhpAv3uuxHMpv7S3ktxqjsLu1jvPNILkfS2p
-	LXv9uVarE2SCWwpxjjNxE1QWNW0ahxvX/tKKOiw1WGgnmPBBr6Vkwva+QCrM2Crx
-	w8P00FdvJ1+ivDDxlD1mSCCf0wiZEUAnKZOtk26ak75MBKif5mhCQUg1JTm0cFth
-	4i7JsRj8GDO8SgoAAPMzjVukoa5URN8WylM+bHyihMzmkVwWXM7rm5EqFILpAKwj
-	riH1tN+Zt8kyXBNysccJjXIqKoG62+OoC8oeohTlcQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsug6e1nc-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 06:06:42 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2Zp7C3145807;
-	Thu, 12 Nov 2026 06:06:41 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hvd51w85s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 06:06:41 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AC66erD20120146
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Nov 2026 06:06:40 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 41F275808C;
-	Thu, 12 Nov 2026 06:06:40 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 097E05808A;
-	Thu, 12 Nov 2026 06:06:38 +0000 (GMT)
-Received: from [9.61.240.49] (unknown [9.61.240.49])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Nov 2026 06:06:37 +0000 (GMT)
-Message-ID: <9113e399-ddd0-405e-9abb-69a9785c726c@linux.ibm.com>
-Date: Thu, 12 Nov 2026 11:36:36 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ9Qf4vKMz2y8F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 17:26:48 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=YSdVHcPOxp7Mxpr75S83EeGKEHU4uT3ofCAOXt4L8qg=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794464790; v=1; x=1795069590;
+ b=xdv6OXXdejomL8Jyz21uc0ZO1TWdK2t3WFcFLwxceXm+B0C0fNYTeZ7LwgHTkmy16OJ29GNk
+ izgILyNfylss6MC2zDXOz4c+0rS0DOdEGwM0hqjnTrytoKxV3wbmWkq74DfSFK34no72/4fqXNT
+ YodGPR3YUvWpYFCabU8JqSAg=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 8df4261c904f80f8;
+	Thu, 12 Nov 2026 06:26:30 +0000
+X-Mizu-Trace-ID: 8df4261c904f80f8
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <73501214-76ff-4716-bb8e-f83fff26bfba@linux.dev>
+Date: Thu, 12 Nov 2026 14:27:55 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,209 +58,403 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Content-Language: en-GB
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Ritesh Harjani <riteshh@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>, nandinih@linux.ibm.com
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [BUG] selftests/powerpc/eeh: eeh-basic breaks the device hosting
- rootfs, ext4 goes read-only and the test harness crashes
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH v4 7/9] mm/vmalloc: undo partial mappings inside the
+ mapping functions
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
+ Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org
+References: <20261110112546.261415-1-hao.ge@linux.dev>
+ <20261110112546.261415-8-hao.ge@linux.dev>
+ <CAJuCfpFHaahsCNkXCOn8ks65yj_bPy33cOLZ5BW=rtTOuedLqw@mail.gmail.com>
+Content-Language: en-US
+From: Hao Ge <hao.ge@linux.dev>
+In-Reply-To: <CAJuCfpFHaahsCNkXCOn8ks65yj_bPy33cOLZ5BW=rtTOuedLqw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: A3_HtWYE6Ku8fQ2fUvbT0UfzBkbNWASC
-X-Authority-Analysis: v=2.4 cv=PeVqFShd c=1 sm=1 tr=0 ts=6af55772 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=x-2Afh13tHfaC_x_YBQA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: A3_HtWYE6Ku8fQ2fUvbT0UfzBkbNWASC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDAyMiBTYWx0ZWRfX0mHLmusLHpj0
- 0BsCtNMo8528XSSx6XhvnbCkP/qJ3O5UBWeLHZZsgdkJYGqUpmTzBXYk5LRFLnJsn1MttXh/8RD
- 26NA+Qm1Pk8UN9mJSKu/OLtbPJCYqJgo6c0EL9XUSivYCowtnd7Q2H3NFU7tR6WbYpsa+1li3I+
- DeIJRHyJ68SoX7L1xkXr7hTw5J5zlNMWioaOHbYI2ZfmPNqfRZUNJ+khbA2XO9t9H2EE/bHRSw0
- qS/GEVpLJMEOXMIKXS7iIOwJTN7TTSrIVuyjUMZu8t9+oi4pqeQceY5pOpEBrhKgzyin0T1aLR9
- zF3RfbjICwvc5VuCcyIU1VsKvgDVWvvwuONzkF8uH3TOAnKUh7h3LzsDSGQGfWodJnRuHJy/Zx5
- +lUYQoHFW6277PkbeZcwRlFSaPP4S3AEQmlKfErc89SVgZ3LrHJXidkrE03EBrpYSAxeLWxp6Te
- AIH8kNFmhbtpLb8RE8w==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDAyMiBTYWx0ZWRfX6ybRK3EAU94v
- 8pGPAJ4laTjYxs0lNSsz7E7c3A0oia2OGoCj25wpuVE/t4HMJCA+lMLb8qvMG5iuFTzXE8GTb1+
- K6QS7dGLcJFKQ6Wop1SNrnTvW/HJoF8=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0 suspectscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 spamscore=0 malwarescore=0 clxscore=1011 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120022
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hello!!!
+Hi Suren
 
-IBM CI has hit a failure that takes down the test harness, While running 
-the powerpc EEH selftest on a bare-metal POWER system.
+Thanks for your review.
 
-The selftest injects an error into the PCI device that hosts the root 
-filesystem. The filesystem goes read-only and the run dies.
+On 2026/11/12 09:15, Suren Baghdasaryan wrote:
+> On Tue, Nov 10, 2026 at 11:25 AM Hao Ge <hao.ge@linux.dev> wrote:
+>>
+>> The vmap entry points may install some PTEs and then fail, leaving a
+>> partial mapping behind.
+>>
+>> The callers do not agree on who cleans it up. pcpu_map_pages() and
+>> kmsan_ioremap_page_range() roll back what they mapped, while
+>> vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
+>> __vmalloc_area_node() expect a clean range from the mapping function.
+>> For them the leftovers stay mapped, and the next attempt to map the
+>> same range trips the WARN_ON(!pte_none()) in vmap_pages_pte_range().
+>> A leftover huge pmd is even worse. During the retry, vmap_try_huge_pmd()
+>> calls pmd_free_pte_page() on it, and the x86 implementation cannot
+>> tell a leaf entry from a page table and frees the mapped page.
+>>
+>> After discussing with Suren and Ulad, we decided to put the rollback
+>> into the entry points of the vmap API rather than into every
+>> low-level helper. __vmap_pages_range_noflush() undoes the whole range
+>> it was asked to map when it fails, and vmap_page_range() undoes its
+>> range for the ioremap-style mappings.
+>>
+>> The rollback is __vunmap_range_noflush(), which only clears the PTEs.
+>> No TLB flush is needed, nothing has touched the mapping yet.
+>> vmap_pages_range_noflush() also drops the KMSAN metadata of the
+>> failed mapping.
+>>
+>> The undo walk skips its cond_resched() when the caller's gfp mask
+>> cannot block. __vmalloc() with GFP_ATOMIC or GFP_NOWAIT can run in
+>> atomic context, where cond_resched() cannot schedule.
+>> __vunmap_range_noflush() takes a can_resched argument for that, which
+>> the sleepable callers pass as true.
+>>
+>> Suggested-by: Uladyslau Rezki <urezki@gmail.com>
+>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>> ---
+>>  include/linux/kmsan.h |  8 ++++--
+>>  mm/kmsan/hooks.c      | 18 ++++++++-----
+>>  mm/kmsan/shadow.c     |  7 ++---
+>>  mm/vmalloc.c          | 61 +++++++++++++++++++++++++++++++++----------
+>>  mm/vmalloc.h          |  6 +++--
+>>  5 files changed, 72 insertions(+), 28 deletions(-)
+>>
+>> diff --git a/include/linux/kmsan.h b/include/linux/kmsan.h
+>> index 7da9fd506b39..0016c032d1e7 100644
+>> --- a/include/linux/kmsan.h
+>> +++ b/include/linux/kmsan.h
+>> @@ -150,11 +150,14 @@ int __must_check kmsan_vmap_pages_range_noflush(unsigned long start,
+>>   * kmsan_vunmap_kernel_range_noflush() - Notify KMSAN about a vunmap.
+>>   * @start: start of vunmapped range.
+>>   * @end:   end of vunmapped range.
+>> + * @can_resched: whether the unmap walk may call cond_resched(); pass
+>> + * false from atomic context.
+>>   *
+>>   * KMSAN unmaps the contiguous metadata ranges created by
+>>   * kmsan_map_kernel_range_noflush().
+>>   */
+>> -void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end);
+>> +void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end,
+>> +                               bool can_resched);
+>>
+>>  /**
+>>   * kmsan_ioremap_page_range() - Notify KMSAN about a ioremap_page_range() call.
+>> @@ -355,7 +358,8 @@ static inline int __must_check kmsan_vmap_pages_range_noflush(
+>>  }
+>>
+>>  static inline void kmsan_vunmap_range_noflush(unsigned long start,
+>> -                                             unsigned long end)
+>> +                                             unsigned long end,
+>> +                                             bool can_resched)
+>>  {
+>>  }
+>>
+>> diff --git a/mm/kmsan/hooks.c b/mm/kmsan/hooks.c
+>> index 107f66841274..0cd1edaa1120 100644
+>> --- a/mm/kmsan/hooks.c
+>> +++ b/mm/kmsan/hooks.c
+>> @@ -136,13 +136,16 @@ static unsigned long vmalloc_origin(unsigned long addr)
+>>                                                  KMSAN_META_ORIGIN);
+>>  }
+>>
+>> -void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end)
+>> +void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end,
+>> +                               bool can_resched)
+>>  {
+>>         if (!kmsan_enabled)
+>>                 return;
+>>
+>> -       __vunmap_range_noflush(vmalloc_shadow(start), vmalloc_shadow(end));
+>> -       __vunmap_range_noflush(vmalloc_origin(start), vmalloc_origin(end));
+>> +       __vunmap_range_noflush(vmalloc_shadow(start), vmalloc_shadow(end),
+>> +                              can_resched);
+>> +       __vunmap_range_noflush(vmalloc_origin(start), vmalloc_origin(end),
+>> +                              can_resched);
+>>         flush_cache_vmap(vmalloc_shadow(start), vmalloc_shadow(end));
+>>         flush_cache_vmap(vmalloc_origin(start), vmalloc_origin(end));
+>>  }
+>> @@ -171,8 +174,9 @@ static void kmsan_iounmap_pages(unsigned long start, unsigned long end)
+>>                 if (origin)
+>>                         __free_pages(origin, KMSAN_IOREMAP_META_ORDER);
+>>         }
+>> -       __vunmap_range_noflush(shadow_start, shadow_end);
+>> -       __vunmap_range_noflush(origin_start, origin_end);
+>> +       /* ioremap metadata mappings are always GFP_KERNEL, so resched is safe. */
+>> +       __vunmap_range_noflush(shadow_start, shadow_end, true);
+>> +       __vunmap_range_noflush(origin_start, origin_end, true);
+>>         flush_tlb_kernel_range(shadow_start, shadow_end);
+>>         flush_tlb_kernel_range(origin_start, origin_end);
+>>  }
+>> @@ -207,7 +211,7 @@ int kmsan_ioremap_page_range(unsigned long start, unsigned long end,
+>>                 mapped = __vmap_pages_range_noflush(
+>>                         vmalloc_shadow(start + off),
+>>                         vmalloc_shadow(start + off + PAGE_SIZE), prot, &shadow,
+>> -                       PAGE_SHIFT);
+>> +                       PAGE_SHIFT, gfp_mask);
+>>                 if (mapped) {
+>>                         err = mapped;
+>>                         goto ret;
+>> @@ -217,7 +221,7 @@ int kmsan_ioremap_page_range(unsigned long start, unsigned long end,
+>>                 mapped = __vmap_pages_range_noflush(
+>>                         vmalloc_origin(start + off),
+>>                         vmalloc_origin(start + off + PAGE_SIZE), prot, &origin,
+>> -                       PAGE_SHIFT);
+>> +                       PAGE_SHIFT, gfp_mask);
+>>                 if (mapped) {
+>>                         err = mapped;
+>>                         goto ret;
+>> diff --git a/mm/kmsan/shadow.c b/mm/kmsan/shadow.c
+>> index 2166086d3dc3..452760a333e4 100644
+>> --- a/mm/kmsan/shadow.c
+>> +++ b/mm/kmsan/shadow.c
+>> @@ -247,7 +247,7 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
+>>         origin_end = vmalloc_meta((void *)end, KMSAN_META_ORIGIN);
+>>         kmsan_enter_runtime();
+>>         mapped = __vmap_pages_range_noflush(shadow_start, shadow_end, prot,
+>> -                                           s_pages, page_shift);
+>> +                                           s_pages, page_shift, gfp_mask);
+>>         kmsan_leave_runtime();
+>>         if (mapped) {
+>>                 err = mapped;
+>> @@ -255,12 +255,13 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
+>>         }
+>>         kmsan_enter_runtime();
+>>         mapped = __vmap_pages_range_noflush(origin_start, origin_end, prot,
+>> -                                           o_pages, page_shift);
+>> +                                           o_pages, page_shift, gfp_mask);
+>>         kmsan_leave_runtime();
+>>         if (mapped) {
+>>                 /* Undo the shadow mapping set up above. */
+>>                 kmsan_enter_runtime();
+>> -               __vunmap_range_noflush(shadow_start, shadow_end);
+>> +               __vunmap_range_noflush(shadow_start, shadow_end,
+>> +                                      gfpflags_allow_blocking(gfp_mask));
+>>                 kmsan_leave_runtime();
+>>                 err = mapped;
+>>                 goto ret;
+>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>> index 3f98056f8c7e..d1986f68eab4 100644
+>> --- a/mm/vmalloc.c
+>> +++ b/mm/vmalloc.c
+>> @@ -372,8 +372,12 @@ int vmap_page_range(unsigned long addr, unsigned long end,
+>>         if (!err)
+>>                 err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
+>>                                                ioremap_max_page_shift);
+>> -       if (!err)
+>> +       if (err) {
+>> +               /* Callers are ioremap and arch setup code, always sleepable. */
+>> +               __vunmap_range_noflush(addr, end, true);
+>> +       } else {
+>>                 flush_cache_vmap(addr, end);
+>> +       }
+>>
+>>         return err;
+>>  }
+>> @@ -429,7 +433,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>>  }
+>>
+>>  static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+>> -                            pgtbl_mod_mask *mask)
+>> +                            pgtbl_mod_mask *mask, bool can_resched)
+>>  {
+>>         pmd_t *pmd;
+>>         unsigned long next;
+>> @@ -451,12 +455,14 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
+>>                         continue;
+>>                 vunmap_pte_range(pmd, addr, next, mask);
+>>
+>> -               cond_resched();
+>> +               /* The undo path may run in atomic context. */
+>> +               if (can_resched)
+>> +                       cond_resched();
+>>         } while (pmd++, addr = next, addr != end);
+>>  }
+>>
+>>  static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
+>> -                            pgtbl_mod_mask *mask)
+>> +                            pgtbl_mod_mask *mask, bool can_resched)
+>>  {
+>>         pud_t *pud;
+>>         unsigned long next;
+>> @@ -476,12 +482,12 @@ static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
+>>                 }
+>>                 if (pud_none_or_clear_bad(pud))
+>>                         continue;
+>> -               vunmap_pmd_range(pud, addr, next, mask);
+>> +               vunmap_pmd_range(pud, addr, next, mask, can_resched);
+>>         } while (pud++, addr = next, addr != end);
+>>  }
+>>
+>>  static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+>> -                            pgtbl_mod_mask *mask)
+>> +                            pgtbl_mod_mask *mask, bool can_resched)
+>>  {
+>>         p4d_t *p4d;
+>>         unsigned long next;
+>> @@ -496,7 +502,7 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+>>
+>>                 if (p4d_none_or_clear_bad(p4d))
+>>                         continue;
+>> -               vunmap_pud_range(p4d, addr, next, mask);
+>> +               vunmap_pud_range(p4d, addr, next, mask, can_resched);
+>>         } while (p4d++, addr = next, addr != end);
+>>  }
+>>
+>> @@ -512,7 +518,8 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
+>>   *
+>>   * This is an internal function only. Do not use outside mm/.
+>>   */
+>> -void __vunmap_range_noflush(unsigned long start, unsigned long end)
+>> +void __vunmap_range_noflush(unsigned long start, unsigned long end,
+>> +                           bool can_resched)
+>>  {
+>>         unsigned long next;
+>>         pgd_t *pgd;
+>> @@ -529,7 +536,7 @@ void __vunmap_range_noflush(unsigned long start, unsigned long end)
+>>                         mask |= PGTBL_PGD_MODIFIED;
+>>                 if (pgd_none_or_clear_bad(pgd))
+>>                         continue;
+>> -               vunmap_p4d_range(pgd, addr, next, &mask);
+>> +               vunmap_p4d_range(pgd, addr, next, &mask, can_resched);
+>>         } while (pgd++, addr = next, addr != end);
+>>
+>>         if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
+>> @@ -538,8 +545,9 @@ void __vunmap_range_noflush(unsigned long start, unsigned long end)
+>>
+>>  void vunmap_range_noflush(unsigned long start, unsigned long end)
+>>  {
+>> -       kmsan_vunmap_range_noflush(start, end);
+>> -       __vunmap_range_noflush(start, end);
+>> +       /* The unmap paths are sleepable, keep the resched point. */
+>> +       kmsan_vunmap_range_noflush(start, end, true);
+>> +       __vunmap_range_noflush(start, end, true);
+>>  }
+>>
+>>  /**
+>> @@ -727,18 +735,32 @@ static int vmap_pages_range_noflush_walk(unsigned long addr, unsigned long end,
+>>   * The caller is responsible for calling flush_cache_vmap() after this
+>>   * function returns successfully and before the addresses are accessed.
+>>   *
+>> + * On failure the mapping is torn down before returning, so a retry
+>> + * sees a clean range. When @gfp_mask cannot block, the teardown
+>> + * skips cond_resched(), it may run in atomic context.
+>> + *
+>>   * This is an internal function only. Do not use outside mm/.
+>>   */
+>>  int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>> -               pgprot_t prot, struct page **pages, unsigned int page_shift)
+>> +               pgprot_t prot, struct page **pages, unsigned int page_shift,
+>> +               gfp_t gfp_mask)
+>>  {
+>> +       int err;
+>> +
+>>         if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
+>>                 return -EINVAL;
+>>
+>>         if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC))
+>>                 page_shift = PAGE_SHIFT;
+>>
+>> -       return vmap_pages_range_noflush_walk(addr, end, prot, pages, page_shift);
+>> +       err = vmap_pages_range_noflush_walk(addr, end, prot, pages, page_shift);
+>> +
+>> +       /* Undo the PTEs installed before the failure. */
+>> +       if (err)
+>> +               __vunmap_range_noflush(addr, end,
+>> +                                      gfpflags_allow_blocking(gfp_mask));
+> 
+> I remember we discussed this before that __vunmap_range_noflush() will
+> be unmapping the entire range between addr and end instead of the
+> range vmap_pages_range_noflush_walk() actially mapped and your reply
+> was that this keeps things simple and avoids adding extra code in the
+> common path when we do not fail. This was bothering me, so I looked a
+> bit deeper and I think there is an issue with this approach.
+> vmap_pages_pte_range() fails with -EBUSY if it encounters an already
+> installed PTE. So, if this happens, we immediately bail out of mapping
+> the range and will be unmapping the entire range, including these
+> existing PTEs. I don't think that's ok.
+>
 
-[ 1112.079091] EEH: Frozen PHB#3-PE#1fd detected
-[ 1112.079905] aacraid 0003:01:00.0: aacraid: PCI error detected 2
-[ 1112.140830] I/O error, dev sdb, sector 3906906472 op 0x1:(WRITE) ...
-[ 1112.140957] Aborting journal on device sdb2-8.
-[ 1112.140977] EXT4-fs error (device sdb2) in ext4_dirty_inode:7656: IO 
-failure
-[ 1112.176664] EXT4-fs error (device sdb2): ext4_journal_check_start:98: 
-... Detected aborted journal
-[ 1187.736385] aacraid 0003:01:00.0: aacraid: PCI error - slot reset
-[ 1217.244306] EXT4-fs (sdb2): Remounting filesystem read-only
-[ 1220.583495] aacraid 0003:01:00.0: aacraid: PCI error - resume
-
-We need to make appropriate changes to selftest, so that it skips the 
-adapter, if rootfs is hosted on it.
+You were right, I did not really think the -EBUSY case through.
+when the walk trips over a PTE that is already there, everything
+from that point on is somebody else's mapping, and the undo as
+it stood would clear it. sorry for this.
 
 
-SetUp:
+> A fix might be quite simple. vmap_pages_range_noflush_walk() already
+> counts how many pages we processed in nr variable. If we propagate
+> that one level up then we could unmap only the range we actually
+> mapped.
 
-System: IBM 9006-22C (POWER9), PowerNV, bare metal
-Firmware: skiboot-v6.8-45-g8246de863
-Kernel: 7.4.0-rc2+, upstream master at 067c5c24cef2 ("Merge tag 
-'page_alloc-for-7.4-rc2'", 2026-11-10)
+Right, thank you very much for helping sort this out. This makes
+it a lot clearer.
 
+Thanks
+Best Regards
+Hao
 
-Issue1: Selftest should skip the adapter that host the rootfs
-
-eeh_can_break() already skips ahci, for similar reason, but has no check 
-for a device that backs /. A friendly LLM has suggested
-
-below change, which I tested and it works.
-
-0003:01:00.0, Skipped: hosts the root filesystem
-
-Other adapters are tested as before and the run completes
-
-diff --git a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh 
-b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-index 70daa3925dcb..f9db1f9be05a 100644
---- a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-+++ b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-@@ -62,6 +62,42 @@ eeh_test_prep() {
-      echo 5000 > /sys/kernel/debug/powerpc/eeh_max_freezes
-  }
-
-+# Print the resolved sysfs path of a block device followed by the paths of
-+# every device stacked underneath it (dm, md, etc).
-+eeh_blk_sysfs_paths() {
-+    local sys="$1"
-+    local s
-+
-+    realpath "$sys"
-+    for s in "$sys"/slaves/* ; do
-+        if [ -e "$s" ] ; then
-+            eeh_blk_sysfs_paths "$s"
-+        fi
-+    done
-+}
-+
-+# Succeeds if the root filesystem lives on a disk behind any function 
-of the
-+# slot containing the given PCI device.
-+eeh_hosts_rootfs() {
-+    local slot="${1%.*}"
-+    local majmin src sys
-+
-+    # Use the last "/" entry so an initramfs rootfs entry is ignored.
-+    majmin="$(awk '$5 == "/" { mm = $3 } END { print mm }' 
-/proc/self/mountinfo)"
-+    src="$(awk '$5 == "/" { for (i = 6; i < NF; i++) if ($i == "-") s = 
-$(i + 2) } END { print s }' /proc/self/mountinfo)"
-+
-+    if [ -e "/sys/dev/block/$majmin" ] ; then
-+        sys="/sys/dev/block/$majmin"
-+    elif [ -b "$src" ] ; then
-+        # e.g. btrfs reports an anonymous major:minor
-+        sys="/sys/class/block/$(basename "$(realpath "$src")")"
-+    else
-+        return 1
-+    fi
-+
-+    eeh_blk_sysfs_paths "$sys" 2>/dev/null | grep -q "/${slot}\.[0-7]/"
-+}
-+
-  eeh_can_break() {
-      # skip bridges since we can't recover them (yet...)
-      if [ -e "/sys/bus/pci/devices/$dev/pci_bus" ] ; then
-@@ -78,6 +114,14 @@ eeh_can_break() {
-          return 1;
-      fi
-
-+    # Breaking the device that hosts the root filesystem makes I/O fail
-+    # during recovery, which can abort the journal and leave / read-only
-+    # (and kill the test harness). Leave it alone.
-+    if eeh_hosts_rootfs "$1" ; then
-+        log "$1, Skipped: hosts the root filesystem"
-+        return 1;
-+    fi
-+
-      # Don't inject errosr into an already-frozen PE. This happens with
-      # PEs that contain multiple PCI devices (e.g. multi-function cards)
-      # and injecting new errors during the recovery process will probably
-
-
-
-Issue2: Some adapters take longer time to recover.
-
-
-Once the rootfs device was skipped, the run completed, but with the 
-default 60 s wait three adapters were reported as Failed to recover!,
-and the summary was 3 devices failed to recover (6 tested). Checking the 
-PE state afterwards showed them healthy .
-I re-ran with EEH_MAX_WAIT=240, and all of them recovered:
-
-Result with the 240 s limit: 0 devices failed to recover (6 tested).
-
-BRCM/Mellonox/Intel Adapters took 78s/77s/75s respectively to recover. 
-So I think its better to increase default timeout to 120s.
-
-diff --git a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh 
-b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-index 70daa3925dcb..1f1d1c8d73bc 100644
---- a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-+++ b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-@@ -110,13 +110,13 @@ eeh_one_dev() {
-      # is a no-op.
-      echo $dev >/sys/kernel/debug/powerpc/eeh_dev_check
-
--    # Default to a 60s timeout when waiting for a device to recover. This
-+    # Default to a 120s timeout when waiting for a device to recover. This
-      # is an arbitrary default which can be overridden by setting the
-      # EEH_MAX_WAIT environmental variable when required.
-
-      # The current record holder for longest recovery time is:
--    #  "Adaptec Series 8 12G SAS/PCIe 3" at 39 seconds
--    max_wait=${EEH_MAX_WAIT:=60}
-+    #  "Broadcom / LSI SAS3008" at 78 seconds
-+    max_wait=${EEH_MAX_WAIT:=120}
-
-      for i in `seq 0 ${max_wait}` ; do
-          if pe_ok $dev ; then
-
-
-Please let me know, if the fix for the two issues are good enough, I can 
-send a formal patch.
-
-
-
-Regards,
-
-Venkat.
-
+> 
+>> +
+>> +       return err;
+>>  }
+>>
+>>  int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>> @@ -750,7 +772,18 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+>>
+>>         if (ret)
+>>                 return ret;
+>> -       return __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
+>> +
+>> +       ret = __vmap_pages_range_noflush(addr, end, prot, pages, page_shift,
+>> +                                        gfp_mask);
+>> +       /*
+>> +        * The page tables undo themselves on failure. Tear down the
+>> +        * metadata that was fully set up before the mapping failed.
+>> +        */
+>> +       if (ret)
+>> +               kmsan_vunmap_range_noflush(addr, end,
+>> +                                          gfpflags_allow_blocking(gfp_mask));
+>> +
+>> +       return ret;
+>>  }
+>>
+>>  static int __vmap_pages_range(unsigned long addr, unsigned long end,
+>> diff --git a/mm/vmalloc.h b/mm/vmalloc.h
+>> index d8372a4f65c4..9ea28845f713 100644
+>> --- a/mm/vmalloc.h
+>> +++ b/mm/vmalloc.h
+>> @@ -40,10 +40,12 @@ void clear_vm_uninitialized_flag(struct vm_struct *vm);
+>>
+>>  int __must_check __vmap_pages_range_noflush(unsigned long addr,
+>>                 unsigned long end, pgprot_t prot,
+>> -               struct page **pages, unsigned int page_shift);
+>> +               struct page **pages, unsigned int page_shift,
+>> +               gfp_t gfp_mask);
+>>
+>>  void vunmap_range_noflush(unsigned long start, unsigned long end);
+>>
+>> -void __vunmap_range_noflush(unsigned long start, unsigned long end);
+>> +void __vunmap_range_noflush(unsigned long start, unsigned long end,
+>> +                           bool can_resched);
+>>
+>>  #endif /* __MM_VMALLOC_H */
+>> --
+>> 2.25.1
+>>
 
