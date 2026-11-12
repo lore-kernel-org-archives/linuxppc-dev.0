@@ -2,93 +2,80 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EC3E606A321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 09:45:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2ADA606A323
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 10:07:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LpFQGe96
+	dkim=pass (2048-bit key, unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=CEVCSt52
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQFr81XBjz2yLY;
-	Thu, 12 Nov 2026 20:45:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1133" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794476744;
-	cv=pass; b=jjC1lY3so8eJ2qRNgRuhZu37AzIvSB+ubIKOq2xO5238AHDa0AWFpS0C9GdUTEyUh0fvcWrQzmKr0KbIoj64POBx1ou8AxjRN14KekbgK9WWx0nnEY2EHBkgqIsVFlPiemCEdkpl02q8BCwVr/z8ZspjLta4SeEzzO1+9Ln+Iz27tbUzPvS8N616Yaf8DqJhBDoRDOl1xOlMiuLNyi+XpgcfCPSMNcIxqC2wfPLCaiG84SzshH61HTS+4LMQNWFBt9wjWbCwMKLP0Z6HlmG3IUki3SJkz0vN2f8yuZ9mLbhcu8nIHEHvPpESXpTN8I+OhFvP+EAES4dufhtkB92gbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQGKC0zjWz2yLY;
+	Thu, 12 Nov 2026 21:07:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794478047;
+	cv=pass; b=dk9MFC3QknJeRzfynIy3YZysIsj3O5aMQb7pEJAQEBKqhGdCg8WgXx8jVPJZH9PN7DMFsFt1kQE6MtzgsZ8YCxhV1RusCjdsyJKVin7Sf5pJfYltv8szskusnzU+YDYMUkAZuRSslGfISV5wQ2G/X0KMnHzn7wr2JnUxgk9t8K2y1D8uKs/8YhshHJ9mbfCa/yHMkfg6DZ4Kjd6dDUVDz8x61murI+syPJqd/OQwBob6QGJhmRPHUi2477OXjTIOcl+VRfdaPDxxW6qQ7vsGHipi4ta4Io88569hiQZ/J2s1u7UGCRSBVuFE/abRVTcQy/sQ4gVK+D6vUjohzPkBnw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794476744; c=relaxed/relaxed;
-	bh=pUztPGYiaiQLwA4o+66h/TGEfoZCdk+MYBdySUZIrnk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=krJcuq7B+5jJ0qYpuo6KhN966TeKXtQFWhWNeUM6aM1DJKopA8TO7EKCwucW1WhvPKtankVqkvTh/K83HGWF9q87gzdU8W+PDkLj6R67tVs7pV6pxQkvbHoili+xltFwZehcx7NW9gtWQzhoSBaSl0b4gdZb36GNeylAffWsURYAmYfHRz8RTJfeIyNPfAJsW2u5RA7v582x8Q3GpSldKHdJZF0ABp3DPbrU0Vbyl8ii+YpUsOAtqKppynFobFa/7EReHnOPzZ/DotmPAczeThWt2TrDIgMQje1cep5rrw+6ZWguXN5mnqt3y0bpjE7EyKAtrwerHAGH9CR4p6qxVQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LpFQGe96; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=yadavgaurav386@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794478047; c=relaxed/relaxed;
+	bh=H4bAaTrCqmctSADeFqQQX+kGXr4lncxWKiQe5n9FcE4=;
+	h=From:To:Cc:Subject:Date:Message-Id:Content-Type:MIME-Version; b=PBQzcEjoZLw1CW9QLXPpRcnLNpzN9SfNRvSMcDQlVWd+3S32De777DjAmKiuvFfA91/ouEOzAHmxG3CWYsahioRiYmke3Px06eSoJ+rn2xrRfBT94RltHdUomI9+KLFLnrJMudXqV/iAOC+/DY6MJOATnfaziafNLV4DzdndErff1r4XSxIlyZLhVmaCAajlKXw6XciuXiNw/8e3Y423nKutYNposQ0Eo60ezbYAR6Fi1/74hpusdg09GSKfLBBgaVzB3UrGV0TeSN70UiWwyPwAsNJCJ8lZEnhTaLV/so71sYV/1UhUYR/+9RXoj+5ggLwsLm6EITjpunqlsRRW3w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=CEVCSt52; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=stefan.ghetu@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LpFQGe96;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=CEVCSt52;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=yadavgaurav386@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::5; helo=duzpr83cu001.outbound.protection.outlook.com; envelope-from=stefan.ghetu@nxp.com; receiver=lists.ozlabs.org)
+Received: from DUZPR83CU001.outbound.protection.outlook.com (mail-northeuropeazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQFr71ntkz2xns
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 20:45:42 +1100 (AEDT)
-Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-8b2d14968c9so44487587b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 01:45:42 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794476739; cv=none;
-        d=google.com; s=arc-20260327;
-        b=NIjM0X1siZJJKIS9urpfLs/iVeY5VxuPyyMEIeAp/YUGt/De9piU5VWJvLu1eF+6mQ
-         xu9YeCje7079ZmTaMkRNckJqiOzrPv/R6epuGnMUqmXJ34TojlXBAfHA5TAdn9lbcXl9
-         eGH+yS2M2hz3tNtCG+SUEcHAk7axw/gc5QHz2YPYCa6O7T+k7f5YvZCFsou57NDiQapy
-         2couvxmoMLS2VZ62teTZGSh+mvygD/bLRNPXkGL1SDbj88etjWuXh8q326//74h7Spna
-         b6UEo+7+FgUw5gX2AXuOiV2zos+MixiLqD+Yjgo7PESGY7LjCYE1iLAN53oK3PAyzVx1
-         3iqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=pUztPGYiaiQLwA4o+66h/TGEfoZCdk+MYBdySUZIrnk=;
-        fh=UxBCZYfS1fVXgnBO1r3VujDQLf5BxFLKCpHNk+tmshM=;
-        b=BX8Wkt5PExDcF6AFZG0lnDHJ1XpiRpkbK09T0X0jRVvCLBSnIbIC4DiWyUH8Z4f/Gw
-         OMvqDlbWaTUxV7FJtFT9LnNiXZvx7EwqGfDLwjKxtDI2TI78eUFn0y3qT418gv6VMduD
-         1KgXYHiyN1BmZPTaS3erM1unQi9nfA5GasFjI+lYr6c+f/JgRMJmG7jCAay4jSDNVrGq
-         ELm4dLoXPtkGKamwdkhGM2QtRBIRLWLq3U/v3ojvthGFX2SGYA0dkV+bxtFpSQhZVh+T
-         zKKuFcjW+a8h3SxoHnih2cN0mMPCyOPCBdJvgHLTv5t73Qk6+5lEcTZRHjOa/yY3DLN7
-         0Oqw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794476739; x=1795081539; darn=lists.ozlabs.org;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=pUztPGYiaiQLwA4o+66h/TGEfoZCdk+MYBdySUZIrnk=;
-        b=LpFQGe96otQc6lvbMv4bOjl6IqQJUkuOA5KC2RLjbbqx/W0h7v4ilOJbDbfDSfRcmn
-         ghyq5QP8ZTvDQNRtLountAnPtrXlND9KdgnDOa8f4tH1BHlbJlwqnO/79MwILlcWhqP8
-         nGBnaTrcVUMzOJxUlqEJ154C96rIrgegcDmcsXupJumWt8U/05xMtyXIo6e5hJ2sPB+F
-         yXk2OZCQkH4K5yCiZzSOpvW/0yYykt+82bVUgH4IeUpuPNmG25o2eKWyYwCEYnfMg8Ww
-         MGDVzO2svDspzzazbc04yuRjHS6gNAHXgbmrcmTF/nChCl1ZpeWZitpK5hPktFsitnCT
-         iVCQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794476739; x=1795081539;
-        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
-         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=pUztPGYiaiQLwA4o+66h/TGEfoZCdk+MYBdySUZIrnk=;
-        b=Yp2NxyDTXE1iY22nunZckhTG5soqgG3IkoMYaakuQe/qmZKoAbPAULdzlaTqwP16wd
-         ljMQI+qOLkyeuj8EVmURWjZthYUl6HKg+XiFTaHTGQK2ieH0RGeFsKdTUTtTrOjJEQkQ
-         vm4XUVhIjI92n6PPrDBlB8Nfe921ubEjk9vVfuoytqRajumzs+ceN9WTEP6SAbGop8vd
-         Rvth4ZE0T2e1fm72j1qAMkvThZsAmH4hPpLV39u0uYfrb1hcd9oPNXRR4mIkj17A8aAt
-         Bh2ko28mqbpb77XRlKfEUIfbq/5a4G8Za5OjgMHH+l8JkeaDpDgSIH8ZXKEFVcx1BAT6
-         542Q==
-X-Forwarded-Encrypted: i=1; AL+hErHYX+RkPftJiO0byNEojBCVsu8ob5CAVdEgMwZKBhNBW2spVOICtviL3zRb/T+sW31yEY8ra9TomPYFWIM=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+6RzrTtvhXQSF00AP+aVa1mEj1HL5Wm2dcPymtjVNSXCHrGeQm
-	JJMDQ8gTbUEyRHPCiPmgbjfD860nPbZb736L60+9mYTw9X+5Lr3zdzgK94O0VClNV1ALopqsBJQ
-	JLGA/JjtA963fc7X+ejoqzGUrOUSKZRg=
-X-Gm-Gg: AYBFou06f1vnIoMuhJ6Gty7V14s6zAbB9cSLbKdyfT//QuUOSSqylsBEO7XrTQghWlC
-	Lg4my6yKTSOAWDfcipgbvqLCiNq4bI3jHrDkYEc6T9js2vdsu0mb5r2nU8YeApJ6lryv/ZMEj4k
-	AB6ZINuSnNTx/tMISUtGFhXoWbjTMpeYiNLk7GDGbXP3uP8UmxUGyeXxyqaAldJJTIyK3wu07wf
-	/6KsQ5VG6LrLSxFogkSgIbsGN/8h23ajGWowR9QI91TjMdLd92pxYd3prXlFOccMj/R8X3tqNrz
-	AV38gHOhRpuk15arkhlEi5hicm6KSDmZY/L9UAMeMeBdcAC2U0W5cxMnKbRDwX+jcvdjXDmpuBd
-	svMcSkW9jQSguWC5cXZY1ZHCTdz6z8y1e
-X-Received: by 2002:a05:690c:ec6:b0:8b0:97f5:a858 with SMTP id
- 00721157ae682-8b3a8160e03mr36811947b3.59.1794476739344; Thu, 12 Nov 2026
- 01:45:39 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQGK90p7Tz2y8F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 21:07:24 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=aqWbAD7nEoMXpFOO5RWD3j8ACtrf8j1SS/YPrJblLyGnswgziV0pXva58cL8rOb7XXS/z5za2dabXr/0K5DbqLEbhMsHsrINV9MTraqEKj/gZgW4Sgmj9daCabg6QgXuyydmma5nCkTH5LOAyU8Zxk1UQq8e+yUxxZiVrQbrRFaHBE0gwYeeFA3yUudCJJUsELqQdfYPyIFRxLdgeoBMtPBpN1OIzR4bSuT8wD3mCMwkTPbCFyvDNbU37HLa+9csvZqo8/MduK3H2chOivjPfN6TnwRbPV1jvcOj9lq7bRZ0kaZVy3Juaw3H2ahQz+ytonhKJ95dJ/vve2KYYzfkuA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=H4bAaTrCqmctSADeFqQQX+kGXr4lncxWKiQe5n9FcE4=;
+ b=ACcL8aUs+o2NyFA+37rq6Wr5PZE5VUPZTJ7/4ph74l/UZBPp9yVFzR9N8erWQ+pu0hngBYGNbIW+3828HxN3a3v0KyhInm87RoA/kvH7+vjXuCnKRDCiG2+dZ/6WoRS6GMD5VUwyDnxY8aFzQ4xXIFSdFQTePAOWZwYcofw+AR+Zpqz3945CZCe7qoNVsQq0ZG69yZ9kWMzBXYo2MuWydWFbCs34z03eU4kQV2Iq1wiaYqT+hEzRCX2avOQup63wi8A4TpOoeyA0zVx4NErt3ivsioizVT+L5D9+b4WHMcAbEcMfWYpJUxC54ymmhOGofeY9T1/EY3qC91YJISsEqQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=H4bAaTrCqmctSADeFqQQX+kGXr4lncxWKiQe5n9FcE4=;
+ b=CEVCSt52akwimUvq7ADgNOHRcXKt+sbxLb1oTDO8WxTWL7eD3DMaqblmQYFe1bVQKEUCQDXP5cloE0kx/2cM1MzPIr1SeAC81fkwBdOQzc0TwYFT66Z+lO4XipMMvD1fmjo9JCxHiRIBTVNP5FoARxgpZQfO0lOuMFpAe4ur53zRqCmoOIQQ6c/TT3EaH6dqj2/tx2y1gDV+6TPlls6ifM8u5Gnn88NBQVGWOpjJABlX5TFhH6EJtRLrluofmgV83wEjAnoQUeFXlHWeaVvCJ4aHXjGvZ9pFanmivLPsmRAMHJ+EaQu5rtbcgCzoF/L/bVpUoE6MxkUcjMDP25rQkw==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM6PR04MB4472.eurprd04.prod.outlook.com (2603:10a6:20b:23::20)
+ by PA4PR04MB7998.eurprd04.prod.outlook.com (2603:10a6:102:c5::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.10; Thu, 12 Nov
+ 2026 10:07:03 +0000
+Received: from AM6PR04MB4472.eurprd04.prod.outlook.com
+ ([fe80::aed9:e8b9:c352:9ba0]) by AM6PR04MB4472.eurprd04.prod.outlook.com
+ ([fe80::aed9:e8b9:c352:9ba0%6]) with mapi id 15.21.0615.007; Thu, 12 Nov 2026
+ 10:06:27 +0000
+From: Stefan Ghetu <stefan.ghetu@nxp.com>
+To: Mark Brown <broonie@kernel.org>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Daniel Baluta <daniel.baluta@nxp.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Stefan Ghetu <stefan.ghetu@nxp.com>
+Subject: [PATCH v2 0/5] ASoC: fsl_asrc/fsl_easrc: fix memory safety issues
+Date: Thu, 12 Nov 2026 12:01:00 +0200
+Message-Id: <20261112100105.123845-1-stefan.ghetu@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: AS8PR04CA0133.eurprd04.prod.outlook.com
+ (2603:10a6:20b:127::18) To AM6PR04MB4472.eurprd04.prod.outlook.com
+ (2603:10a6:20b:23::20)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,203 +89,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20260807084050.25216-1-yadavgaurav386@gmail.com>
-In-Reply-To: <20260807084050.25216-1-yadavgaurav386@gmail.com>
-From: Gaurav Yadav <yadavgaurav386@gmail.com>
-Date: Thu, 12 Nov 2026 15:15:28 +0530
-X-Gm-Features: AclHuK9nWzCJsx1-0BHphL5yTBFNhSLgVwDeAcnIjuucTD8j-6wr6zv__eDMy_0
-Message-ID: <CANo8LdupO8EGsYOBgrb_8bK2td_a0gHdXECSZ=Jx_amoQAW2sw@mail.gmail.com>
-Subject: Re: [PATCH] KVM: PPC: BookE: Use vcpu_err() instead of printk() in kvmppc_dump_vcpu()
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: multipart/alternative; boundary="0000000000009b3d4c0660112cc9"
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM6PR04MB4472:EE_|PA4PR04MB7998:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6763a21e-4807-4ccd-3e8e-08df40a469c8
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|23010399003|19092799006|10067099003|11063799006|260925021311599003|260925022911599003|260925021911599003|56012099006|261022105027099003|261022075727099003|261028144727099003|261026121527099003|261026140227099003|261021123027099003|261021121427099003|261102123227099003|261009223327099003|261009223027099003|261009221727099003|261009221227099003|261009220027099003|18002099003|6133799003|3023799007;
+X-Microsoft-Antispam-Message-Info:
+	G8ektGFkcl2RXMwlAMzlWEXRJs/oKQXqvhd0G3QVhDDZSH0k9W0lgUK+S4L83OSeCu8R/B5HsPifDIOekTdZU0j/e0el4g2bt2TrQF/7Ny3ChL95q6Cxjdi/uV11h0MujJ7M1VF2WP+h5tfC3f+PrxglyhebmV8dgo+RpNiCI6Z/UIEViML/nw7QG1ozSu7r3H1l8JUenmaItd+Spwn+Paaf97qw8mQt001EWSa0OhT9ckfSbwMPMd0ddt6/n8x0fxvqVRUvlMV0CwJFRt/GLQ6mYpxf8cKQsCsPeOuPgYjPHHCgyOC4wAQpcBeA1lXCLJuT2GH6by/ucm0RC5qgyxfnHq/VesqRfx1bMMsiz2VQpRloHDzYkW1lXoN9juKVMoOQ7ckUKchX7MwlBozNxB0piH1iVIUIDmdrZXppVwuguLlwgZQWYTh/zqcRnXfLLy3mUgIuhxOvr9I8gbH6iqo11Qfk714TFVYu+WJyrqK/WiCOR9p/4i3mSgjjKidJCjePKc+KhHUqzGAqsyFGNufccSKwj+u3TyoKDtllVxvmU11zc9ZHqWZJXOOQL7DkZlFY/xPVBbZUfBv3RvsAFhQlqLU+0y/7r5ToQHyDFXvtA4KHBrWfOP4DDYLcBirF
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM6PR04MB4472.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(23010399003)(19092799006)(10067099003)(11063799006)(260925021311599003)(260925022911599003)(260925021911599003)(56012099006)(261022105027099003)(261022075727099003)(261028144727099003)(261026121527099003)(261026140227099003)(261021123027099003)(261021121427099003)(261102123227099003)(261009223327099003)(261009223027099003)(261009221727099003)(261009221227099003)(261009220027099003)(18002099003)(6133799003)(3023799007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?IGphgyIYDe1o7/i/+86hEfYUIIU8L6VmfIlmSPLyanA3cGzLFMU8zKW9NNgg?=
+ =?us-ascii?Q?gW/1nYXbAyiODZlAu1n5LGUv3V5qrp2zrzbKnCLz4Y0b84Y4jne6QIuRLvVA?=
+ =?us-ascii?Q?pshYMGvDaeQKpleRsFiEVRSDKz/YEqfXMU1zcE+QWzi46AxtuTf46UM0px69?=
+ =?us-ascii?Q?2rz+hY3R45N+8NIY5uclcYf2RBU+ZVjHHd5IXKSO4hBaJhXcd0OPUwN+efWY?=
+ =?us-ascii?Q?zeStef1K62DcwXVhzRjxmzJ4cbRzTOlASWsYBaoIPtPcoSz8XFG3+qZaLKgL?=
+ =?us-ascii?Q?YK4f1aeS71JiDwF0vDrM4xqVce75b23ijbasayDlvZ46qMKOyPmuj3UvFthd?=
+ =?us-ascii?Q?icUjmW+v6yiZZnNR7VTyNHIHjoEgPAZ4S7fD73VkXQrZR35LpW5FZIGKLZm/?=
+ =?us-ascii?Q?tos7pF2P47b+OITTTX7UnldUoMiTS/Pwj0D96dJn2jUxw8d523Ms6sgvOq07?=
+ =?us-ascii?Q?FxVjPFpHO+n94y3mon1wDrTTQncCj8ExaC8eQo/WAaGSVXpYfd8DVeBeTtGz?=
+ =?us-ascii?Q?rkh8P4N3Lvq6Uyv0n+vMbOjIu43J/S8OldKB3LH4fnHrFNpWk4LxBT2Dms3B?=
+ =?us-ascii?Q?PbsYxNVGQuVTPQ81pm6qf5pwj0oYEXtbvGpJLD9dmjMnjhCrL7esQmNCdDgW?=
+ =?us-ascii?Q?sB0B41S5GxkMoFJqo3ymnjrno58TJoAhl8r2JniDq/oJyGiaUMHWFCS/jF3n?=
+ =?us-ascii?Q?KDbBGyB5QQnug+1sJJKQjLDDs5ZX+gkIauUWqRmseW7q8y8GsL3hnSHioY2g?=
+ =?us-ascii?Q?5Xe24xYsl2oSDo7WRBuDCKvWj1Hv45MH4R6Ph8hPjJkN8IMaH9R8OCWR7/ts?=
+ =?us-ascii?Q?l+sR6JhW9xF17Rhr3aeWpd3xQER/wzFXtUumG6+R0quvauFKTpxxmDacy328?=
+ =?us-ascii?Q?bvGzgG3ByxISZLxPhCrWsPh390GEyAq6sD8u9jkdc00Lg8+2rlFPHSQrAZgc?=
+ =?us-ascii?Q?ClNr+C5NhHi6VZzhN1d2LG5yM4sdUyeXBE+qG7EWuagFvzprvx7esenbEwGk?=
+ =?us-ascii?Q?pycReadjpTfflHO4FxxHZ4sttOqMbp3wCQdoXEb9mNWo9aNTbQvyn811yD3b?=
+ =?us-ascii?Q?z5HmkT0mMPpwbsAKsZoiX2YXC+HGN+R6yc5clBm2xRz0JRPTTY9whAWMZ/1F?=
+ =?us-ascii?Q?olDgMng7taIx1aOkmk43nAl7o90BeWJeOS7n9G2ItRPfvdZ2seAn4V3kTdMH?=
+ =?us-ascii?Q?F5BFZ4Cw5b+j1ipgDy9v/HsveGMH4zM/wY9VQ4eLAvsfbx8THV/tJXyjPV3r?=
+ =?us-ascii?Q?XQoSNO7jUOL/wU/Awgcrzr0f0bs4SuF/FeeDJO6bta5xw2j9Qp+hJKq8GK88?=
+ =?us-ascii?Q?XlxrfS/Jol11nRApB8tPoyorjR8/I5L0XR+9+6TPuFMTjXwcRfASrfJOH1oh?=
+ =?us-ascii?Q?cpz9qnrCfCQ+OnAaCi8CBv/gwgC0J+QTiMJG3TScRH0vkguFlzJGzDuVUmQ1?=
+ =?us-ascii?Q?j94ZvhBFHgSgrjoXNYBx3Ql/l/gucs+t7j//kRdUVQHb4nDzVCn6JCj0fS4W?=
+ =?us-ascii?Q?A5H7BqMWqjMaPhSqyGY4mhcUZijBHveJQpsXlzAqyQq+8KfVV+I/NbqxRCmd?=
+ =?us-ascii?Q?sTNX37pROiS8UQJL2NlAhkkb7LBxzJLZgYoxLTRljjheisLW3vIxe/7L8jiA?=
+ =?us-ascii?Q?HlUHjp1Gla3m0UcjDR+ZzoyCzdbR3RKwPWBp3uaSfMuyNfw5YcrkZyBY+dag?=
+ =?us-ascii?Q?3DZSUyRVIQERSDaEyozO0A7l9piwBuujVOMTOImLIHu0bThNZLmHJ9d2aZOv?=
+ =?us-ascii?Q?eV1AWjh06g=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6763a21e-4807-4ccd-3e8e-08df40a469c8
+X-MS-Exchange-CrossTenant-AuthSource: AM6PR04MB4472.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Nov 2026 10:06:26.7617
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: w+sCYKlCzmGMI+EUey3GzNYYVta/g/NZ/35RmKawPlgSfQJTHPWDKF6mFxKzcqrGeIisMKFJg9KZwzORsI7Ndg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR04MB7998
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---0000000000009b3d4c0660112cc9
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This series fixes memory safety issues in the ASRC and EASRC drivers
+that can be triggered by a user with access to their PCM or compress
+devices:
 
-A gentle reminder: please take a look.
+1. fsl_asrc_m2m: the output FIFO drain can write past the end of the
+   output buffer.
+2. fsl_asrc: a repeated hw_params() leaves a stale asrc->pair[] entry
+   that points to freed memory after close, and hw_free() after a
+   failed hw_params() can release the pair of another stream.
+3. fsl_asrc_dma: DMA channels are leaked on a repeated hw_params(), and
+   released twice after a Back-End configuration error.
+4. fsl_easrc: the same repeated hw_params() issue for EASRC contexts.
+5. fsl_asrc_m2m: more than one task per compress stream leads to double
+   DMA channel release and a stale pair entry.
 
-On Fri, Aug 7, 2026 at 2:11=E2=80=AFPM Gaurav Yadav <yadavgaurav386@gmail.c=
-om>
-wrote:
+Patches 2 and 4 make the pair/context release ownership-checked; patch
+5 relies on them. Please apply in order.
 
-> Replace generic printk() calls in kvmppc_dump_vcpu() with vcpu_err()
-> and remove the corresponding TODO comment.
->
-> Using vcpu_err() provides vCPU-aware logging context, making it easier
-> to associate register dumps with specific vCPU instances in logs.
->
-> Signed-off-by: Gaurav Yadav <yadavgaurav386@gmail.com>
-> ---
->  arch/powerpc/kvm/booke.c | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index f3ddb24ece74..23159eb5f5af 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -86,26 +86,25 @@ const struct kvm_stats_header kvm_vcpu_stats_header =
-=3D {
->                        sizeof(kvm_vcpu_stats_desc),
->  };
->
-> -/* TODO: use vcpu_printf() */
->  void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu)
->  {
->         int i;
->
-> -       printk("pc:   %08lx msr:  %08llx\n", vcpu->arch.regs.nip,
-> -                       vcpu->arch.shared->msr);
-> -       printk("lr:   %08lx ctr:  %08lx\n", vcpu->arch.regs.link,
-> -                       vcpu->arch.regs.ctr);
-> -       printk("srr0: %08llx srr1: %08llx\n", vcpu->arch.shared->srr0,
-> -                                           vcpu->arch.shared->srr1);
-> +       vcpu_err(vcpu, "pc:   %08lx msr:  %08llx\n", vcpu->arch.regs.nip,
-> +                vcpu->arch.shared->msr);
-> +       vcpu_err(vcpu, "lr:   %08lx ctr:  %08lx\n", vcpu->arch.regs.link,
-> +                vcpu->arch.regs.ctr);
-> +       vcpu_err(vcpu, "srr0: %08llx srr1: %08llx\n",
-> vcpu->arch.shared->srr0,
-> +                vcpu->arch.shared->srr1);
->
-> -       printk("exceptions: %08lx\n", vcpu->arch.pending_exceptions);
-> +       vcpu_err(vcpu, "exceptions: %08lx\n",
-> vcpu->arch.pending_exceptions);
->
->         for (i =3D 0; i < 32; i +=3D 4) {
-> -               printk("gpr%02d: %08lx %08lx %08lx %08lx\n", i,
-> -                      kvmppc_get_gpr(vcpu, i),
-> -                      kvmppc_get_gpr(vcpu, i+1),
-> -                      kvmppc_get_gpr(vcpu, i+2),
-> -                      kvmppc_get_gpr(vcpu, i+3));
-> +               vcpu_err(vcpu, "gpr%02d: %08lx %08lx %08lx %08lx\n", i,
-> +                        kvmppc_get_gpr(vcpu, i),
-> +                        kvmppc_get_gpr(vcpu, i+1),
-> +                        kvmppc_get_gpr(vcpu, i+2),
-> +                        kvmppc_get_gpr(vcpu, i+3));
->         }
->  }
->
-> --
-> 2.54.0
->
->
+Validated on i.MX8MP (EASRC) and i.MX8QM (ASRC).
 
---=20
-With Regards
-Gaurav Yadav
-+919310150558
+Changes since v1:
+- Patch 1: drop the 8-bit output path, ASRC does not support 8-bit
+  output (Shengjiu Wang).
+- Patches 2-5: add Reviewed-by tags, no code changes.
 
---0000000000009b3d4c0660112cc9
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+v1: https://lore.kernel.org/linux-sound/20261110120743.6301-1-stefan.ghetu@nxp.com/T/
 
-<div dir=3D"ltr">A gentle reminder: please take a look.</div><br><div class=
-=3D"gmail_quote gmail_quote_container"><div dir=3D"ltr" class=3D"gmail_attr=
-">On Fri, Aug 7, 2026 at 2:11=E2=80=AFPM Gaurav Yadav &lt;<a href=3D"mailto=
-:yadavgaurav386@gmail.com">yadavgaurav386@gmail.com</a>&gt; wrote:<br></div=
-><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border=
--left:1px solid rgb(204,204,204);padding-left:1ex">Replace generic printk()=
- calls in kvmppc_dump_vcpu() with vcpu_err()<br>
-and remove the corresponding TODO comment.<br>
-<br>
-Using vcpu_err() provides vCPU-aware logging context, making it easier<br>
-to associate register dumps with specific vCPU instances in logs.<br>
-<br>
-Signed-off-by: Gaurav Yadav &lt;<a href=3D"mailto:yadavgaurav386@gmail.com"=
- target=3D"_blank">yadavgaurav386@gmail.com</a>&gt;<br>
----<br>
-=C2=A0arch/powerpc/kvm/booke.c | 25 ++++++++++++-------------<br>
-=C2=A01 file changed, 12 insertions(+), 13 deletions(-)<br>
-<br>
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c<br>
-index f3ddb24ece74..23159eb5f5af 100644<br>
---- a/arch/powerpc/kvm/booke.c<br>
-+++ b/arch/powerpc/kvm/booke.c<br>
-@@ -86,26 +86,25 @@ const struct kvm_stats_header kvm_vcpu_stats_header =3D=
- {<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0sizeof(kvm_vcpu_stats_desc),<br>
-=C2=A0};<br>
-<br>
--/* TODO: use vcpu_printf() */<br>
-=C2=A0void kvmppc_dump_vcpu(struct kvm_vcpu *vcpu)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 int i;<br>
-<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;pc:=C2=A0 =C2=A0%08lx msr:=C2=A0 %=
-08llx\n&quot;, vcpu-&gt;arch.regs.nip,<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0vcpu-&gt;arch.shared-&gt;msr);<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;lr:=C2=A0 =C2=A0%08lx ctr:=C2=A0 %=
-08lx\n&quot;, vcpu-&gt;arch.regs.link,<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0vcpu-&gt;arch.regs.ctr);<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;srr0: %08llx srr1: %08llx\n&quot;,=
- vcpu-&gt;arch.shared-&gt;srr0,<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0vcpu-&gt;arch.shared-&gt;srr1);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0vcpu_err(vcpu, &quot;pc:=C2=A0 =C2=A0%08lx msr:=
-=C2=A0 %08llx\n&quot;, vcpu-&gt;arch.regs.nip,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 vcpu-&gt;arch.shar=
-ed-&gt;msr);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0vcpu_err(vcpu, &quot;lr:=C2=A0 =C2=A0%08lx ctr:=
-=C2=A0 %08lx\n&quot;, vcpu-&gt;arch.regs.link,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 vcpu-&gt;arch.regs=
-.ctr);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0vcpu_err(vcpu, &quot;srr0: %08llx srr1: %08llx\=
-n&quot;, vcpu-&gt;arch.shared-&gt;srr0,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 vcpu-&gt;arch.shar=
-ed-&gt;srr1);<br>
-<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;exceptions: %08lx\n&quot;, vcpu-&g=
-t;arch.pending_exceptions);<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0vcpu_err(vcpu, &quot;exceptions: %08lx\n&quot;,=
- vcpu-&gt;arch.pending_exceptions);<br>
-<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 for (i =3D 0; i &lt; 32; i +=3D 4) {<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0printk(&quot;gpr%02=
-d: %08lx %08lx %08lx %08lx\n&quot;, i,<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 kvmppc_get_gpr(vcpu, i),<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 kvmppc_get_gpr(vcpu, i+1),<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 kvmppc_get_gpr(vcpu, i+2),<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 kvmppc_get_gpr(vcpu, i+3));<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0vcpu_err(vcpu, &quo=
-t;gpr%02d: %08lx %08lx %08lx %08lx\n&quot;, i,<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 kvmppc_get_gpr(vcpu, i),<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 kvmppc_get_gpr(vcpu, i+1),<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 kvmppc_get_gpr(vcpu, i+2),<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 kvmppc_get_gpr(vcpu, i+3));<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
-=C2=A0}<br>
-<br>
--- <br>
-2.54.0<br>
-<br>
-</blockquote></div><div><br clear=3D"all"></div><br><span class=3D"gmail_si=
-gnature_prefix">-- </span><br><div dir=3D"ltr" class=3D"gmail_signature"><d=
-iv dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr"><font size=3D"2"=
->With Regards</font><div><font size=3D"2">Gaurav Yadav</font></div><div><fo=
-nt size=3D"2">+919310150558</font></div></div></div></div></div></div></div=
->
+Stefan Ghetu (5):
+  ASoC: fsl_asrc_m2m: fix out-of-bounds write when draining the output
+    FIFO
+  ASoC: fsl_asrc: fix pair ownership on repeated or failed hw_params
+  ASoC: fsl_asrc_dma: release DMA channels on repeated hw_params
+  ASoC: fsl_easrc: fix context ownership on repeated hw_params
+  ASoC: fsl_asrc_m2m: allow only one task at a time per stream
 
---0000000000009b3d4c0660112cc9--
+ sound/soc/fsl/fsl_asrc.c     | 22 ++++++++++++++++++++++
+ sound/soc/fsl/fsl_asrc_dma.c | 27 ++++++++++++++++++---------
+ sound/soc/fsl/fsl_asrc_m2m.c | 30 +++++++++++++++++++-----------
+ sound/soc/fsl/fsl_easrc.c    | 10 ++++++++++
+ 4 files changed, 69 insertions(+), 20 deletions(-)
+
+
+base-commit: b810335a0699d1810683796b0e3ffe8827ddfe6c
+-- 
+2.34.1
+
 
