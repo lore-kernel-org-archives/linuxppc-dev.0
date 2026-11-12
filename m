@@ -2,94 +2,94 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7182B606A336
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 09:08:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3B7C5606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 09:09:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QEiWDMXa
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yBZfs6mR
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQF146GrGz2yKn;
-	Thu, 12 Nov 2026 20:08:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::431" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794474504;
-	cv=pass; b=EOLp6pee2PpXbzrqyG5xd8Mo/v8bcrraBk8v6vLJNlPMlQqJvfwRCRzB0VDZiQJgaMDQD8QRza/jN7X3ZbMYFYkNehuU02iDhM2+SUxlVzrUGXdX24WZD2qy+kpDxV6WPwwNOypI93y05lIUP2QbEMpeeyShd8QCEbBo1Q+pexeFWtBm87hZULiAtW9qUSOvbvK1msUwxkTwggifm9eTGsDy7koLLx77NPXAqp5wIyiBGNeld27OrSQ3Aijb5/B9q+aBfQlrHFdh2rQybHAj4UOpohJ7nWOWsAQO31BO831L2xzcZ0HbZocuz5Cz5TfbqEvxYnfJSuV0bPtcHaLmKQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQF1p73Qtz2yLY;
+	Thu, 12 Nov 2026 20:09:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::42c" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794474542;
+	cv=pass; b=O7aX01Ivm25BBCI0KqKuKKS7AM4axzzW2wwYjJXdfSN1U52GjKR4ABy9xXbclLw/eV2UBuoxXar2a4LHAZ8luYo701fIuq/+eWgAs3ncYpTT7rC9PaXt61E30Rcj+pjm4L57uWtFIxQoBDz71sLZYrzOUgNMxjH56jdjiLeLtR9HK9G9wD9HpQIiq77Le/Z3z66BhyEu5sIh/OpSye8xkb7DNB4MLozake0rrna++5o4sKrjQRphAaMPbD6EahQgDJY/lFWrh8c+16pj/TUVRFbmiidwuZjFhXvPD7JMKTlDHF6s7oqL3r9h7ZSBjMqOw3P2xpsXPL8xdL9KVgnDwQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794474504; c=relaxed/relaxed;
-	bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
+	t=1794474542; c=relaxed/relaxed;
+	bh=eRXv+o3xd/LwrjX3vtstrFSK4BcwlWxEyWog/B0Pb2A=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VzheAZiG3oe5sXvZykuTkpqQVih05VtfW/rPpnqnNQWHK2u5vr1/aVIhxIUGMFw7ptnzV0AKsNr1jUfkcNcaF9YGzKx/cSJvvRX0hUhvZNTP/99zwCQs4BqZEcxFAxkiQ/8Shai1It9lqUQkoqCdImbTL7n+Xvs+5Y91/AhAZq3Jl1yaHAdJWT84xbI3R9GRhgPPKq5Ob7J6w9vOhCVjBv8+eVw54/X+CKy25h60hlAgZRDbdOAVeScOxz47a5eVGj5e2YmDiz9Ud+l4AJ/xi/W9I81er+nF3vf/AjlC2P04VawonmA9qfvXywZ2P3oh9GF7zqV37XBOVY0L4DFa4Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QEiWDMXa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=g3SUikbOfh4+wQf0/iQ5BZG2nyC0Aa8C5C+zeEueqaCOAS6mTKKjb8YNp6CK0DePqt7RtZVrAk9Gcd3Iz/ltZNlte8x5Is9zbozmnGXEex2PiWXVp8hR0G5zVhjHq0V2ZTNkPBPwekraRSWno1S4Qm+MX95BlAkHN72ItvhRXgp0whWLirPZ1/LI+J05zndeKw9d4Kk22/KzlFx0mOlde6iehc3+Z0xt92nU1bS34F2uey4Emyn1ZEfEn/ySpgcz35amoYWwfhyEIN57x5hX3JIxC23930KVbg2vbGUiWmrgxkHaW7MFYZIDJj2dUEUO36jPlmWmqKKLqP/S1MlRZQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yBZfs6mR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QEiWDMXa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yBZfs6mR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQF130xVXz2xwP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 20:08:22 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-8a39e5161c1so3005468b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 01:08:22 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794474499; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQF1p1wfDz2yKn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 20:09:02 +1100 (AEDT)
+Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-8a06e79e152so2260180b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 01:09:02 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794474540; cv=none;
         d=google.com; s=arc-20260327;
-        b=eUCTKHg+DU4sb2oyEw0TTyBN0kIIkOF5T2J33qXtiXfNjd7wsZaO8j6ypDyXMupiKk
-         d1//V55fQWKsrtOWLxdfz0VnM+66hwGwdOPPBKA2oF/DJJPB62QJRX0hmwmhhoszq2sO
-         ZNxm6zRFRvsA5Z6nR6nGiWCGHbznKmRxLQWEF6P/o8s/IQyiEEDoI58/0yNx35U2rX/y
-         EQpwv4Be9JEc7X71iIXmcwQgq+v7Yjs426UyTamxQTzyjuPYslNCAtVCd7e4wLqH1ypv
-         jOTWKucdua8MjRb1npbI2+1JqiJF+VlarKTofjkC1Iw8hbfb0UvpWG8r5yQxGpK7v2hl
-         E4ZQ==
+        b=DV690eyULqGpbT4Mfmrc6Pm5NXIlgY8w4UQ1L6W8gleHM2MacuOj/JLdtis1UaKSyS
+         rh8HMRzRDtvRidgu17LFD1zwrWV49EHii/owVezFMwbFxgc8IIbDly6ZCMk9al7geOaF
+         jIT/ve0LoPCYOBnRuvi7Bcrou3zEOoQQbkug0+/ConEUjB9Ppa5IFJdPJ48NATnbY2vy
+         SsSsdWiMmI2X1TH07Oej2P/aGKUTeWwkkJSqoiBgZgZ6KdLemyUTWc6eGE0INtggatHb
+         RGEZsjcp69bS1Io3QNcY8FD8YsTLxrNGYyA3iQb0VM4h1n/+1AcG+dAGt3y4U6LmB4GH
+         BtIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
-        fh=PxIucXtOGllolPR6MaXlxTJKy1Gq0gHOU2dwKA3NQ0I=;
-        b=sy45ywamDCGsrnEh42oqJyIn4h/APgQD2BUUPOQJhCpptuzHcZK+sahuGWx4Lt+evO
-         ACgrOuG+tWQrGmjcH7DEQqGEZvsLGpLv+sTh9uArpq8He5ho82dTZdlXDGcUDQhGCbCM
-         Y8Vci6PFOHq3zxZNpY/Y/MT6/6X56iRLWccHI9HrsJgui7cKYKBeeewVH7G18R1xMMHt
-         OjiWlF+W3/3fdGNzyFFhfUwPrf4z3x/PmJXrQG0fiv1a3fRyv7gDCNZVBFV7PmFhYwZf
-         nzA842PenzPtGMJKWXAkG+GCP3PdKX7op1FIViX4bsiyQgCd2nXvKx9pifFtv3ndOQpk
-         aQHg==;
+        bh=eRXv+o3xd/LwrjX3vtstrFSK4BcwlWxEyWog/B0Pb2A=;
+        fh=JlMW8hQ3L+/FqhiSJdL6MLlbSriejx1cccn6ySY22dg=;
+        b=AkxD4tm7MPbyAbX9n6lNJ9LDrJY3o/qZmkTRoagHCBfv4ZZ/rWT1Gd4jxmrwAzb6px
+         VOY0BLlkKb6euIyLFZDxcUldrSdMZu1rIQW44zTyfk0SZYiB8XXDaPjQg/PzIlZHKMsq
+         Q/tieCkvv7YrZxAYihGyVwVfv6awLHR7xL/i8hm7wYpY9TNnR4fnkMJTAJhWJuU4e3Gh
+         pHhhxSCWzn6y4ZY2rmkamh63uJg0ZTxrMdLyZEk9lOz7Uo8lDRcn9tvkel8lzsG8iWwT
+         ICi476UpwymyNxOztk91gdLIePqwYNEqJV1UgD/o7YRVvwKWBYkKg0RMQpATcjM3uDpH
+         sbJA==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794474499; x=1795079299; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794474540; x=1795079340; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
-        b=QEiWDMXa7tSiRrSd6elBvt2NOp4NRbSzN6jWOYEXNaQ5x8oD/Wj7SSsSbFNdgZhytC
-         C+CGEaLi4jGMNhkGiLhnj7dlp/B1KCVfTi23iT4h/EYS46CnabDliSdOkdJ4azRLJ96Y
-         gEzHBP5lX9fmFXdjp9kPvoAxAwCABMOu/c1CfYNLMct4MBQqX8d98FFkFi12YUcW0+SK
-         2z17xXshKrRaVXK3Fj/ib+fvXcxKOi7xTsoePGnFfuuLG2RfOwS8WjZPrWaChyd+Z8GN
-         ykj1KWuG6f3F0bVQBy9pRwDlkw6TcTsTSWxiBJnGUoYC4OXeBJY61Nx9r+cjpMOqQau9
-         FG2Q==
+        bh=eRXv+o3xd/LwrjX3vtstrFSK4BcwlWxEyWog/B0Pb2A=;
+        b=yBZfs6mRdN4RTLkUAfTAhPNiLek2y3TrjJj03d9Xvr8GQllRAnAymxhjkSbCsQbsUp
+         cyMDxRfmh/Izdulka6keqM5o0dQ7AaanLAn/SQSF9eRVWmrlGpKNlYwF8l3bHwUwV3Vq
+         cCbUzoDzhA69dFpIfuAP6Y0Nl0Inegn8E53ZwFhgCiNseuXSN0IaguCj6C+GaEFOd7Oy
+         nAwSl+LITXhwdMglItHQNtsUp3JyOdZ55cqf4ao19sbqwpS0AJ6l8KSexN1xwd0CsbEc
+         5mEQ22Y4hP+W9n8qt3Epn6OsY74tMIduYN6PiwA3VYGOtI4BZh7zQth4nlWAREzLqrGu
+         9tLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794474499; x=1795079299;
+        d=1e100.net; s=20260707; t=1794474540; x=1795079340;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
-        b=YNHzF1D+oykgLvAAFV6dVjlcQ0FnuVU9rvVAZA+22flg3BoS1E1NrCJjZbKjd8MjdT
-         SANAecLo/62gaXqch/HZZAyLAxXOVblFAvdqKPdeLCf2vW2BEbeEo4H6lCR8hKvtcMT4
-         fyRwmtKTBkW2PfkVZmr8YSqHAxefOm5WBNqFMJQldP6nXWfEUEljnkmtzwCTCvc4ikJl
-         uYAjVlm58ZvTCsb2vVz8AAghhWJaozsFd7Sn49xktxdJLx3oFFzUySnp5q86O8yMJ15G
-         X+O0KEVD0v6Kr1zaDAqVZES6QBaLqBz4lELJ+5H3CH2BFol4Sceh+xIV0W16wzyyC98Z
-         qbJg==
-X-Forwarded-Encrypted: i=1; AL+hErH/csS5ruCiNbcIF7qcTkMuuZ6ZQR1eqhd1vsO0sZvW4CrFA0rUQTDvdSU0yt0IMOA6H24IGn3cDZF+J5I=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9QeHpVJBpWUn3CdBJLPSTYYWymz6pLO63MEi6+Y7YNOkkQ4hSw
-	MZ0YQgLAC/Nk70zEgjns2SyUBXSeeGVE1EoPou1PsIXLecsPblhSwsfMOQdU8Dlw6fLc2jWgNzo
-	S/DDz6Kdj2k6aa2kILX6sv8iQEH1oSdM=
-X-Gm-Gg: AYBFou1GzuRwOP7Z1tObnGFKPALRAHYq3uWTUTr8HvjKTM5sKutdtrhu6Fh06OZ8F8v
-	G13t6nboMs7n23SEbwnbP9KMYd8+od9QwKd0/qTtLX764/2chEcsTtL0RQey6Pwpe1GqzpyDjwf
-	pthmczRrZV8XWFiRiUjF3jurP9RCh5pUJ1B+JMiLgU6mdpnWmz5D368Y3LAqxR9zAO6/I1vl0Pz
-	VINzD85jNKkZmdHMH7J8TI8jDlF7akBcMrAd8Ycnhy+g5Yt0/eOECFg1AcH5WMoFa4nuS8uy/Rm
-	ordbcRO1wYWzdbo4PHQyMdqQo+uQdsjX+Fc2XixdfeisI8N6RKEXhGwA2aFl1nb3S2KMcUUEUHA
-	/k3DusM8K0xBaNORRCIpmDLLCTR4+q2dXyUECs3v22CrqCMQQUf08mCz5MQ==
-X-Received: by 2002:a05:6a00:982:b0:886:3827:c4a2 with SMTP id
- d2e1a72fcca58-8bc19503fc2mr5293685b3a.3.1794474499419; Thu, 12 Nov 2026
- 01:08:19 -0800 (PST)
+        bh=eRXv+o3xd/LwrjX3vtstrFSK4BcwlWxEyWog/B0Pb2A=;
+        b=mn4Eby0298AK3rzhqDEevpIwH0/NN9b0ZzXJtg3O46obP9BZLPs1/v8Ga3itBET5CQ
+         /u6Lsply1Wg3v73d0AcblqxcsEv3wcg16xrKJ/scPrFiCjrrXTHCQUB3rA+iel2CtscX
+         p/CNJ345noNBgUzkejXEYp82iiPkpRmJ+XHc2+2oTJ9X4s4aZqxjc1oC2X/jlthuPizV
+         cyztMQ32bOznTp87wL4CGum6rOoc/Vd2Q7RdhqoTZPkReSw90sazN4JbKHIjS+sigy/D
+         BrvM4URDP3iYm7b3bmsl6XP0/QLwxU37t63dcq3i/kgqa5Uv7Fr7+JNKrh8MIJifDcZP
+         KFrw==
+X-Forwarded-Encrypted: i=1; AL+hErGfL8SEcFOliLcSfz4zVRYRWaj1ezm299vbYKFQ00c637nHe0/HfqEz+WYJ4q/F0yhPgJ9x99PVPx2ylHU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/mAIznIAaZkgzAv9hnhv9mcPoPtdcDg5c9jdrH2yR0lP6JOyIN
+	9Fr+Fp+NxRn6XxR8eEXu7yr9E4k4B9myzIBMoX/4uWUeResW/OCu86DL9VF+ukE7wCTR8OQ0AGj
+	xNWk5VUnD+ydzLmbSSQHxDTGbeemVijc=
+X-Gm-Gg: AYBFou2082LwI0pjGBaYUlEKC/RN4NZxHGBby+XKP3za6Cdjlr+xA3MngqRXcoBoMPi
+	AStCwLdV4pWmEN4F5jstWH0REnVfvyj1ukYwjmdbCaEWsQYq4LkPaZHz1v58DLs9vqQZbH6OsQF
+	Mlg9lpsigfsd1rImEOZ31Ng10I+egepZ6+jYw0v01XF3Iu/lqMPtbuprEEjGeVD4gKELz3nfa/h
+	UCl8Z4cF4r4y5LBRqQUzqoxLEZQi+xf587Pd6lDH89T0YTQ45xlotaJ0C5lfzSJAszOi+qYp0LM
+	8YgoIqlunhImcJeFkuvSBA1xY8gLm+uMktWJYrGYezP3rOJ36A91C+iIi/wVnO4BvY+1wuUTZFC
+	Sn+3CAUsSWfGbbEBAi/f9FfXCFQfd2KgcNv+H
+X-Received: by 2002:a17:90b:1c0b:b0:3ac:9599:a689 with SMTP id
+ 98e67ed59e1d1-3b182f235d9mr3994012a91.34.1794474539722; Thu, 12 Nov 2026
+ 01:08:59 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,13 +103,13 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261110120743.6301-1-stefan.ghetu@nxp.com> <20261110120743.6301-3-stefan.ghetu@nxp.com>
-In-Reply-To: <20261110120743.6301-3-stefan.ghetu@nxp.com>
+References: <20261110120743.6301-1-stefan.ghetu@nxp.com> <20261110120743.6301-4-stefan.ghetu@nxp.com>
+In-Reply-To: <20261110120743.6301-4-stefan.ghetu@nxp.com>
 From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Thu, 12 Nov 2026 17:08:03 +0800
-X-Gm-Features: AclHuK8OFan-61VHpWDbQwD5GQhW_fgRO4OvBxXWkrMrWUfYeFa8VUbGfv5vQOs
-Message-ID: <CAA+D8ANdJCkf1i7MUJVh7z7tk3Ka6gWZ0ynMys_Qt70ZfaN0=g@mail.gmail.com>
-Subject: Re: [PATCH 2/5] ASoC: fsl_asrc: fix pair ownership on repeated or failed
+Date: Thu, 12 Nov 2026 17:08:44 +0800
+X-Gm-Features: AclHuK-xo5sqQ1bv9bDSXOSJ-L9KATXVxPodrhMZvWrhDua3HJ3hpSCY1aITLMY
+Message-ID: <CAA+D8AMqXdSK98qrsecZBk7_=ZVX91PjqejyN-xD0R6b-cqAqQ@mail.gmail.com>
+Subject: Re: [PATCH 3/5] ASoC: fsl_asrc_dma: release DMA channels on repeated
 To: Stefan Ghetu <stefan.ghetu@nxp.com>
 Cc: Mark Brown <broonie@kernel.org>, linux-sound@vger.kernel.org, daniel.baluta@nxp.com, 
 	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
@@ -129,21 +129,19 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 On Tue, Nov 10, 2026 at 8:08=E2=80=AFPM Stefan Ghetu <stefan.ghetu@nxp.com>=
  wrote:
 >
-> hw_params() can be called again without hw_free() in between, and
-> hw_free() is also called after a failed hw_params().
+> fsl_asrc_dma_hw_params() requests new DMA channels on every call and
+> overwrites the previous ones, which are leaked when hw_params() is
+> called again without hw_free(). Its Back-End error path also releases a
+> channel without clearing the pointer, so the following hw_free()
+> releases it a second time.
 >
-> fsl_asrc_request_pair() always takes a new pair, so a second hw_params()
-> leaves the stream in two asrc->pair[] entries. Only one is released, and
-> after close the other points to freed memory, which is dereferenced by
-> fsl_asrc_isr() and fsl_asrc_m2m_suspend(). After a failed hw_params(),
-> fsl_asrc_release_pair() releases a stale index that may belong to
-> another running stream.
->
-> Keep the owned pair and only update its channels when it is requested
-> again, and ignore a pair the stream does not own on release.
+> Release the channels of a previous call first, and clear the pointer in
+> the error path.
 >
 > Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform =
 drivers")
+> Fixes: 36124fb19f1a ("ASoC: fsl_asrc_dma: Fix dma_chan leak when config D=
+MA channel failed")
 > Signed-off-by: Stefan Ghetu <stefan.ghetu@nxp.com>
 
 Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
@@ -151,69 +149,78 @@ Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 best regards
 shengjiu Wang
 > ---
->  sound/soc/fsl/fsl_asrc.c | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
+>  sound/soc/fsl/fsl_asrc_dma.c | 27 ++++++++++++++++++---------
+>  1 file changed, 18 insertions(+), 9 deletions(-)
 >
-> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-> index faf348dd582d..5d97789b5c36 100644
-> --- a/sound/soc/fsl/fsl_asrc.c
-> +++ b/sound/soc/fsl/fsl_asrc.c
-> @@ -216,6 +216,8 @@ static void fsl_asrc_sel_proc(int inrate, int outrate=
-,
->   * It assigns pair by the order of A->C->B because allocation of pair B,
->   * within range [ANCA, ANCA+ANCB-1], depends on the channels of pair A
->   * while pair A and pair C are comparatively independent.
-> + *
-> + * If @pair already owns a pair, it is kept and only its channels are up=
-dated.
->   */
->  static int fsl_asrc_request_pair(int channels, struct fsl_asrc_pair *pai=
+> diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
+> index b417de6abebe..5ba4bdeff019 100644
+> --- a/sound/soc/fsl/fsl_asrc_dma.c
+> +++ b/sound/soc/fsl/fsl_asrc_dma.c
+> @@ -124,6 +124,19 @@ static int fsl_asrc_dma_trigger(struct snd_soc_compo=
+nent *component,
+>         return 0;
+>  }
+>
+> +static void fsl_asrc_dma_release_chans(struct fsl_asrc_pair *pair, u8 di=
 r)
->  {
-> @@ -226,6 +228,19 @@ static int fsl_asrc_request_pair(int channels, struc=
-t fsl_asrc_pair *pair)
+> +{
+> +       if (pair->dma_chan[!dir])
+> +               dma_release_channel(pair->dma_chan[!dir]);
+> +
+> +       /* release dev_to_dev chan if we aren't reusing the Back-End one =
+*/
+> +       if (pair->dma_chan[dir] && pair->req_dma_chan)
+> +               dma_release_channel(pair->dma_chan[dir]);
+> +
+> +       pair->dma_chan[!dir] =3D NULL;
+> +       pair->dma_chan[dir] =3D NULL;
+> +}
+> +
+>  static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
+>                                   struct snd_pcm_substream *substream,
+>                                   struct snd_pcm_hw_params *params)
+> @@ -190,6 +203,9 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_comp=
+onent *component,
+>         dma_params_fe->addr =3D asrc->paddr + asrc->get_fifo_addr(!dir, i=
+ndex);
+>         dma_params_fe->maxburst =3D dma_params_be->maxburst;
 >
->         guard(spinlock_irqsave)(&asrc->lock);
+> +       /* hw_params() may be called again without hw_free() in between *=
+/
+> +       fsl_asrc_dma_release_chans(pair, dir);
+> +
+>         tmp_chan =3D asrc->get_dma_channel(pair, !dir);
+>         if (IS_ERR(tmp_chan)) {
+>                 dev_err(dev, "failed to request DMA channel\n");
+> @@ -342,6 +358,7 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_comp=
+onent *component,
+>                 dev_err(dev, "failed to config DMA channel for Back-End\n=
+");
+>                 if (pair->req_dma_chan)
+>                         dma_release_channel(pair->dma_chan[dir]);
+> +               pair->dma_chan[dir] =3D NULL;
+>                 return ret;
+>         }
 >
-> +       if (asrc->pair[pair->index] =3D=3D pair) {
-> +               if (asrc->channel_avail + pair->channels < channels) {
-> +                       dev_err(dev, "can't afford required channels: %d\=
-n", channels);
-> +                       return -EINVAL;
-> +               }
-> +
-> +               asrc->channel_avail +=3D pair->channels;
-> +               asrc->channel_avail -=3D channels;
-> +               pair->channels =3D channels;
-> +
-> +               return 0;
-> +       }
-> +
->         for (i =3D ASRC_PAIR_A; i < ASRC_PAIR_MAX_NUM; i++) {
->                 if (asrc->pair[i] !=3D NULL)
->                         continue;
-> @@ -257,12 +272,19 @@ static int fsl_asrc_request_pair(int channels, stru=
-ct fsl_asrc_pair *pair)
->   * @pair: pair to release
->   *
->   * It clears the resource from asrc and releases the occupied channels.
-> + * Nothing is done if @pair does not own a pair.
->   */
->  static void fsl_asrc_release_pair(struct fsl_asrc_pair *pair)
->  {
->         struct fsl_asrc *asrc =3D pair->asrc;
->         enum asrc_pair_index index =3D pair->index;
+> @@ -356,15 +373,7 @@ static int fsl_asrc_dma_hw_free(struct snd_soc_compo=
+nent *component,
+>         struct fsl_asrc_pair *pair =3D runtime->private_data;
+>         u8 dir =3D tx ? OUT : IN;
 >
-> +       /* Only the owner clears its entry, so it cannot change after thi=
-s check */
-> +       scoped_guard(spinlock_irqsave, &asrc->lock) {
-> +               if (asrc->pair[index] !=3D pair)
-> +                       return;
-> +       }
-> +
->         /* Make sure the pair is disabled */
->         regmap_update_bits(asrc->regmap, REG_ASRCTR,
->                            ASRCTR_ASRCEi_MASK(index), 0);
+> -       if (pair->dma_chan[!dir])
+> -               dma_release_channel(pair->dma_chan[!dir]);
+> -
+> -       /* release dev_to_dev chan if we aren't reusing the Back-End one =
+*/
+> -       if (pair->dma_chan[dir] && pair->req_dma_chan)
+> -               dma_release_channel(pair->dma_chan[dir]);
+> -
+> -       pair->dma_chan[!dir] =3D NULL;
+> -       pair->dma_chan[dir] =3D NULL;
+> +       fsl_asrc_dma_release_chans(pair, dir);
+>
+>         return 0;
+>  }
 > --
 > 2.53.0
 >
