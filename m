@@ -1,52 +1,61 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 362E9606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 22:09:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 327D4606A8BD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 23:00:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FvnwKqpc
+	dkim=pass (2048-bit key, unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=BmNjmGLE
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQZLm3TQ1z3bSn;
-	Fri, 13 Nov 2026 09:09:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794521392;
-	cv=none; b=AJpZTBgOV5YNkAcHLELw6ENgT36VlUcMUEwaWqPpwZsEfB/xbOa+CG+5H8PJXi6zxZd9K4NltyCn+aMNLdOmD4s9ZJ9ysK+ZmirHTmBh2+cE2BwVAnSfL3QXM4xy1qxbzRHqICSDFg0LvpFDqJb9LpFzBGWl46/OViRTuptEvp/+6GmpqBTaTqfetRMqWWQDrqVrUH3xlKlR5GIGKpoqUihDXSVlaAf2FgjVqZvcJxGEP+t5G9YVP8l/I2evOPdMqtKdW07r9SFWLXlfT4IhJZgUwKx7k3B2CJTRMzsJU5ahDu5u0aCm7kHVpTbW1S9qbGe4dkeeElAwz+h1j8p5vw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQbSt4hCfz2yD8;
+	Fri, 13 Nov 2026 10:00:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.97.179.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794492558;
+	cv=none; b=aaSEfvDlw2FUwVVbZT4yxo9SNtTYB8d99k/eX++EVlWg+Py97NA8sDYcuZtJILdiBjDlawA6bCc4xjkeaHQJADA+aDnne/GgPtBW7AP8ee5HDT0YI0LPXo7TAYT2Nem0lIMDucNIv+6NWdByrUDq6cJQrVNPbinirNJvm+W9kVl5eq3jT0iRplKMcX01Zgeb6GCSmJ/7X/uo8qW85iRM4QQ2alMM/bWGOCxQVC7yZwLSztvbZ9UohCIXfwglAThVCyQVn/1I+aW1gf75u8AF4vZS4nMQgyktf4XAkpcnfJ08rh1foxUQcDSOFtTHusKi4OXpCXxPpwqTKXl7Q5oyyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794521392; c=relaxed/relaxed;
-	bh=8gsRbuJEJwCTcibbrdQQs2WldoOZg99Pqbz3RTzOTVo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fXXkurSQ29RIFJVZAm4Cn2RpiYlNsy91BkD5zM1J5rKWLhejSPZKHzVJ+FvdwSZam4vbpe/TGHdSrWb/EkBHC/XyTK92O+n6eCaeA+joEZzm6rg7fOGcMZuCxFuDqgH7HuakFc6NkxW6tm2pEK9xCSeww6VETtXIYLsG2rNk95gz7Jra2w4DKpFL7Zrh1s8xODLRkxRQfOAeBYq1K9dM9jmM8d9lIAeLdSVw1ObXNCrx7Jy902ED60YUtan7uyjam6iAUQHEQ3oMHBiVDFIYqCelmqL9XlTu8LzueDUAaAT4ooHalXI+zeVJdlcW0+Ga3t1nMrpmdvKdgryEWEt3Aw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FvnwKqpc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794492558; c=relaxed/relaxed;
+	bh=4eTucFZNSL9MZwK8+YG2mr7BhDfI+QpIeohJvthNO/w=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=jPiFuyoGhDFLt4i0licbHtMODauodEYkQlotkbj79jCU6mBW3QDaAHQ78NCoV8395EOA4A/MsbnpI+nCEUcJkxjFFsTgTRdm9nR5XH2ybBBZdNGixQsfDapYw7DU3mBIoBsaX1GFGZ9qdtAr7iIR+9zj/0Y/3BMJf4n/WpTu+OLWAkiN7klQDbRmixZhDUeZFcj6uOHwXVhNfmJ0oMRR5TcyiV5K2mcslprF4jPvhm6vkdFxNGW43Pw9cPrA4QbueOsUkS8554+XVzK/BmvZidYCQH0LFZl9vC6TJpZWuWfEgnZlZF5gOk64TS7MKXJ9JBj/PdcfTmQDvy394l69fg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=igalia.com; dkim=pass (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=BmNjmGLE; dkim-atps=neutral; spf=pass (client-ip=213.97.179.56; helo=fanzine2.igalia.com; envelope-from=luis@igalia.com; receiver=lists.ozlabs.org) smtp.mailfrom=igalia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=igalia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FvnwKqpc;
+	dkim=pass (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=BmNjmGLE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=igalia.com (client-ip=213.97.179.56; helo=fanzine2.igalia.com; envelope-from=luis@igalia.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2058 seconds by postgrey-1.37 at boromir; Fri, 13 Nov 2026 01:09:16 AEDT
+Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQZLl5YrNz2xSS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 09:09:51 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 460904642C;
-	Thu, 12 Nov 2026 22:09:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 365FB1F000C7;
-	Thu, 12 Nov 2026 22:09:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794521390;
-	bh=8gsRbuJEJwCTcibbrdQQs2WldoOZg99Pqbz3RTzOTVo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=FvnwKqpcKcEmQoEVSAantOP8U3nowBSKBswXy/Vr/QSEPlk1X0ZZdZLar0FQ88wsw
-	 KDlF+Bz5dPMWSERxJ1zqJ10doktkm+0dbYjflp67dUutw1XEHjbllq+cSkwDBm6sEM
-	 0f9kE/pM1lhAY7MHRP57/G2xZA1ZMLn7vR3Q1Fy7j/f94jocRIuv8SzIKm+kDNAVIH
-	 W2AbY9cNRdpRMxwKO9wfnL7LPiHd0Lfnf+zzrN21K7bD4jjn3mVXuzvlDeqWRAuPf+
-	 rSrIP3Wf/U16flzgKesDUi9UCP67ABHRto7bKZsh6V5Nav+ALWhllSRvdH23vWJ9fK
-	 //489VV0Jz70w==
-From: "David Hildenbrand (Arm)" <david@kernel.org>
-Date: Thu, 12 Nov 2026 23:09:01 +0100
-Subject: [PATCH 5/5] mm: check permissions and bounds for vm_ops->access
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQMhD10rkz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 01:09:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
+	s=20170329; h=Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:
+	Date:Subject:Cc:To:From:From:Reply-To;
+	bh=4eTucFZNSL9MZwK8+YG2mr7BhDfI+QpIeohJvthNO/w=; t=1794492556; x=2109852556; 
+	b=BmNjmGLEn8LwqIPepxiNnEJFw/quGg1Tk4poLxUF5ozEa7oB9abTgc/8us6yy3432x4dXm7KOQK
+	wl2zSsV9d4iyWCYByRzpW1scNLQnTHaCz79FFFEm3gMlOpVqL+c2rnsPKW22l2fBbD8e73NWXLI5G
+	6S+N20Z+6D+/8tadQlTXOV6TD3isuCI1GtanZkYh4nY1hQMNf4mDBa7SHcoRMyXvyvXa3NNiibbH3
+	LASILYGO5CWUxeTjgIzt5Bl3HzLmSWCShfUuY1qHXJBmlnnsIKkAa2CXCXMiZ/axp+zGKTaaYGX39
+	3vCVHCtOYkYYbJhhPJsTqV7evLqv+3VgcUdQ==;
+Received: from bl16-24-61.dsl.telepac.pt ([188.81.24.61] helo=localhost)
+	by fanzine2.igalia.com with esmtpsa 
+	(Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim)
+	id 1xRUwt-009YpT-Vp; Thu, 12 Nov 2026 14:34:44 +0100
+From: Luis Henriques <luis@igalia.com>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: mszeredi@redhat.com,  Shuah Khan <shuah@kernel.org>,
+  amir73il@gmail.com,  linux-fsdevel@vger.kernel.org,
+  linux-kselftest@vger.kernel.org,  LKML <linux-kernel@vger.kernel.org>,
+  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,  nandinih@linux.ibm.com,
+ fuse-devel@lists.linux.dev
+Subject: Re: [BUG / BUILD FAILURE] selftests/fuse: build failure with
+ libfuse < 3.17.0 (RHEL 10 / fuse3-3.16.2)
+In-Reply-To: <bc84cb05-55fe-43e7-9a6e-e6bbf2f5a9ff@linux.ibm.com>
+References: <bc84cb05-55fe-43e7-9a6e-e6bbf2f5a9ff@linux.ibm.com>
+Date: Thu, 12 Nov 2026 13:36:27 +0000
+Message-ID: <87ld6yxjc4.fsf@igalia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,137 +69,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
-References: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
-In-Reply-To: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
-To: Lorenzo Stoakes <ljs@kernel.org>, 
- "Liam R. Howlett" <liam@infradead.org>, Vlastimil Babka <vbabka@kernel.org>, 
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
- Michal Hocko <mhocko@suse.com>, Andrew Morton <akpm@linux-foundation.org>, 
- Willy Tarreau <w@1wt.eu>, Jani Nikula <jani.nikula@linux.intel.com>, 
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, 
- Rodrigo Vivi <rodrigo.vivi@intel.com>, 
- Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
- Simona Vetter <simona@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>, 
- Matthew Auld <matthew.auld@intel.com>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- Shrikanth Hegde <sshegde@linux.ibm.com>, Rik van Riel <riel@redhat.com>, 
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, 
- linuxppc-dev@lists.ozlabs.org, "David Hildenbrand (Arm)" <david@kernel.org>, 
- stable@vger.kernel.org, Felix Kuehling <Felix.Kuehling@amd.com>, 
- =?utf-8?q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, 
- Chris Mason <mason@kernel.org>
-X-Mailer: b4 0.16.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3284; i=david@kernel.org;
- h=from:subject:message-id; bh=rMQFgIk3QDIpBHKVD0wAYIXGnRD6cxdJbOe6QfU1m24=;
- b=owGbwMvMwCF2/OVpCdfQ3ZWMp9WSGLK+WfyXWNI/bfusvAaWxGWvQhmcd6d/KfNWsdG4HKLxR
- 53BMNy5o5SFQYyDQVZMkSUo+L7By5fraqvd+Jhh5rAygQxh4OIUgIkoaTD8z+FZYK9gU7Xpzhff
- ncV3j5ZUmdun3LVefrx8vvRLHoYgFYbf7JOuhR7dwn5p26sZIjbvf4QH6rQu3+/Df+hmeXU32/4
- iZgA=
-X-Developer-Key: i=david@kernel.org; a=openpgp;
- fpr=1BD9CAAD735C4C3A460DFCCA4DDE10F700FF835A
-X-Spam-Status: No, score=-23.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-GUP rejects VM_IO and VM_PFNMAP mappings early. __access_remote_vm() then
-falls back to vm_ops->access without checking VMA permissions and without
-limiting the request to the VMA size.
+Hi Venkat,
 
-Consequently, /proc/<pid>/mem can bypass protections even without
-FOLL_FORCE, or cross into another mapping without checking its
-permissions.
+[ CC'ing the fuse mailing-list ]
 
-Check VMA permissions before calling ->access and limit each request to
-the current VMA. Implement similar access permission checks as GUP,
-however:
- (1) Reject writes to CoW mappings because the callbacks access backing
-     memory directly and cannot handle CoW.
- (2) Allow forced writes to non-CoW mappings with VM_MAYWRITE.
+On Thu, Nov 12 2026, Venkat Rao Bagalkote wrote:
 
-This intentionally breaks forced writes through legacy amdgpu PROT_NONE,
-MAP_PRIVATE debugger mappings. The workaround in commit fa5239f2af98
-("drm/amdgpu: workaround failed COW checks for Thunk VMAs") cleared
-VM_MAYWRITE to avoid CoW, but debugger writes still succeeded by
-exploiting the missing access-permission checks fixed here. Reads remain
-supported. Userspace must use MAP_SHARED instead; ROCm 5.5.0, released
-in May 2023, already does so.
+> Hi Miklos, Luis,
+>
+>
+> IBM CI has reported a build failure, while building selftests/fuse, due to
+> missing definitions in libfuse3 headers.
+>
+> Environment:
+>
+> OS: RHEL 10 (ppc64le)
+> Kernel: upstream (linux-next / mainline)
+> libfuse package: fuse3-devel-3.16.2-5.el10.ppc64le (pkg-config --modversi=
+on
+> fuse3 -> 3.16.2)
+>
+> Build Errors:
+>
+> In fuse_acl_cache_test.c & fuse_symlink_cache_test.c:
+>
+> fuse_acl_cache_test.c: In function =E2=80=98fs_init=E2=80=99:
+> fuse_acl_cache_test.c:105:17: error: implicit declaration of function
+> =E2=80=98fuse_set_feature_flag=E2=80=99 [-Wimplicit-function-declaration]
+> =C2=A0 105 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0fuse_set_feature_flag(conn, FUSE_CAP_POSIX_ACL);
+> =C2=A0 =C2=A0 =C2=A0 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0^~~~~~~~~~~~~~~~~~~~~
+> make: *** [../../lib.mk:226:
+> /home/upstreamci/linux/tools/testing/selftests/filesystems/fuse/fuse_acl_=
+cache_test]
+> Error 1
+>
+> In fuse_mnt.c:
+>
+> fuse_mnt.c: In function =E2=80=98test_readdir=E2=80=99:
+> fuse_mnt.c:51:35: error: =E2=80=98FUSE_FILL_DIR_DEFAULTS=E2=80=99 undecla=
+red (first use in this
+> function); did you mean =E2=80=98FUSE_FILL_DIR_PLUS=E2=80=99?
+> =C2=A0 =C2=A051 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0filler(buf, ".", NULL,=
+ 0, FUSE_FILL_DIR_DEFAULTS);
+> =C2=A0 =C2=A0 =C2=A0 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0^~~~~~~~~~~~~~~~~~~~~~
+> =C2=A0 =C2=A0 =C2=A0 |=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0FUSE_FILL_DIR_PLUS
+> make: *** [../../lib.mk:226:
+> /home/upstreamci/linux/tools/testing/selftests/filesystems/fuse/fuse_mnt]=
+ Error
+> 1
 
-Link: https://github.com/ROCm/ROCT-Thunk-Interface/commit/fea44fab6e84eda52fcf6b419b35600c18f4c022
-Fixes: 272ddc8b3735 ("proc: don't use FOLL_FORCE for reading cmdline and environment")
-Cc: stable@vger.kernel.org
-Cc: Felix Kuehling <Felix.Kuehling@amd.com>
-Cc: Christian König <christian.koenig@amd.com>
-Cc: Simona Vetter <simona@ffwll.ch>
-Reported-by: Chris Mason <mason@kernel.org>
-Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
----
- mm/memory.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+Thank you for your report.
 
-diff --git a/mm/memory.c b/mm/memory.c
-index d4370c1b331c9..9872f289c1e49 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -7362,6 +7362,7 @@ EXPORT_SYMBOL_GPL(generic_access_phys);
- static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
- 			      void *buf, int len, unsigned int gup_flags)
- {
-+	const bool force = gup_flags & FOLL_FORCE;
- 	void *old_buf = buf;
- 	int write = gup_flags & FOLL_WRITE;
- 
-@@ -7401,15 +7402,35 @@ static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
- 			if (gup_flags & FOLL_ANON)
- 				break;
- 
-+			if (write) {
-+				if (!vma_test(vma, VMA_MAYWRITE_BIT))
-+					break;
-+				if (!vma_test(vma, VMA_WRITE_BIT) && !force)
-+					break;
-+				/*
-+				 * In contrast to GUP, we historically allowed
-+				 * FOLL_FORCE write access to non-CoW mappings.
-+				 * However, we must always reject CoW mappings
-+				 * as we cannot CoW here.
-+				 */
-+				if (vma_is_cow_mapping(vma))
-+					break;
-+			} else if (!vma_test(vma, VMA_READ_BIT)) {
-+				if (!force || !vma_test(vma, VMA_MAYREAD_BIT))
-+					break;
-+			}
-+
- 			/*
- 			 * Check if this is a VM_IO | VM_PFNMAP VMA, which
- 			 * we can access using slightly different code.
- 			 */
- 			bytes = 0;
- #ifdef CONFIG_HAVE_IOREMAP_PROT
--			if (vma->vm_ops && vma->vm_ops->access)
-+			if (vma->vm_ops && vma->vm_ops->access) {
-+				bytes = min_t(unsigned long, len, vma->vm_end - addr);
- 				bytes = vma->vm_ops->access(vma, addr, buf,
--							    len, write);
-+							    bytes, write);
-+			}
- #endif
- 			if (bytes <= 0)
- 				break;
+This issue was already identified and fixed by Sasha[1].  Looks like there
+was some problem when my patchest[2] was applied to the git tree:
+commit 3e14f079d7a0 ("selftests/fuse: add fuse symlink caching test")
+dropped the actual test code that was present in the patch.
 
--- 
-2.43.0
+I believe Sasha's fix wasn't yet applied, but I guess that will eventually
+happen.
 
+[1] https://lore.kernel.org/all/20261026194008.274349-1-sashal@kernel.org/
+[2] https://lore.kernel.org/all/20261001164916.15311-1-luis@igalia.com
+
+Cheers,
+--=20
+Lu=C3=ADs
 
