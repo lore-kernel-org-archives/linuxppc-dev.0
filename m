@@ -1,84 +1,102 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CDAB606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:00:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C78AA606A321
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:12:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mykMNeh5
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0au9kCbQ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQJqZ6PBZz2xmV;
-	Thu, 12 Nov 2026 23:00:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794484826;
-	cv=none; b=EMSVXF4FbS4wSJVCp1hkuJJEj+NP084KaPiR2LNrAIpNgIKU2AKFJrQwdSUiB3OkTiuxI/Oh2HINX+byCWM2kOSMvhWlr59TUBnJF4d1LOlVXhkcjrYgzlxghh/oF8PuIW4k96e6UbfSHZruS3M/LFoZ7IaVILwW3XjvWoqk7yFsfc0pCgD7MU7kHXlEtWJgxu/qdfSHnqdpD1HNPQP+D4u9f0vcsCqhWQPhuFE6D2aA5CVhKPMk+bM914csX5tVb5mfYXqxEAIRlP9hehpfw/+yeWiN1AwRXko8jccMU8Kprr+kLpytKHcAzeo+wLYoE225Yra3SYWmNPUgl4iKqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQK4x3XqPz2xmV;
+	Thu, 12 Nov 2026 23:12:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794485521;
+	cv=none; b=g4DQFyKolV0VRxx4s+YIWnKvdDiYYdih9/p7mrEIZj/y443vR1gR+cSPCC2JnQIo3JiQESkx4YGIVUZJCTLV6KNsYku++NGRTVMXGD+SQXHxF23HHRf+nWFLQqM8Wh/QfLqOXCYDMLTJAhjB/ykV3iTQjMeUJRwyeoAScUf2ppAbMba+tImqX/zxioXLYj9r9eps08idrETgXz7TeF1tvvoKmlosJjW1JQVi7yArlrfqMtjvF7X0g2XwR23PrRfYRalEJLneF9OmUKaIdAYnozv9wyWqINw05Ss9Rln/iSojKgHFVXji1d+8L6I2uwrDRhuVty+ewwLxmjVUh1JN+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794484826; c=relaxed/relaxed;
-	bh=wTN3UxTT/XXw7NH/F07ZSE1+SznsV7bVJZdXlw3Sm0E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Azk9ewKZLC6zezZ3HkRG6y7tSJEjdrRGmzTvIiDFIUKLgqkIDsU0Ya6Hl5o8UZzgMFaeaHqRquc6m87xu07AFUOR/1T968TtDbDjJotig+U8GUsedzNRXmXK8HR6YkognkWRh2lKW9o8IUyrVx5lpBEJE64R1UvKMGa7jLLMbV4x1iZreXR/nr22TmLCdnxT51dEYJMg9i43MQleatBzKW2PVt0qZmxqgyT9kyfsOBuC7PMTdeXjLsQXNRFx2M70UdrReOuBXUmAqMV5oDM0cRYWPAXKVdi2w98L5mffz38UYAH/yzNoAynLdvLW1uh65DsEyfOjI275bCgyNSN2+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mykMNeh5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794485521; c=relaxed/relaxed;
+	bh=xc3dkm2FkTj3bfcx1hRbhfim8mfu2/061yvWmQIUcIs=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=j5jzNKS0heij3X5bEgpHUFgKTSMJ/Yd/rjb1HACywlhEfAMPRvq7cKZ5sRHwOf1rRe0+N6oHUco+czYz8JumyfcvvTIpMkxyLygXapqJxSYHZL9ZO/SJHssKj+ZczLHhusez7BgZAOWE2/+frY77+rP9OKdTViX0si5gP9CAoQoSrBFSrVBcB1xCiwXir5N+98QlX23h4a5yoOPNKsYSeeQ8XqCyde0+wW9Fecb5/+T5B/xtXNQLvBpQcWv9XigDUsfiv8e9kmi+4ktB3a8H5f3Octx0acl6xrlmZf/KO3ud5Ow2cLn+YaV/7FvPQjP+Y8nRU3roBpD+qqYTiHL/4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0au9kCbQ; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mykMNeh5;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0au9kCbQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQJqZ09pdz2xWt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:00:25 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id E06B163950;
-	Thu, 12 Nov 2026 12:00:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 869391F00A05;
-	Thu, 12 Nov 2026 12:00:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794484823;
-	bh=wTN3UxTT/XXw7NH/F07ZSE1+SznsV7bVJZdXlw3Sm0E=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=mykMNeh5BtXxUerEKT1YuKhyGYJ7QWD8IG5KpF4NuP4taMISSoglro4vnkkgm5jw7
-	 WQS/4vwRcKImTEfxhMYZ5wbg4cf0zsqSfNSCuEwHpTxLLpdEiTkzuh28KNZeLAVJNg
-	 ZfCkbQmePV1CQjWwx2EMjuLDIhpJighraQGEfBeHC2UHTK/MwHz7f2oBCj4SrVNuE8
-	 h5IIE+hXfIdS625oF8CuXci5blOoZ0531mmkrv2ibJ2+zxzA7PXsQSYWh5mHmJWrB0
-	 v/bWt32FVQ52/8TNJggbPdO6bVuM9pAUdH6G57AlDfNOf/PKeeT3jQZcm5rv//GblC
-	 jWyGILzZ6HoIw==
-Date: Thu, 12 Nov 2026 14:00:11 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQK4w0hQDz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:11:59 +1100 (AEDT)
+Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-6a642495d81so1192477a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 04:11:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794485514; x=1795090314; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=xc3dkm2FkTj3bfcx1hRbhfim8mfu2/061yvWmQIUcIs=;
+        b=0au9kCbQMErQ9WFgu6y7Vj2yXHuk6wjYwsKtKAPiZ+1lthYm8PzOf3QQdMrJbGDqj6
+         DERghk4ps2BSAC8Oa8PPup5NQ3Xm2IFPVVd6l9saccS2cJ9daR7WiKtXfYESgvCGrqXt
+         rWIFj4F2KeeFPvh6nTvh2Q5VWguJT+tG+4ZvqnS/O7dRDFJn2sRDFkMKvbo8w1LwvswM
+         z3gapE999H7w/Qc9DfLj6RxFXe/RzAgPrIEqLB4uMFysZKgD9yXF0NDU4ShAcBFe8USf
+         EtibaI9KKxFF9/Ekh/1gZNQRsDfpjQVBeI9jOh/KjfqpzrPF3Xk/2J/7K4P6wUVTQEHj
+         dfNg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794485514; x=1795090314;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=xc3dkm2FkTj3bfcx1hRbhfim8mfu2/061yvWmQIUcIs=;
+        b=CVlV1AZMWU17iQHic1FHv/0glQYrSr++A7zwngu2NV4BmORgOF5FwV6F/979JbY4Rd
+         PiqhwR6N/e3iLI7IRrE3L1GC4deTJsWQNNfXvTY8ahWKa6jPQ7njaGUt0NhMsr0Gya5Y
+         va8AsBe94qDH19ad5W+/R93J3N9WHQSdjS3VSybjk14zi0q7rKcW0/mlDUnE7qtRYsls
+         dwf+3iyYQWVZ8YzoA9mQM7Sjnce8IJZ6dAjrjCJUYEbbfCx/FoUbziThHgG0XB/q08b+
+         lpmmcUf+NBQvz5hVSQxVFocR1c6YBZPtbbJhWy5Xll75O4O/kdU2ZO3mSlyNAnhUvJbq
+         2lIw==
+X-Forwarded-Encrypted: i=1; AL+hErH1kBktv7z8mIs+4lhbrH64MqWyvUXAZciNSnQqFWK0eDekcgA9xpubE4pjbEv3PGnoH9dZrKp6xzmTLFY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8TEO9EMUaSJnbTlZ8f826pjvLwZMsarqnLTfTNDUWxyuo3xQCL
+	rYIMy6qLwqoGh3SIxzGOKDyU+BbCPLC4n/Nzl0YX7X1hN/0Gtesn3xtO
+X-Gm-Gg: AYBFou3Bcb1XC4xRSsh172LdZlYEZ42FaRhDF2bblUOoy1uVb0mWeu+pe7LSRHJuA+O
+	VM52q5JzuxdZiJSJ/Z515t07DjzqbmcJ7ZG4SzALXulFVe+D6J/lP1LYTB9xPzDOveZ2ouwWYJS
+	9KbLmqmtE2O94eHVbz+C4aw91/uxOcTuD1Lsvq8gIg7UyLI5YO0QTjsEvDY1blWIXAWK3ADLWxV
+	lGP1ZB1XYcCrHX23E6GOoG1zyC8NjHMRTYIdJf19MFB1Q/ZUu6H+HEEqduymk+aFP2hMpVaw8Xm
+	U+MlXNTDkcrnQzr75peUwiNLlR2ZD7maERRuvVR2c+Qqb8ODEh0cM/yOM3ZwVibi6bNa9j3eilu
+	9oEkXeG4VPTuKQ8UojvFczDTzmV16J+KgJmkYS4JDT2vj4aLbT64pENcmgWcmQ7AD2FEth+Q0y5
+	9ade4J5NHe0onZkLvFy4Hxl8RBCIW1y9IgyhUBLjsIq92FgJW39tp8NkrO90SdZ6I48jr57ZR5Q
+	rkEBGibTeE+JS4UgFXS3lskPvIhuEAumHZaaT+/1kvAGJq/BRcgsuY78nS6md64SP3v/g==
+X-Received: by 2002:a05:6402:450a:b0:6b5:875a:c2a0 with SMTP id 4fb4d7f45d1cf-6b7775eb13cmr3884877a12.24.1794485514349;
+        Thu, 12 Nov 2026 04:11:54 -0800 (PST)
+Received: from milan ([2001:9b1:d5a0:a500::24b])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7834cdc23sm1610428a12.12.2026.11.12.04.11.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Nov 2026 04:11:53 -0800 (PST)
+From: Uladzislau Rezki <urezki@gmail.com>
+X-Google-Original-From: Uladzislau Rezki <urezki@milan>
+Date: Thu, 12 Nov 2026 13:11:51 +0100
+To: Hao Ge <hao.ge@linux.dev>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
+	Suren Baghdasaryan <surenb@google.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Andreas Larsson <andreas@gaisler.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"David Hildenbrand (Arm)" <david@kernel.org>,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	"Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	Malin Jonsson <malin.jonsson@est.tech>,
-	Richard Weinberger <richard@nod.at>,
-	Russell King <linux@armlinux.org.uk>,
-	linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	"H. Peter Anvin" <hpa@zytor.com>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Michal Simek <monstr@monstr.eu>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Nishanth Menon <nm@ti.com>,
-	Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 5/6] arch/*: increase lowmem size to avoid highmem use
-Message-ID: <avWqSw2YrUmfAX62@kernel.org>
-References: <20261112112528.1116405-1-arnd@kernel.org>
- <20261112112528.1116405-6-arnd@kernel.org>
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
+	Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
+	linux-mm@kvack.org, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [PATCH v4 4/9] mm/vmalloc: BUG_ON() on an unaligned range in
+ vmap_pages_range_noflush_walk()
+Message-ID: <avWtB-nWZUwLdQdP@milan>
+References: <20261110112546.261415-1-hao.ge@linux.dev>
+ <20261110112546.261415-5-hao.ge@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,49 +112,47 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261112112528.1116405-6-arnd@kernel.org>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+In-Reply-To: <20261110112546.261415-5-hao.ge@linux.dev>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026 at 12:25:27PM +0100, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Tue, Nov 10, 2026 at 07:25:41PM +0800, Hao Ge wrote:
+> The pte loop of vmap_pages_pte_range() maps whole pages and stops
+> only when addr lands exactly on end.  An unaligned end lets addr
+> jump over it and the loop keeps mapping into whatever follows the
+> range.  An unaligned start maps the page below the range with its
+> first pte.  That corruption is impossible to debug afterwards, so
+> bug out on addr and end at the entry of
+> vmap_pages_range_noflush_walk().
 > 
-> Most of the common 32-bit architectures (x86, arm, powerpc) all use the
-> default virtual memory layout that was already in place for i386 systems
-> in the 1990s, using exactly 3GiB of user TASK_SIZE, with the upper 1GiB
-> of addresses split between (at most 896MiB) lowmem and vmalloc.
-
-...
-
-> Based on the above observations and the discussion at the kernel summit,
-> change the defaults to the most appropriate values: use 1GiB of lowmem on
-> non-highmem configurations, and either 2GiB or 1.75GiB of lowmem on highmem
-> builds, depending on what is available on the architecture.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-
+> Reported-by: Sashiko <sashiko-bot@kernel.org>
+> Signed-off-by: Hao Ge <hao.ge@linux.dev>
 > ---
->  arch/arm/Kconfig                            |  5 ++++-
->  arch/arm/configs/aspeed_g5_defconfig        |  1 -
->  arch/arm/configs/u8500_defconfig            |  1 -
->  arch/arm/configs/vt8500_v6_v7_defconfig     |  2 --
->  arch/arm/mach-omap2/Kconfig                 |  1 -
->  arch/microblaze/Kconfig                     |  9 ++++++---
->  arch/microblaze/configs/mmu_defconfig       |  1 -
->  arch/powerpc/Kconfig                        | 14 +++++++++-----
->  arch/powerpc/configs/44x/akebono_defconfig  |  1 -
->  arch/powerpc/configs/85xx/ksi8560_defconfig |  1 -
->  arch/powerpc/configs/85xx/stx_gp3_defconfig |  1 -
->  arch/x86/Kconfig                            |  4 +++-
->  12 files changed, 22 insertions(+), 19 deletions(-)
+>  mm/vmalloc.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 27f2674a5556..86fbb1d2b27a 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -698,6 +698,8 @@ static int vmap_pages_range_noflush_walk(unsigned long addr, unsigned long end,
+>  	pgtbl_mod_mask mask = 0;
+>  
+>  	BUG_ON(addr >= end);
+> +	BUG_ON(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end));
+> +
+>
+But why do we add this? We used to live without it and as far i see
+we have not gotten any report about any unaligned addresses un-maping.
 
--- 
-Sincerely yours,
-Mike.
+The vmap allocator grantees that va->va_start/end have to be page
+aligned.
+
+--
+Uladzislau Rezki
 
