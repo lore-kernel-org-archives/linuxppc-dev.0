@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B227E606A885
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 11:54:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CDAB606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:00:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JShWTYBw
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mykMNeh5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQJhY2WZSz2xmV;
-	Thu, 12 Nov 2026 22:54:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQJqZ6PBZz2xmV;
+	Thu, 12 Nov 2026 23:00:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794484461;
-	cv=none; b=M9h1xXn2aNUcN9Guld5lZtHqalwuKFMyfTknuhF3xfmSvxtjiRBrz6pAF1xJXslbHLvHvugRwMjFTqoEVbyTXp+83e3vEumA64a4t1ZuamosVpGTFYQVko3DZI5RhfjiDvMPl3WuLDAETQMS27Ao7YvzzDXOdG90mrQeqSvAIrb3NaOkEq+nXVSjooQVVRwHThbVEro0drVpEc4mcPog2bnRWfDMEHuc9+e5KnrOjIs7uFUK0wZ/ewnBlbVS6Z+vpjJAzMoxQVUk5CwHOolV7k9oR0HQC4vn9ybeQi+ZtJBrm/3mM19f7pYIO/tOb5lhpbmnUFQKFZS8vBbuY2SFeA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794484826;
+	cv=none; b=EMSVXF4FbS4wSJVCp1hkuJJEj+NP084KaPiR2LNrAIpNgIKU2AKFJrQwdSUiB3OkTiuxI/Oh2HINX+byCWM2kOSMvhWlr59TUBnJF4d1LOlVXhkcjrYgzlxghh/oF8PuIW4k96e6UbfSHZruS3M/LFoZ7IaVILwW3XjvWoqk7yFsfc0pCgD7MU7kHXlEtWJgxu/qdfSHnqdpD1HNPQP+D4u9f0vcsCqhWQPhuFE6D2aA5CVhKPMk+bM914csX5tVb5mfYXqxEAIRlP9hehpfw/+yeWiN1AwRXko8jccMU8Kprr+kLpytKHcAzeo+wLYoE225Yra3SYWmNPUgl4iKqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794484461; c=relaxed/relaxed;
-	bh=AXwEBWpVcpvZcrV+jXWqjYnIWZkbHRe6QYcaP4OKLgA=;
+	t=1794484826; c=relaxed/relaxed;
+	bh=wTN3UxTT/XXw7NH/F07ZSE1+SznsV7bVJZdXlw3Sm0E=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K6huESY5mFGEismziIrM89I8xjvJkIDkYG6dE9mowbuNVsmFD/W30WGhFOdUUGi6M4CvS0e0jHgqiAL3H2wTXwXwLLfntaEajrcDW4gvQBMpdWumsX4muPv0DiWZFjhFujV6chO/pMaexAkyoF+XA6XC1CJ1gtikY2JoqCogVOPMQq99315FOO7UgJAFVsCZeI7j0GMjoiwQprwPIb23B6brNYWF5+KkfB7VWJt4vKOzN5i6twCVHAF3grgU26PN83fzleYm4tnoEf6aSdmyYr63915H6BA1b5GBIaCeea3hTWX0pZyPjHpAgVGsqFd8q2nQ2mGcX9K9maulBzeUvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JShWTYBw; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Azk9ewKZLC6zezZ3HkRG6y7tSJEjdrRGmzTvIiDFIUKLgqkIDsU0Ya6Hl5o8UZzgMFaeaHqRquc6m87xu07AFUOR/1T968TtDbDjJotig+U8GUsedzNRXmXK8HR6YkognkWRh2lKW9o8IUyrVx5lpBEJE64R1UvKMGa7jLLMbV4x1iZreXR/nr22TmLCdnxT51dEYJMg9i43MQleatBzKW2PVt0qZmxqgyT9kyfsOBuC7PMTdeXjLsQXNRFx2M70UdrReOuBXUmAqMV5oDM0cRYWPAXKVdi2w98L5mffz38UYAH/yzNoAynLdvLW1uh65DsEyfOjI275bCgyNSN2+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mykMNeh5; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JShWTYBw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mykMNeh5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQJhX1Lkdz2xWt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 22:54:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQJqZ09pdz2xWt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:00:25 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CAA5361CEA;
-	Thu, 12 Nov 2026 11:54:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D2A951F00A05;
-	Thu, 12 Nov 2026 11:54:11 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E06B163950;
+	Thu, 12 Nov 2026 12:00:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 869391F00A05;
+	Thu, 12 Nov 2026 12:00:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794484457;
-	bh=AXwEBWpVcpvZcrV+jXWqjYnIWZkbHRe6QYcaP4OKLgA=;
+	s=k20260515; t=1794484823;
+	bh=wTN3UxTT/XXw7NH/F07ZSE1+SznsV7bVJZdXlw3Sm0E=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=JShWTYBwz3T1m0D+gMlzyAXZUOV5lZTEdKWEmPLNzsIRW+v6wGYjzrWz/3a+qlIIh
-	 uHEBwZWTzfI+8nM1pcwM53SGkhGVtDsLBHshuYSxtzNG61JCXbS2MprM5hV/RW220H
-	 EL1fsA/x1UUGroAbYZBw+qSGfyZB4AOspBYFjnzgVnaVolzaeMfQXuiyzSNiu/Vp5y
-	 FZk8uOr8DWU5XDcsKIwXsglFSq2MXx57+zvKA08GWuWTcIghT/EEC8a7yprTEzE1K1
-	 C3sWmvVFn06QL/mupd6DGhe9ParugCE3t4qUWqqEJB1lwXJ/5dePwtcAucWejA+WvE
-	 v93jIoibDc7rw==
-Date: Thu, 12 Nov 2026 13:54:08 +0200
+	b=mykMNeh5BtXxUerEKT1YuKhyGYJ7QWD8IG5KpF4NuP4taMISSoglro4vnkkgm5jw7
+	 WQS/4vwRcKImTEfxhMYZ5wbg4cf0zsqSfNSCuEwHpTxLLpdEiTkzuh28KNZeLAVJNg
+	 ZfCkbQmePV1CQjWwx2EMjuLDIhpJighraQGEfBeHC2UHTK/MwHz7f2oBCj4SrVNuE8
+	 h5IIE+hXfIdS625oF8CuXci5blOoZ0531mmkrv2ibJ2+zxzA7PXsQSYWh5mHmJWrB0
+	 v/bWt32FVQ52/8TNJggbPdO6bVuM9pAUdH6G57AlDfNOf/PKeeT3jQZcm5rv//GblC
+	 jWyGILzZ6HoIw==
+Date: Thu, 12 Nov 2026 14:00:11 +0200
 From: Mike Rapoport <rppt@kernel.org>
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
@@ -61,11 +61,24 @@ Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>,
 	Richard Weinberger <richard@nod.at>,
 	Russell King <linux@armlinux.org.uk>,
 	linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 4/6] mm: drop HIGHPTE support altogether
-Message-ID: <avWo4NrAPX8BisCY@kernel.org>
+	linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Michal Simek <monstr@monstr.eu>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@suse.cz>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Nishanth Menon <nm@ti.com>,
+	Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH v2 5/6] arch/*: increase lowmem size to avoid highmem use
+Message-ID: <avWqSw2YrUmfAX62@kernel.org>
 References: <20261112112528.1116405-1-arnd@kernel.org>
- <20261112112528.1116405-5-arnd@kernel.org>
+ <20261112112528.1116405-6-arnd@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,39 +94,47 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20261112112528.1116405-5-arnd@kernel.org>
+In-Reply-To: <20261112112528.1116405-6-arnd@kernel.org>
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026 at 12:25:26PM +0100, Arnd Bergmann wrote:
+On Thu, Nov 12, 2026 at 12:25:27PM +0100, Arnd Bergmann wrote:
 > From: Arnd Bergmann <arnd@arndb.de>
 > 
-> With both x86 and arm having dropped CONFIG_HIGHPTE support, no
-> architecture is left using it, so remove the remnants in common code.
-> 
-> It is likely that further cleanups are possible in the page table
-> code but those are not obvious from the config options.
-> 
+> Most of the common 32-bit architectures (x86, arm, powerpc) all use the
+> default virtual memory layout that was already in place for i386 systems
+> in the 1990s, using exactly 3GiB of user TASK_SIZE, with the upper 1GiB
+> of addresses split between (at most 896MiB) lowmem and vmalloc.
+
+...
+
+> Based on the above observations and the discussion at the kernel summit,
+> change the defaults to the most appropriate values: use 1GiB of lowmem on
+> non-highmem configurations, and either 2GiB or 1.75GiB of lowmem on highmem
+> builds, depending on what is available on the architecture.
+>
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  include/linux/hugetlb.h | 5 +----
->  include/linux/mm.h      | 1 -
->  include/linux/pgtable.h | 9 ---------
->  3 files changed, 1 insertion(+), 14 deletions(-)
-
-With this and arm HIGHPTE patches applied there are still a few leftovers:
-
-$ git grep  HIGHPTE
-arch/arm/configs/vt8500_v6_v7_defconfig:CONFIG_HIGHPTE=y
-mm/memory.c:     * Dumping the PTE would be nice, but it's tricky with CONFIG_HIGHPTE,
-mm/pgtable-generic.c: * kmapped if necessary (when CONFIG_HIGHPTE), and locked against concurrent
-mm/userfaultfd.c:        * index ordering when CONFIG_HIGHPTE is enabled. We mapped dst_pte
 
 Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+
+> ---
+>  arch/arm/Kconfig                            |  5 ++++-
+>  arch/arm/configs/aspeed_g5_defconfig        |  1 -
+>  arch/arm/configs/u8500_defconfig            |  1 -
+>  arch/arm/configs/vt8500_v6_v7_defconfig     |  2 --
+>  arch/arm/mach-omap2/Kconfig                 |  1 -
+>  arch/microblaze/Kconfig                     |  9 ++++++---
+>  arch/microblaze/configs/mmu_defconfig       |  1 -
+>  arch/powerpc/Kconfig                        | 14 +++++++++-----
+>  arch/powerpc/configs/44x/akebono_defconfig  |  1 -
+>  arch/powerpc/configs/85xx/ksi8560_defconfig |  1 -
+>  arch/powerpc/configs/85xx/stx_gp3_defconfig |  1 -
+>  arch/x86/Kconfig                            |  4 +++-
+>  12 files changed, 22 insertions(+), 19 deletions(-)
 
 -- 
 Sincerely yours,
