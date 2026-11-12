@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1495D606A8A1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 16:38:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id ABB64606A89F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 16:38:25 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TatUIIgI
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ct0ieuZx
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQR013qjDz30g6;
-	Fri, 13 Nov 2026 03:38:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794501489;
-	cv=none; b=h3qD5dQCHBeifwDbOLTKyy5GFNIdOaDlA5IkN6QZtJ4hQyzv8BsJZ7alfaTFm+PSGHj5TGfRFYl7woEZLjYzYvfuKa8Oyzzb/g6vVMU3rBD3r3hKKMyTcEO1qzUIiEBtmV5zMYI43KEwDlRy9l0LGjirZUrvUtg9hhNu28O7+aNrhjzfTDCkGJGztoxpFAXmZT8oQ+TEV84OJw/u/bRsQKlDFLpfydG98t/8w3GrAGh5qW/L1L1V17s8znsS/25Ym3KSVsWzr+F0IXCK1OApp0jIskYbLLnysBm3Mtx0ERulqNOfydnXGo2YA1jsoTCv5FwvphicC64iQw4WBfacew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQR045Dm0z3bNr;
+	Fri, 13 Nov 2026 03:38:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794501492;
+	cv=none; b=ieCR6V+zhfYydpHHe8y/VIXuxDy2mprbvVs/aCXPPUq/5C4L168dta+3avU+T7MdJUiYGAmde/pdFWn7KyzXWQbqDsDVLGS6dIHxO3uO3BdNIyOo9CRHKoUwjkaxoV//o6uuDIIhIF972BbBGFYirNzmIBVChRT01NQVN1/kcPX87TVcsti8I3IOuntZlOHyAP1ajovB8GD+yNwjRKQRT3bNb0WGtj3XNT5V/q8GHOXxnUd8+eZj8qdEs96ITdiFGi+BuAF9QJsnRCIiSQBX7hcQWz82OhNb1D++pQkDkz+TE746HIBFXXf3iiVRZTljPQECrGK/8UZSfZMtb3C9Vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794501489; c=relaxed/relaxed;
-	bh=G0+SfEEtgrOulP8YQCHeN+Vv1NUh1Gn7/+60elZfXAY=;
+	t=1794501492; c=relaxed/relaxed;
+	bh=tg11reGp6/y5YQodUEdH2NhfRCo1EXpa30JYKUFUCXg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=R9p+Dg3DJe5wg33TuJrVgVOfU9MnIdnRNLKv/gFQ7Wm2XNt+7xuqvVXbsbhHr13sJj3QZLgqN3pdoS0bkH0pWINUPvxC8Pl/NZLSGPMuTJF/W9ZsjcDxvsCY7f2BuaQ0olMvwjNizKFbobqd0khIhC4GMaJNyjRzndyJKRWgwwrCh5R3Gi1ZH2VTO4sEFlwpdUuL0w1YumtXiIxm58diVwYIUuvnFvuUAN/x6N0h90zqoafK2Z7Z4O4zvGhGYEJXuxq3lZwZ/uptds0Z8cSbeL+bhqqUvIfQ1rPqH+Et5DtjsYgvvdvoSVtb03iDmiR9IKJHLuawS/5qzJJX2yKT6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TatUIIgI; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Ddrg05UejTmAiAK4zIo4lL/hI37gM9AlG4Xws+nj2qRqQsKYB8f7oe7YQR77tEbqjzzBuR+ihD/BdWUZ/ZUoWeIMt3oU2OmwUVFtR4+1HxzZauxjYzYphexlhBKNQSabRGbPWm0BHVAqo1oI9aR36razK39/Z1f90eHewZrDpClzlSIPhdjHTjGQixqV9W+ht/SioTSNYc3mhjH5l9iiseg2d/m9+91JhnepXNbdw7qsyTryddFxA5AYSG2InEfa6vmC2bkqvhG0oVZMzwhufjuSpZyWpj4ZJ0j/HnNeMegOFpbTwLujEjP+fl85lar7j0MFxuavjd6m/ytlNvqp1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ct0ieuZx; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TatUIIgI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Ct0ieuZx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQR004sGtz30WS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 03:38:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQR0403Zlz30WS
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 03:38:11 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id C9C2362330;
+	by sea.source.kernel.org (Postfix) with ESMTP id 68849417B5;
+	Thu, 12 Nov 2026 16:38:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1BB811F000CA;
 	Thu, 12 Nov 2026 16:38:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 405ED1F000C6;
-	Thu, 12 Nov 2026 16:38:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794501486;
-	bh=G0+SfEEtgrOulP8YQCHeN+Vv1NUh1Gn7/+60elZfXAY=;
+	s=k20260515; t=1794501490;
+	bh=tg11reGp6/y5YQodUEdH2NhfRCo1EXpa30JYKUFUCXg=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=TatUIIgIPY9Rk2yojUYtl53O8qWT0lJaotYE+vgGtEQjE5+HBsMGO2D9JA2Mvp18/
-	 IxX2JabQ4+fakTZ7OaJFOutCI5W5hiX2scmPGO21tNUwYTI2BKtmrvoym+vG0XnSFu
-	 v/iFHm2REmIp2p/BLc8ESGX5tetaHaH0yBD9VxLlDUZejx966x6VG7KUPCg6fNaOqF
-	 LyAgrEcHkkE0wSJ/MXSk7qyDLnWTFOR5wRqXK+N9/IKnI9DlTS+i9tiPPIdfhdfvgT
-	 FSn0qxpGwPBVsY/1nme6/cGu5P3ERoZG9wcvEC+luDl5JZW0xKPudmSbZcBNFKytc5
-	 AnlfkNK/qGtkg==
+	b=Ct0ieuZxSJF+C+3ekWtkvAswjSRq4utdVYRR2Up0NV9RTebUlZoXzOhsIU/+KplNf
+	 ccN1LqvaaNLSUHQd0D+H20oJ3lpDi6ORwoV3yLJ+NgqCKlZDl2jJ6l3wI8RB1Cpqd5
+	 TCMm9RkkrkvH1E6ksAn/xeprzyVqWxnvDs48gDgZaIZ7GoT0nrLHnMmsHytnv6Bk8N
+	 HZ3QslM6AfZV5kRsVDR1ubxLCuvA4t/bJVlIzlj4B4jb8rZcNoxSg54HPWCtn+8wYv
+	 pWxhkZNv2N8USDXoiD8N/gzD9UMg6XSt8CIykxIKSvwsyDfzm3HedgLlY8x0GB5Ljj
+	 yg0tKyys8okmw==
 From: Christian Brauner <brauner@kernel.org>
-Date: Thu, 12 Nov 2026 17:37:09 +0100
-Subject: [PATCH RFC 3/4] crash_dump: recover from a machine check in
- copy_oldmem_page()
+Date: Thu, 12 Nov 2026 17:37:10 +0100
+Subject: [PATCH RFC 4/4] crash_dump: use copy_oldmem_to_iter() everywhere
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261112-work-procfs-oldmem-v1-3-ecdcafd99265@kernel.org>
+Message-Id: <20261112-work-procfs-oldmem-v1-4-ecdcafd99265@kernel.org>
 References: <20261112-work-procfs-oldmem-v1-0-ecdcafd99265@kernel.org>
 In-Reply-To: <20261112-work-procfs-oldmem-v1-0-ecdcafd99265@kernel.org>
 To: linux-fsdevel@vger.kernel.org
@@ -75,14 +74,14 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, 
  David Hildenbrand <david@kernel.org>, 
- "Christian Brauner (Amutable)" <brauner@kernel.org>, stable@vger.kernel.org
+ "Christian Brauner (Amutable)" <brauner@kernel.org>
 X-Mailer: b4 0.17-dev-ce4c1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7829; i=brauner@kernel.org;
- h=from:subject:message-id; bh=rgiGrvL4YSbWob21DTwG36MqG+gKRCzUU+Rt+CJ7Fjs=;
- b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWR9fR1dt0Zqqdri1WqxXOYsx75fe28o6K3fXu+jFLCq5
- +TWXnOVjlIWBjEuBlkxRRaHdpNwueU8FZuNMjVg5rAygQxh4OIUgIlsmcbI8H7S5VUxb95YlZzy
- dN5pl71g5bw85r9WF7Jd91UmP+bfeYyR4e47l78h+58rsX75utbPg6NrxVZnuVkK9gfeHHrykld
- LjAsA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4472; i=brauner@kernel.org;
+ h=from:subject:message-id; bh=rv3dL5CVw/xI5rVNJEEjG9zaPNbP1VG9+iQug4VKJfg=;
+ b=owGbwMvMwCU28Zj0gdSKO4sYT6slMWR9fR3DKnst5cjfG5xsdgbCavdne+wN+Nkh/pffe02Mp
+ N6xtffudpSyMIhxMciKKbI4tJuEyy3nqdhslKkBM4eVCWQIAxenAEzkoADD/wT5NYIcQd67a3j/
+ 1sc1zRBc6nxzfcAJjYgZL6b0veNRkGX4Hx0wbQHPbdM/b5N2z70xc5nvM/uz5dt/rBdy3nhl8Yc
+ gcUYA
 X-Developer-Key: i=brauner@kernel.org; a=openpgp;
  fpr=4880B8C9BD0E5106FC070F4F7B3C391EFEA93624
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -92,173 +91,122 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-A capture kernel reads the memory of the crashed kernel, and that memory
-may well have uncorrectable errors. That is after all what the first
-kernel often died of. Every architecture that maps a page of the old
-kernel and copies it out does so with copy_to_iter(), and a machine
-check in that copy takes the capture kernel down.
+Make the remaining copy_oldmem_page() implementations copy the page of
+the crashed kernel with copy_oldmem_to_iter() like x86_64 and powerpc
+do. None of these architectures has a machine check safe copy today, so
+for them this is copy_to_iter() under another name. But the copy of a
+page of the old kernel is in one place now, and an architecture that
+gains ARCH_HAS_COPY_MC later gets the recovery without touching its
+crash dump code.
 
-On x86 a machine check in the kernel is only recovered from if the
-instruction that took it has a machine check safe exception table entry
-or copies from userspace (cf. error_context()). The copy of an old page
-is neither. Its source is kernel memory, whether it goes to the buffer
-of a read() or, since commit 4a22fd20379c ("vmcore: convert
-__read_vmcore to use an iov_iter"), into a kernel page for splice(),
-sendfile() and copy_file_range(). So a read of /proc/vmcore that runs
-into a poisoned page panics the capture kernel, and so do vmcore's own
-reads of the ELF headers and notes. Breno sees the result on a fleet:
-the first kernel dies of a machine check and the capture kernel produces
-no usable vmcore at all (cf. [1]).
+s390 stays as it is. It copies the old kernel's memory through its real
+address mode window in memcpy_real_iter(), and an uncorrected storage
+error is fatal on s390 anyway (cf. s390_handle_damage()).
 
-On book3s64 a machine check in the kernel is recovered from if the
-instruction that took it has an exception table entry (cf.
-mce_common_process_ue()). The user copy has them, so a read() comes up
-short there and read_from_oldmem() returns -EFAULT. The copies into
-kernel pages have none and panic the same way. Other powerpc platforms
-don't recover from a machine check in such a copy at all.
+No functional changes.
 
-Copy with _copy_mc_to_iter() instead. x86_64 and PPC64 select
-ARCH_HAS_COPY_MC, and on x86_64 and book3s64 the machine check safe copy
-turns the machine check into a short copy, which read_from_oldmem()
-turns into -EFAULT like any other short copy. On x86 that holds for the
-fragile and the enhanced fast string variant, a CPU with neither gets
-the plain copy it has today. Everywhere else _copy_mc_to_iter() is
-_copy_to_iter(). Put the call into a helper, copy_oldmem_to_iter(), so
-that the copy of a page of the old kernel lives in one place and an
-architecture that gains a machine check safe copy later gets this for
-free. The helper does the same check_copy_size() as copy_to_iter(), so
-hardened usercopy keeps checking the copy.
-
-With a v7.4-rc1 capture kernel reading /proc/vmcore and a machine check
-injected into the copy of an old page the capture kernel is gone. A
-machine check panic prints no trace of its own, this one comes from
-panic_sys_info=all_bt:
-
-[    0.580568] mce: [Hardware Error]: CPU 0: Machine Check Exception: 7 Bank 1: bd80000000000134
-[    0.580574] mce: [Hardware Error]: RIP 10:<ffffffff81909b11> {_copy_to_iter+0x81/0x850}
-[    0.580584] mce: [Hardware Error]: TSC 202f2117f ADDR 10000000 MISC 8c
-[    0.580587] mce: [Hardware Error]: PROCESSOR 2:aa0f02 TIME 1794493617 SOCKET 0 APIC 0 microcode aa0021c
-[    0.580589] mce: [Hardware Error]: Machine check: Uncorrected unrecoverable error in kernel context
-[    0.580591] Kernel panic - not syncing: Fatal local machine check
-[    0.582587] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 7.4.0-rc1-g6628e7d4c6b2 #1 PREEMPT(lazy)
-[    0.583101] Call Trace:
-[    0.583198]  <#MC>
-[    0.583279]  dump_stack_lvl+0x4d/0x70
-[    0.583419]  nmi_cpu_backtrace.cold+0x18/0x6e
-[    0.583584]  ? __pfx_nmi_raise_cpu_backtrace+0x10/0x10
-[    0.583772]  nmi_trigger_cpumask_backtrace+0xba/0xf0
-[    0.583955]  sys_info+0x83/0xb0
-[    0.584075]  vpanic+0x1b4/0x303
-[    0.584197]  panic+0x66/0x70
-[    0.584488]  mce_panic+0x19e/0x290
-[    0.584799]  do_machine_check+0x627/0x9a0
-[    0.584953]  ? _copy_to_iter+0x81/0x850
-[    0.585099]  exc_machine_check+0x68/0xb0
-[    0.585246]  asm_exc_machine_check+0x1e/0x40
-[    0.587747]  </#MC>
-[    0.587831]  <TASK>
-[    0.588092]  ? iomem_map_sanity_check+0x98/0xb0
-[    0.588430]  ? __ioremap_caller.isra.0+0x1a9/0x300
-[    0.588604]  ? __copy_oldmem_page+0x3d/0xb0
-[    0.588928]  __copy_oldmem_page+0x5e/0xb0
-[    0.589079]  read_from_oldmem.part.0+0xe3/0x140
-[    0.589247]  read_vmcore+0x137/0x280
-[    0.589381]  proc_reg_read_iter+0x49/0x90
-[    0.589533]  vfs_read+0x348/0x490
-[    0.589666]  ksys_read+0x76/0x100
-[    0.589792]  do_syscall_64+0xde/0x4b0
-[    0.590103]  entry_SYSCALL_64_after_hwframe+0x77/0x7f
-
-With this patch the same injection ends the read() with -EFAULT, the
-capture kernel logs the machine check and keeps running.
-
-[1]: https://lore.kernel.org/all/avRXzzCSzT9Qj2FC@gmail.com/
-
-Reported-by: Chris Mason <mason@kernel.org>
-Suggested-by: Breno Leitao <leitao@debian.org>
-Fixes: 4ae362be5093 ("[PATCH] kdump: read previous kernel's memory")
-Fixes: 54c32021eb6f ("[PATCH] powerpc: Add arch-dependent copy_oldmem_page")
-Fixes: 4a22fd20379c ("vmcore: convert __read_vmcore to use an iov_iter")
-Cc: stable@vger.kernel.org
 Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 ---
- arch/powerpc/kernel/crash_dump.c |  4 ++--
- arch/x86/kernel/crash_dump_64.c  |  2 +-
- include/linux/crash_dump.h       | 22 ++++++++++++++++++++++
- 3 files changed, 25 insertions(+), 3 deletions(-)
+ arch/arm/kernel/crash_dump.c       | 2 +-
+ arch/arm64/kernel/crash_dump.c     | 2 +-
+ arch/loongarch/kernel/crash_dump.c | 2 +-
+ arch/mips/kernel/crash_dump.c      | 2 +-
+ arch/riscv/kernel/crash_dump.c     | 2 +-
+ arch/sh/kernel/crash_dump.c        | 2 +-
+ arch/x86/kernel/crash_dump_32.c    | 2 +-
+ 7 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 1543917bd3e1d..f784fc5cb0030 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -83,12 +83,12 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
- 
- 	if (memblock_is_region_memory(paddr, csize)) {
- 		vaddr = __va(paddr);
--		csize = copy_to_iter(vaddr + offset, csize, iter);
-+		csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
- 	} else {
- 		vaddr = ioremap_cache(paddr, PAGE_SIZE);
- 		if (!vaddr)
- 			return -ENOMEM;
--		csize = copy_to_iter(vaddr + offset, csize, iter);
-+		csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
- 		iounmap(vaddr);
- 	}
- 
-diff --git a/arch/x86/kernel/crash_dump_64.c b/arch/x86/kernel/crash_dump_64.c
-index 32d710f7eb84c..e10dada855b70 100644
---- a/arch/x86/kernel/crash_dump_64.c
-+++ b/arch/x86/kernel/crash_dump_64.c
-@@ -29,7 +29,7 @@ static ssize_t __copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+diff --git a/arch/arm/kernel/crash_dump.c b/arch/arm/kernel/crash_dump.c
+index 938bd932df9a0..0f2628872b00c 100644
+--- a/arch/arm/kernel/crash_dump.c
++++ b/arch/arm/kernel/crash_dump.c
+@@ -28,7 +28,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
  	if (!vaddr)
  		return -ENOMEM;
  
 -	csize = copy_to_iter(vaddr + offset, csize, iter);
 +	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
  
- 	iounmap((void __iomem *)vaddr);
+ 	iounmap(vaddr);
  	return csize;
-diff --git a/include/linux/crash_dump.h b/include/linux/crash_dump.h
-index 8315270e27b7a..12aeaa40c1c94 100644
---- a/include/linux/crash_dump.h
-+++ b/include/linux/crash_dump.h
-@@ -6,6 +6,7 @@
- #include <linux/proc_fs.h>
- #include <linux/elf.h>
- #include <linux/pgtable.h>
-+#include <linux/uio.h>
- #include <uapi/linux/vmcore.h>
+diff --git a/arch/arm64/kernel/crash_dump.c b/arch/arm64/kernel/crash_dump.c
+index 670e4ce818223..c774b3aba107d 100644
+--- a/arch/arm64/kernel/crash_dump.c
++++ b/arch/arm64/kernel/crash_dump.c
+@@ -24,7 +24,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 	if (!vaddr)
+ 		return -ENOMEM;
  
- /* For IS_ENABLED(CONFIG_CRASH_DUMP) */
-@@ -33,6 +34,27 @@ ssize_t copy_oldmem_page(struct iov_iter *i, unsigned long pfn, size_t csize,
- ssize_t copy_oldmem_page_encrypted(struct iov_iter *iter, unsigned long pfn,
- 				   size_t csize, unsigned long offset);
+-	csize = copy_to_iter(vaddr + offset, csize, iter);
++	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
  
-+/**
-+ * copy_oldmem_to_iter - copy from the crashed kernel's memory
-+ * @src: where in the mapped page of the crashed kernel to copy from
-+ * @count: how many bytes to copy
-+ * @iter: where to copy them
-+ *
-+ * The memory of the crashed kernel may well have uncorrectable errors.
-+ * Where the architecture has a machine check safe copy a machine check
-+ * in the copy ends it short, like a fault would, instead of taking the
-+ * capture kernel down. Everywhere else this is copy_to_iter().
-+ *
-+ * Return: the number of bytes copied, like copy_to_iter().
-+ */
-+static inline size_t copy_oldmem_to_iter(const void *src, size_t count,
-+					 struct iov_iter *iter)
-+{
-+	if (check_copy_size(src, count, true))
-+		return _copy_mc_to_iter(src, count, iter);
-+	return 0;
-+}
-+
- void vmcore_cleanup(void);
+ 	memunmap(vaddr);
  
- /* Architecture code defines this if there are other possible ELF
+diff --git a/arch/loongarch/kernel/crash_dump.c b/arch/loongarch/kernel/crash_dump.c
+index e559307c10929..03a136b8be8da 100644
+--- a/arch/loongarch/kernel/crash_dump.c
++++ b/arch/loongarch/kernel/crash_dump.c
+@@ -15,7 +15,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 	if (!vaddr)
+ 		return -ENOMEM;
+ 
+-	csize = copy_to_iter(vaddr + offset, csize, iter);
++	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
+ 
+ 	memunmap(vaddr);
+ 
+diff --git a/arch/mips/kernel/crash_dump.c b/arch/mips/kernel/crash_dump.c
+index 6e50f49024094..078c0d1e8df46 100644
+--- a/arch/mips/kernel/crash_dump.c
++++ b/arch/mips/kernel/crash_dump.c
+@@ -12,7 +12,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 		return 0;
+ 
+ 	vaddr = kmap_local_pfn(pfn);
+-	csize = copy_to_iter(vaddr + offset, csize, iter);
++	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
+ 	kunmap_local(vaddr);
+ 
+ 	return csize;
+diff --git a/arch/riscv/kernel/crash_dump.c b/arch/riscv/kernel/crash_dump.c
+index ea2158cee97b3..0820e3db12603 100644
+--- a/arch/riscv/kernel/crash_dump.c
++++ b/arch/riscv/kernel/crash_dump.c
+@@ -21,7 +21,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 	if (!vaddr)
+ 		return -ENOMEM;
+ 
+-	csize = copy_to_iter(vaddr + offset, csize, iter);
++	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
+ 
+ 	memunmap(vaddr);
+ 	return csize;
+diff --git a/arch/sh/kernel/crash_dump.c b/arch/sh/kernel/crash_dump.c
+index 85c0e58f1a59f..2a5988b6e9d7a 100644
+--- a/arch/sh/kernel/crash_dump.c
++++ b/arch/sh/kernel/crash_dump.c
+@@ -23,7 +23,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn,
+ 	if (!vaddr)
+ 		return -ENOMEM;
+ 
+-	csize = copy_to_iter(vaddr + offset, csize, iter);
++	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
+ 	iounmap(vaddr);
+ 
+ 	return csize;
+diff --git a/arch/x86/kernel/crash_dump_32.c b/arch/x86/kernel/crash_dump_32.c
+index 5f4ae5476e193..cb202d4e1f703 100644
+--- a/arch/x86/kernel/crash_dump_32.c
++++ b/arch/x86/kernel/crash_dump_32.c
+@@ -40,7 +40,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter, unsigned long pfn, size_t csize,
+ 		return -EFAULT;
+ 
+ 	vaddr = kmap_local_pfn(pfn);
+-	csize = copy_to_iter(vaddr + offset, csize, iter);
++	csize = copy_oldmem_to_iter(vaddr + offset, csize, iter);
+ 	kunmap_local(vaddr);
+ 
+ 	return csize;
 
 -- 
 2.53.0
