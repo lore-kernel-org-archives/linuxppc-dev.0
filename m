@@ -1,105 +1,83 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32C14606A327
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:27:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2C20660A3829
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:34:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=VQQTu8Ca;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Riyi6GBz
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0/VHn0iE
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQLly4fQMz2y8F;
-	Fri, 13 Nov 2026 00:27:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.154
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794490046;
-	cv=none; b=jie75/EScUt3XpFJxgcm0rYgF4nBbbX6BPIYtmQABc9V7zjuCn8ssERRw6Zfr/Ky2rmWNCdpzOTS6iXhAdUmPCHznnsHOb5RkUSVha+covaVuNbMiu7CPCqwbEp2GU5OjFo05LOA7y8eHC2CKmEH5DAUslTWqm3OLmljU4wnph1TawH/LQD/MBkh+APwKcxAw9Pzb4dF6VSIJSMRsXD+ErsJW0FZR2g2xrLPGAHS1CCX2arPSwlBG2sIXm7Qm8wOtRIjitkB/a8ThtT7/JNBIM4FUDurJYcgVVmndYFSGaxc6t3yxh8xd19zPaoW8ymr9tzODBi3Bbkk9nNE+Mg2mw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQLwY3Gj6z30V0;
+	Fri, 13 Nov 2026 00:34:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.223
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794490493;
+	cv=none; b=O0T0HTzL5BhEaL5OrJYpzhEsultDHY45e7B+GrMNou9PKxRfhjkZhYHXv3zB0NSdQhnmUQBwPQDRCo+CSRBNlMewES0Fwbs2FCBOoPkPW8pXKWv2oFeNmKgMde3ZdX2EGq70805vPWp+6tYd/MKGpp3u1mqv2PJH398ZA+QTZHmUjn+E6S3AS2vcVI4Zb0lBm/3zLtOTc34w34I03pdJAhCziiOVQo8OBazIJjESNL44mfpJ5dBM7niSHVSur1UBsGkNGnYEwJIuZojhnckDUcyAlvwJ3+FAWsRS92euswGaQ82GT+UOTUADyV3aMTlwG/N911PNXiKBIBMqQk3iiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794490046; c=relaxed/relaxed;
-	bh=O2cMjR9yzPx4FjNIH8WeRrejetDLBf3cij4Y+ejCORQ=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=ISoadFuJSTfFaEweXbSFjGfOLTAbP6LjkNyZSmu0ewyWJP+zOVmd78kUjrFbotoC05xqgbagBvi9ZOfVLgetTQZUehk3D6R1Jxu5xrw49AHS+QLNC7yu5IZ7renQNGI5KUkzygLbn7KDAvdChBIGkp7Zuu7z5gnEobikyrjzMhoHWdg2R6BDuukAgnuogTAeWdA2qM1oKLOS1uel02EAlkt1+L18lWIcHpd1btdbLLZ4d6v1SDPwMlLNgJ7RhVlQMajgGwPDGvDrXvCEnpDqfnNEaqsEnhKtmisWwbBLXm9xXmoZPXdNAFRW6LJ1Ecu2r06LgZLWskgJrR/nKFaQ6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=VQQTu8Ca; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Riyi6GBz; dkim-atps=neutral; spf=pass (client-ip=202.12.124.154; helo=fhigh-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1794490493; c=relaxed/relaxed;
+	bh=IIjwTcz15PyMsksQJ/ixjXOV4ou2zq7XqHr0HTbVuxU=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=YNTJno4fwGW8WNmzB80PErFIp5ngjN8BHqfkbOxDnauFxRzMmT7xAq+6b1i6YYQg4xKncid1Ks+Le2LJzwXgjFssFxwPjzO66VihJVT+a1CCycYpNkCM4PM60rSNyIDTgQvgvgvoEeP4/+Wdmsd9YYTA8IvhzXaL5P7A17vbRQ+9ip8bQ9IC5CClGfqFHkJ0JJT/wRdnM11JKj6W+tImHUeDVvcWgNdo6g1Ct6ENu7zpbHFnOg/KOCfr+Zv6tTSJ0+0V/43yDlGtYKHvFUVFOUSmaHOBcOXILjszgeKM5uHJk6R59I/qTfji9y+8akQAeW2OmtuFkPqJHP7nU3LcnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0/VHn0iE; dkim-atps=neutral; spf=pass (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=VQQTu8Ca;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Riyi6GBz;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0/VHn0iE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.154; helo=fhigh-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQLlt1l0tz2xmV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:27:21 +1100 (AEDT)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 37DB67A013F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 08:27:18 -0500 (EST)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Thu, 12 Nov 2026 08:27:18 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1794490027;
-	 x=1794576427; bh=O2cMjR9yzPx4FjNIH8WeRrejetDLBf3cij4Y+ejCORQ=; b=
-	VQQTu8Ca+GpoqtlLEEHD9zniEnLX1LcLlkvq4k7p+NOwt37jHvnhY3yyW9FgUN65
-	0HqHfGXOO8D4z/VHMHpTDBBFqQrLYqwEVaa/wTMv7YPZfmKXdJ2GqAcbIv8Wro5x
-	Oi/MK5Q68KcNYdVjaIRImSzvUlNNk+V451RvXqonH6WWLcWrznW2lgvYOzc6bNPX
-	HVnNMBkw5yUkC/2iwxleNjrXvASI7NlDLZR/U6BtsVSpUJ5/pqOhnIjthIyVGWpc
-	QLckFVdHDENAxIbDxqUJDnjI7tI1Tia6XnZlCPhLRqsk2kt2aDQvcKBYxrr/iUJ/
-	nBdqCSqcQYlYomiKlOptvg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794490027; x=
-	1794576427; bh=O2cMjR9yzPx4FjNIH8WeRrejetDLBf3cij4Y+ejCORQ=; b=R
-	iyi6GBz1HGz15e3j6yN33Phda/8+Z0nzmtJ/0qat4vHymgPwVyp3r7fNaXKLt9z6
-	x0EC3NTeXb+KTXSLVlatsAHtJbZxrhsrliNVshs4ByuHGjI3p1iwSFOLXwTeNfPB
-	0Pu3MfYotvbOjx8YMKVFOq7j9AcZFo0gPW1/jTxygcHtk00WukXSD8BlHxcS7JN8
-	coNgLvCIok090MOzpP2maHSnTr3z6HNOlgY6aYe6i5vRu/1rk1Zhsag5QuZt2+JU
-	hcC+fZr5SGdrV148aeKrJPDBfm5Uj+NIzmKVQ5xY+SoIFYa8D1vcYzTvMRPvZLSu
-	WOtX/qA7goQOrtFMA8XAA==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=arndb.de a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794490027; d=arndb.de;
-	mf=PGFybmRAYXJuZGIuZGU+;
-	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:IRgSgVzA7B/oZ2dj2VhTqpRza+pzjgBG6suylj1HtGHNZeM
-	BWEl+F3n0pcCyQCS7NOTg362dbN+RtY8VzL8FbGcuTB/x1Z6/i8Vg32dNFJ+RUT3
-	JyZZgIiJnnJUtFXKApAWVZzZ/sGPvlpOYIur8SalCgNEwDv74m/+ipEDMrARMS6C
-	AOTL5O6XrpJvjwpm9BbY/ta3WuVxEV2xvx7rub7fcJ9bJffsd0iosYPCX2nJP9bH
-	8FM/OMmwtEkrJb8qZ0akbNXy+TMvtVomX/G+JQPaujrF1QvddVIwuOHNL+9ogBT0
-	k/kU6LTkAEbMqFq5HFoR1GrFLWxb9PsBX6EREiw==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
-	from,in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:Kff0dgzs0zBL+zaPVEZ/FAXWzqOn0OySYPVQarW0/94=:i4c501ZyCD5sNIncROoHKwQMRTWXxYq4u1vDcRxvSsU=;
-X-ME-Sender: <xms:o771apIEwU78ImdKJMIXZSKyBmiYRujvDbrz8RvwwXrsgLuEGRi70w>
-    <xme:o771av_xcKDi4AJTY8aD2M04WM3Hgk0evqdkIvBIFfTGTEZXwzzCSHFmkyVHfdG1w
-    IfT-fhf6AN2oVPP1Dlsyxza_lOct-jiXyPltZs1m1dzBFeGc9eaZNts>
-X-ME-Proxy-Cause: dmFkZTGAGn9YXYitrhore6IN0xSvjsAnm1g8uO8G/rBlyoZEPZcGKHflQ4cd1CGyc7u3FY
-    lyI4GGDINEaQvUJ60pNMagWhIrAAmeu9PCIX7BpFjMEOhFxQlDI7P9nKCEetRYakx9k4yH
-    zOdFMwgpltLtiRGIJAuajTvoZLN9zd//XoA8i6mpYenbg4h1qkOvWDMJWOrgPOhfQm+jjO
-    AIiaHcTGn0QmBIfDQ8RW/8HSjasttxmT/eOjUexIPxRf5pM6pH7O9LjCKTOofftixH5TVS
-    XwR9P0w80zcjkjtafAhUy+Qs29wJ7VmYwj4OLeB/vOO8N4xQuyEhJ27y32P4N3c9EtiTc6
-    i4rjJ2f2Jg9nwgzaQgBsV1Gzsr1y1OTTunwXZDGq+LUDFgF4/qVxEgQSBPbwAKCUmIpfGe
-    Q5KfNKy7hG4qBzSjXGCIAdrS4eoB5d7AfFspixFKVSlYRSImzXCPFAGAMTKPswc8Al7RTe
-    6mFof4PXlhRqj4PCnrfnAF7Iwcv5/RkbsY8Pp4ND2t99jcjcv8BFRw5m+ji31CCIrm4h+F
-    3fCKRBVXM8bCIQk5/UQ2B1SIZdHp/6FuPb8qtYnb7UO5zVMLWRcvfim5icH7eSXCPeNWNT
-    0ng4Psnest6tcFpeWklID9IBOLXSI3Pf/8nwvdenN7iYiKVjC/5WW/8w4ajQ
-X-ME-Proxy: <xmx:p771aqg1qe7lGBvhbLQgU0oOgVcivaDpZz9ezcs3gCs9C0N__LigEw>
-    <xmx:p771av6f8kcPjvAaCtvKmbHAAsVpmPPxVEX07zWmxLCdB1HtwsXTiQ>
-    <xmx:p771aqqbgJM7jJcBW4dJ-W8j3SylX-rG7XCxXoBM8gXFWW38YtQ6sw>
-    <xmx:p771akhSWCJ9LN8M76dbJIYsHOSgnLyVgZ9WJTYZxCEn4QPdPvhtyA>
-    <xmx:q771att1eGrcIwChuJ4viY_p7BF8HjIQDVNJ9_qJY6MtXunpkOKb0HDM>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id B149132A0099; Thu, 12 Nov 2026 08:26:59 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQLwV3TR1z308H
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:34:47 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=IIjwTcz15PyMsksQJ/ixjXOV4ou2zq7XqHr0HTbVuxU=;
+	b=0/VHn0iEGb0IPORrcHUCZuDCJqtkFCHQM1NvMeBpdC1cNSBSUA9ZqE98TmpC22IvlErEFnlCh
+	h+a12v7jlnaSmyZbkdGSAsEFlj1ySCiupETxSkoDPMfuxOYFM03TJgZiBrMi9ML4/XkTAqnfd9Y
+	/SEuLRkPeN9uDFXLxgENIxM=
+Received: from mail.maildlp.com (unknown [172.19.163.163])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4jQLvz4gDQzmV8H;
+	Thu, 12 Nov 2026 21:34:23 +0800 (CST)
+Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
+	by mail.maildlp.com (Postfix) with ESMTPS id 6E9CE4048B;
+	Thu, 12 Nov 2026 21:34:39 +0800 (CST)
+Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
+ (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Thu, 12 Nov
+ 2026 21:34:37 +0800
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<ritesh.list@gmail.com>, <sshegde@linux.ibm.com>, <pjw@kernel.org>,
+	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
+	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
+	<baoquan.he@linux.dev>, <rppt@kernel.org>, <pasha.tatashin@soleen.com>,
+	<pratyush@kernel.org>, <ruanjinjie@huawei.com>, <leitao@debian.org>,
+	<yeoreum.yun@arm.com>, <mpilaniy@redhat.com>, <robh@kernel.org>,
+	<coiby.xu@gmail.com>, <Yeking@Red54.com>, <prudo@redhat.com>,
+	<brads@mainlining.org>, <sourabhjain@linux.ibm.com>, <mkchauras@gmail.com>,
+	<blum@kernel.org>, <adityag@linux.ibm.com>, <qirui.001@bytedance.com>,
+	<hui.wang@canonical.com>, <sohammetha01@gmail.com>, <guoren@kernel.org>,
+	<gaohan@iscas.ac.cn>, <ionut.nechita@windriver.com>,
+	<vishal.l.verma@intel.com>, <seanjc@google.com>, <ardb@kernel.org>,
+	<richard.lyu@suse.com>, <arnd@arndb.de>, <tzimmermann@suse.de>,
+	<rick.p.edgecombe@intel.com>, <kai.huang@intel.com>, <kas@kernel.org>,
+	<piliu@redhat.com>, <thuth@redhat.com>, <shradhagupta@linux.microsoft.com>,
+	<ebiggers@kernel.org>, <jbouron@amazon.com>, <me@linux.beauty>,
+	<mclapinski@google.com>, <graf@amazon.com>, <tangyouling@kylinos.cn>,
+	<x86@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
+	<kexec@lists.infradead.org>
+Subject: [PATCH v8 02/11] kexec: Add helpers to load the elf core header, initrd and FDT
+Date: Thu, 12 Nov 2026 21:34:09 +0800
+Message-ID: <20261112133418.4044428-3-ruanjinjie@huawei.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261112133418.4044428-1-ruanjinjie@huawei.com>
+References: <20261112133418.4044428-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,143 +91,196 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: APvT47k4hUj-
-Date: Thu, 12 Nov 2026 14:26:39 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Mike Rapoport" <rppt@kernel.org>, "Arnd Bergmann" <arnd@kernel.org>
-Cc: linux-mm@kvack.org, "Andrew Morton" <akpm@linux-foundation.org>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "Jason Gunthorpe" <jgg@nvidia.com>,
- "Linus Walleij" <linus.walleij@linaro.org>,
- "Lorenzo Stoakes" <ljs@kernel.org>, "Matthew Wilcox" <willy@infradead.org>,
- "Malin Jonsson" <malin.jonsson@est.tech>,
- "Richard Weinberger" <richard@nod.at>,
- "Russell King" <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Message-Id: <ba23a789-9820-4223-a6db-d9e99ebcf356@app.fastmail.com>
-In-Reply-To: <avWo4NrAPX8BisCY@kernel.org>
-References: <20261112112528.1116405-1-arnd@kernel.org>
- <20261112112528.1116405-5-arnd@kernel.org> <avWo4NrAPX8BisCY@kernel.org>
-Subject: Re: [PATCH v2 4/6] mm: drop HIGHPTE support altogether
+Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
+ kwepemk200008.china.huawei.com (7.202.194.74)
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026, at 12:54, Mike Rapoport wrote:
-> On Thu, Nov 12, 2026 at 12:25:26PM +0100, Arnd Bergmann wrote:
->> From: Arnd Bergmann <arnd@arndb.de>
->> 
->> With both x86 and arm having dropped CONFIG_HIGHPTE support, no
->> architecture is left using it, so remove the remnants in common code.
->> 
->> It is likely that further cleanups are possible in the page table
->> code but those are not obvious from the config options.
->> 
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->> ---
->>  include/linux/hugetlb.h | 5 +----
->>  include/linux/mm.h      | 1 -
->>  include/linux/pgtable.h | 9 ---------
->>  3 files changed, 1 insertion(+), 14 deletions(-)
->
-> With this and arm HIGHPTE patches applied there are still a few leftovers:
->
-> $ git grep  HIGHPTE
-> arch/arm/configs/vt8500_v6_v7_defconfig:CONFIG_HIGHPTE=y
+x86, arm64, LoongArch, RISC-V and powerpc all build an elf core header,
+load the initrd by hand before loading the kdump kernel, while arm64 and
+RISC-V also duplicate the code that builds the device tree for the kexec
+kernel
 
-This got dropped in patch 5/6 in v2, but I've moved that here now.
+Add the following 4 helpers for reuse:
+- kexec_prepare_elf_core_header() builds the header once per image and
+  returns the number of memory ranges, which x86 needs to reserve room
+  for the crash hotplug updates.
 
-> mm/memory.c:     * Dumping the PTE would be nice, but it's tricky with 
-> CONFIG_HIGHPTE,
+- kexec_add_elf_core_header() places the prepared header as a segment.
+  The caller provides the kexec_buf with its placement policy and the
+  size to reserve.  On success it also records the segment index that
+  the crash hotplug code uses to find the header.
 
-Added the patch below for this. Untested so far.
+- kexec_add_initrd() places the initrd from the image with the placement
+  policy the caller put into the kexec_buf.
 
-> mm/pgtable-generic.c: * kmapped if necessary (when CONFIG_HIGHPTE), and 
-> locked against concurrent
+- kexec_add_fdt() builds the device tree for the kexec kernel, packs
+  it and places it with the kexec_buf the caller passes in.
 
-Updated the comment and also dropped __pte_map() after I noticed that
-open-coding the only caller in pte_offset_map_rw_nolock() is consistent
-with that comment change:
-
---- a/mm/pgtable-generic.c
-+++ b/mm/pgtable-generic.c
-@@ -314,7 +314,7 @@ pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp)
-                pmd_clear_bad(pmd);
-                goto nomap;
-        }
--       return __pte_map(&pmdval, addr);
-+       return pte_offset_kernel(&pmdval, addr);
- nomap:
-        rcu_read_unlock();
-        return NULL;
-
-
-> mm/userfaultfd.c:        * index ordering when CONFIG_HIGHPTE is 
-> enabled. We mapped dst_pte
-
-Dropped that comment block as it no longer applies.
-
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-
-Thanks,
-
-      Arnd
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan He <baoquan.he@linux.dev>
+Cc: Mike Rapoport <rppt@kernel.org>
+Link: https://lore.kernel.org/all/179430504583.425130.15302016434972990362.b4-review@b4/
+Suggested-by: Mike Rapoport <rppt@kernel.org>
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
-Subject: [PATCH] mm: print pte in __print_bad_page_map_pgtable()
+ include/linux/kexec.h |  11 +++++
+ kernel/kexec_file.c   | 104 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 115 insertions(+)
 
-HIGHPTE support is gone now, so it's easy enough to print the
-PTE here along with the upper level entries.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-diff --git a/mm/memory.c b/mm/memory.c
-index ec3d9d99ccee..dabeb5568c94 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -528,9 +528,11 @@ static void __print_bad_page_map_pgtable(struct mm_struct *mm, unsigned long add
- 	char p4d_str[PTVAL_STR_MAX];
- 	char pud_str[PTVAL_STR_MAX];
- 	char pmd_str[PTVAL_STR_MAX];
-+	char pte_str[PTVAL_STR_MAX];
- 	p4d_t p4d, *p4dp;
- 	pud_t pud, *pudp;
- 	pmd_t pmd, *pmdp;
-+	pte_t pte, *ptep;
- 	pgd_t *pgdp;
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index bac11e940e74..89cb47521d6d 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -258,6 +258,17 @@ int kexec_kernel_verify_pe_sig(const char *kernel, unsigned long kernel_len);
  
- 	/*
-@@ -567,13 +569,18 @@ static void __print_bad_page_map_pgtable(struct mm_struct *mm, unsigned long add
- 	pmd = pmdp_get(pmdp);
- 	ptval_to_str(pmd_str, pmd_val(pmd));
+ extern int kexec_add_buffer(struct kexec_buf *kbuf);
+ int kexec_locate_mem_hole(struct kexec_buf *kbuf);
++int kexec_add_initrd(struct kimage *image, struct kexec_buf *kbuf);
++#ifdef CONFIG_CRASH_DUMP
++int kexec_prepare_elf_core_header(struct kimage *image, bool need_kernel_map,
++				  unsigned long *nr_ranges);
++int kexec_add_elf_core_header(struct kimage *image, struct kexec_buf *kbuf);
++#endif
++#if defined(CONFIG_OF) && defined(CONFIG_OF_FLATTREE)
++int kexec_add_fdt(struct kimage *image, struct kexec_buf *kbuf,
++		  unsigned long initrd_load_addr, const char *cmdline,
++		  void **fdt);
++#endif
  
--	/*
--	 * Dumping the PTE would be nice, but it's tricky with CONFIG_HIGHPTE,
--	 * because the table should already be mapped by the caller and
--	 * doing another map would be bad. print_bad_page_map() should
--	 * already take care of printing the PTE.
--	 */
--	pr_alert("pgd:%s p4d:%s pud:%s pmd:%s\n", pgd_str, p4d_str, pud_str, pmd_str);
-+	if (!pmd_present(pmd) || pmd_leaf(pmd)) {
-+		pr_alert("pgd:%s p4d:%s pud:%s pmd: %s\n",
-+			 pgd_str, p4d_str, pud_str, pmd_str);
-+		return;
-+	}
-+
-+	ptep = pte_offset_kernel(pmdp, addr);
-+	pte = ptep_get(ptep);
-+	ptval_to_str(pte_str, pte_val(pte));
-+
-+	pr_alert("pgd:%s p4d:%s pud:%s pmd:%s pte:%s\n",
-+		 pgd_str, p4d_str, pud_str, pmd_str, pte_str);
+ #ifndef arch_kexec_apply_relocations_add
+ /*
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index 1f128c6e6fa3..25c9bef639d2 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -14,7 +14,9 @@
+ #include <linux/file.h>
+ #include <linux/slab.h>
+ #include <linux/kexec.h>
++#include <linux/libfdt.h>
+ #include <linux/memblock.h>
++#include <linux/of.h>
+ #include <linux/mutex.h>
+ #include <linux/list.h>
+ #include <linux/fs.h>
+@@ -109,6 +111,108 @@ static void kexec_free_elf_headers(struct kimage *image)
+ 	image->elf_headers_sz = 0;
  }
  
++#ifdef CONFIG_CRASH_DUMP
++int kexec_prepare_elf_core_header(struct kimage *image, bool need_kernel_map,
++				  unsigned long *nr_ranges)
++{
++	int ret;
++
++	if (image->elf_headers)
++		return 0;
++
++	ret = crash_prepare_headers(need_kernel_map, &image->elf_headers,
++				    &image->elf_headers_sz, nr_ranges);
++	if (ret)
++		pr_err("Preparing elf core header failed\n");
++
++	return ret;
++}
++
++int kexec_add_elf_core_header(struct kimage *image, struct kexec_buf *kbuf)
++{
++	unsigned long memsz = kbuf->memsz;
++	int ret;
++
++	kbuf->buffer = image->elf_headers;
++	kbuf->bufsz = image->elf_headers_sz;
++	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
++
++	ret = kexec_add_buffer(kbuf);
++	if (ret)
++		return ret;
++
++	image->elf_load_addr = kbuf->mem;
++
++	/* The crash hotplug reservation can exceed the header size. */
++	if (memsz > image->elf_headers_sz) {
++		image->elf_headers_sz = memsz;
++#ifdef CONFIG_CRASH_HOTPLUG
++		image->elfcorehdr_index = image->nr_segments - 1;
++#endif
++	}
++
++	kexec_dprintk("Loaded elf core header at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
++		      image->elf_load_addr, kbuf->bufsz, kbuf->memsz);
++
++	return 0;
++}
++#endif /* CONFIG_CRASH_DUMP */
++
++int kexec_add_initrd(struct kimage *image, struct kexec_buf *kbuf)
++{
++	int ret;
++
++	kbuf->buffer = image->initrd_buf;
++	kbuf->bufsz = kbuf->memsz = image->initrd_buf_len;
++	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
++
++	ret = kexec_add_buffer(kbuf);
++	if (ret)
++		return ret;
++
++	kexec_dprintk("Loaded initrd at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
++		      kbuf->mem, kbuf->bufsz, kbuf->memsz);
++
++	return 0;
++}
++
++#if defined(CONFIG_OF) && defined(CONFIG_OF_FLATTREE)
++int kexec_add_fdt(struct kimage *image, struct kexec_buf *kbuf,
++		  unsigned long initrd_load_addr, const char *cmdline,
++		  void **fdt)
++{
++	void *new_fdt;
++	int ret;
++
++	new_fdt = of_kexec_alloc_and_setup_fdt(image, initrd_load_addr,
++					       image->initrd_buf_len,
++					       cmdline, 0);
++	if (!new_fdt) {
++		pr_err("Preparing for new dtb failed\n");
++		return -EINVAL;
++	}
++
++	fdt_pack(new_fdt);
++
++	kbuf->buffer = new_fdt;
++	kbuf->bufsz = kbuf->memsz = fdt_totalsize(new_fdt);
++	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
++
++	ret = kexec_add_buffer(kbuf);
++	if (ret) {
++		kvfree(new_fdt);
++		return ret;
++	}
++
++	*fdt = new_fdt;
++
++	kexec_dprintk("Loaded dtb at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
++		      kbuf->mem, kbuf->bufsz, kbuf->memsz);
++
++	return 0;
++}
++#endif /* CONFIG_OF && CONFIG_OF_FLATTREE */
++
  /*
+  * Free up memory used by kernel, initrd, and command line. This is temporary
+  * memory allocation which is not needed any more after these buffers have
+-- 
+2.34.1
+
 
