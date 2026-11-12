@@ -1,105 +1,96 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 20321606A321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:48:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F028606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 15:50:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ZFg7XYud;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=1uQLCPUh
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=OSHIG8ov
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQMDF5q6Wz2ynW;
-	Fri, 13 Nov 2026 00:48:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.144
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794491309;
-	cv=none; b=U/podO6KZJWFBflztSHS3eyZfUNkS+HSOLCS61a7qprW1x7DF8B5RrjrUNu0G9uZ7r9IIXyBrcGpyfNcieszoH/KFltUc1f3ecbCaCbfg44hKr9N9TqXOheXIG8eUfnD25/1rXSHY6G/Rv2Z9xSAQwQaUPYiDz1wsBlXWcvPXg4FyIAcOcVyyos/l7L4D1XNX80KlIA0+otqqafGiQqFHrHEO8e0TxZtsC6RdFjS8JVNQ8POKtuBgvIZcx+HlFM9h8v1ZGBj2NouaH88WwHYvzOkBngOcbmfWoAS8lYXlxWG04RJ6sbh+yzEfNYmSCiRbDfW58SITQ8m6r2bJ/StMA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794491309; c=relaxed/relaxed;
-	bh=VRT7mJ1HJtli90asQUPZL0I86WWZMiU/wK7Ix1+t7eg=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=HZ3fki7eedTiXkIGnskeyPs31+sgLlP6wWFAAl565CWQVsgiirEEBxlxUIu9RZ0HodzXOEHvHSaLEEt8064A3Wff77j6y4nrTHHjLVWbyUXxXxng8TCWdDD55/XLUA1rhGTplQpmelyhnjuW162cesf9XO6THi2paK582olgAAfqXAL8DD2CKGFtFdq9DbDECqaSMMYbaXN8BJjCbFLNRcDJROGJFSH6FzNSJk2HYhhOaqQZuP9KRj/65ekCqRgK3pt7kQxnbpe/lvkk24WBm9iewRf32v1+PdF27Fpa6cQBBrODEYGI9O04gv+TjUZzYYbwIzJKOEISCVOwj5JMiA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ZFg7XYud; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=1uQLCPUh; dkim-atps=neutral; spf=pass (client-ip=202.12.124.144; helo=fout-b1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQPxJ3Xrdz2xVY;
+	Fri, 13 Nov 2026 02:50:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::832" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794498644;
+	cv=pass; b=RaVLf2jvfdY9MIXaYtUZaVAus7dWIn/dkr3q+u4YmaeHmmFCYmOYeDQ+n4YB4RrU64b4HzfNCoirJ7rmRlRHyLfA+b22eIuWXk18ufFYUbTntzG4+ACtDrmxGplO3ec6CTE3Ab22lRe6nodLAasLznn+fyfnNO+mjqm1KpU70MGPitsuPha2FgNr5IOxLSziHf0y3FEdyGgwVn0VSydcsZBzbSq5GHWbNcVFuHNN/DQxtpk1svQ9YgVTZglHd+3zkopQW/Sx+NmuPr5riF6v5Xktjhvg6cygPwWt3zAf2p6as0mB02Na1YIxNybrZQ6PSGCUmZVDFTCmERA4Vlr+Bg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794498644; c=relaxed/relaxed;
+	bh=1J5Kag5a9R9WjXv4Vm2podHkmWJUILcyb3bqAyrnJ/g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JsFjBFzwZwIKB7iQXwls8gsWjAIoTCKecgj/+CPjeSc1wMYAcQ/f/2Zt+UIPrzZidkXTJxumzQ0YGijKnJnrcCSCPrJ5M5qdRXa0ZcttLsu5iSHIk9fibQfcpJWwO6GTLEyk3or+ZrzIfpTZEScLebBsYu/Qh9IX+/rcKgFMwR4o4NC/7yBhvHsI6piGxn+bVqAyhUVKAB1k13XxkegyF+K+yaFJEs1yfnCcGo0iPfIksEzh6gCAYDoqNiZoDsAzvksHS+XhTk11iBB3HZq+YNv/CAohTsOl0sySQpGjgskTDXICDd8rlH+Pn2aXL6vViMoLliri8fv3qK/N05LgrQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=OSHIG8ov; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ZFg7XYud;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=1uQLCPUh;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=OSHIG8ov;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.144; helo=fout-b1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fout-b1-smtp.messagingengine.com (fout-b1-smtp.messagingengine.com [202.12.124.144])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::832; helo=mail-qt1-x832.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x832.google.com (mail-qt1-x832.google.com [IPv6:2607:f8b0:4864:20::832])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQMDF0D0cz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:48:28 +1100 (AEDT)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfout.stl.internal (Postfix) with ESMTP id 287F01D0011E
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 08:48:26 -0500 (EST)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Thu, 12 Nov 2026 08:48:26 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1794491296;
-	 x=1794577696; bh=VRT7mJ1HJtli90asQUPZL0I86WWZMiU/wK7Ix1+t7eg=; b=
-	ZFg7XYud8u3ZU3Vkr/1+eIliGEe+kQpH74nnhHWI7Eqc+HTavuuK9CUC1l9eKjDl
-	jxu0OB8wXxkeLLbJv/9cSzU6GZc5Ct1v5d2nKsqHPbE2eB7l1wEap3sBTnrNH9fd
-	tHE/oZj3+liNdFO1FR9C/XEbBMz1bm3QTqTsv9uWf9GEn4OB+UsPYx+LzAu+UJJO
-	kRuyewpUP8qR94gZ5U+ZiVkd7Y8gPbDaB1GcbLOwO/p6es1saLOgeIvtTtKfXkxI
-	VUfs+tVFBkTtn2Hro2xBsdP2fIs8DZ3ubGeDC4d+RPucAlx2znFsP1S5Gpq2O/wS
-	nD0UZ6mz4iqcRJlx1HrjTQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794491296; x=
-	1794577696; bh=VRT7mJ1HJtli90asQUPZL0I86WWZMiU/wK7Ix1+t7eg=; b=1
-	uQLCPUhfpBkq2Q22QgeuW9H5rrij5v+JMSy5FM2Wn+bVtVQBLeosNDVadLXZzukT
-	3ouV7DnyvuyiCjMHoXchkZDUIAQ5TNEOLM8fzzVTzUmtwfczTeK2Z9KzWhjwH51f
-	yDnw4gyc+K0fXZmrcuW80+VEyvEIDtNjgrjgvRYEjyryAv/MZzVXs4TEY03/oaGO
-	0ZFAdG+NCCE6y9SCvV2bOMdPwpuvyjJJWHehPsHJjVpsttWDo2kiTwmWwwreEe5S
-	85mDPA3PfONLF0QXnmwQletEi95k4tT3wPna+QS8PYV+oeL/9yPHQJP+K4xyjoxj
-	ibh6+VdtoW1xNp2Vd7e3A==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=arndb.de a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794491296; d=arndb.de;
-	mf=PGFybmRAYXJuZGIuZGU+;
-	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:JeD7iC2p8cQSylVlVtnMwnTzGHq0DI0xd/fpwdK/lZ12aEh
-	zF4SgR/EMOgFZK/nA2FapDxtfXFsLvFPtO1rT/uTWfkMqjab9pOxq4VWSebysbc1
-	0nNAKfaA7v9Qcxb0cbhBy4BhyHXJvmbeOzCrIRw697dLB/WcHl0JqTazMrQfN9W3
-	tuUExwlc5z9GDuxDEYTmXGQEqDXkc0/stkX9/KEDsiVA+OfvHRW/4eG36GvG6ehP
-	byRgAMk/5J35TTscMY3K4jUJkrCISGTMsYWiahJCergCtgk99dfKD6nHSX1oM9zv
-	GgfJ5sScybE53alre13VprF3YtMaKI+sUHMBnVQ==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
-	from,in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:cDV/QukbB05DRWJQW1ny9Aplo0b9qlgUV7WG7RUjw10=:QpFJvCcS58Sd3l/liFWB5KOxe2KSj2H6oM6J00vPM5M=;
-X-ME-Sender: <xms:mMP1aiXThfwsuTrckyvDNGaYKe-apvviZAyhg0Ae8AMVYARi_onkow>
-    <xme:mMP1apb4WFgdoJcRw59RSXVmyyuJBI2enov0nwdM4Ezb_w-TOtmg7uEroPc3LUZ3H
-    ayaSunT543I9lWRFx4LIM8LWal-iabylMdGB5cCQE1D66Elz8C01tE>
-X-ME-Proxy-Cause: dmFkZTFSmrUQX6bVW+lydj2wLsCuvaSKIx7UJ4HZRXOwisKCAL64G7eTFeLIwxo2T5imjf
-    E1T6qbM/BpAj3rqGX7z/WvswXxFcRdzeCXGFLaUKXMMCfRQjNd1u0uFGorpgeWiaCcwvut
-    z3Yv2eiVJdW58Aeq1cotcHaZ52EAnYL87aE6+8qn7JtG48eGsTjG5u4OA3wp7Sfct0hPl6
-    SJDUdXRl9Cp8oPKmtjGBmtHsBuFdoplTXhuvisAGQwC1Vl4MnT6XIgyth+NfI4Td55nldD
-    Gyc31cN9GH9jT3czwpKGByIajJOn4jOEuqZDft6XCP0PJ1RDN5ohH/x11Qe4XbGdlpD9Bi
-    D56KnFCMSvcirQwaOYWvKT3yEGTRCa2GXjvhrXOyUbOtNJhcYJmv/mZdKsc0omGFwtHoL1
-    ZkKG/RRWMfHUFxSWX1ntYPunZlC++v21L/7td61gFdlBMiQIgffRJiD4V6POoDLDEgTFUQ
-    qLkBCOWSAKbdoishupBjm/gVDsjPbYVtEFSRUCDHEOb1xpXvwmyd1YcBXdVJHQO5JfUhsl
-    HbYFkwCvwU7fLtFehoAetiILiInkyZX35SSJZx3I+2ihzpc1jP5mRs09gVazpURvT131hO
-    5MSiT4pcVHLXcLK6h8mKLFX/3Z8vTZd+SuwiYcvj5SIZIjvgFSDgssRisahw
-X-ME-Proxy: <xmx:nMP1ak-egndCZ57bWUj3sKD_G9xgJaCR7wv7-Th42nK5bwH2bvZN8Q>
-    <xmx:nMP1akoYo7PrCKZAkPmeWaoUQZXQtHTMUgGLRbP4QtbRmof8uDNWrQ>
-    <xmx:nMP1ahPdIaqFM8xIN7rde2bXAYz3_nLjAgCk8jEliTPnIkGGn51udg>
-    <xmx:nMP1aq6QcTmNrtWmoW4WwRUC7OR_XhZlbvh63W9H89hpDWjtKomLVg>
-    <xmx:oMP1aiZgXBRRtMTvaCTvs1d8MGU9Z8LHyeZ9oDKxj_7O-wQc2k1st61T>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 6C4DC32A0099; Thu, 12 Nov 2026 08:48:08 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQPxG55cNz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 02:50:42 +1100 (AEDT)
+Received: by mail-qt1-x832.google.com with SMTP id d75a77b69052e-5383c97c8cfso272871cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 07:50:41 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794498639; cv=none;
+        d=google.com; s=arc-20260327;
+        b=FjEBbMkduN+88gX/MAoAGPHoj2TQj9FQ/ph+oSaxvTej6XNhHfDGg5exMzItpfIkQx
+         bZLCfFRhIfpIiDqbxRSON/GUzq9YPSoXCJWQpD6KlTt0ppVJTgYCmnUA/ROAwu1wIbZ7
+         6fd+rjsC7pLd5M4KNd2lt05wpRJBj3/+vk/QXSb+RvpZkpB9OElJOpxuas56kSh6KEc9
+         hcMKwQhY7WJrbuE9An7E4eS7aln7YV2s0UiHhbOolVmY6aBLPQxskrCaNu7/wynZlyeR
+         7gVgMJpXOgjjN3Yu7NDrnTRVFAeJWdS3dSEy5jsxrwe7wbDN9RuEV0Pupsd69Mjc4Jkx
+         /goA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=1J5Kag5a9R9WjXv4Vm2podHkmWJUILcyb3bqAyrnJ/g=;
+        fh=hCrZMkugK++FWXdMlkXsNWOeV+WcrIl3wS+2xoWJKj0=;
+        b=jHncO7dRLp/3mz+ZBR+v23xyDlpd9jEka47jSNzuyRkOIe0tuTeg2Z6zH4sCGBDDKZ
+         VA2r0ypK/S2QeGNU60JDHYg7Hw71yAHoAKDeAJaRpSg+K/jSvYUj5wycIWCN6PkxXs/E
+         M2XSOlccPpl4rgnA+1F0PJARMTYQipEMwmWOoHHUsbc7QeQrTtY74YDsiWfWRu9shAS3
+         J+egPWuGpsWxOsZdP69CZhASzkMEA5G9jx07yVJRN/FO1CRnxKmb9iUIhEhZBX4ts6pn
+         9BRJa/MqYTrub7mhV/uSYOI/4oZvpRR19bsYCDpyp9clJtSDt4u8Y4bpkQ4gxORyfMoX
+         YHSw==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1794498639; x=1795103439; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=1J5Kag5a9R9WjXv4Vm2podHkmWJUILcyb3bqAyrnJ/g=;
+        b=OSHIG8ova2uSA3aUYqsVBZmXXNW8M1pkfzYfCAyrYAVy+TFb9K8X+Pzm5KrTNEK6ui
+         sgzeS/ISzwDnTpmSBuKO/jqm+6F0xO6rJ4GYweK0hF0/YUPyDV5Mi1qvQusvYyErJnim
+         OQ0EW7GxTb0Bu8f2NUShNTQhjyp0sYZ5uCMo3IN+p3XQou7rvsVCvVFWm/y8APC4igUf
+         d1pUg8rvSgwigmNoLfB5nTFFNaT+g+1k4edkSpBncZCUjfvWcN7GzvCO607wkr0qwbV/
+         yynfVxVWprD5QLb+1sOM/IDM0WtxkGiccPKaubPBFSYDc84iwqBkyIqQYyLfN8yT5t3P
+         K4Hg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794498639; x=1795103439;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=1J5Kag5a9R9WjXv4Vm2podHkmWJUILcyb3bqAyrnJ/g=;
+        b=usPW0omFN4B4PZsFPZOa94XSV6NX3u+MbqYreG5z/kyuBsKYvVMklCH6a4dpApcI2w
+         d7Et/OWo/paGxR29pwOxdU0kK7suUAHtbtosKx6jM4+Dxk4V/9ytc92ZSCFSCZrfDszx
+         lOItoTMgGUspXHRJ2WSJv7lXhRlpMsXUo3LKscYa+MExdEwI+KLpJhDmduoIX2YJRnaK
+         PFDbOTNuDocWXKTwRjERXKOXdlxZYyp+kMUk8vaYdtW239NiV7GCjpj2E/tClX9msoky
+         sTez9rtys0i5eJz2L6Ipm7JT82loTt48vvLSXqAX2f+u1jMF+1SezUz9in+LbMaPXA1F
+         54vA==
+X-Forwarded-Encrypted: i=1; AL+hErFnLLD+2hrdauvWiWcmYdJO74RiemmYgiqF5Y65gTtbQb8h97wMOD+NSa1vDlxP+rwW3KU7MaPuQf08xOo=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9mvTDjtTnLgTohswcs2dHiJcgVWx9dej1I88UhGrOXZbiid1Hx
+	u4urL7gfg7Tg9GxJueGIRQsgp1ZXtf8mrjEIhV0OcOV6ghR4DBVPGCLAQt9qcBnZxGlDyzSSbt5
+	W1LmgaHFaebRXy2eI4Qp/KwK+j6wf/j8mEB4Ejntm
+X-Gm-Gg: AYBFou2t32vyeRkosDLtw30zyYznddUcFF08PBw1NkXdd2LfpuBK7GXYsm1Jx5wVJ4Q
+	V9C+cpHr5BflSBoOVZtZz4lsmc2NkNlkQdCC8d1i7VyuwN1XFTLo1vaCeD8qqQ48fTVecmd8DRm
+	OUqbWD0A2IVGOmuofkNZ2Z0NJAQHIfcp4J11UXzTZnSVrDWPPtBPD8NCFK1TF2gSUDFcCNU8aNt
+	pkUvZpKWsvLrASZSJMo5MshqUPG4f9r5OshTA9pnv7OXCsmBxtOU57QQQbZwIxZypa7I2uywCC/
+	KsQqO7xqXwcm279DpxLnyvrqVckuxaI9D4yhDqARH7WXR6JOmu9rgKiUX8xbPXkcmtqZhBSOTCO
+	O76Dx2QPKy4n1nUwfzcDbMgtBtAt2fwXbKhDIYAa4edSH8P+bnmQo+gEg/QlRBPsvgqFbK283PR
+	eIIli0EpWi+1jB8Rbe/M/KjkxtsA==
+X-Received: by 2002:a05:622a:c14:b0:532:8423:1e78 with SMTP id
+ d75a77b69052e-55990231239mr18865281cf.10.1794498638566; Thu, 12 Nov 2026
+ 07:50:38 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,52 +104,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: An903QizF2Ds
-Date: Thu, 12 Nov 2026 14:47:28 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Arnd Bergmann" <arnd@kernel.org>, linux-mm@kvack.org
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "Jason Gunthorpe" <jgg@nvidia.com>,
- "Linus Walleij" <linus.walleij@linaro.org>,
- "Lorenzo Stoakes" <ljs@kernel.org>, "Matthew Wilcox" <willy@infradead.org>,
- "Malin Jonsson" <malin.jonsson@est.tech>,
- "Richard Weinberger" <richard@nod.at>,
- "Russell King" <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Message-Id: <ae1a379b-89be-4284-b65e-4a6cf6aeaabe@app.fastmail.com>
-In-Reply-To: <20261112112528.1116405-2-arnd@kernel.org>
-References: <20261112112528.1116405-1-arnd@kernel.org>
- <20261112112528.1116405-2-arnd@kernel.org>
-Subject: Re: [PATCH v2 1/6] ARM: remove support for highmem on VIVT
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+References: <20261110112546.261415-1-hao.ge@linux.dev> <20261110112546.261415-2-hao.ge@linux.dev>
+ <CAJuCfpHjSZhPPpRudAdrDPzz8dGK=Mx62CYCNoO4MC9OhnGd=A@mail.gmail.com> <aa6caf61-a4a1-4c51-aae7-ebb767f3430c@linux.dev>
+In-Reply-To: <aa6caf61-a4a1-4c51-aae7-ebb767f3430c@linux.dev>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Thu, 12 Nov 2026 07:50:27 -0800
+X-Gm-Features: AclHuK8tTrX5dxrTUPnpF2OR-DhefKyRTvk3c3hlnhcxw9TdWFm-p4sWJVSI-pQ
+Message-ID: <CAJuCfpEC-YR7NrX_J4U-eyP-2T=E02OKKEO0eSjFMzja+BFLww@mail.gmail.com>
+Subject: Re: [PATCH v4 1/9] mm/kmsan: undo the shadow mapping when the origin
+ mapping fails
+To: Hao Ge <hao.ge@linux.dev>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Potapenko <glider@google.com>, 
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>, 
+	Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org, 
+	stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026, at 12:25, Arnd Bergmann wrote:
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -135,7 +135,7 @@ config ARCH_OMAP2PLUS_TYPICAL
->  	bool "Typical OMAP configuration"
->  	default y
->  	select AEABI
-> -	select HIGHMEM
-> +	select HIGHMEM if !CPU_CACHE_VIVT
->  	select I2C
->  	select I2C_OMAP
->  	select MENELAUS if ARCH_OMAP2
+On Wed, Nov 11, 2026 at 11:49=E2=80=AFPM Hao Ge <hao.ge@linux.dev> wrote:
+>
+> Hi Suren
+>
+> On 2026/11/12 05:03, Suren Baghdasaryan wrote:
+> > On Tue, Nov 10, 2026 at 11:24=E2=80=AFAM Hao Ge <hao.ge@linux.dev> wrot=
+e:
+> >>
+> >> kmsan_vmap_pages_range_noflush() first maps the shadow pages and then
+> >> the origin pages. If the second mapping fails, the first one is left
+> >> mapped, and the callers do not roll it back. The next vmap of the
+> >> same metadata range hits the stale PTEs again and fails with a
+> >> WARN_ON() and -EBUSY in vmap_pages_pte_range().
+> >>
+> >> Undo the shadow mapping on that error path, the same way
+> >> kmsan_ioremap_page_range() cleans up after a partial failure.
+> >> __vunmap_range_noflush() only clears the PTEs; nothing has touched
+> >> the shadow mapping, so no TLB flush is needed.
+> >>
+> >> Fixes: 47ebd0310e89 ("mm: kmsan: handle alloc failures in kmsan_vmap_p=
+ages_range_noflush()")
+> >> Cc: stable@vger.kernel.org
+> >> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+> >> Reviewed-by: Dev Jain <dev.jain@arm.com>
+> >> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+> >> ---
+> >>  mm/kmsan/shadow.c | 4 ++++
+> >>  1 file changed, 4 insertions(+)
+> >>
+> >> diff --git a/mm/kmsan/shadow.c b/mm/kmsan/shadow.c
+> >> index 0c88d89bf0d6..2166086d3dc3 100644
+> >> --- a/mm/kmsan/shadow.c
+> >> +++ b/mm/kmsan/shadow.c
+> >> @@ -258,6 +258,10 @@ int kmsan_vmap_pages_range_noflush(unsigned long =
+start, unsigned long end,
+> >>                                             o_pages, page_shift);
+> >>         kmsan_leave_runtime();
+> >>         if (mapped) {
+> >> +               /* Undo the shadow mapping set up above. */
+> >> +               kmsan_enter_runtime();
+> >> +               __vunmap_range_noflush(shadow_start, shadow_end);
+> >
+> > Sorry, there is a problem here. You introduce "can_resched" check to
+> > avoid calling cond_resched() later in the series (in patch #7), but at
+> > this point __vunmap_range_noflush() can be called with GFP flags which
+> > do not allow blocking. Before recent Ulad's change called "kmsan:
+> > remove hard-coded GFP_KERNEL flags" this function was called only with
+> > GPF_KERNEL but now that's not the case. I think you can move
+> > introduction of can_resched flag into this patch.
+>
+> Agree. I just went back and looked at Ulad's b186a94227b7 ("kmsan:
+> remove hard-coded GFP_KERNEL flags").
+>
+> So will do next version. But perhaps it is better to make it a separate
+> prep patch in the same series? Because besides this call site, the other
+> places that call __vunmap_range_noflush() need to be changed as well.
 
-I'm not sure where this comes from, it was probably a mistake during
-rebasing. None of the V6/V7 CPUs can be built with CPU_CACHE_VIVT, so
-I've dropped this part.
+Agree. Moving that into a separate patch at the beginning of the
+series with its own changelog and explanation would be cleaner.
 
-     Arnd
+>
+> Thanks
+> Best Regards
+> Hao
+>
+> >
+> >> +               kmsan_leave_runtime();
+> >>                 err =3D mapped;
+> >>                 goto ret;
+> >>         }
+> >> --
+> >> 2.25.1
+> >>
 
