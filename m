@@ -2,101 +2,70 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1108606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:23:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34BA7606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:27:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dFL0oFGj
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kHiIB1bW
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQKLS2tFNz308H;
-	Thu, 12 Nov 2026 23:23:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794486224;
-	cv=none; b=fGflQvN0+cbJ28ejk98KQEw0/FDUMNj1tAMF4yiFBlTDPc0jSXqusuUo4Pf5mC8iTaCgVsr+BzWKMgR6lqIPXtpRVZJEiCjGuiqF9t6gDijtWD39hWoO99T9UcRNaBYtWAQNpx9Ne8J59HYADtZbE4pN8pnSAvXILNhfHEZ+2CeONeE1Gq0Ozpg+eN6bBBs1zcDLDyrAgCZy5dZPQAP6WeO8V9YvfzRe/w3tVwrzF6XVOKkYz5XlLjVDn7j6OyNHiHcTGkWbRA7r8SBr8T+G+Ylj0oEDFLpJatxacgcW69RwFdnNfkVQEBD18qWpqv+nqWo9S1gAdK80NFLMAy6xNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQKQs6Kltz308H;
+	Thu, 12 Nov 2026 23:27:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794486453;
+	cv=none; b=CDVKScsL6EMNTp8p2wzzE5187cbTSInSZQaUFvsbZfe4/Ivh7OFsu8FhbG+kR38Ljg/qDIB35cKNbpgtsKGb5dfk6Vtwd6ONDvScvba9yhBtYQF6lQ/j0coMw7Ji55/8DIplAkFPSbRZcv+MVJ1VYcp/UgmuT2dwxNTIMpaYul2Aiuihq69cCaYmJ9ZMXhHrAVCFUEYNVWxqFQBQfBnItFBaSOn92h5B2N8vFPeCsrxtwfVik63WsuXI9Apt4N5lUc+h1005Qh++9nmmLj+uzDENVAK7jXbnzNRTs4Q+74cilxDTxsD2Z7AfMb2cMTxWPksy/pxlroCopT2NC1VRCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794486224; c=relaxed/relaxed;
-	bh=My+EyMv7kUK9PriD5W/MVAD9Fcc5R9RWddctNSFBcso=;
-	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=k6cje8uzzY2zfxTX+bfEdZVJUVQraw6mKuf0SIOVLLU706YOl3zxyPfzdyXVay7760pYkc0CnPNXLcmjsWsheYGoM6xHqpWlyvTOffIWm2j6fFAuzXdCFhsXr5vLSX4tDh1NUvSeh+mpvEuMNYDmLneg4gaXwtXeh4d4wFXzMt8+fQ+Gnqm9cpUwJ+PTiW1Dfi4FJV7WCV19Q8O26TuhmWzgD6jDUjVqmS4keapkewZUIIkJ9LDq5i/Pmtshnui/di/W5dEKhjtXlY1xDDAKm7lCFGtao3NdczMcpJW0X8jZuc+6Pp8anlpgJlkX03uPiCl9lXHaWtAy1sOy5YTivQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dFL0oFGj; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794486453; c=relaxed/relaxed;
+	bh=6zIF2mscWWNdqPdPpywMELCgP+4wYM3ffEmTeqpAw4o=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=TQwi5VdiocX0pf8IG/vPGPxLqJ4TobEjaRkMQ9MD5zuRD2S+YMw4fNXmwlWttwyQs07aQ6o1D706TgnGFSpdtqaAaJS58QoPn2/20gitXuUzip520SJMOafIjW4BwksLo+ny8KdYhE0nPnr1J1hjo7rzGqfSUGlDIdHx6UaTT84m7Pq2XbX+0tk2Ct9z8XosVnHSKjF+QsEfPPIL9G+EwRN4xgkeiK639wbzLz8xdrxmo32Wu35ErYDA1Q5LyBkh9qSYLGcuQC0zNO43Gygz5APHta+an+EFex4Kf3jEYlAT6Hb0IRLNAxo2jn8gJt4xCG7UG3CJwYXV8uC3TCoNFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kHiIB1bW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dFL0oFGj;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kHiIB1bW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQKLR2cmJz2yqs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:23:43 +1100 (AEDT)
-Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-6b56c428212so5495873a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 04:23:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794486220; x=1795091020; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=My+EyMv7kUK9PriD5W/MVAD9Fcc5R9RWddctNSFBcso=;
-        b=dFL0oFGjwDwyCKL6Fdi/bWa/b9OShzKTEz4BT4cTP7+24kzlQCC8XLhmATHEyPXzb/
-         orOL3IWuUViVK5qgdcvW9U+HqtiQFogTZocT4oFotO3pcVg7yso2zysqq5b2XlVqhmUc
-         tbqkD1kv6XPQpWtBfhkbVMceDVrg4iK1xgL4C934Ce3AzCdmSZpr0g9BF/RBFq/+a7yB
-         /xYavY9Cf4vQAWvq5xOYyqtMtWWAH1aUbLMUM7ZDZhaxpHgBB+S6MHADLVqTbIkj0zGl
-         0SHAOB+k2lP718P+NnpF/ZqadwPpWuUVWKoiLR9/HeEZdEUaWdWDgH0stIFVknd8+gCm
-         HrMA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794486220; x=1795091020;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=My+EyMv7kUK9PriD5W/MVAD9Fcc5R9RWddctNSFBcso=;
-        b=aGFNJP9fHxJ7Rg49cVvHdkTWdy4v5Y2GFUdzNWF0Y3qRsEpualyFBaAUZiMfsCwGv9
-         EIZeOKWScTMXCqzZ/cTYxzXD/UHbzPJALfF27Z1A3ziXEv0e3w0e+w5omEdL6M6XuXrn
-         mN/51o4gbKA9/+DzbHXkmnGz3xWfRhdV6qAe8D/VJyYi9LrQAGJ88tLmnFsrCankQdLM
-         qWQNCm8LxKC9NQZtRG7rERqPnPRB6mn7eifLEZCDZ40uCy4GTgGZlQFt5uiYRKfbiHy3
-         jr73c4QAzxGqAOhUyg7B1REbIqTmVYbq2gx6L6Dj3yHNpg2dbz7QGyX6WpbkjzXpjj0z
-         iv+g==
-X-Forwarded-Encrypted: i=1; AL+hErGI8dYnSfsS0eic0b45oRrip1VSjjXo74Ph7U9yri1Lk7M8Sn6InaNalBUVSfc5u+MYWnwef9SHiaHPP64=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z84wbkcdzgjF1WCm1ZJrZf3cim3qxUdYdRmOotezoGfT0QfsQld
-	kRTZY4HBM3FrfHh+PgYTFsNK5TL4NHhC1iUXSIJ1FmHDsLuL7MY3vv/r
-X-Gm-Gg: AYBFou3HBOLzAJWbLpJQVPl0nYf5o2/GW6SoX9lAf+WDJa1e5b+dWPsvuzFMnBDkcyk
-	+xVRU6qcgN0lk2oyT0jPqDls5kCbbXNvRM3ElWIiEKwun2yzvFO0w6pbq+VWd2t5Uo0BvkwYb/R
-	q0Z5Ga/GaxoHKiJ9wrynXq6iay5z8vc+Zw/8qwWm8gOTqIeFxQpu2s3vfL3qb5U6jl2seW2A53x
-	wNGAEnKlwozF2uDOLrC23/DStk8mdt7x5jM7eN2PCOeeSWp+mwxwEyzxnSMaPT2s4M3ZDoK7OaX
-	a892FycrP+qGZvzHmPWAxKibo1K2Yycxy0SrTE022+LiAMjE1Ul5WTAZ6K88BPnDRnoY9lIuHsM
-	S7qFG/1itZzlIKhhOmVZtWyvJXAer45Zzj9IumeCr43H5Hz1QaUx2mI1nX+/U02Zxa1dX97WyNo
-	lYHhKxkEZ3nnLJYB5845XaWAzzzTRjaGxz2Bnq4hlYRI24w9KVdGMlsp6v2FOfCphTPaXrGr9Yg
-	LjODeKgvJ7At2BQB2VzXZCjLQ9XSkwd2iydDLsnbaRG9KYayv+Z8EryqYhDqgOClNDQOA==
-X-Received: by 2002:a05:6402:2108:b0:6b1:e8e1:a3cd with SMTP id 4fb4d7f45d1cf-6b777828d1dmr4207046a12.35.1794486219647;
-        Thu, 12 Nov 2026 04:23:39 -0800 (PST)
-Received: from milan ([2001:9b1:d5a0:a500::24b])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7578eb0b1sm3345874a12.22.2026.11.12.04.23.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2026 04:23:39 -0800 (PST)
-From: Uladzislau Rezki <urezki@gmail.com>
-X-Google-Original-From: Uladzislau Rezki <urezki@milan>
-Date: Thu, 12 Nov 2026 13:23:36 +0100
-To: Hao Ge <hao.ge@linux.dev>
-Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
-	Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
-	linux-mm@kvack.org
-Subject: Re: [PATCH v4 3/9] mm/vmalloc: BUG_ON() on an unaligned range in
- vmap_range_noflush()
-Message-ID: <avWvyNo5qHbuk9hA@milan>
-References: <20261110112546.261415-1-hao.ge@linux.dev>
- <20261110112546.261415-4-hao.ge@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQKQs0xRMz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:27:32 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2iL0A1214781;
+	Thu, 12 Nov 2026 12:27:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=6zIF2mscWWNdqPdPpywMELCgP+4w
+	YM3ffEmTeqpAw4o=; b=kHiIB1bWyrkRYoH21DvGNfwM6coLugLCAeOYLOo+0O6I
+	MSRSgK+Eb0gb7F9h3zi336apegwmAMLE1efwDWvP3D5plkxNxy6CKrC1VisMoz40
+	4QuDUsxiBwYjOrAbQPOSHZSaU9Q8/wjXf6gEPzfuZZ1W4K+hEubHrTVXQowhdIys
+	ZNnIy2KjW2NDm30seSVwjYETbJpam8hTWn05YoG99D1kvIfJiudEDy6ROUwHU3+L
+	IfBerHM3bvrMI4hv4HOHOaFjtlteTKORAGBhNxsVY4Y80msceYTTnB+Gk2XiQyj/
+	ttCvSNJILlFas7/Gqdm/wFYt0WT10a4ezX5PNLffEw==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsuntfdu4-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 12 Nov 2026 12:27:26 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC8Lvmf097884;
+	Thu, 12 Nov 2026 12:27:25 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hvkq0w7sr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 12 Nov 2026 12:27:25 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ACCRPWQ26346036
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 12 Nov 2026 12:27:25 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F066D58059;
+	Thu, 12 Nov 2026 12:27:24 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 31E5058055;
+	Thu, 12 Nov 2026 12:27:22 +0000 (GMT)
+Received: from [9.61.240.49] (unknown [9.61.240.49])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 12 Nov 2026 12:27:21 +0000 (GMT)
+Message-ID: <bc84cb05-55fe-43e7-9a6e-e6bbf2f5a9ff@linux.ibm.com>
+Date: Thu, 12 Nov 2026 17:57:20 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,68 +79,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261110112546.261415-4-hao.ge@linux.dev>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB
+To: mszeredi@redhat.com, Shuah Khan <shuah@kernel.org>
+Cc: luis@igalia.com, amir73il@gmail.com, linux-fsdevel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, nandinih@linux.ibm.com
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: [BUG / BUILD FAILURE] selftests/fuse: build failure with libfuse <
+ 3.17.0 (RHEL 10 / fuse3-3.16.2)
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDA0OCBTYWx0ZWRfX0JfJ6hzcRhBo
+ 3pYzaJxWCP83/cPc0kLSsIDPYdNyeWt8FbyWRuQat9/3XZ2iKw95G177cPiCqpYJ2tf8vfzAK1v
+ BHUHeQT9VgxLgGwtPrIW9XG86dP5iBk9B5urNmoApmLLUyRuMn+HNtbu02fmAG5TY2vp3OPZqyA
+ lYbrdVyHDqkVjH2vWQDVu6H23HDWtNhzb+wKoKn4jLPSWu5ZvcMgejzDYz+SR0mbaEx7jrcqXhV
+ 59ToqtEZ+KD40OVTp6DTSbo9QFxaACTg/HYhdMyfuKZdrqJq5wIe1mnBmLOdocp+3QsK9gpkciT
+ Q5yZPCcCbmMUVabGdk38GTXGmzNZgPgByNPKrbZJD+Jprcfmtf96OjG/LhIVdEODuP1oKOi907q
+ y5OBDT7ZhqsQ25ZZfoXeJWd5zdFXoTALrJ1PwmK98nNgaS83KhJSo8fqYHSY4ku91IJ9Dmgim4J
+ N7wmogzN8iSjaOwOHgg==
+X-Proofpoint-ORIG-GUID: 5QlD2gsgulIE-MaNq1rxj5110MS0lzWu
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDA0OCBTYWx0ZWRfX1UvpJ0LrrdRE
+ OpEqesTwMy+Eh2HcYAyPJoXqePAAbBSe49rAX4i57i0CGqUSXarIJFXCqGxB9WRn6sNrcEGJ+5A
+ CYKwysiMIwfglqKSSzW7MubjHd6u080=
+X-Authority-Analysis: v=2.4 cv=euZKXYpX c=1 sm=1 tr=0 ts=6af5b0af cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
+ a=G8bnuFaaA9ZLbBnholgA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: ADQL8XVHLD3II553328d1E9yRtxsIZum
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 clxscore=1011 suspectscore=0 spamscore=0 priorityscore=1501
+ lowpriorityscore=0 bulkscore=0 impostorscore=0 adultscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120048
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 10, 2026 at 07:25:40PM +0800, Hao Ge wrote:
-> commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
-> PAGE_SIZE aligned") put the check in vmap_pte_range(), which is too
-> late, because the upper levels may already have installed page
-> tables for a range that is rejected anyway.
-> 
-> The pte loop maps whole pages and stops only when addr lands
-> exactly on end.  An unaligned end lets addr jump over it and the
-> loop keeps mapping past the range.  An unaligned start maps the
-> page below the range and usually misses end too.  Such a range is
-> never a legitimate request, and the corruption it leaves behind is
-> hard to attribute to the caller afterwards, so bug out on addr and
-> end at the entry of vmap_range_noflush() and drop the check from
-> vmap_pte_range().
-> 
-> Signed-off-by: Hao Ge <hao.ge@linux.dev>
-> ---
->  mm/vmalloc.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> index 093b8d5f7b0e..27f2674a5556 100644
-> --- a/mm/vmalloc.c
-> +++ b/mm/vmalloc.c
-> @@ -125,9 +125,6 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
->  	unsigned long size;
->  	unsigned int nr_pages;
->  
-> -	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
-> -		return -EINVAL;
-> -
->  	pfn = phys_addr >> PAGE_SHIFT;
->  	pte = pte_alloc_kernel_track(pmd, addr, mask);
->  	if (!pte)
-> @@ -347,6 +344,7 @@ static int vmap_range_noflush(unsigned long addr, unsigned long end,
->  	 */
->  	might_sleep();
->  	BUG_ON(addr >= end);
-> +	BUG_ON(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end));
->  
->  	start = addr;
->  	pgd = pgd_offset_k(addr);
-> -- 
-> 2.25.1
-> 
-Like Suren proposed, there is only one user of vmap_range_noflush() it
-is vmap_page_range() function. You can add warn-on-once() there and
-bail out.
 
-Do not add BUG_ON().
+Hi Miklos, Luis,
 
---
-Uladzislau Rezki
+
+IBM CI has reported a build failure, while building selftests/fuse, due 
+to missing definitions in libfuse3 headers.
+
+Environment:
+
+OS: RHEL 10 (ppc64le)
+Kernel: upstream (linux-next / mainline)
+libfuse package: fuse3-devel-3.16.2-5.el10.ppc64le (pkg-config 
+--modversion fuse3 -> 3.16.2)
+
+Build Errors:
+
+In fuse_acl_cache_test.c & fuse_symlink_cache_test.c:
+
+fuse_acl_cache_test.c: In function ‘fs_init’:
+fuse_acl_cache_test.c:105:17: error: implicit declaration of function 
+‘fuse_set_feature_flag’ [-Wimplicit-function-declaration]
+   105 |                 fuse_set_feature_flag(conn, FUSE_CAP_POSIX_ACL);
+       |                 ^~~~~~~~~~~~~~~~~~~~~
+make: *** [../../lib.mk:226: 
+/home/upstreamci/linux/tools/testing/selftests/filesystems/fuse/fuse_acl_cache_test] 
+Error 1
+
+In fuse_mnt.c:
+
+fuse_mnt.c: In function ‘test_readdir’:
+fuse_mnt.c:51:35: error: ‘FUSE_FILL_DIR_DEFAULTS’ undeclared (first use 
+in this function); did you mean ‘FUSE_FILL_DIR_PLUS’?
+    51 |         filler(buf, ".", NULL, 0, FUSE_FILL_DIR_DEFAULTS);
+       |                                   ^~~~~~~~~~~~~~~~~~~~~~
+       |                                   FUSE_FILL_DIR_PLUS
+make: *** [../../lib.mk:226: 
+/home/upstreamci/linux/tools/testing/selftests/filesystems/fuse/fuse_mnt] 
+Error 1
+
+
+If you happen to fix this, please add below tag.
+
+
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+Regards,
+
+Venkat.
+
+
+
 
