@@ -1,83 +1,105 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60B09606A891
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:10:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 32C14606A327
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:27:28 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ndra2zLK
+	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=VQQTu8Ca;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Riyi6GBz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQLMr2wckz30V0;
-	Fri, 13 Nov 2026 00:10:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794489000;
-	cv=none; b=YN9orxOCaky0K5eAf3n0Vt7gSPlxrST3/VUOZ6gX/taBtJeffl0/GcRmsGoDCEvpbXnutPnlvpr8WK8BKMo9SNji6GNrUqVYb168StmCu2xVFnlcfGZNtmC1CkuQGXhYvx3/0w7IB76CmPG9PsdIUyKe+Y7Imcaw4XQfSQ/vVoW5Xy19WuogUUNqWDYD1XlSgKvktnSGKTSEqgdQuqd6f3/cEUJ/v7gfziR4/0k23IDawGs8jFAOtTGBwzteTiWtiqJjvOhHZZo9INcbbJdTcPQT8clLS1G1seYxXrmds5kjRSeszN8VbCHecC2JHmeJeZHvZNO/Wn85kozaRTeZ5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQLly4fQMz2y8F;
+	Fri, 13 Nov 2026 00:27:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.154
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794490046;
+	cv=none; b=jie75/EScUt3XpFJxgcm0rYgF4nBbbX6BPIYtmQABc9V7zjuCn8ssERRw6Zfr/Ky2rmWNCdpzOTS6iXhAdUmPCHznnsHOb5RkUSVha+covaVuNbMiu7CPCqwbEp2GU5OjFo05LOA7y8eHC2CKmEH5DAUslTWqm3OLmljU4wnph1TawH/LQD/MBkh+APwKcxAw9Pzb4dF6VSIJSMRsXD+ErsJW0FZR2g2xrLPGAHS1CCX2arPSwlBG2sIXm7Qm8wOtRIjitkB/a8ThtT7/JNBIM4FUDurJYcgVVmndYFSGaxc6t3yxh8xd19zPaoW8ymr9tzODBi3Bbkk9nNE+Mg2mw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794489000; c=relaxed/relaxed;
-	bh=28NcXF69IBm63jhL8+R+KZ/QK0wdb3iYbvA7FIBBfo4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QHBD4cnakCgpfCKLnu5VPVuQjAUL0fIdY9Z/mml+/v+K+QD1cj+e22w5Br7uBsUnHWOPbM2OlQCVBglYV3bgmM6c9RLZx9MITX1shOoOBKbOgVxG07dR4SPBDumyUtNWZOgyRkcxBNnoKA5f6soP68X3lvkLtjJXO3MlEEQAuErd3bFezW9Y+sENvtp3MBw+VaQ8MnracPYZnJt8/qmKRDyOZeIySSkWV4e/smyRYxS5EUyRRrMHjI9ivQ/3TLjKiQzrFpyQWPxV/9jrJqB8N0OpFa4xooAu8OL+1uCrpHAu8TvbY5o2gcj2StW9EaXzdRklfp1BALvqaXLVNQXv2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ndra2zLK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794490046; c=relaxed/relaxed;
+	bh=O2cMjR9yzPx4FjNIH8WeRrejetDLBf3cij4Y+ejCORQ=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=ISoadFuJSTfFaEweXbSFjGfOLTAbP6LjkNyZSmu0ewyWJP+zOVmd78kUjrFbotoC05xqgbagBvi9ZOfVLgetTQZUehk3D6R1Jxu5xrw49AHS+QLNC7yu5IZ7renQNGI5KUkzygLbn7KDAvdChBIGkp7Zuu7z5gnEobikyrjzMhoHWdg2R6BDuukAgnuogTAeWdA2qM1oKLOS1uel02EAlkt1+L18lWIcHpd1btdbLLZ4d6v1SDPwMlLNgJ7RhVlQMajgGwPDGvDrXvCEnpDqfnNEaqsEnhKtmisWwbBLXm9xXmoZPXdNAFRW6LJ1Ecu2r06LgZLWskgJrR/nKFaQ6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=VQQTu8Ca; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Riyi6GBz; dkim-atps=neutral; spf=pass (client-ip=202.12.124.154; helo=fhigh-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ndra2zLK;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=VQQTu8Ca;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Riyi6GBz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.154; helo=fhigh-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQLMq1wMRz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:09:59 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2iLOo1637014;
-	Thu, 12 Nov 2026 13:09:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=28NcXF69IBm63jhL8
-	+R+KZ/QK0wdb3iYbvA7FIBBfo4=; b=ndra2zLKitjN7UlkJJkFmUy6CnLd8K0fc
-	qrAIkE7SaqLxXM/TjIKbH6+UdHZVNN9/KcTrHVfVa1mFoszzitW6wXsZMpPx+sv3
-	Ms3jEdrLUpeD2v01xohCQjhX5alUxENetc2Wqpf4nBuKl0Pm/idGOt3PfCU359FB
-	bhWr4HGKyzsdLco/peUD7u6WIuLj3VI+jm8zqwD7MRCkbEaIjDipsMXSDJJiEv68
-	o6oWQLDFLFxBZrMuxymlgoP/RByN9rF0Wg7SFyEe/eBcic8ybLkzh1f9cDrlVC4y
-	DISgkJSU9Elf2mJYbALGpEuN2RLsfyHIXdtOhVrWfuExfo1oHMH0A==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hstdgegvf-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 13:09:41 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ACD3jjt3145599;
-	Thu, 12 Nov 2026 13:09:40 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hvd51xj4f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 13:09:40 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ACD9ai028901710
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Nov 2026 13:09:36 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C87F92004B;
-	Thu, 12 Nov 2026 13:09:36 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4C09720040;
-	Thu, 12 Nov 2026 13:09:32 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.18.47])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Nov 2026 13:09:32 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de
-Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
-        msuchanek@suse.de, ritesh.list@gmail.com, harshpb@linux.ibm.com,
-        gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com,
-        nnmlinux@linux.ibm.com, mkchauras@gmail.com
-Subject: [PATCH v3 3/3] KVM: PPC: Use ppc_hard_irq_disable before guest entry
-Date: Thu, 12 Nov 2026 18:39:13 +0530
-Message-ID: <20261112130913.4124175-4-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261112130913.4124175-1-sshegde@linux.ibm.com>
-References: <20261112130913.4124175-1-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQLlt1l0tz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:27:21 +1100 (AEDT)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailfhigh.stl.internal (Postfix) with ESMTP id 37DB67A013F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 08:27:18 -0500 (EST)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Thu, 12 Nov 2026 08:27:18 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1794490027;
+	 x=1794576427; bh=O2cMjR9yzPx4FjNIH8WeRrejetDLBf3cij4Y+ejCORQ=; b=
+	VQQTu8Ca+GpoqtlLEEHD9zniEnLX1LcLlkvq4k7p+NOwt37jHvnhY3yyW9FgUN65
+	0HqHfGXOO8D4z/VHMHpTDBBFqQrLYqwEVaa/wTMv7YPZfmKXdJ2GqAcbIv8Wro5x
+	Oi/MK5Q68KcNYdVjaIRImSzvUlNNk+V451RvXqonH6WWLcWrznW2lgvYOzc6bNPX
+	HVnNMBkw5yUkC/2iwxleNjrXvASI7NlDLZR/U6BtsVSpUJ5/pqOhnIjthIyVGWpc
+	QLckFVdHDENAxIbDxqUJDnjI7tI1Tia6XnZlCPhLRqsk2kt2aDQvcKBYxrr/iUJ/
+	nBdqCSqcQYlYomiKlOptvg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794490027; x=
+	1794576427; bh=O2cMjR9yzPx4FjNIH8WeRrejetDLBf3cij4Y+ejCORQ=; b=R
+	iyi6GBz1HGz15e3j6yN33Phda/8+Z0nzmtJ/0qat4vHymgPwVyp3r7fNaXKLt9z6
+	x0EC3NTeXb+KTXSLVlatsAHtJbZxrhsrliNVshs4ByuHGjI3p1iwSFOLXwTeNfPB
+	0Pu3MfYotvbOjx8YMKVFOq7j9AcZFo0gPW1/jTxygcHtk00WukXSD8BlHxcS7JN8
+	coNgLvCIok090MOzpP2maHSnTr3z6HNOlgY6aYe6i5vRu/1rk1Zhsag5QuZt2+JU
+	hcC+fZr5SGdrV148aeKrJPDBfm5Uj+NIzmKVQ5xY+SoIFYa8D1vcYzTvMRPvZLSu
+	WOtX/qA7goQOrtFMA8XAA==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=arndb.de a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1794490027; d=arndb.de;
+	mf=PGFybmRAYXJuZGIuZGU+;
+	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
+	s=fm2:rsa-sha256:IRgSgVzA7B/oZ2dj2VhTqpRza+pzjgBG6suylj1HtGHNZeM
+	BWEl+F3n0pcCyQCS7NOTg362dbN+RtY8VzL8FbGcuTB/x1Z6/i8Vg32dNFJ+RUT3
+	JyZZgIiJnnJUtFXKApAWVZzZ/sGPvlpOYIur8SalCgNEwDv74m/+ipEDMrARMS6C
+	AOTL5O6XrpJvjwpm9BbY/ta3WuVxEV2xvx7rub7fcJ9bJffsd0iosYPCX2nJP9bH
+	8FM/OMmwtEkrJb8qZ0akbNXy+TMvtVomX/G+JQPaujrF1QvddVIwuOHNL+9ogBT0
+	k/kU6LTkAEbMqFq5HFoR1GrFLWxb9PsBX6EREiw==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=12;
+	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
+	from,in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:Kff0dgzs0zBL+zaPVEZ/FAXWzqOn0OySYPVQarW0/94=:i4c501ZyCD5sNIncROoHKwQMRTWXxYq4u1vDcRxvSsU=;
+X-ME-Sender: <xms:o771apIEwU78ImdKJMIXZSKyBmiYRujvDbrz8RvwwXrsgLuEGRi70w>
+    <xme:o771av_xcKDi4AJTY8aD2M04WM3Hgk0evqdkIvBIFfTGTEZXwzzCSHFmkyVHfdG1w
+    IfT-fhf6AN2oVPP1Dlsyxza_lOct-jiXyPltZs1m1dzBFeGc9eaZNts>
+X-ME-Proxy-Cause: dmFkZTGAGn9YXYitrhore6IN0xSvjsAnm1g8uO8G/rBlyoZEPZcGKHflQ4cd1CGyc7u3FY
+    lyI4GGDINEaQvUJ60pNMagWhIrAAmeu9PCIX7BpFjMEOhFxQlDI7P9nKCEetRYakx9k4yH
+    zOdFMwgpltLtiRGIJAuajTvoZLN9zd//XoA8i6mpYenbg4h1qkOvWDMJWOrgPOhfQm+jjO
+    AIiaHcTGn0QmBIfDQ8RW/8HSjasttxmT/eOjUexIPxRf5pM6pH7O9LjCKTOofftixH5TVS
+    XwR9P0w80zcjkjtafAhUy+Qs29wJ7VmYwj4OLeB/vOO8N4xQuyEhJ27y32P4N3c9EtiTc6
+    i4rjJ2f2Jg9nwgzaQgBsV1Gzsr1y1OTTunwXZDGq+LUDFgF4/qVxEgQSBPbwAKCUmIpfGe
+    Q5KfNKy7hG4qBzSjXGCIAdrS4eoB5d7AfFspixFKVSlYRSImzXCPFAGAMTKPswc8Al7RTe
+    6mFof4PXlhRqj4PCnrfnAF7Iwcv5/RkbsY8Pp4ND2t99jcjcv8BFRw5m+ji31CCIrm4h+F
+    3fCKRBVXM8bCIQk5/UQ2B1SIZdHp/6FuPb8qtYnb7UO5zVMLWRcvfim5icH7eSXCPeNWNT
+    0ng4Psnest6tcFpeWklID9IBOLXSI3Pf/8nwvdenN7iYiKVjC/5WW/8w4ajQ
+X-ME-Proxy: <xmx:p771aqg1qe7lGBvhbLQgU0oOgVcivaDpZz9ezcs3gCs9C0N__LigEw>
+    <xmx:p771av6f8kcPjvAaCtvKmbHAAsVpmPPxVEX07zWmxLCdB1HtwsXTiQ>
+    <xmx:p771aqqbgJM7jJcBW4dJ-W8j3SylX-rG7XCxXoBM8gXFWW38YtQ6sw>
+    <xmx:p771akhSWCJ9LN8M76dbJIYsHOSgnLyVgZ9WJTYZxCEn4QPdPvhtyA>
+    <xmx:q771att1eGrcIwChuJ4viY_p7BF8HjIQDVNJ9_qJY6MtXunpkOKb0HDM>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id B149132A0099; Thu, 12 Nov 2026 08:26:59 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,140 +113,143 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=J+M/fwnS c=1 sm=1 tr=0 ts=6af5ba95 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
- a=SkEQ8EbvhdlHpgZ8pF0A:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDA1MCBTYWx0ZWRfX0X2U15DzsuEK
- 4mF2K3PJ7pHcBNyDV/rNA8A1Lr9h1dvFIpFpIiZZpYwFvPTjvJrxfUFOcNUp0E8uDytq3Z40E1n
- RdlQeC6CQnvT3Q4S5b8Q8YHUh+6wAY6t9CZ+kcPiqKFKltEmEpMxJQLbG/n0Pz/iMIwgIyg4gmk
- wPGIFF/8MWdKT1INnTXy25IFHYdLRchKT53CsibyXkwSyGk4ZnMDg8iL965SkS13KlabQrt1AXU
- bwDABGLpVexL7OQ5QgL4His/QLZM3pae2NKoNPsxZrfsEPHPc6n0jjKjYGL12zLEnTnsunG78jF
- 0aZJLP2Itixq3PFJoNLSkvVI/b8VqKXgtizv0phzb/cfsk/WDliPc+oGtxtYQwIhs76fmpeyJNX
- UfC86/z0//nMWnH+YToprylfExcog6xhaAVhwEQjCCf9fXI+iSLEYdbn7fowll7RFPOqyHGZPhP
- KiLLeHlJkrkVI2dBTVA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDA1MCBTYWx0ZWRfX/iCtcI092T8L
- 788tuSxG1ZtLJFK5tsS3Y5WCIO97KLE63IMjl7el0EI+F7DBL5CHbs/vtaVZvkqNwOdBvbGIuXP
- GvI56NfvgxxvsoJvYnLiyo31abnkCQY=
-X-Proofpoint-GUID: Kch17STND8cqv_2vGzVKNnzGBdQrVuiQ
-X-Proofpoint-ORIG-GUID: ww6IZzwLdaZVVKxu8wClHTVAB6xC8BdZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 phishscore=0 bulkscore=0 adultscore=0 suspectscore=0
- malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120050
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-ThreadId: APvT47k4hUj-
+Date: Thu, 12 Nov 2026 14:26:39 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Mike Rapoport" <rppt@kernel.org>, "Arnd Bergmann" <arnd@kernel.org>
+Cc: linux-mm@kvack.org, "Andrew Morton" <akpm@linux-foundation.org>,
+ "Andreas Larsson" <andreas@gaisler.com>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>,
+ "David Hildenbrand (Red Hat)" <david@kernel.org>,
+ "Jason Gunthorpe" <jgg@nvidia.com>,
+ "Linus Walleij" <linus.walleij@linaro.org>,
+ "Lorenzo Stoakes" <ljs@kernel.org>, "Matthew Wilcox" <willy@infradead.org>,
+ "Malin Jonsson" <malin.jonsson@est.tech>,
+ "Richard Weinberger" <richard@nod.at>,
+ "Russell King" <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
+ linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Message-Id: <ba23a789-9820-4223-a6db-d9e99ebcf356@app.fastmail.com>
+In-Reply-To: <avWo4NrAPX8BisCY@kernel.org>
+References: <20261112112528.1116405-1-arnd@kernel.org>
+ <20261112112528.1116405-5-arnd@kernel.org> <avWo4NrAPX8BisCY@kernel.org>
+Subject: Re: [PATCH v2 4/6] mm: drop HIGHPTE support altogether
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-After applying preempt disable patch, i.e PATCH 2/3, Christian reported
-a subsequent warning stopping his board to boot properly.
+On Thu, Nov 12, 2026, at 12:54, Mike Rapoport wrote:
+> On Thu, Nov 12, 2026 at 12:25:26PM +0100, Arnd Bergmann wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>> 
+>> With both x86 and arm having dropped CONFIG_HIGHPTE support, no
+>> architecture is left using it, so remove the remnants in common code.
+>> 
+>> It is likely that further cleanups are possible in the page table
+>> code but those are not obvious from the config options.
+>> 
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> ---
+>>  include/linux/hugetlb.h | 5 +----
+>>  include/linux/mm.h      | 1 -
+>>  include/linux/pgtable.h | 9 ---------
+>>  3 files changed, 1 insertion(+), 14 deletions(-)
+>
+> With this and arm HIGHPTE patches applied there are still a few leftovers:
+>
+> $ git grep  HIGHPTE
+> arch/arm/configs/vt8500_v6_v7_defconfig:CONFIG_HIGHPTE=y
 
-WARNING: at .kvmppc_fix_ee_before_entry+0x10/0x28, CPU#0: qemu-system-ppc/4667
-CPU: 0 UID: 1000 PID: 4667 Comm: qemu-system-ppc Tainted: G        W           7.3.0-rc4-2-powerpc64-smp #1 PREEMPT
-Tainted: [W]=WARN
-Hardware name: varisys,CYRUS5040 e5500 0x80240012 CoreNet Generic
-NIP [c00000000005dc3c] .kvmppc_fix_ee_before_entry+0x10/0x28
-LR [c00000000005f298] .kvmppc_handle_exit+0x5b4/0x5e8
-Call Trace:
-[c000000086587780] [c00000000005ee10] .kvmppc_handle_exit+0x12c/0x5e8 (unreliable)
-[c000000086587830] [c000000000062068] .kvmppc_resume_host+0xb8/0x10c
+This got dropped in patch 5/6 in v2, but I've moved that here now.
 
-It triggers below warning...
+> mm/memory.c:     * Dumping the PTE would be nice, but it's tricky with 
+> CONFIG_HIGHPTE,
 
-static inline void kvmppc_fix_ee_before_entry(void)
-{
-        trace_hardirqs_on();
+Added the patch below for this. Untested so far.
 
-        /*
-         * To avoid races, the caller must have gone directly from having
-         * interrupts fully-enabled to hard-disabled.
-         */
-        WARN_ON(local_paca->irq_happened != PACA_IRQ_HARD_DIS);
+> mm/pgtable-generic.c: * kmapped if necessary (when CONFIG_HIGHPTE), and 
+> locked against concurrent
 
-This happens since kvmppc_prepare_to_enter does first local_irq_disable
-followed by hard_irq_disable. This leaves a small window where interrupt
-may occur and it could set the irq pending bit in PACA.
+Updated the comment and also dropped __pte_map() after I noticed that
+open-coding the only caller in pte_offset_map_rw_nolock() is consistent
+with that comment change:
 
-That local_irq_disable was necessary for PPC32 to track the lockdep
-state etc. On PPC64 hard_irq_disable is good enough. There is no need to
-do both. Use the new irq api to do the necessary one.
+--- a/mm/pgtable-generic.c
++++ b/mm/pgtable-generic.c
+@@ -314,7 +314,7 @@ pte_t *__pte_offset_map(pmd_t *pmd, unsigned long addr, pmd_t *pmdvalp)
+                pmd_clear_bad(pmd);
+                goto nomap;
+        }
+-       return __pte_map(&pmdval, addr);
++       return pte_offset_kernel(&pmdval, addr);
+ nomap:
+        rcu_read_unlock();
+        return NULL;
 
-Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Closes: https://lore.kernel.org/all/b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de/
-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+
+> mm/userfaultfd.c:        * index ordering when CONFIG_HIGHPTE is 
+> enabled. We mapped dst_pte
+
+Dropped that comment block as it no longer applies.
+
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+
+Thanks,
+
+      Arnd
 ---
- arch/powerpc/kvm/booke.c   |  3 +--
- arch/powerpc/kvm/powerpc.c | 14 +++-----------
- 2 files changed, 4 insertions(+), 13 deletions(-)
+Subject: [PATCH] mm: print pte in __print_bad_page_map_pgtable()
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index aed7b476b7eb..1ba28848e8bc 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -722,8 +722,7 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
- 	if (vcpu->arch.shared->msr & MSR_WE) {
- 		local_irq_enable();
- 		kvm_vcpu_halt(vcpu);
--		local_irq_disable();
--		hard_irq_disable();
-+		ppc_hard_irq_disable();
+HIGHPTE support is gone now, so it's easy enough to print the
+PTE here along with the upper level entries.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+diff --git a/mm/memory.c b/mm/memory.c
+index ec3d9d99ccee..dabeb5568c94 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -528,9 +528,11 @@ static void __print_bad_page_map_pgtable(struct mm_struct *mm, unsigned long add
+ 	char p4d_str[PTVAL_STR_MAX];
+ 	char pud_str[PTVAL_STR_MAX];
+ 	char pmd_str[PTVAL_STR_MAX];
++	char pte_str[PTVAL_STR_MAX];
+ 	p4d_t p4d, *p4dp;
+ 	pud_t pud, *pudp;
+ 	pmd_t pmd, *pmdp;
++	pte_t pte, *ptep;
+ 	pgd_t *pgdp;
  
- 		kvmppc_set_exit_type(vcpu, EMULATED_MTMSRWE_EXITS);
- 		r = 1;
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 9194cf492d1c..4ee3d7bfe917 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -81,13 +81,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 	int r;
+ 	/*
+@@ -567,13 +569,18 @@ static void __print_bad_page_map_pgtable(struct mm_struct *mm, unsigned long add
+ 	pmd = pmdp_get(pmdp);
+ 	ptval_to_str(pmd_str, pmd_val(pmd));
  
- 	WARN_ON(irqs_disabled());
 -	/*
--	 * local_irq_disable() first: on 32-bit, hard_irq_disable() alone is a
--	 * raw MSR[EE] clear that bypasses the lockdep/irq-tracing state, and
--	 * the xfer_to_guest_mode helpers assert IRQs are seen as disabled.
+-	 * Dumping the PTE would be nice, but it's tricky with CONFIG_HIGHPTE,
+-	 * because the table should already be mapped by the caller and
+-	 * doing another map would be bad. print_bad_page_map() should
+-	 * already take care of printing the PTE.
 -	 */
--	local_irq_disable();
--	hard_irq_disable();
-+	ppc_hard_irq_disable();
+-	pr_alert("pgd:%s p4d:%s pud:%s pmd:%s\n", pgd_str, p4d_str, pud_str, pmd_str);
++	if (!pmd_present(pmd) || pmd_leaf(pmd)) {
++		pr_alert("pgd:%s p4d:%s pud:%s pmd: %s\n",
++			 pgd_str, p4d_str, pud_str, pmd_str);
++		return;
++	}
++
++	ptep = pte_offset_kernel(pmdp, addr);
++	pte = ptep_get(ptep);
++	ptval_to_str(pte_str, pte_val(pte));
++
++	pr_alert("pgd:%s p4d:%s pud:%s pmd:%s pte:%s\n",
++		 pgd_str, p4d_str, pud_str, pmd_str, pte_str);
+ }
  
- 	while (true) {
- 		xfer_to_guest_mode_prepare();
-@@ -101,8 +95,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 			 */
- 			local_irq_enable();
- 			r = kvm_xfer_to_guest_mode_handle_work(vcpu);
--			local_irq_disable();
--			hard_irq_disable();
-+			ppc_hard_irq_disable();
- 			if (r) {
- 				/*
- 				 * The generic helper does not set the exit
-@@ -134,8 +127,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 			local_irq_enable();
- 			trace_kvm_check_requests(vcpu);
- 			r = kvmppc_core_check_requests(vcpu);
--			local_irq_disable();
--			hard_irq_disable();
-+			ppc_hard_irq_disable();
- 			if (r > 0)
- 				continue;
- 			break;
--- 
-2.52.0
-
+ /*
 
