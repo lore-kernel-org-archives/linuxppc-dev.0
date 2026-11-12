@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D2B7D606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 07:21:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E505C606A321
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 07:32:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NDeNazzc
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NA+Y8Lq+
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQBdD4CTLz2yKn;
-	Thu, 12 Nov 2026 18:21:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.92
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794468064;
-	cv=none; b=T/oYtOVZrI7gbRcHYgqVasA+inGfG/aABDDJYR+bbtGaw3ATIlNoCIXog6/wb0sLy2JkU5f8mwgOYu697g57Uhl6c5+N3nr2u9i9VzXgvWjqVXRcMKwSrfwZeA74N/j8HxYDDmwlPAPKTLKiPDE1jhulwJrid5UyKNEY0/BUOwuBtLVQ2X150BWTgSACpVvcM6fSrf59JOuh2U9ZQ5qrJhyp5p9UYoCqARnyTTgD9jttc6g8z6EU7k64nn930GOrHet9nkxvQAz5YnmE2/vwmQe1zVZsqnClHenB6B2X8+AD4LQIStHGLKiccVVjFDlBuvmRRLHX99FuPavR/1lQeQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQBsq4GqXz2yKn;
+	Thu, 12 Nov 2026 18:31:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794468719;
+	cv=none; b=IMZTpyTQ+cd7i3Yc/IwXmmagLh4xMKVsMpmjUw5O7DwZrnLBI2zcxdAQf0Yx2kdN8hX51UFKNDK7sfmNuu4U+Ox1D+QSSLgm3GaEjeBfP9e62gMdldqDmOwP8xlKYHMASbAFhrbolMPOT8RUOQp++dO4rfAqlV+oqXdmuOfjPN2+6AKvuzvVq+MTUI6Myrw7f/QziaUKbXQSGp4axZ/EOoj3Csr+LuNOWg2TikS1vuhZu1/D1mmqV5bi+uZdBxAPJGYdajz8gkGwGGn3LrvbCqPZ8vcnbqNzQL/PQdG9nmSWkcrxK2nEJ/ibB1DYQbOK/9LBDMbD/PaYJqo0Cz4S+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794468064; c=relaxed/relaxed;
-	bh=3GObAzVicUC769Ed2LFARvtfjPhGbRDsMG32aEyAYQQ=;
+	t=1794468719; c=relaxed/relaxed;
+	bh=YkSv46yCHtIqoXvtaUlGuoA5bkCcyG3dKOTi+O8s+8o=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PaQUozhudodLdZ6+uQ81pH5pMwVCtoIfENBAek62j9YnX0D0p3P/Ai+TIJT4/svdhpQ3sAD6/0nlQbQE4qO2IC/i1qyVqJHSyf2rW4JyNgk6HIucEvD2SAyID3Mop5qdnxDiK+9Cou4mx5sY31HifEvp952W12AF1Er39X94HCrNkauchYO0wGoVQXm8JSiarRBb94pOIjRkXWy/78RHiEtryPlV/pnRQj2i4yZXCkIa0cA5CsWA/id8niTqswpG7CWZFMt7BRVW7mOeE5J7BcQwruydclZpfAlW5/sWBuK0hVsJTnYCsOy63bHw0nPKSJPe1kLAQU2qxEBTM9+RZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NDeNazzc; dkim-atps=neutral; spf=pass (client-ip=95.215.58.92; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 In-Reply-To:Content-Type; b=gTRhqkoWl8W9/3BAHbejfgHdy4MRvQ2Zs6zkoQumR3UvTm/afvFZFkqzz0z5LMPuGOSXNK6Pe0T+re9Mw4jaH6sDCMUisnBM1X6M6EU2BTz37bqXfq4M34wa7t8WQcY3dHviTSpufqnQvoE+TQxeMd4lztTkTAvvDjKj0hxTZMbbxZf4qEgzqAt4wSt2zreAdANzuXea4c/a7Kgd9dd54oGEK/bQ6dxLxhrxflmSn3N/xtcB1asOdMAXTMCS9rKQz2wCv0Wzi69m5a+OM76OPKeUhYzxbiwzanWTtryULZouvxTGRomqR5oCi0S0k0Lv9A/GDvLQ8LQz8qiH1Xk7rA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NA+Y8Lq+; dkim-atps=neutral; spf=pass (client-ip=95.215.58.16; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NDeNazzc;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=NA+Y8Lq+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.92; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-92.mta1.migadu.com [95.215.58.92])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.16; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-16.mta1.migadu.com [95.215.58.16])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQBd95M41z2xwP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 18:21:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQBsm03ljz2xwP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 18:31:54 +1100 (AEDT)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=dkOG8X97iyUWtRioal1Da3kor1MkKGE54K5m2vTuMmA=;
+DKIM-Signature: a=rsa-sha256; bh=c6rVmPURZ3DT+JjErkgtV1mxI38IznosT0ADdpGxR3o=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794468042; v=1; x=1795072842;
- b=NDeNazzc2NYXl5wHgkaQxUQ8AjB919HVNYVIb4QbDNHsxv6amVa2cSA00BbntsYsk5cJpkhG
- OJ2C61F0wX2KXAmZL8ZoveY/bZJb47ZUEf0J457Blm9rK99LD3+KE5jdKJHOps6k3nxE7PEcVJ0
- y4tsagCneKvin0hJCa1mXR8M=
+ t=1794468695; v=1; x=1795073495;
+ b=NA+Y8Lq+cDGqZtzw4xGR7Z+rYhlYc5kEZj9Wf2Hmn89XoCjPbSUTy0bPCgWjC3gyr6BdN93c
+ dC2ocsMaJpeagEvb78VirV/+2BWUhRbdDe7rev1Y9Mb5hCh5YGA1p4FraGwo6qC7NQCIepltXUr
+ MfBgol3hXaLgGn6MND2cWhuQ=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 93c8f31eebf66027;
-	Thu, 12 Nov 2026 07:20:37 +0000
-X-Mizu-Trace-ID: 93c8f31eebf66027
+Received: by smtp.migadu.com with ESMTPS id 13c0695ddd446293;
+	Thu, 12 Nov 2026 07:31:35 +0000
+X-Mizu-Trace-ID: 13c0695ddd446293
 X-Migadu-Flow: FLOW_OUT
-Message-ID: <5f5e05bc-fdde-45c0-9034-75ae576ebdc9@linux.dev>
-Date: Thu, 12 Nov 2026 15:22:02 +0800
+Message-ID: <7df44933-e92e-4f1c-9b26-22a1a298ca16@linux.dev>
+Date: Thu, 12 Nov 2026 15:32:58 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,8 +58,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 4/9] mm/vmalloc: BUG_ON() on an unaligned range in
- vmap_pages_range_noflush_walk()
+Subject: Re: [PATCH v4 2/9] mm/kmsan: skip vunmap_range_noflush when KMSAN is
+ disabled
 To: Suren Baghdasaryan <surenb@google.com>
 Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -75,11 +75,11 @@ Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
  kasan-dev@googlegroups.com, linux-mm@kvack.org,
  Sashiko <sashiko-bot@kernel.org>
 References: <20261110112546.261415-1-hao.ge@linux.dev>
- <20261110112546.261415-5-hao.ge@linux.dev>
- <CAJuCfpGMtHZSUhUra9rp5xGvD+L6reopCMb3qXgRSctQ7wnYFg@mail.gmail.com>
+ <20261110112546.261415-3-hao.ge@linux.dev>
+ <CAJuCfpHneeqRFOXyzCPPPa66xfn7Oa1n5m2N67o_pVwJfNgeXg@mail.gmail.com>
 Content-Language: en-US
 From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <CAJuCfpGMtHZSUhUra9rp5xGvD+L6reopCMb3qXgRSctQ7wnYFg@mail.gmail.com>
+In-Reply-To: <CAJuCfpHneeqRFOXyzCPPPa66xfn7Oa1n5m2N67o_pVwJfNgeXg@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -92,57 +92,53 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 Hi Suren
 
-On 2026/11/12 08:16, Suren Baghdasaryan wrote:
+On 2026/11/12 06:10, Suren Baghdasaryan wrote:
 > On Tue, Nov 10, 2026 at 11:24 AM Hao Ge <hao.ge@linux.dev> wrote:
 >>
->> The pte loop of vmap_pages_pte_range() maps whole pages and stops
->> only when addr lands exactly on end.  An unaligned end lets addr
->> jump over it and the loop keeps mapping into whatever follows the
->> range.  An unaligned start maps the page below the range with its
->> first pte.  That corruption is impossible to debug afterwards, so
->> bug out on addr and end at the entry of
->> vmap_pages_range_noflush_walk().
->>
->> Reported-by: Sashiko <sashiko-bot@kernel.org>
->> Signed-off-by: Hao Ge <hao.ge@linux.dev>
->> ---
->>  mm/vmalloc.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> index 27f2674a5556..86fbb1d2b27a 100644
->> --- a/mm/vmalloc.c
->> +++ b/mm/vmalloc.c
->> @@ -698,6 +698,8 @@ static int vmap_pages_range_noflush_walk(unsigned long addr, unsigned long end,
->>         pgtbl_mod_mask mask = 0;
->>
->>         BUG_ON(addr >= end);
->> +       BUG_ON(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end));
+>> kmsan_vmap_pages_range_noflush() returns 0 when kmsan_enabled is
+>> false.  The unmap side does not, so it still walks the shadow and
+>> origin page tables even though KMSAN never installed any metadata
+>> there.
 > 
-> Instead of BUG_ON() here can we error out early in this function's
-> callers (with or without a warning)? This is a static function with
-> only 2 callers. vmap_pages_range_batched() uses it in a loop but I
-> believe if we check the original address alignment then consequent
-> calls are guaranteed to have aligned addresses.
->
+> Note that KMSAN_WARN_ON() can reset kmsan_enabled flag, so the fact
+> that it's false does not mean that metadata was never installed. I
+> think a proper bailout should depend on CONFIG_KMSAN, not on
+> kmsan_enabled.
 
-One thing that worries me about checking in the callers, a new caller
-of the walk can simply forget. 
+Sorry, I did not realize this logic.
 
-If we take the approach raised after my patch 3, handling the
-unaligned range with WARN instead of BUG, I am happy to do the WARN
-here. Even the BUG_ON(addr >= end) above it can become WARN, because
-it only fails this mapping. If the module is not that important, we
-can ignore it and let the system keep going.
+I will go through the code again and will probably drop
+this patch in the next version.
 
 Thanks
 Best Regards
 Hao
 
+> 
+>>
+>> Add the matching early return.
+>>
+>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>> Reviewed-by: Dev Jain <dev.jain@arm.com>
+>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>> ---
+>>  mm/kmsan/hooks.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/mm/kmsan/hooks.c b/mm/kmsan/hooks.c
+>> index a706666db097..107f66841274 100644
+>> --- a/mm/kmsan/hooks.c
+>> +++ b/mm/kmsan/hooks.c
+>> @@ -138,6 +138,9 @@ static unsigned long vmalloc_origin(unsigned long addr)
+>>
+>>  void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end)
+>>  {
+>> +       if (!kmsan_enabled)
+>> +               return;
 >> +
->>         pgd = pgd_offset_k(addr);
->>         do {
->>                 next = pgd_addr_end(addr, end);
+>>         __vunmap_range_noflush(vmalloc_shadow(start), vmalloc_shadow(end));
+>>         __vunmap_range_noflush(vmalloc_origin(start), vmalloc_origin(end));
+>>         flush_cache_vmap(vmalloc_shadow(start), vmalloc_shadow(end));
 >> --
 >> 2.25.1
 >>
