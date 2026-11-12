@@ -1,49 +1,71 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2B939606A327
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 06:26:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18B14606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 06:38:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xdv6OXXd
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jANViDSq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ9Qk5vlRz2yKn;
-	Thu, 12 Nov 2026 17:26:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.36
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794464814;
-	cv=none; b=Ma2CZ9xjf0k+J0X7p53E6O36ijDEUwh8TqxLm4CfyFpI44qRxetGAqr1xMrNv5/m+V+2TSWksvLjEfY/YDr4lEhMTUHAbjxbEwWXKGVWVFhsJGfBIDJyV4oiP4slBncE/tCWTP0GhT1Cg/i/M0H5vaEaAev6oTLN1lcwdbYsh8NENPfQj8r8jfuwXaCFJvZKG6KWvfI9ZmVIgtRFoyTX7FQpDEcqcfIcwq3Bd0Ux1Wui/HWd6QYDYmdMats+ifVvyAVt6S9oMk1o/HGTChIAeOWvSroZP7oZx1rW77bNiqJ++uUEoY1uLJwSUAL2z+8noMnXQJJw656jA9n3E1ayzQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ9gq5GHVz2yKn;
+	Thu, 12 Nov 2026 17:38:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794465495;
+	cv=none; b=FBAdsXmbubSO7nTDouYRW1SUKWnIRU9MUXxKLrqkVkIp83hhRTTcLGS8fDny4fw0u+iSdt7FpcEqBVdSSHHGZTVNHhxcvDGTN7hqBHMuAKJywjojdDUHstMipqOQerKF7vosaKwYtq45oOnRUZ29HD4Npd5AsGFlgOPYnOCHx5cNfUpjpELKRSt99Lug3nCx9KXQquQrWRCucvt4Xe5kmFl+1o3NxDkkaSrRjIpSXU0jpkmbeYqz6MmETlA55Qwwez+0ZXHseX/sv4p0nQfqAtujK3C8j/kldri3r7MNvcsirxgtLCaoAoxrEdv1NB4X/TAE2skRNsKF7Rg+xhLO8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794464814; c=relaxed/relaxed;
-	bh=FzuBWSCpGeQukn6FXOSBWpNu0IM30YG8f/xbcMJEj9M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fxwCBq17ZTgcDKyzE+G08OzMzzB9LR5aTSzIrRTpQ0o2pxTLxs2evah6az2uSr7TAuLPrvWNPU6w8HMewY2lpyJzmd7Et21lif2AyusIcK12pmfn9lXBIVZJkxe0sc5ijlI5lpglJKGG1+KEs2qL+ZVCHXw0Fup26KiniZPOe7u6QoTw0jetkrYoCRXoDh4Ah/shOK8rmzaaQPVivmb7JXr+Y3tgawn0oclNirYi0o+ivzmOF2ic505Ped+bOTcVBt/6j4gfNpLFdKmfqUzo1aOIHo6nH53/W1FuqCfw2kJAN6f9VoT2bK8BwHTA3VhKtzlR/GNraYSr8xaBZJustg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xdv6OXXd; dkim-atps=neutral; spf=pass (client-ip=95.215.58.36; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1794465495; c=relaxed/relaxed;
+	bh=iRFfIlk2imt6t6yv6bIN0MN/kiJgCcKCYYhBMj7zHZE=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=JpLBeYbXpgG8u4dbilWUdzGCy9ii6dRbYwoZur2aVnTFmRdKJHQNtXArZI9bsoCiD0yu180eBuowQE8Gg9BcPHamghgW+IRKY5PEhT+kztOa9WSbyv6JqOBtzO2+KONwXt15rnL7fo5VRT0Zc7WsjlIatNFWI6QMWyY1YEXMdoqUnqrsMrQvIRGr994ZLfsNuM7K2AOHwQUg8bh5zMvI+pdgE1fUYQu9J7qWmRYKX+ADVzZTiX4K5S2qKpsS4qfoci9W2WjlONlyir+LqQTv3BZHUCRMA2Zipo4XzSjd6TEGRCNSjt2vh5jVBirP2y1bT6V4DgalIcljbWpJG865pw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jANViDSq; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=xdv6OXXd;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jANViDSq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.36; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-36.mta1.migadu.com [95.215.58.36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ9Qf4vKMz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 17:26:48 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=YSdVHcPOxp7Mxpr75S83EeGKEHU4uT3ofCAOXt4L8qg=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794464790; v=1; x=1795069590;
- b=xdv6OXXdejomL8Jyz21uc0ZO1TWdK2t3WFcFLwxceXm+B0C0fNYTeZ7LwgHTkmy16OJ29GNk
- izgILyNfylss6MC2zDXOz4c+0rS0DOdEGwM0hqjnTrytoKxV3wbmWkq74DfSFK34no72/4fqXNT
- YodGPR3YUvWpYFCabU8JqSAg=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 8df4261c904f80f8;
-	Thu, 12 Nov 2026 06:26:30 +0000
-X-Mizu-Trace-ID: 8df4261c904f80f8
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <73501214-76ff-4716-bb8e-f83fff26bfba@linux.dev>
-Date: Thu, 12 Nov 2026 14:27:55 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ9gp2tGmz2xmV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 17:38:13 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2jUbS2861878;
+	Thu, 12 Nov 2026 06:38:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=iRFfIlk2imt6t6yv6bIN0MN/kiJg
+	CcKCYYhBMj7zHZE=; b=jANViDSqvYCil6NXuTTz2+lvbtw4X5DJgETv5vJJEG1R
+	yz74TUDcD22G/HNuu7tt4BErupxWtTnMmCOV3Rxk4rCL4AM0/bNwr+Wqkv8ga1lZ
+	UYJI/fzgBgTokB9nfYcMG51g/vrX6bCR4BRRjhJsbyAwOgqZqVzyEGQwuXF29XOR
+	HXP538IhXr0VIJyzXydnn7RQsaxvxhcaQ2el6/5rnBZtkSSXo/qK9hrJas0F4dzD
+	CMGVBPeuoopAvXLi9dcbuNIvrPsesuNS81IoA1Re2Flm/JzXMKxhzAteKJnskSKl
+	8DzxCG2AXyocbI060AGfKrOaplvnPmFE/0yWXtUajg==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsumv4x23-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 12 Nov 2026 06:38:10 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2a1O8054026;
+	Thu, 12 Nov 2026 06:38:10 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hv309qnav-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 12 Nov 2026 06:38:10 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AC6c9RE32375318
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 12 Nov 2026 06:38:09 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 51CC35808E;
+	Thu, 12 Nov 2026 06:38:09 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C02F858083;
+	Thu, 12 Nov 2026 06:38:06 +0000 (GMT)
+Received: from [9.61.240.49] (unknown [9.61.240.49])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 12 Nov 2026 06:38:06 +0000 (GMT)
+Message-ID: <0d9a9fd6-3824-4709-a7f7-eb1d5849e079@linux.ibm.com>
+Date: Thu, 12 Nov 2026 12:08:05 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,403 +80,132 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 7/9] mm/vmalloc: undo partial mappings inside the
- mapping functions
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
- Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org
-References: <20261110112546.261415-1-hao.ge@linux.dev>
- <20261110112546.261415-8-hao.ge@linux.dev>
- <CAJuCfpFHaahsCNkXCOn8ks65yj_bPy33cOLZ5BW=rtTOuedLqw@mail.gmail.com>
-Content-Language: en-US
-From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <CAJuCfpFHaahsCNkXCOn8ks65yj_bPy33cOLZ5BW=rtTOuedLqw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Language: en-GB
+To: Ted Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+        Ojaswin Mujoo <ojaswin@linux.ibm.com>,
+        Ritesh Harjani
+ <riteshh@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: [next-20261111] ext4: Oops in ext4_writepages() during fast commit,
+ replay (generic/483, 64K pagesize, ppc64le)
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDAyNCBTYWx0ZWRfXzkSZbFjxUcGT
+ l7AtGG2qgqdbdP8Y9/Xet/7YTiVMhCgVj7S8hWfxXsCELQlYmCx2b/ntkFCZmAXWv5puG7UPohn
+ KAIUjK1hZ9wI/NHQL/i13ZAI8f0uocI=
+X-Authority-Analysis: v=2.4 cv=GISdgeNK c=1 sm=1 tr=0 ts=6af55ed2 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
+ a=-IFbq3Xo538CQDMHEQUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: HUuwRGpVZWvqaF-BWHFBlM4Dujs-ih3S
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDAyNCBTYWx0ZWRfX1tyninbRGAkw
+ RjRCTtWO2WMkrA4/R1BhnSdfLgQSQkgVU01gw6+MunDpvC5QTnLkQlF9hIUa3RCSKw/MrSb4V9N
+ GPzTO2nqZiyr6n3sAAw2i8MFb7cOrtvwr2f2QTfnDqL2+SmFkyK9Xd8BYzAJZzKAeky7GYqG0jY
+ Gy2HY90IWENDAIdaxzK3Uh7zkD/xqMZAqdDIPbFU1R/QC5amOiV9DDAgmru9ZIT2/AL+oTLnrz4
+ sIG+LZnxHZnPX1VzS9VORAqMm2JqIdPba/hmFB5QN8WTwjWaMg3ZoyFT+TIpALwImli4W/iGNqe
+ xQgQGDSc3DFtXTrRymDO8qtzkpdu3krpAEr9bGuWKmw7HF2y8xGlpRrDpvS+NLM8+4ekGWmd28o
+ EO4IEJc6MmtLex0mBYfyITBlA2vIOjAjrkwxX4XbZPPnU86SBOslmyc0oEWb5pb/FCmjiLmnW9P
+ ffm4OFACuOg/p3zLWbQ==
+X-Proofpoint-ORIG-GUID: HUuwRGpVZWvqaF-BWHFBlM4Dujs-ih3S
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0 impostorscore=0 clxscore=1015 adultscore=0
+ priorityscore=1501 phishscore=0 spamscore=0 malwarescore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120024
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Suren
+Hi,
 
-Thanks for your review.
-
-On 2026/11/12 09:15, Suren Baghdasaryan wrote:
-> On Tue, Nov 10, 2026 at 11:25 AM Hao Ge <hao.ge@linux.dev> wrote:
->>
->> The vmap entry points may install some PTEs and then fail, leaving a
->> partial mapping behind.
->>
->> The callers do not agree on who cleans it up. pcpu_map_pages() and
->> kmsan_ioremap_page_range() roll back what they mapped, while
->> vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
->> __vmalloc_area_node() expect a clean range from the mapping function.
->> For them the leftovers stay mapped, and the next attempt to map the
->> same range trips the WARN_ON(!pte_none()) in vmap_pages_pte_range().
->> A leftover huge pmd is even worse. During the retry, vmap_try_huge_pmd()
->> calls pmd_free_pte_page() on it, and the x86 implementation cannot
->> tell a leaf entry from a page table and frees the mapped page.
->>
->> After discussing with Suren and Ulad, we decided to put the rollback
->> into the entry points of the vmap API rather than into every
->> low-level helper. __vmap_pages_range_noflush() undoes the whole range
->> it was asked to map when it fails, and vmap_page_range() undoes its
->> range for the ioremap-style mappings.
->>
->> The rollback is __vunmap_range_noflush(), which only clears the PTEs.
->> No TLB flush is needed, nothing has touched the mapping yet.
->> vmap_pages_range_noflush() also drops the KMSAN metadata of the
->> failed mapping.
->>
->> The undo walk skips its cond_resched() when the caller's gfp mask
->> cannot block. __vmalloc() with GFP_ATOMIC or GFP_NOWAIT can run in
->> atomic context, where cond_resched() cannot schedule.
->> __vunmap_range_noflush() takes a can_resched argument for that, which
->> the sleepable callers pass as true.
->>
->> Suggested-by: Uladyslau Rezki <urezki@gmail.com>
->> Signed-off-by: Hao Ge <hao.ge@linux.dev>
->> ---
->>  include/linux/kmsan.h |  8 ++++--
->>  mm/kmsan/hooks.c      | 18 ++++++++-----
->>  mm/kmsan/shadow.c     |  7 ++---
->>  mm/vmalloc.c          | 61 +++++++++++++++++++++++++++++++++----------
->>  mm/vmalloc.h          |  6 +++--
->>  5 files changed, 72 insertions(+), 28 deletions(-)
->>
->> diff --git a/include/linux/kmsan.h b/include/linux/kmsan.h
->> index 7da9fd506b39..0016c032d1e7 100644
->> --- a/include/linux/kmsan.h
->> +++ b/include/linux/kmsan.h
->> @@ -150,11 +150,14 @@ int __must_check kmsan_vmap_pages_range_noflush(unsigned long start,
->>   * kmsan_vunmap_kernel_range_noflush() - Notify KMSAN about a vunmap.
->>   * @start: start of vunmapped range.
->>   * @end:   end of vunmapped range.
->> + * @can_resched: whether the unmap walk may call cond_resched(); pass
->> + * false from atomic context.
->>   *
->>   * KMSAN unmaps the contiguous metadata ranges created by
->>   * kmsan_map_kernel_range_noflush().
->>   */
->> -void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end);
->> +void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end,
->> +                               bool can_resched);
->>
->>  /**
->>   * kmsan_ioremap_page_range() - Notify KMSAN about a ioremap_page_range() call.
->> @@ -355,7 +358,8 @@ static inline int __must_check kmsan_vmap_pages_range_noflush(
->>  }
->>
->>  static inline void kmsan_vunmap_range_noflush(unsigned long start,
->> -                                             unsigned long end)
->> +                                             unsigned long end,
->> +                                             bool can_resched)
->>  {
->>  }
->>
->> diff --git a/mm/kmsan/hooks.c b/mm/kmsan/hooks.c
->> index 107f66841274..0cd1edaa1120 100644
->> --- a/mm/kmsan/hooks.c
->> +++ b/mm/kmsan/hooks.c
->> @@ -136,13 +136,16 @@ static unsigned long vmalloc_origin(unsigned long addr)
->>                                                  KMSAN_META_ORIGIN);
->>  }
->>
->> -void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end)
->> +void kmsan_vunmap_range_noflush(unsigned long start, unsigned long end,
->> +                               bool can_resched)
->>  {
->>         if (!kmsan_enabled)
->>                 return;
->>
->> -       __vunmap_range_noflush(vmalloc_shadow(start), vmalloc_shadow(end));
->> -       __vunmap_range_noflush(vmalloc_origin(start), vmalloc_origin(end));
->> +       __vunmap_range_noflush(vmalloc_shadow(start), vmalloc_shadow(end),
->> +                              can_resched);
->> +       __vunmap_range_noflush(vmalloc_origin(start), vmalloc_origin(end),
->> +                              can_resched);
->>         flush_cache_vmap(vmalloc_shadow(start), vmalloc_shadow(end));
->>         flush_cache_vmap(vmalloc_origin(start), vmalloc_origin(end));
->>  }
->> @@ -171,8 +174,9 @@ static void kmsan_iounmap_pages(unsigned long start, unsigned long end)
->>                 if (origin)
->>                         __free_pages(origin, KMSAN_IOREMAP_META_ORDER);
->>         }
->> -       __vunmap_range_noflush(shadow_start, shadow_end);
->> -       __vunmap_range_noflush(origin_start, origin_end);
->> +       /* ioremap metadata mappings are always GFP_KERNEL, so resched is safe. */
->> +       __vunmap_range_noflush(shadow_start, shadow_end, true);
->> +       __vunmap_range_noflush(origin_start, origin_end, true);
->>         flush_tlb_kernel_range(shadow_start, shadow_end);
->>         flush_tlb_kernel_range(origin_start, origin_end);
->>  }
->> @@ -207,7 +211,7 @@ int kmsan_ioremap_page_range(unsigned long start, unsigned long end,
->>                 mapped = __vmap_pages_range_noflush(
->>                         vmalloc_shadow(start + off),
->>                         vmalloc_shadow(start + off + PAGE_SIZE), prot, &shadow,
->> -                       PAGE_SHIFT);
->> +                       PAGE_SHIFT, gfp_mask);
->>                 if (mapped) {
->>                         err = mapped;
->>                         goto ret;
->> @@ -217,7 +221,7 @@ int kmsan_ioremap_page_range(unsigned long start, unsigned long end,
->>                 mapped = __vmap_pages_range_noflush(
->>                         vmalloc_origin(start + off),
->>                         vmalloc_origin(start + off + PAGE_SIZE), prot, &origin,
->> -                       PAGE_SHIFT);
->> +                       PAGE_SHIFT, gfp_mask);
->>                 if (mapped) {
->>                         err = mapped;
->>                         goto ret;
->> diff --git a/mm/kmsan/shadow.c b/mm/kmsan/shadow.c
->> index 2166086d3dc3..452760a333e4 100644
->> --- a/mm/kmsan/shadow.c
->> +++ b/mm/kmsan/shadow.c
->> @@ -247,7 +247,7 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
->>         origin_end = vmalloc_meta((void *)end, KMSAN_META_ORIGIN);
->>         kmsan_enter_runtime();
->>         mapped = __vmap_pages_range_noflush(shadow_start, shadow_end, prot,
->> -                                           s_pages, page_shift);
->> +                                           s_pages, page_shift, gfp_mask);
->>         kmsan_leave_runtime();
->>         if (mapped) {
->>                 err = mapped;
->> @@ -255,12 +255,13 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
->>         }
->>         kmsan_enter_runtime();
->>         mapped = __vmap_pages_range_noflush(origin_start, origin_end, prot,
->> -                                           o_pages, page_shift);
->> +                                           o_pages, page_shift, gfp_mask);
->>         kmsan_leave_runtime();
->>         if (mapped) {
->>                 /* Undo the shadow mapping set up above. */
->>                 kmsan_enter_runtime();
->> -               __vunmap_range_noflush(shadow_start, shadow_end);
->> +               __vunmap_range_noflush(shadow_start, shadow_end,
->> +                                      gfpflags_allow_blocking(gfp_mask));
->>                 kmsan_leave_runtime();
->>                 err = mapped;
->>                 goto ret;
->> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> index 3f98056f8c7e..d1986f68eab4 100644
->> --- a/mm/vmalloc.c
->> +++ b/mm/vmalloc.c
->> @@ -372,8 +372,12 @@ int vmap_page_range(unsigned long addr, unsigned long end,
->>         if (!err)
->>                 err = kmsan_ioremap_page_range(addr, end, phys_addr, prot,
->>                                                ioremap_max_page_shift);
->> -       if (!err)
->> +       if (err) {
->> +               /* Callers are ioremap and arch setup code, always sleepable. */
->> +               __vunmap_range_noflush(addr, end, true);
->> +       } else {
->>                 flush_cache_vmap(addr, end);
->> +       }
->>
->>         return err;
->>  }
->> @@ -429,7 +433,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
->>  }
->>
->>  static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
->> -                            pgtbl_mod_mask *mask)
->> +                            pgtbl_mod_mask *mask, bool can_resched)
->>  {
->>         pmd_t *pmd;
->>         unsigned long next;
->> @@ -451,12 +455,14 @@ static void vunmap_pmd_range(pud_t *pud, unsigned long addr, unsigned long end,
->>                         continue;
->>                 vunmap_pte_range(pmd, addr, next, mask);
->>
->> -               cond_resched();
->> +               /* The undo path may run in atomic context. */
->> +               if (can_resched)
->> +                       cond_resched();
->>         } while (pmd++, addr = next, addr != end);
->>  }
->>
->>  static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
->> -                            pgtbl_mod_mask *mask)
->> +                            pgtbl_mod_mask *mask, bool can_resched)
->>  {
->>         pud_t *pud;
->>         unsigned long next;
->> @@ -476,12 +482,12 @@ static void vunmap_pud_range(p4d_t *p4d, unsigned long addr, unsigned long end,
->>                 }
->>                 if (pud_none_or_clear_bad(pud))
->>                         continue;
->> -               vunmap_pmd_range(pud, addr, next, mask);
->> +               vunmap_pmd_range(pud, addr, next, mask, can_resched);
->>         } while (pud++, addr = next, addr != end);
->>  }
->>
->>  static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
->> -                            pgtbl_mod_mask *mask)
->> +                            pgtbl_mod_mask *mask, bool can_resched)
->>  {
->>         p4d_t *p4d;
->>         unsigned long next;
->> @@ -496,7 +502,7 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
->>
->>                 if (p4d_none_or_clear_bad(p4d))
->>                         continue;
->> -               vunmap_pud_range(p4d, addr, next, mask);
->> +               vunmap_pud_range(p4d, addr, next, mask, can_resched);
->>         } while (p4d++, addr = next, addr != end);
->>  }
->>
->> @@ -512,7 +518,8 @@ static void vunmap_p4d_range(pgd_t *pgd, unsigned long addr, unsigned long end,
->>   *
->>   * This is an internal function only. Do not use outside mm/.
->>   */
->> -void __vunmap_range_noflush(unsigned long start, unsigned long end)
->> +void __vunmap_range_noflush(unsigned long start, unsigned long end,
->> +                           bool can_resched)
->>  {
->>         unsigned long next;
->>         pgd_t *pgd;
->> @@ -529,7 +536,7 @@ void __vunmap_range_noflush(unsigned long start, unsigned long end)
->>                         mask |= PGTBL_PGD_MODIFIED;
->>                 if (pgd_none_or_clear_bad(pgd))
->>                         continue;
->> -               vunmap_p4d_range(pgd, addr, next, &mask);
->> +               vunmap_p4d_range(pgd, addr, next, &mask, can_resched);
->>         } while (pgd++, addr = next, addr != end);
->>
->>         if (mask & ARCH_PAGE_TABLE_SYNC_MASK)
->> @@ -538,8 +545,9 @@ void __vunmap_range_noflush(unsigned long start, unsigned long end)
->>
->>  void vunmap_range_noflush(unsigned long start, unsigned long end)
->>  {
->> -       kmsan_vunmap_range_noflush(start, end);
->> -       __vunmap_range_noflush(start, end);
->> +       /* The unmap paths are sleepable, keep the resched point. */
->> +       kmsan_vunmap_range_noflush(start, end, true);
->> +       __vunmap_range_noflush(start, end, true);
->>  }
->>
->>  /**
->> @@ -727,18 +735,32 @@ static int vmap_pages_range_noflush_walk(unsigned long addr, unsigned long end,
->>   * The caller is responsible for calling flush_cache_vmap() after this
->>   * function returns successfully and before the addresses are accessed.
->>   *
->> + * On failure the mapping is torn down before returning, so a retry
->> + * sees a clean range. When @gfp_mask cannot block, the teardown
->> + * skips cond_resched(), it may run in atomic context.
->> + *
->>   * This is an internal function only. Do not use outside mm/.
->>   */
->>  int __vmap_pages_range_noflush(unsigned long addr, unsigned long end,
->> -               pgprot_t prot, struct page **pages, unsigned int page_shift)
->> +               pgprot_t prot, struct page **pages, unsigned int page_shift,
->> +               gfp_t gfp_mask)
->>  {
->> +       int err;
->> +
->>         if (WARN_ON_ONCE(page_shift < PAGE_SHIFT))
->>                 return -EINVAL;
->>
->>         if (!IS_ENABLED(CONFIG_HAVE_ARCH_HUGE_VMALLOC))
->>                 page_shift = PAGE_SHIFT;
->>
->> -       return vmap_pages_range_noflush_walk(addr, end, prot, pages, page_shift);
->> +       err = vmap_pages_range_noflush_walk(addr, end, prot, pages, page_shift);
->> +
->> +       /* Undo the PTEs installed before the failure. */
->> +       if (err)
->> +               __vunmap_range_noflush(addr, end,
->> +                                      gfpflags_allow_blocking(gfp_mask));
-> 
-> I remember we discussed this before that __vunmap_range_noflush() will
-> be unmapping the entire range between addr and end instead of the
-> range vmap_pages_range_noflush_walk() actially mapped and your reply
-> was that this keeps things simple and avoids adding extra code in the
-> common path when we do not fail. This was bothering me, so I looked a
-> bit deeper and I think there is an issue with this approach.
-> vmap_pages_pte_range() fails with -EBUSY if it encounters an already
-> installed PTE. So, if this happens, we immediately bail out of mapping
-> the range and will be unmapping the entire range, including these
-> existing PTEs. I don't think that's ok.
->
-
-You were right, I did not really think the -EBUSY case through.
-when the walk trips over a PTE that is already there, everything
-from that point on is somebody else's mapping, and the undo as
-it stood would clear it. sorry for this.
+While running xfstests on linux-next next-20261111 on a Power9 pSeries
+LPAR with 64K PAGE_SIZE, generic/483 on ext4 (64K block size, fast_commit
+enabled) triggers a kernel oops.
 
 
-> A fix might be quite simple. vmap_pages_range_noflush_walk() already
-> counts how many pages we processed in nr variable. If we propagate
-> that one level up then we could unmap only the range we actually
-> mapped.
+Reproducer
+----------
+Kernel:   7.4.0-rc2-next-20261111 (ppc64le, PAGE_SIZE=64K, Hash MMU)
+Hardware: IBM 8375-42A POWER9 (pSeries LPAR)
 
-Right, thank you very much for helping sort this out. This makes
-it a lot clearer.
+xfstests local.config:
+   export FSTYP=ext4
+   export TEST_DEV=/dev/loop0
+   export TEST_DIR=/mnt/test
+   export SCRATCH_DEV=/dev/loop1
+   export SCRATCH_MNT=/mnt/scratch
+   export MKFS_OPTIONS="-b 65536 -O fast_commit"
 
-Thanks
-Best Regards
-Hao
+   ./check -ext4 generic/483
 
-> 
->> +
->> +       return err;
->>  }
->>
->>  int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
->> @@ -750,7 +772,18 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
->>
->>         if (ret)
->>                 return ret;
->> -       return __vmap_pages_range_noflush(addr, end, prot, pages, page_shift);
->> +
->> +       ret = __vmap_pages_range_noflush(addr, end, prot, pages, page_shift,
->> +                                        gfp_mask);
->> +       /*
->> +        * The page tables undo themselves on failure. Tear down the
->> +        * metadata that was fully set up before the mapping failed.
->> +        */
->> +       if (ret)
->> +               kmsan_vunmap_range_noflush(addr, end,
->> +                                          gfpflags_allow_blocking(gfp_mask));
->> +
->> +       return ret;
->>  }
->>
->>  static int __vmap_pages_range(unsigned long addr, unsigned long end,
->> diff --git a/mm/vmalloc.h b/mm/vmalloc.h
->> index d8372a4f65c4..9ea28845f713 100644
->> --- a/mm/vmalloc.h
->> +++ b/mm/vmalloc.h
->> @@ -40,10 +40,12 @@ void clear_vm_uninitialized_flag(struct vm_struct *vm);
->>
->>  int __must_check __vmap_pages_range_noflush(unsigned long addr,
->>                 unsigned long end, pgprot_t prot,
->> -               struct page **pages, unsigned int page_shift);
->> +               struct page **pages, unsigned int page_shift,
->> +               gfp_t gfp_mask);
->>
->>  void vunmap_range_noflush(unsigned long start, unsigned long end);
->>
->> -void __vunmap_range_noflush(unsigned long start, unsigned long end);
->> +void __vunmap_range_noflush(unsigned long start, unsigned long end,
->> +                           bool can_resched);
->>
->>  #endif /* __MM_VMALLOC_H */
->> --
->> 2.25.1
->>
+
+
+Oops
+----
+[14844.411091] EXT4-fs (dm-0): mounted filesystem 7ef13de7-... r/w with 
+ordered data mode. Quota mode: none.
+[14847.236154] EXT4-fs (dm-0): unmounting filesystem 7ef13de7-...
+[14847.275380] Kernel attempted to read user page (1174770000) - exploit 
+attempt? (uid: 0)
+[14847.275406] BUG: Unable to handle kernel data access on read at 
+0x1174770000
+[14847.275414] Faulting instruction address: 0xc00800000ed42f74
+[14847.275423] Oops: Kernel access of bad area, sig: 11 [#1]
+[14847.275430] LE PAGE_SIZE=64K MMU=Hash  SMP NR_CPUS=8192 NUMA pSeries
+[14847.275575] CPU: 26 UID: 0 PID: 53042 Comm: mount Kdump: loaded Not 
+tainted 7.4.0-rc2-next-20261111 #1 PREEMPT(lazy)
+[14847.275587] Hardware name: IBM,8375-42A POWER9 (architected) 0x4e0202 
+0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
+[14847.275597] NIP:  c00800000ed42f74 LR: c00800000ed42f70 CTR: 
+c0000000009e2a60
+[14847.275647] CFAR: c00000000000db4c DAR: 0000001174770000 DSISR: 
+40000000 IRQMASK: 1
+[14847.275771] NIP [c00800000ed42f74] ext4_writepages+0x12c/0x3a0 [ext4]
+[14847.275908] LR [c00800000ed42f70] ext4_writepages+0x128/0x3a0 [ext4]
+[14847.276038] Call Trace:
+[14847.276058]  do_writepages+0x190/0x330
+[14847.276073]  __writeback_single_inode+0x9c/0xa30
+[14847.276087]  writeback_single_inode+0x18c/0x2a0
+[14847.276101]  write_inode_now+0xc0/0x100
+[14847.276114]  iput_final+0x10c/0x300
+[14847.276128]  ext4_fc_replay_add_range+0x2f0/0x5a0 [ext4]
+[14847.276262]  ext4_fc_replay+0x564/0xdd0 [ext4]
+[14847.276394]  do_one_pass+0x9bc/0x1370 [jbd2]
+[14847.276439]  jbd2_journal_recover+0x358/0x400 [jbd2]
+[14847.276481]  jbd2_journal_load+0x28/0x110 [jbd2]
+[14847.276530]  ext4_load_journal+0x7cc/0xc60 [ext4]
+[14847.276664]  ext4_load_and_init_journal+0x6c/0x680 [ext4]
+[14847.276801]  __ext4_fill_super+0x1454/0x2360 [ext4]
+[14847.276937]  ext4_fill_super+0x188/0x4d0 [ext4]
+[14847.277072]  get_tree_bdev_flags+0x250/0x350
+[14847.277086]  ext4_get_tree+0x24/0x40 [ext4]
+[14847.277221]  vfs_get_tree+0x78/0x210
+[14847.277234]  vfs_cmd_create+0x8c/0x1a0
+[14847.277246]  __do_sys_fsconfig+0x58c/0x880
+[14847.277259]  system_call_exception+0x3c4/0x600
+[14847.277273]  system_call_vectored_common+0x15c/0x2ec
+[14847.277477] Code: 387f0740 480b8b11 e8410018 ebff0740 7dbe6b78 
+386d0030 480b8afd e8410018 ebde0030 7c7ff214 480b8b65 e8410018 
+<7d3ff02e> 7f83e378 39290001 7d3ff12e
+
+If you happen to fix this, Please add below tag.
+
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+Regards,
+
+Venkat.
+
+
 
