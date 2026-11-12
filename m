@@ -2,72 +2,94 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1BE26606B243
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 08:44:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7182B606A336
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 09:08:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kfzAJFFI
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QEiWDMXa
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQDTC2RnMz2yKn;
-	Thu, 12 Nov 2026 19:44:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794473055;
-	cv=none; b=HlA67O0gNTXRgNWpFLtDem3H9g1d0fZOcPvIGkxKJxNGgQNWKi5gtRdPg5Um5+ZLoS2LjAuGgo5qDEGMf0lILv1Cs2pYzv27kVoIzGdezjN3VckIlz4BsQrHwPKhKKU+Nv0KL84FsAQViPM3TMcLOTzDYQdZ3wUZjECMZurkVcA/+Cqzw8yTzSThjLK/2W09XHUShhzRmWCFaPPWlx/BjUzHt9TrEa8CCDCGcqbujcKdAIPsiDoCmayRNC5222m/DIZwET3rzvtVBs/QK9CTiwlZp3K9MZ+RQjBnhpeQvlbOZoFlN+eHg+CH8zjkfiQtBHXaYzXuq1FmEbrtczjKGA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794473055; c=relaxed/relaxed;
-	bh=9SpBZGxUtba6ow8shCnowhpSC9YarN02m5LXry2AQuU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CXz2S5A2YTwnJYmmV1rsql9Y3nBNzGX4VdcwbiRPq/KSk3CZj8oPoWV3o8gFcxZz10x7lkxCpNzc7f4U6/1pl7jDxeNgwvSmFh7c+xoiwcUSp9L6xhJuafrD3CyGKgPJxDwwvuy6moXKVCzPnfkM8J8JVDhIHc+lBi/QMurTAHHIEF2mWrGDFQbUB/uDeVZ5eF0eErnetX2ulYbrHx2fjt4Ai5gxvYWnkfRRbDPTKcn3hXQvlx/jzh42aX3Co12mLrthemEhMA96WhrLBRizlbzWwCWLykP/nO/vEsxfezmxobEydhIC7v8TUV0B8eOM3FgL6uu05sVWq6eBiIuQgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kfzAJFFI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQF146GrGz2yKn;
+	Thu, 12 Nov 2026 20:08:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::431" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794474504;
+	cv=pass; b=EOLp6pee2PpXbzrqyG5xd8Mo/v8bcrraBk8v6vLJNlPMlQqJvfwRCRzB0VDZiQJgaMDQD8QRza/jN7X3ZbMYFYkNehuU02iDhM2+SUxlVzrUGXdX24WZD2qy+kpDxV6WPwwNOypI93y05lIUP2QbEMpeeyShd8QCEbBo1Q+pexeFWtBm87hZULiAtW9qUSOvbvK1msUwxkTwggifm9eTGsDy7koLLx77NPXAqp5wIyiBGNeld27OrSQ3Aijb5/B9q+aBfQlrHFdh2rQybHAj4UOpohJ7nWOWsAQO31BO831L2xzcZ0HbZocuz5Cz5TfbqEvxYnfJSuV0bPtcHaLmKQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794474504; c=relaxed/relaxed;
+	bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=VzheAZiG3oe5sXvZykuTkpqQVih05VtfW/rPpnqnNQWHK2u5vr1/aVIhxIUGMFw7ptnzV0AKsNr1jUfkcNcaF9YGzKx/cSJvvRX0hUhvZNTP/99zwCQs4BqZEcxFAxkiQ/8Shai1It9lqUQkoqCdImbTL7n+Xvs+5Y91/AhAZq3Jl1yaHAdJWT84xbI3R9GRhgPPKq5Ob7J6w9vOhCVjBv8+eVw54/X+CKy25h60hlAgZRDbdOAVeScOxz47a5eVGj5e2YmDiz9Ud+l4AJ/xi/W9I81er+nF3vf/AjlC2P04VawonmA9qfvXywZ2P3oh9GF7zqV37XBOVY0L4DFa4Q==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QEiWDMXa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kfzAJFFI;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=QEiWDMXa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQDTB25jjz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 19:44:13 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2i8T53053570;
-	Thu, 12 Nov 2026 08:44:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=9SpBZG
-	xUtba6ow8shCnowhpSC9YarN02m5LXry2AQuU=; b=kfzAJFFIXgpFQ7RJcur4cL
-	vUrPMgLDX0cuPSAACYkc6EAL2CPaNyhNX2oDJUOFYkEHN6MmX/qf2yn41IkT5KUY
-	ENll3+n57xCipfuqd8nUsM5GBXY5Z09ivHRLyjWq0Hn+8VkL7pEiikrotLnVUtUB
-	4s5mqlFFzaIRgcPoE2wBqldXa8AzDbskis/i8Mq8Y4BRJAqm85LGNb44xRNcbhYR
-	R/roe/Uf6cI0b6gJO4oeb867uiXCb8vLU7vjXQuANin4KBuFCkOpnNWKqBFEqs1x
-	sOD4fskYEZEak6cZ4+PUg6eMY3zGEbQ00b8S3atXInk389nWPbkYLNtLm08U7MaA
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsug6ekjp-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 08:44:02 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC88jAr3145596;
-	Thu, 12 Nov 2026 08:44:01 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hvd51wq5a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Nov 2026 08:44:01 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AC8hvru44171664
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Nov 2026 08:43:58 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D67542004B;
-	Thu, 12 Nov 2026 08:43:57 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8013A20040;
-	Thu, 12 Nov 2026 08:43:54 +0000 (GMT)
-Received: from [9.124.214.132] (unknown [9.124.214.132])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Nov 2026 08:43:54 +0000 (GMT)
-Message-ID: <aafdbe35-0482-4649-b99d-3180aee112c9@linux.ibm.com>
-Date: Thu, 12 Nov 2026 14:13:53 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQF130xVXz2xwP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 20:08:22 +1100 (AEDT)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-8a39e5161c1so3005468b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 01:08:22 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794474499; cv=none;
+        d=google.com; s=arc-20260327;
+        b=eUCTKHg+DU4sb2oyEw0TTyBN0kIIkOF5T2J33qXtiXfNjd7wsZaO8j6ypDyXMupiKk
+         d1//V55fQWKsrtOWLxdfz0VnM+66hwGwdOPPBKA2oF/DJJPB62QJRX0hmwmhhoszq2sO
+         ZNxm6zRFRvsA5Z6nR6nGiWCGHbznKmRxLQWEF6P/o8s/IQyiEEDoI58/0yNx35U2rX/y
+         EQpwv4Be9JEc7X71iIXmcwQgq+v7Yjs426UyTamxQTzyjuPYslNCAtVCd7e4wLqH1ypv
+         jOTWKucdua8MjRb1npbI2+1JqiJF+VlarKTofjkC1Iw8hbfb0UvpWG8r5yQxGpK7v2hl
+         E4ZQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
+        fh=PxIucXtOGllolPR6MaXlxTJKy1Gq0gHOU2dwKA3NQ0I=;
+        b=sy45ywamDCGsrnEh42oqJyIn4h/APgQD2BUUPOQJhCpptuzHcZK+sahuGWx4Lt+evO
+         ACgrOuG+tWQrGmjcH7DEQqGEZvsLGpLv+sTh9uArpq8He5ho82dTZdlXDGcUDQhGCbCM
+         Y8Vci6PFOHq3zxZNpY/Y/MT6/6X56iRLWccHI9HrsJgui7cKYKBeeewVH7G18R1xMMHt
+         OjiWlF+W3/3fdGNzyFFhfUwPrf4z3x/PmJXrQG0fiv1a3fRyv7gDCNZVBFV7PmFhYwZf
+         nzA842PenzPtGMJKWXAkG+GCP3PdKX7op1FIViX4bsiyQgCd2nXvKx9pifFtv3ndOQpk
+         aQHg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794474499; x=1795079299; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
+        b=QEiWDMXa7tSiRrSd6elBvt2NOp4NRbSzN6jWOYEXNaQ5x8oD/Wj7SSsSbFNdgZhytC
+         C+CGEaLi4jGMNhkGiLhnj7dlp/B1KCVfTi23iT4h/EYS46CnabDliSdOkdJ4azRLJ96Y
+         gEzHBP5lX9fmFXdjp9kPvoAxAwCABMOu/c1CfYNLMct4MBQqX8d98FFkFi12YUcW0+SK
+         2z17xXshKrRaVXK3Fj/ib+fvXcxKOi7xTsoePGnFfuuLG2RfOwS8WjZPrWaChyd+Z8GN
+         ykj1KWuG6f3F0bVQBy9pRwDlkw6TcTsTSWxiBJnGUoYC4OXeBJY61Nx9r+cjpMOqQau9
+         FG2Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794474499; x=1795079299;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5uxsE6PqmpKFZd5WTCPldAkadxtOwm9bHGSoZKmkpDY=;
+        b=YNHzF1D+oykgLvAAFV6dVjlcQ0FnuVU9rvVAZA+22flg3BoS1E1NrCJjZbKjd8MjdT
+         SANAecLo/62gaXqch/HZZAyLAxXOVblFAvdqKPdeLCf2vW2BEbeEo4H6lCR8hKvtcMT4
+         fyRwmtKTBkW2PfkVZmr8YSqHAxefOm5WBNqFMJQldP6nXWfEUEljnkmtzwCTCvc4ikJl
+         uYAjVlm58ZvTCsb2vVz8AAghhWJaozsFd7Sn49xktxdJLx3oFFzUySnp5q86O8yMJ15G
+         X+O0KEVD0v6Kr1zaDAqVZES6QBaLqBz4lELJ+5H3CH2BFol4Sceh+xIV0W16wzyyC98Z
+         qbJg==
+X-Forwarded-Encrypted: i=1; AL+hErH/csS5ruCiNbcIF7qcTkMuuZ6ZQR1eqhd1vsO0sZvW4CrFA0rUQTDvdSU0yt0IMOA6H24IGn3cDZF+J5I=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9QeHpVJBpWUn3CdBJLPSTYYWymz6pLO63MEi6+Y7YNOkkQ4hSw
+	MZ0YQgLAC/Nk70zEgjns2SyUBXSeeGVE1EoPou1PsIXLecsPblhSwsfMOQdU8Dlw6fLc2jWgNzo
+	S/DDz6Kdj2k6aa2kILX6sv8iQEH1oSdM=
+X-Gm-Gg: AYBFou1GzuRwOP7Z1tObnGFKPALRAHYq3uWTUTr8HvjKTM5sKutdtrhu6Fh06OZ8F8v
+	G13t6nboMs7n23SEbwnbP9KMYd8+od9QwKd0/qTtLX764/2chEcsTtL0RQey6Pwpe1GqzpyDjwf
+	pthmczRrZV8XWFiRiUjF3jurP9RCh5pUJ1B+JMiLgU6mdpnWmz5D368Y3LAqxR9zAO6/I1vl0Pz
+	VINzD85jNKkZmdHMH7J8TI8jDlF7akBcMrAd8Ycnhy+g5Yt0/eOECFg1AcH5WMoFa4nuS8uy/Rm
+	ordbcRO1wYWzdbo4PHQyMdqQo+uQdsjX+Fc2XixdfeisI8N6RKEXhGwA2aFl1nb3S2KMcUUEUHA
+	/k3DusM8K0xBaNORRCIpmDLLCTR4+q2dXyUECs3v22CrqCMQQUf08mCz5MQ==
+X-Received: by 2002:a05:6a00:982:b0:886:3827:c4a2 with SMTP id
+ d2e1a72fcca58-8bc19503fc2mr5293685b3a.3.1794474499419; Thu, 12 Nov 2026
+ 01:08:19 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,144 +103,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/3] KVM: PPC: Use ppc_hard_irq_disable before guest
- entry
-To: linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de,
-        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-        nnmlinux@linux.ibm.com, ritesh.list@gmail.com
-Cc: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        linux-kernel@vger.kernel.org, msuchanek@suse.de, harshpb@linux.ibm.com,
-        gautam@linux.ibm.com, maddy@linux.ibm.com, amachhiw@linux.ibm.com,
-        venkat88@linux.ibm.com, mkchauras@gmail.com
-References: <20261110053238.3794500-1-sshegde@linux.ibm.com>
- <20261110053238.3794500-4-sshegde@linux.ibm.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <20261110053238.3794500-4-sshegde@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: wPHfaJarynP4BGzuUada3BdtrjJKFSP9
-X-Authority-Analysis: v=2.4 cv=PeVqFShd c=1 sm=1 tr=0 ts=6af57c52 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=scWtL-x6Enx3ky8QdPEA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: ym0croEtdha4ozCvusTLD-sOo9cgirBx
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDAzNCBTYWx0ZWRfXwRcnJEtUfdZJ
- mrpd7lfqDrvYuNXEVlfGZfWNko4g5dAXq2MLdO2rz8dCYxVcBpJaqwQRYTH94X5T7qhM8OHxvSz
- Gb3Fb5awmgSu1fYEdRyvuUeyisZU03goa8q5oXHoc0cttinwzOkTcQi5X0AKP8N/6JKPc4iuR/T
- GA3q1jZP6pJszVg66DjDZicrNEN/qRzZF6WntQ6w8ASoaBJ+1UIjbzJOvsMPIvUHhzayuSdVRvW
- CsKBsD6UlEJpUMOvIbUJHVwSxxXh5gPHMIA4pTnDJiY6uZlz1l//szbk/ONVJTA2/e06/OeRKQ8
- MzHqXgFal6+8rbwfOeLp0FqyoeYd4lo1nQyekWfHRfONjHliOpyjIoyScHoZjv2dY7XixMSy3Vs
- 0v2OskXJdsZ6pV20uIl+iGIqCuWr4y3muxJewdekgBDOF8BqcwPQIsfZGae4fpM02DME38+U+l4
- PcqndHZBq6wocFln8Kw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDAzNCBTYWx0ZWRfX7eOpteLnl5OF
- g+0EdDvt8ScoyvKl8hDDnp0ew+bTWdNnW8LNGQXglFvkj9eEt+Yx+rKf2bCb+VyLqVIyY0MVKTE
- 4JFMHK55yoMmnHqH6WG3BbbONVjbdew=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 phishscore=0 suspectscore=0 impostorscore=0 priorityscore=1501
- lowpriorityscore=0 spamscore=0 malwarescore=0 clxscore=1015 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120034
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+References: <20261110120743.6301-1-stefan.ghetu@nxp.com> <20261110120743.6301-3-stefan.ghetu@nxp.com>
+In-Reply-To: <20261110120743.6301-3-stefan.ghetu@nxp.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 12 Nov 2026 17:08:03 +0800
+X-Gm-Features: AclHuK8OFan-61VHpWDbQwD5GQhW_fgRO4OvBxXWkrMrWUfYeFa8VUbGfv5vQOs
+Message-ID: <CAA+D8ANdJCkf1i7MUJVh7z7tk3Ka6gWZ0ynMys_Qt70ZfaN0=g@mail.gmail.com>
+Subject: Re: [PATCH 2/5] ASoC: fsl_asrc: fix pair ownership on repeated or failed
+To: Stefan Ghetu <stefan.ghetu@nxp.com>
+Cc: Mark Brown <broonie@kernel.org>, linux-sound@vger.kernel.org, daniel.baluta@nxp.com, 
+	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>, 
+	Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+On Tue, Nov 10, 2026 at 8:08=E2=80=AFPM Stefan Ghetu <stefan.ghetu@nxp.com>=
+ wrote:
+>
+> hw_params() can be called again without hw_free() in between, and
+> hw_free() is also called after a failed hw_params().
+>
+> fsl_asrc_request_pair() always takes a new pair, so a second hw_params()
+> leaves the stream in two asrc->pair[] entries. Only one is released, and
+> after close the other points to freed memory, which is dereferenced by
+> fsl_asrc_isr() and fsl_asrc_m2m_suspend(). After a failed hw_params(),
+> fsl_asrc_release_pair() releases a stale index that may belong to
+> another running stream.
+>
+> Keep the owned pair and only update its channels when it is requested
+> again, and ignore a pair the stream does not own on release.
+>
+> Fixes: 3117bb3109dc ("ASoC: fsl_asrc: Add ASRC ASoC CPU DAI and platform =
+drivers")
+> Signed-off-by: Stefan Ghetu <stefan.ghetu@nxp.com>
 
+Reviewed-by: Shengjiu Wang <shengjiu.wang@gmail.com>
 
-On 11/10/26 11:02 AM, Shrikanth Hegde wrote:
-> After applying preempt disable patch, i.e PATCH 2/3, Christian reported
-> a subsequent warning stopping his board to boot properly.
-> 
-> WARNING: at .kvmppc_fix_ee_before_entry+0x10/0x28, CPU#0: qemu-system-ppc/4667
-> CPU: 0 UID: 1000 PID: 4667 Comm: qemu-system-ppc Tainted: G        W           7.3.0-rc4-2-powerpc64-smp #1 PREEMPT
-> Tainted: [W]=WARN
-> Hardware name: varisys,CYRUS5040 e5500 0x80240012 CoreNet Generic
-> NIP [c00000000005dc3c] .kvmppc_fix_ee_before_entry+0x10/0x28
-> LR [c00000000005f298] .kvmppc_handle_exit+0x5b4/0x5e8
-> Call Trace:
-> [c000000086587780] [c00000000005ee10] .kvmppc_handle_exit+0x12c/0x5e8 (unreliable)
-> [c000000086587830] [c000000000062068] .kvmppc_resume_host+0xb8/0x10c
-> 
-> It triggers below warning...
-> 
-> static inline void kvmppc_fix_ee_before_entry(void)
-> {
->          trace_hardirqs_on();
-> 
->          /*
->           * To avoid races, the caller must have gone directly from having
->           * interrupts fully-enabled to hard-disabled.
->           */
->          WARN_ON(local_paca->irq_happened != PACA_IRQ_HARD_DIS);
-> 
-> This happens since kvmppc_prepare_to_enter does first local_irq_disable
-> followed by hard_irq_disable. This leaves a small window where interrupt
-> may occur and it could set the irq pending bit in PACA.
-> 
-> That local_irq_disable was necessary for PPC32 to track the lockdep
-> state etc. On PPC64 hard_irq_disable is good enough. There is no need to
-> do both. Use the new irq api to do the necessary one.
-> 
-> Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Closes: https://lore.kernel.org/all/b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de/
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+best regards
+shengjiu Wang
 > ---
->   arch/powerpc/kvm/powerpc.c | 14 +++-----------
->   1 file changed, 3 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 9194cf492d1c..4ee3d7bfe917 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -81,13 +81,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->   	int r;
->   
->   	WARN_ON(irqs_disabled());
-> -	/*
-> -	 * local_irq_disable() first: on 32-bit, hard_irq_disable() alone is a
-> -	 * raw MSR[EE] clear that bypasses the lockdep/irq-tracing state, and
-> -	 * the xfer_to_guest_mode helpers assert IRQs are seen as disabled.
-> -	 */
-> -	local_irq_disable();
-> -	hard_irq_disable();
-> +	ppc_hard_irq_disable();
->   
->   	while (true) {
->   		xfer_to_guest_mode_prepare();
-> @@ -101,8 +95,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->   			 */
->   			local_irq_enable();
->   			r = kvm_xfer_to_guest_mode_handle_work(vcpu);
-> -			local_irq_disable();
-> -			hard_irq_disable();
-> +			ppc_hard_irq_disable();
->   			if (r) {
->   				/*
->   				 * The generic helper does not set the exit
-> @@ -134,8 +127,7 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
->   			local_irq_enable();
->   			trace_kvm_check_requests(vcpu);
->   			r = kvmppc_core_check_requests(vcpu);
-> -			local_irq_disable();
-> -			hard_irq_disable();
-> +			ppc_hard_irq_disable();
->   			if (r > 0)
->   				continue;
->   			break;
-
-This patch had missed converting one more booke callsite. Will do that.
-Will address other nits and send out next version soon.
-
-Thanks for review and testing.
+>  sound/soc/fsl/fsl_asrc.c | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+>
+> diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
+> index faf348dd582d..5d97789b5c36 100644
+> --- a/sound/soc/fsl/fsl_asrc.c
+> +++ b/sound/soc/fsl/fsl_asrc.c
+> @@ -216,6 +216,8 @@ static void fsl_asrc_sel_proc(int inrate, int outrate=
+,
+>   * It assigns pair by the order of A->C->B because allocation of pair B,
+>   * within range [ANCA, ANCA+ANCB-1], depends on the channels of pair A
+>   * while pair A and pair C are comparatively independent.
+> + *
+> + * If @pair already owns a pair, it is kept and only its channels are up=
+dated.
+>   */
+>  static int fsl_asrc_request_pair(int channels, struct fsl_asrc_pair *pai=
+r)
+>  {
+> @@ -226,6 +228,19 @@ static int fsl_asrc_request_pair(int channels, struc=
+t fsl_asrc_pair *pair)
+>
+>         guard(spinlock_irqsave)(&asrc->lock);
+>
+> +       if (asrc->pair[pair->index] =3D=3D pair) {
+> +               if (asrc->channel_avail + pair->channels < channels) {
+> +                       dev_err(dev, "can't afford required channels: %d\=
+n", channels);
+> +                       return -EINVAL;
+> +               }
+> +
+> +               asrc->channel_avail +=3D pair->channels;
+> +               asrc->channel_avail -=3D channels;
+> +               pair->channels =3D channels;
+> +
+> +               return 0;
+> +       }
+> +
+>         for (i =3D ASRC_PAIR_A; i < ASRC_PAIR_MAX_NUM; i++) {
+>                 if (asrc->pair[i] !=3D NULL)
+>                         continue;
+> @@ -257,12 +272,19 @@ static int fsl_asrc_request_pair(int channels, stru=
+ct fsl_asrc_pair *pair)
+>   * @pair: pair to release
+>   *
+>   * It clears the resource from asrc and releases the occupied channels.
+> + * Nothing is done if @pair does not own a pair.
+>   */
+>  static void fsl_asrc_release_pair(struct fsl_asrc_pair *pair)
+>  {
+>         struct fsl_asrc *asrc =3D pair->asrc;
+>         enum asrc_pair_index index =3D pair->index;
+>
+> +       /* Only the owner clears its entry, so it cannot change after thi=
+s check */
+> +       scoped_guard(spinlock_irqsave, &asrc->lock) {
+> +               if (asrc->pair[index] !=3D pair)
+> +                       return;
+> +       }
+> +
+>         /* Make sure the pair is disabled */
+>         regmap_update_bits(asrc->regmap, REG_ASRCTR,
+>                            ASRCTR_ASRCEi_MASK(index), 0);
+> --
+> 2.53.0
+>
 
