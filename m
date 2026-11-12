@@ -2,79 +2,70 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C36BB606A33C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 05:36:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1E13606A324
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 06:06:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=Xpelanak
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n/GkPa/t
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ8Jd3L3Cz2yKn;
-	Thu, 12 Nov 2026 16:36:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::729"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794461793;
-	cv=none; b=CeDSwgUI/wSB/myKyHQYfTlv0uK9AA92ZWyUvb5PHLwuSvqEO9HHO1i5lXWoYNKSaDs5oI8P3z41Im7BPD5L4nMTRGnW+mQWF39BjKkHW9VfC+tl062Fr6duCn4I3t7qmcfs8VOzpSp+gtjZluCKGKhF2PS3fHp4u8facYdbOzkj36ZRWKjIBiKO6iMpEQ9nWO0y/rYD8tszBoRi35skfaO9riOarlw232+a2J/ZhdrNWJYJ5s6jrFadF2k2EbU0/9yfk/KMFE6F1bZgkMwQ2Ifprs3hPHtTWPPUmrpOGrAXo1Rcfkr6g9xqy1nfFRD+9FOAdgJcJyDBXX7WFnWevA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQ8zX3RFmz2yKn;
+	Thu, 12 Nov 2026 17:06:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794463608;
+	cv=none; b=MDKO8NtD12uWDJn5QsxLytOdq80j/yqGvPJB+d6rt9N6ghDopBq8Faj3L4LFs1RbJSOwgDieX+FIz3EbOYFCAxwliuZBB0oBry8keOrCvQpkXmpHdS5t30RX6D4AGhpwZM56fDvKJMv5D3CjyA+5E3ubLObCPPImdW/dIGBPzx9M+2blSkDfhGY91HE4SFI2equF7OteT+H2WMOqMk5sticxbx869fju8JuENusgoNihEno6nQprU1Ea6Q1EFVLLdT/Kkv+ozVPJzlziolvo9Sqs5YnQfGHRZ4ff1Bm1EJNfyFI8kOipllQX4LhqeabnBEahPh/bJ1QAt19LaVaumQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794461793; c=relaxed/relaxed;
-	bh=e2soeXJ852281gC+OC2yZSX9G2s4v3lG9pbKt+VP0DM=;
-	h=MIME-Version:Content-Type:Subject:From:To:Cc:In-Reply-To:
-	 References:Date:Message-Id; b=RFZ1ndLx91tWo3adTo8jXgWYyPRWZFk2+aj82dXVzPB0m2Z2sR1qGHIkNhD7Vih7oOEZWuvBEyiiTxxVDIn88RyMFyU0TIHCe811f/BP8d+03lN5qfOjfzPQyDLS0giYlnDvakYAXYcQBUuRlZ+WQ9w+lcFzjIJKLpAbxXDovNzm2o80MnUjWrHozmcB66zBe61hm/y7EB0qSekZeBEFF+gXB3CvmeOHmiHO2yG1u0+F1POmfilO2lLw7K4bQJEte0BE4HOZX3CAjwWw205Jbu7Qny261gyhcuHxkGXY3L6HNfFGg49kKCdKXduUDhDcM+i17kHHkpL7CnSaZD1vNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gourry.net; dkim=pass (2048-bit key; unprotected) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=Xpelanak; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=gourry@gourry.net; receiver=lists.ozlabs.org) smtp.mailfrom=gourry.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gourry.net
+	t=1794463608; c=relaxed/relaxed;
+	bh=ISTKPlrhU90UkBMn1+nIifs9OVjpnasWZN/BkeSsoco=;
+	h=Message-ID:Date:MIME-Version:To:From:Cc:Subject:Content-Type; b=Td3+QFxfJWDuz2KDR4vs2dFJ7UYn2fyA4gikOYPUTDmUBz2VFgPmrvXy5IGSc2H+3PLt3Ratv5SaDMJZYnbwiNPSgr4zMwBw/3Oxay/5HlFMbh4yf+IOwP3yz6DrQQXOEz2OHWXYFRko+DDa+wCKD/lQnLlgGHUy3zF5XFxC/GR/qNwK0v2lugSwprNU3RyNO8pYgKu6J9+v4gwxrlH4u9utatu1rBCS0V2uKsxffgphdLVj+hcd58FW3CPdKOFx0aS/0xS7rkxAn2kMSctmolSFnyR4TrXjseJOO6mtPcdsGRhDQKQIaSv281r8s5pOMIqq8lJ2gbwhAuSsYbSyUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n/GkPa/t; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gourry.net header.i=@gourry.net header.a=rsa-sha256 header.s=google header.b=Xpelanak;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=n/GkPa/t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gourry.net (client-ip=2607:f8b0:4864:20::729; helo=mail-qk1-x729.google.com; envelope-from=gourry@gourry.net; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x729.google.com (mail-qk1-x729.google.com [IPv6:2607:f8b0:4864:20::729])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ8Jb36GHz2y8F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 16:36:30 +1100 (AEDT)
-Received: by mail-qk1-x729.google.com with SMTP id af79cd13be357-93e55db58cfso352340785a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Nov 2026 21:36:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gourry.net; s=google; t=1794461788; x=1795066588; darn=lists.ozlabs.org;
-        h=message-id:date:references:in-reply-to:cc:to:from:subject
-         :content-transfer-encoding:content-type:mime-version:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=e2soeXJ852281gC+OC2yZSX9G2s4v3lG9pbKt+VP0DM=;
-        b=XpelanakZx0gbJd9VFmfiVKxSVSQoZDHAZtpLerBZScOP7CmyQKAFyz4T4B8Z/v1Vv
-         gQvWU/fTIYY1kQDxM1G+I8kNxLPzEhKFlXQtkAqsd9L+OWCtb3aFuPxAVxfg0fbVo/HF
-         GOdetdTvQrvEVO/PSO31xUZBYolwUhnH3zcKsysT71zIZ8eN4HtGJWM1a5xt4oZcgc8D
-         qE1Cv8rkyHB7ie1SNAIfdfFttr3t+Bb8/Z7c5NyQcXzqIr9xlI24RvloXfXUcbgcNEIy
-         ShuGqJdaVInPaWpFiyRhHC0wOhLUpnMe10ssAbn3UQ9OsGN36QNpfSa0VOcYUTi8g43v
-         f8LA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794461788; x=1795066588;
-        h=message-id:date:references:in-reply-to:cc:to:from:subject
-         :content-transfer-encoding:content-type:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=e2soeXJ852281gC+OC2yZSX9G2s4v3lG9pbKt+VP0DM=;
-        b=sNmTdlaDgIG496KZvpbws0edUNoWiUXo2/5hyWoPiOkUKa4FB3V1Ck2f1AfY0m1XlT
-         yBXADeUxCJ+ChTCr4cm+ei3yuT00PKLI2gS8meqa1W16Cnwnbf7VZmU7vcmyDxfMcd6u
-         tHsCnWEF7d7nZqXYSPz+YKbeIe+t74Bvj3PyLNWemqz6wNGk7PF4S+9P7zHY/VuN39kl
-         zy+X1VQVxieo8JWlYb1+wbXj72GQzAWEaR45dNVXuIa/BgutXI7CJH2uVdqn/VsLqBtH
-         uke9xOMNF2YV3TPub5oMQEnpEtVRwUmrBQ9iIseojpYwHXjXtuKer3Ye244fUPt/7c8T
-         sGmA==
-X-Forwarded-Encrypted: i=1; AL+hErHCAUoVyacnLNBGWVdF5Ews8HvBnYH2LIlCuuNbjwmq3Py6ly8bRtB7gjRpbJ2jVBy7i6R4y8eEgzUNtUA=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9/2OrEYcapyLuJqtKEasifvwk13RxKuLMA/ngpkOXajjySFhtM
-	GYP3/mG4c+sWxre/QZL0pzq17jr2YpJ6mzzCmjS6eshUgwCEuFac6nQYrE28aYYm3fI=
-X-Gm-Gg: AYBFou2hJDuekMVS5aju5o5YpZh3+qJwpaQOeP5xZIys/ya23aURUSPq3xXwyezjGMv
-	yqpEer0B9FtPZDJJgtb69ZR9EWPGnHKOvDOT9hjQ8X3bwcJyQJLlBlw5QmIuzsX81waUYYNvl9+
-	v1GI72C87hOLwH41ASX9VuukeOKE+SaYyqQH62TJlyDgumPRN1mZy7l7CygdKRGsPJMohz6sadN
-	fgjhztiiY9kZEwIoSNDeZJ0wNQY733ZyYaFsVNOTmMOB5r3Wv28LU6j6iUSuGKuO/Lvhjv+nD79
-	vKvKP4xxzomPgbiv8Md/RHKVNJEwMQED2iieix+bJMcgyMwK4LFLYdIMxWhzkAuXtmS+s3TfHyQ
-	GwO3INqaxm5XK9SMcGdr73HlgqCZOvs7+x9AT3zs5vj/Lg0ef/QfR9eJII3JPnhaomNkM7fHFmJ
-	VIwRtOOEbjl3bpDnqzX7r9NRJKgmV+CaNp51UifcrJ3eH4ib9yHfHfDka7W+T3s9/Uo/OcE8bcM
-	gDdtM6gDupUxREFGD4wxtm843GZHnVSsCRKN4TPHmcayEm7QTguY8TZfwxh1OL879s6Fp1Q9/lr
-	C1yPUUonqD7tU5CVeeYLoFyGEsrc/SSC6ryjrM/vqKNZGU7YfYeiiAoWBkLj42gKCWkNEZKHmT9
-	H07opUjY=
-X-Received: by 2002:a05:620a:4481:b0:93c:c2c2:40eb with SMTP id af79cd13be357-947b0046fb4mr764496385a.66.1794461787830;
-        Wed, 11 Nov 2026 21:36:27 -0800 (PST)
-Received: from [192.168.50.231] (pool-71-191-145-202.washdc.fios.verizon.net. [71.191.145.202])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-9479e4fa312sm647786285a.0.2026.11.11.21.36.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2026 21:36:27 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQ8zW3vqNz2y8F
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 17:06:47 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2iYUo3054106;
+	Thu, 12 Nov 2026 06:06:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=ISTKPlrhU90UkBMn1+nIifs9OVjp
+	nasWZN/BkeSsoco=; b=n/GkPa/trXpk/R+ADlSs+inV46MWuj/rs0M77nGq3M+s
+	tobFMRNpLAoLe4y8NO+CcTRl0ahkAhpAv3uuxHMpv7S3ktxqjsLu1jvPNILkfS2p
+	LXv9uVarE2SCWwpxjjNxE1QWNW0ahxvX/tKKOiw1WGgnmPBBr6Vkwva+QCrM2Crx
+	w8P00FdvJ1+ivDDxlD1mSCCf0wiZEUAnKZOtk26ak75MBKif5mhCQUg1JTm0cFth
+	4i7JsRj8GDO8SgoAAPMzjVukoa5URN8WylM+bHyihMzmkVwWXM7rm5EqFILpAKwj
+	riH1tN+Zt8kyXBNysccJjXIqKoG62+OoC8oeohTlcQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsug6e1nc-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 12 Nov 2026 06:06:42 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AC2Zp7C3145807;
+	Thu, 12 Nov 2026 06:06:41 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hvd51w85s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 12 Nov 2026 06:06:41 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AC66erD20120146
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 12 Nov 2026 06:06:40 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 41F275808C;
+	Thu, 12 Nov 2026 06:06:40 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 097E05808A;
+	Thu, 12 Nov 2026 06:06:38 +0000 (GMT)
+Received: from [9.61.240.49] (unknown [9.61.240.49])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 12 Nov 2026 06:06:37 +0000 (GMT)
+Message-ID: <9113e399-ddd0-405e-9abb-69a9785c726c@linux.ibm.com>
+Date: Thu, 12 Nov 2026 11:36:36 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,92 +79,210 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH 08/13] mm: convert miscellaneous VMA flag tests to use
- vma_flags_t
-From: "Gregory Price (Meta)" <gourry@gourry.net>
-To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@kernel.org>, Jason Gunthorpe <jgg@ziepe.ca>, 
- John Hubbard <jhubbard@nvidia.com>, Peter Xu <peterx@redhat.com>, 
- "Matthew Wilcox (Oracle)" <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
- Rik van Riel <riel@surriel.com>, "Liam R. Howlett" <liam@infradead.org>, 
- Vlastimil Babka <vbabka@kernel.org>, Harry Yoo <harry@kernel.org>, 
- Jann Horn <jannh@google.com>, Lance Yang <lance.yang@linux.dev>, 
- Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>, 
- Joshua Hahn <joshua.hahnjy@gmail.com>, Byungchul Park <byungchul@sk.com>, 
- Gregory Price <gourry@gourry.net>, 
- Ying Huang <ying.huang@linux.alibaba.com>, 
- Alistair Popple <apopple@nvidia.com>, 
- Baolin Wang <baolin.wang@linux.alibaba.com>, 
- Nico Pache <nico.pache@linux.dev>, Ryan Roberts <ryan.roberts@arm.com>, 
- Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
- Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, 
- Xu Xin <xu.xin@linux.dev>, Chengming Zhou <chengming.zhou@linux.dev>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- Shrikanth Hegde <sshegde@linux.ibm.com>, Pedro Falcato <pfalcato@suse.de>, 
- Kairui Song <kasong@tencent.com>, Qi Zheng <qi.zheng@linux.dev>, 
- Shakeel Butt <shakeel.butt@linux.dev>, 
- Axel Rasmussen <axelrasmussen@google.com>, Yuanchu Xie <yuanchu@google.com>, 
- Wei Xu <weixugc@google.com>, Baoquan He <baoquan.he@linux.dev>, 
- Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
- Michal Hocko <mhocko@suse.com>, Leon Romanovsky <leon@kernel.org>, 
- SJ Park <sj@kernel.org>, Rakie Kim <rakie.kim@sk.com>, 
- David Rientjes <rientjes@google.com>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, 
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
- Arnaldo Carvalho de Melo <acme@kernel.org>, 
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
- Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
- Adrian Hunter <adrian.hunter@intel.com>, 
- James Clark <james.clark@linaro.org>, 
- Masami Hiramatsu <mhiramat@kernel.org>, Oleg Nesterov <oleg@redhat.com>, 
- John Johansen <john.johansen@canonical.com>, 
- Georgia Garcia <georgia.garcia@canonical.com>, 
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
- "Serge E. Hallyn" <serge@hallyn.com>, Mimi Zohar <zohar@linux.ibm.com>, 
- Roberto Sassu <roberto.sassu@huawei.com>, 
- Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
- Eric Snowberg <eric.snowberg@oracle.com>, Fan Wu <wufan@kernel.org>, 
- Stephen Smalley <stephen.smalley.work@gmail.com>, 
- =?utf-8?q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>, 
- linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- kvm@vger.kernel.org, damon@lists.linux.dev, 
- linux-trace-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
- apparmor@lists.ubuntu.com, linux-security-module@vger.kernel.org, 
- linux-integrity@vger.kernel.org, selinux@vger.kernel.org
-In-Reply-To: <20261105-late-2026-vma-flags-v1-8-0d3cd15ab75f@kernel.org>
-References: <20261105-late-2026-vma-flags-v1-0-0d3cd15ab75f@kernel.org>
- <20261105-late-2026-vma-flags-v1-8-0d3cd15ab75f@kernel.org>
-Date: Thu, 12 Nov 2026 00:36:24 -0500
-Message-Id: <179446178440.482102.12362401790016415292.b4-reply@b4>
-X-Mailer: b4 0.17-dev
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Ritesh Harjani <riteshh@linux.ibm.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>, nandinih@linux.ibm.com
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [BUG] selftests/powerpc/eeh: eeh-basic breaks the device hosting
+ rootfs, ext4 goes read-only and the test harness crashes
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: A3_HtWYE6Ku8fQ2fUvbT0UfzBkbNWASC
+X-Authority-Analysis: v=2.4 cv=PeVqFShd c=1 sm=1 tr=0 ts=6af55772 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=x-2Afh13tHfaC_x_YBQA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: A3_HtWYE6Ku8fQ2fUvbT0UfzBkbNWASC
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEyMDAyMiBTYWx0ZWRfX0mHLmusLHpj0
+ 0BsCtNMo8528XSSx6XhvnbCkP/qJ3O5UBWeLHZZsgdkJYGqUpmTzBXYk5LRFLnJsn1MttXh/8RD
+ 26NA+Qm1Pk8UN9mJSKu/OLtbPJCYqJgo6c0EL9XUSivYCowtnd7Q2H3NFU7tR6WbYpsa+1li3I+
+ DeIJRHyJ68SoX7L1xkXr7hTw5J5zlNMWioaOHbYI2ZfmPNqfRZUNJ+khbA2XO9t9H2EE/bHRSw0
+ qS/GEVpLJMEOXMIKXS7iIOwJTN7TTSrIVuyjUMZu8t9+oi4pqeQceY5pOpEBrhKgzyin0T1aLR9
+ zF3RfbjICwvc5VuCcyIU1VsKvgDVWvvwuONzkF8uH3TOAnKUh7h3LzsDSGQGfWodJnRuHJy/Zx5
+ +lUYQoHFW6277PkbeZcwRlFSaPP4S3AEQmlKfErc89SVgZ3LrHJXidkrE03EBrpYSAxeLWxp6Te
+ AIH8kNFmhbtpLb8RE8w==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEyMDAyMiBTYWx0ZWRfX6ybRK3EAU94v
+ 8pGPAJ4laTjYxs0lNSsz7E7c3A0oia2OGoCj25wpuVE/t4HMJCA+lMLb8qvMG5iuFTzXE8GTb1+
+ K6QS7dGLcJFKQ6Wop1SNrnTvW/HJoF8=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-12_01,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 phishscore=0 suspectscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 spamscore=0 malwarescore=0 clxscore=1011 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611120022
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-11-05 21:30 +0000, Lorenzo Stoakes (ARM) wrote:
-> Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
-> remaining straightforward VMA flag tests scattered throughout core mm, HMM
-> (and its test module), DAMON and the OOM reaper.
-> 
-> No functional change intended.
-> 
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Hello!!!
 
-Acked-by: Gregory Price (Meta) <gourry@gourry.net>
+IBM CI has hit a failure that takes down the test harness, While running 
+the powerpc EEH selftest on a bare-metal POWER system.
 
--- 
-~Gregory
+The selftest injects an error into the PCI device that hosts the root 
+filesystem. The filesystem goes read-only and the run dies.
+
+[ 1112.079091] EEH: Frozen PHB#3-PE#1fd detected
+[ 1112.079905] aacraid 0003:01:00.0: aacraid: PCI error detected 2
+[ 1112.140830] I/O error, dev sdb, sector 3906906472 op 0x1:(WRITE) ...
+[ 1112.140957] Aborting journal on device sdb2-8.
+[ 1112.140977] EXT4-fs error (device sdb2) in ext4_dirty_inode:7656: IO 
+failure
+[ 1112.176664] EXT4-fs error (device sdb2): ext4_journal_check_start:98: 
+... Detected aborted journal
+[ 1187.736385] aacraid 0003:01:00.0: aacraid: PCI error - slot reset
+[ 1217.244306] EXT4-fs (sdb2): Remounting filesystem read-only
+[ 1220.583495] aacraid 0003:01:00.0: aacraid: PCI error - resume
+
+We need to make appropriate changes to selftest, so that it skips the 
+adapter, if rootfs is hosted on it.
+
+
+SetUp:
+
+System: IBM 9006-22C (POWER9), PowerNV, bare metal
+Firmware: skiboot-v6.8-45-g8246de863
+Kernel: 7.4.0-rc2+, upstream master at 067c5c24cef2 ("Merge tag 
+'page_alloc-for-7.4-rc2'", 2026-11-10)
+
+
+Issue1: Selftest should skip the adapter that host the rootfs
+
+eeh_can_break() already skips ahci, for similar reason, but has no check 
+for a device that backs /. A friendly LLM has suggested
+
+below change, which I tested and it works.
+
+0003:01:00.0, Skipped: hosts the root filesystem
+
+Other adapters are tested as before and the run completes
+
+diff --git a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh 
+b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
+index 70daa3925dcb..f9db1f9be05a 100644
+--- a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
++++ b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
+@@ -62,6 +62,42 @@ eeh_test_prep() {
+      echo 5000 > /sys/kernel/debug/powerpc/eeh_max_freezes
+  }
+
++# Print the resolved sysfs path of a block device followed by the paths of
++# every device stacked underneath it (dm, md, etc).
++eeh_blk_sysfs_paths() {
++    local sys="$1"
++    local s
++
++    realpath "$sys"
++    for s in "$sys"/slaves/* ; do
++        if [ -e "$s" ] ; then
++            eeh_blk_sysfs_paths "$s"
++        fi
++    done
++}
++
++# Succeeds if the root filesystem lives on a disk behind any function 
+of the
++# slot containing the given PCI device.
++eeh_hosts_rootfs() {
++    local slot="${1%.*}"
++    local majmin src sys
++
++    # Use the last "/" entry so an initramfs rootfs entry is ignored.
++    majmin="$(awk '$5 == "/" { mm = $3 } END { print mm }' 
+/proc/self/mountinfo)"
++    src="$(awk '$5 == "/" { for (i = 6; i < NF; i++) if ($i == "-") s = 
+$(i + 2) } END { print s }' /proc/self/mountinfo)"
++
++    if [ -e "/sys/dev/block/$majmin" ] ; then
++        sys="/sys/dev/block/$majmin"
++    elif [ -b "$src" ] ; then
++        # e.g. btrfs reports an anonymous major:minor
++        sys="/sys/class/block/$(basename "$(realpath "$src")")"
++    else
++        return 1
++    fi
++
++    eeh_blk_sysfs_paths "$sys" 2>/dev/null | grep -q "/${slot}\.[0-7]/"
++}
++
+  eeh_can_break() {
+      # skip bridges since we can't recover them (yet...)
+      if [ -e "/sys/bus/pci/devices/$dev/pci_bus" ] ; then
+@@ -78,6 +114,14 @@ eeh_can_break() {
+          return 1;
+      fi
+
++    # Breaking the device that hosts the root filesystem makes I/O fail
++    # during recovery, which can abort the journal and leave / read-only
++    # (and kill the test harness). Leave it alone.
++    if eeh_hosts_rootfs "$1" ; then
++        log "$1, Skipped: hosts the root filesystem"
++        return 1;
++    fi
++
+      # Don't inject errosr into an already-frozen PE. This happens with
+      # PEs that contain multiple PCI devices (e.g. multi-function cards)
+      # and injecting new errors during the recovery process will probably
+
+
+
+Issue2: Some adapters take longer time to recover.
+
+
+Once the rootfs device was skipped, the run completed, but with the 
+default 60 s wait three adapters were reported as Failed to recover!,
+and the summary was 3 devices failed to recover (6 tested). Checking the 
+PE state afterwards showed them healthy .
+I re-ran with EEH_MAX_WAIT=240, and all of them recovered:
+
+Result with the 240 s limit: 0 devices failed to recover (6 tested).
+
+BRCM/Mellonox/Intel Adapters took 78s/77s/75s respectively to recover. 
+So I think its better to increase default timeout to 120s.
+
+diff --git a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh 
+b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
+index 70daa3925dcb..1f1d1c8d73bc 100644
+--- a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
++++ b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
+@@ -110,13 +110,13 @@ eeh_one_dev() {
+      # is a no-op.
+      echo $dev >/sys/kernel/debug/powerpc/eeh_dev_check
+
+-    # Default to a 60s timeout when waiting for a device to recover. This
++    # Default to a 120s timeout when waiting for a device to recover. This
+      # is an arbitrary default which can be overridden by setting the
+      # EEH_MAX_WAIT environmental variable when required.
+
+      # The current record holder for longest recovery time is:
+-    #  "Adaptec Series 8 12G SAS/PCIe 3" at 39 seconds
+-    max_wait=${EEH_MAX_WAIT:=60}
++    #  "Broadcom / LSI SAS3008" at 78 seconds
++    max_wait=${EEH_MAX_WAIT:=120}
+
+      for i in `seq 0 ${max_wait}` ; do
+          if pe_ok $dev ; then
+
+
+Please let me know, if the fix for the two issues are good enough, I can 
+send a formal patch.
+
+
+
+Regards,
+
+Venkat.
 
 
