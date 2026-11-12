@@ -2,98 +2,70 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDE52606A327
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 10:52:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 94CD2606A33B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 11:25:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jmcj/fP0
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kcej4SeG
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQHJX0TVfz30V6;
-	Thu, 12 Nov 2026 21:51:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794480716;
-	cv=none; b=dYDQi4i2o36BYjIXTOPaZIadrlOsXXEUFupE8PJgpNYnVh6VSVADB2XCiPLJP98+8IDu5gkGahI/zVokRF1tqTRyXTbBhB8zduLeDpM/8YB/4eRhLvWcTUskUGr2TCpCGeEtA2iSjJg5wZckIJPci7pR0s4108DkjC+Lz7nJ9MyZvvQyYaMVhjdT6cGiY5tqOnmpBco+Fq2lf+Zzyv9wVUCO0105t8dDG24Y8TaVI3xKa6rAw2/OJUPdOTNMJzo96fdULoAM4bHHm65XnUEfcVcbcJemCkKtW8IB6ewOyVx9+f1aLJ+DR1UCQm6+Tas8dy41aRGWql2PIynjdX89Mw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQJ3d5L9tz2xLs;
+	Thu, 12 Nov 2026 22:25:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794482749;
+	cv=none; b=amUjkNlYFMGNkdTIgt6/x2EMtbMYo3dH89s3o1ObA75tQeZLG8zES52jvxDLxZNsUEckbdB75OtAdE1guxpo6RO0PDJ2d9l9dTLUvv8FywNqFqTR5iLierM7SGuzEbZ6Gow1opXmzRLIma8HgIZgjLto9eiAnUmqMEFsJb5AgCHy5LlCuvInARKgwlMqdrtP2ZvUotOUYvDBedGio/+UTsZYCJiaJcPqoqPk/ijLI8Fbmg3gM+U+FhkAI/RfrFPpBHxDGH5ZKwKqsrfKNZmYkT5GrB0NccIQHZWnm39akZI/qa4WudN6VfrYVybIGxR7IZxIwLNPzWTWz+Qw/cjDzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794480716; c=relaxed/relaxed;
-	bh=A0pfUkfSu9+4b7u0lMR40b3rWHEvr3iCbrzCpdtLRdw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=luzJp7LT5INTxiYxfFeSTDvYuCSt91S7mK1Go84cxPzvAarVPAOlYdw5ry+fiiR9k6VHAFa/ArLIysMvGrpFwoo3tx/dCR/1kTBjsIhP7hJng0+Z++KmuvoJ8TO/esVTZueqt1yLxKINsdGbjUDof7kAQMAQqkRrUrpMWCKLR6eCh5ph1xhvrJZF74G3pVe71k8MEmFyKNk8sGzjVn7Iq2875pxfxZM+/dMC10sM3wCzvlm0Xrcd8C7n3nEA7/0MQMSXzc+AoxeO4E81dL1jbibN9zVLCrFRpy9r6zWESaI2JjJrrL6q+U2h2JMk2CX8WgnF1Q16Cd3qkhZh5AWrSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jmcj/fP0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794482749; c=relaxed/relaxed;
+	bh=nyAii04iv1TnyOOBwPCAP2EPWogK/SwQRxxQEJCCSUM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=c1KEIPsBbJKUsEvb9jwAKb78GDP2ZrofvV3XnElIoWLOB1A6hjed9pDKD5h+LWstlF7EssjqrGmxlgkFFDOIumrWDEzkIMvOinbVW4Js2+Ji4/9jQKyYFTF0SaA6u308jlXK1UBDlubm7GGUMkLioSPlcx/W+Lqf+Tsmwg3fFGdTbBW8iepQvpPsENamHXrHE2bkqVGYr3+HRVNvpaw/nHyV6rG/Xa4dxOU2rgJ+waArfb8a+Evd5zmK9ACTdqcprpx5RKWFRlsDkY7D5kjq7h6LfRuVFrkLHz0Dyd+6Z5Xh42n5AHNrrKvuWcbAoAWLVi44V40rkacWdHvbWrcw0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kcej4SeG; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=jmcj/fP0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kcej4SeG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=phucduc.bui@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQHJW2jHJz2yqs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 21:51:55 +1100 (AEDT)
-Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-36eb1cb7aabso6189390eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 02:51:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794480713; x=1795085513; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=A0pfUkfSu9+4b7u0lMR40b3rWHEvr3iCbrzCpdtLRdw=;
-        b=jmcj/fP05suckyNn6Dl6i8LAKWZPwnf/+ByRlHr9DXeZGmxBqxiKY6SkLLSb0hmTr4
-         P0Qc7nToGXmA2kXNxu04agztyeCUvxJdgiJgEk1oCl9LmHZ62Pz17xmUthRstAYgxM93
-         fZ7kqlz3obxvKzFfSEF2au7p7ip+0lSLtF1KR8D6YFKd7OwzbzyLLx0u53m7+1BewxZn
-         Y2+N+KXPNt+Gyv5+kwMkcedk3jtKkxnf2xd+AfU3k+Rel+EXlAUhzFuuWSPbgWYsmWl+
-         cqDRerhtuHaqgJbxCMKs4etybLPoQa9ooJa25vf2OtjcZhBNNxsrIcDAM2dTaXd79u0N
-         Crsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794480713; x=1795085513;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=A0pfUkfSu9+4b7u0lMR40b3rWHEvr3iCbrzCpdtLRdw=;
-        b=S+YfsTbP23eX+eF6MCYXM3FDyEHkBfV77pMyG9ylYAmB4jipfzWUF40dwwEoicH2uH
-         w9tjuZDjKvgaVxGjDIpcMdmbg6fESXDHazueOw0gs8BTZI+DqtBoLrLgVl23t5lbYZGL
-         wEYWaCSUX1wA6DaDeFhoSdQm9AoUIrxenO3FVTUmnmocuXe2tufVZH8kS5mVXzDaZwwB
-         h1LEij3ro9Dy0/10SJF+R9jMeo8M9Iya/rM7ZStHxGj64O9BJIiN/wNC3NqCcjzONkTW
-         BfJ2AtyDTyT1wvF+FYlucurSFUEqgjZj4nx5KbCAOM7Ud7k7LjYEK9rtvHSDKqV7Bor9
-         kb8w==
-X-Forwarded-Encrypted: i=1; AL+hErGSkarsnjv/6lW4YiU4XaUh1E3NbPSJUb2qEIbOYaj8tUs/ajMn0MlQJbDzWr2E7AVN772ZxKznil7sjeQ=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+fEn05xaRE7smu7lMEonxqDZUHAQS8wnXiwt9obJEI8ctY1xFL
-	oET+hqbdT6KmsffLhzPEqlHe80NG9q8wmN9ALJ+jGfGSPMwi2Xx/Qily
-X-Gm-Gg: AYBFou0ru6gPyLx5YGynCyuN7xnK6brSOqjBr566qvx6udO8cwV4UQOey5qzuwFeMXB
-	yVfgTuZp+vl5Di+IJFWPYDyClJg+csV66o2jvrDfj8vDUdaAKzWrpCA3cDaTWuivL+iw3yLlDTQ
-	7C1h1oFrcG4ykqH44vEnCsea9uh9PtYPx6sAbjoug3pn8emJulTW7uGayV+TQKpJfUH2eThAo71
-	u65HQXL3Bxo2b+glww/0q47oap7BGF3fM420XEOPRATxHZOvWWh3HA2+8Phr8hLTFXyKsgVrDk4
-	bqpSlSF+oNh884Y0OlVGERFfBavJ2u4r+S7x6KhnIplo28jJzP+o2sONG+NEX9+9wepFGppyzXd
-	1KfBMHi1+RGz/nLNqXZMBQayXKTiZ+mmdRnvbzPyzza6cpoyBQ7KM/jiFbJn6ukU6K4rQBh24xF
-	K70CrQX25vY9YPCHvGUgqMnrx7Chd+1yNHRKgs8gKOKCt0F8Gxa9eJFbAc75OQJ2cuMHK+ylTwR
-	KKN92/+mSrthShn8+dRMBZh8/nl2OH9symN9nheKrNQHxqBDODhpMhR0DYRQ28Qn4ZCtgDfGhEu
-	Tt2W0N+cy5wcRLkWpAwJOGJ1Yuvjk21cgX15S576DWcnDwyFzgd/8Xx4RlonDpDNH8GVMnBzLX3
-	pLCKK6Yay9RuCwIATa+SyZHUe69+FutUz4CVXK398piOm
-X-Received: by 2002:a05:7300:d709:b0:376:37a2:87f3 with SMTP id 5a478bee46e88-37686b43109mr6989721eec.31.1794480713499;
-        Thu, 12 Nov 2026 02:51:53 -0800 (PST)
-Received: from phuc-desktop.. ([183.91.15.56])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3751fe306casm23047232eec.9.2026.11.12.02.51.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2026 02:51:53 -0800 (PST)
-From: phucduc.bui@gmail.com
-To: Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Shengjiu Wang <shengjiu.wang@nxp.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Mark Brown <broonie@kernel.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQJ3c0SGhz2xJT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 22:25:47 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 16973639FD;
+	Thu, 12 Nov 2026 11:25:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 300D51F00A05;
+	Thu, 12 Nov 2026 11:25:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794482744;
+	bh=nyAii04iv1TnyOOBwPCAP2EPWogK/SwQRxxQEJCCSUM=;
+	h=From:To:Cc:Subject:Date;
+	b=kcej4SeGNio953kxVJadAgWpMDZMpkWZMd+hDFdcbwBD6YqxOi5/s7jcM3dn5qkSo
+	 JFjFFCvvWKdz0/D/1LD7AfJxJtAvjrb04S93zIylNgx499dpN+NQzloWAY3IS00PNX
+	 ToYfTeKT9AfjBIh/2/JCQ81cMF4nF8JdQ1YgKhO3z3Kktfl6XBnC2mXQC5Rf4jyLim
+	 a1Ar7lPvE18Ei+2zQ8KLCKzraZ0pFf7T7mxc8wFRF7N0eo1VNdCzDQiEsxnUr4MWL9
+	 O/jp1yId0/ROUbt1HXRPmXoqR1BggR72fUy+EYYXcSYsvO7uJLDMn8zIE51FGdcUnE
+	 GisdYH+T+tgPQ==
+From: Arnd Bergmann <arnd@kernel.org>
+To: linux-mm@kvack.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andreas Larsson <andreas@gaisler.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"David Hildenbrand (Arm)" <david@kernel.org>,
+	Jason Gunthorpe <jgg@nvidia.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	"Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+	Matthew Wilcox <willy@infradead.org>,
+	Malin Jonsson <malin.jonsson@est.tech>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org,
+	linux-fsdevel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	bui duc phuc <phucduc.bui@gmail.com>
-Subject: [PATCH 5/5] ASoC: fsl_asrc: Use devm for runtime PM cleanup
-Date: Thu, 12 Nov 2026 17:51:16 +0700
-Message-ID: <20261112105116.32274-6-phucduc.bui@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20261112105116.32274-1-phucduc.bui@gmail.com>
-References: <20261112105116.32274-1-phucduc.bui@gmail.com>
+	x86@kernel.org
+Subject: [PATCH v2 0/6] mm: highmem cleanups
+Date: Thu, 12 Nov 2026 12:25:22 +0100
+Message-ID: <20261112112528.1116405-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.53.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,137 +80,131 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-23.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: bui duc phuc <phucduc.bui@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-On unbind, fsl_asrc_remove() gates the clocks before devres
-unregisters the component and frees the IRQ, while the component
-may still be in use.
+This is an updated series from what I posted last year [1], sorry for
+taking way longer with this than I had planned. Linus brought it up today,
+which triggered me to rebase the earlier patches and post it again.
 
-Move the cleanup to devm. The action that disables the clocks is
-registered before devm_pm_runtime_enable(), so it runs last, after
-runtime PM is disabled, as in fsl_asrc_remove().
+At LPC 2025 [3], we got rough consensus on the plan to keep the
+funcationality present for the time being but instead reduce the scope
+of highmem in the kernel as much as we can without hurting users.
 
-Signed-off-by: bui duc phuc <phucduc.bui@gmail.com>
----
- sound/soc/fsl/fsl_asrc.c | 48 ++++++++++++++++++++++++----------------
- 1 file changed, 29 insertions(+), 19 deletions(-)
+The short summary is a three stage process:
 
-diff --git a/sound/soc/fsl/fsl_asrc.c b/sound/soc/fsl/fsl_asrc.c
-index c97f814d7358..09e09164a106 100644
---- a/sound/soc/fsl/fsl_asrc.c
-+++ b/sound/soc/fsl/fsl_asrc.c
-@@ -1258,6 +1258,15 @@ static int fsl_asrc_m2m_pair_resume(struct fsl_asrc_pair *pair)
- static int fsl_asrc_runtime_resume(struct device *dev);
- static int fsl_asrc_runtime_suspend(struct device *dev);
- 
-+/* devm action: runtime suspend the device if it is not runtime suspended yet */
-+static void fsl_asrc_runtime_suspend_action(void *data)
-+{
-+	struct device *dev = data;
-+
-+	if (!pm_runtime_status_suspended(dev))
-+		fsl_asrc_runtime_suspend(dev);
-+}
-+
- static int fsl_asrc_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-@@ -1413,22 +1422,34 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, asrc);
- 	spin_lock_init(&asrc->lock);
--	pm_runtime_enable(&pdev->dev);
-+
-+	/*
-+	 * Ensure the device is suspended after the IRQ and component
-+	 * have been released.
-+	 */
-+	ret = devm_add_action(&pdev->dev, fsl_asrc_runtime_suspend_action,
-+			      &pdev->dev);
-+	if (ret)
-+		return ret;
-+
-+	ret = devm_pm_runtime_enable(&pdev->dev);
-+	if (ret)
-+		return ret;
- 	if (!pm_runtime_enabled(&pdev->dev)) {
- 		ret = fsl_asrc_runtime_resume(&pdev->dev);
- 		if (ret)
--			goto err_pm_disable;
-+			return ret;
- 	}
- 
- 	ret = pm_runtime_resume_and_get(&pdev->dev);
- 	if (ret < 0)
--		goto err_pm_get_sync;
-+		return ret;
- 
- 	ret = fsl_asrc_init(asrc);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to init asrc %d\n", ret);
- 		pm_runtime_put_noidle(&pdev->dev);
--		goto err_pm_get_sync;
-+		return ret;
- 	}
- 
- 	/* Request the IRQ only once the device is initialized */
-@@ -1436,32 +1457,25 @@ static int fsl_asrc_probe(struct platform_device *pdev)
- 			       dev_name(&pdev->dev), asrc);
- 	if (ret) {
- 		pm_runtime_put_noidle(&pdev->dev);
--		goto err_pm_get_sync;
-+		return ret;
- 	}
- 
- 	ret = pm_runtime_put_sync(&pdev->dev);
- 	if (ret < 0 && ret != -ENOSYS)
--		goto err_pm_get_sync;
-+		return ret;
- 
- 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_asrc_component,
- 					      fsl_asrc_dai, ARRAY_SIZE(fsl_asrc_dai));
- 	if (ret)
--		goto err_pm_get_sync;
-+		return ret;
- 
- 	ret = fsl_asrc_m2m_init(asrc);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to init m2m device %d\n", ret);
--		goto err_pm_get_sync;
-+		return ret;
- 	}
- 
- 	return 0;
--
--err_pm_get_sync:
--	if (!pm_runtime_status_suspended(&pdev->dev))
--		fsl_asrc_runtime_suspend(&pdev->dev);
--err_pm_disable:
--	pm_runtime_disable(&pdev->dev);
--	return ret;
- }
- 
- static void fsl_asrc_remove(struct platform_device *pdev)
-@@ -1469,10 +1483,6 @@ static void fsl_asrc_remove(struct platform_device *pdev)
- 	struct fsl_asrc *asrc = dev_get_drvdata(&pdev->dev);
- 
- 	fsl_asrc_m2m_exit(asrc);
--
--	pm_runtime_disable(&pdev->dev);
--	if (!pm_runtime_status_suspended(&pdev->dev))
--		fsl_asrc_runtime_suspend(&pdev->dev);
- }
- 
- static int fsl_asrc_runtime_resume(struct device *dev)
+ 1. Nudge users towards using a larger lowmem zone with the
+    CONFIG_VMSPLIT_* options if at all possible.
+
+ 2. Drop most __GFP_HIGHMEM allocations and corresponding kmap()
+    calls from the kernel, leaving only the subset that is likely
+    to contain the majority of the actual allocations.
+    Specifically we will keep anonymous and regular file backed
+    user mappings, zsmalloc, and huge pages.
+
+ 3. In a few years, also drop the page cache allocations and leave
+    perhaps only zsmalloc using a much simpler interface.  I suggested
+    five years as the time until we do this, but the timing depends a
+    lot on how the first two stages work out in practice, and how long
+    the remaining highmem users plan to keep updating their kernels.
+
+This series implements stage 1, mostly using Kconfig changes to the
+default settings but leaving the traditional behavior as a CONFIG_EXPERT
+choice in Kconfig. With the new defaults, most installations that use
+highmem today with 1 GiB or 2 GiB of system RAM will see all of their
+RAM in the lowmem zone after upgrading their kernels. My estimate is
+that instead of 80% to 90% of maintained embedded 32-bit systems, this
+should cover over 98%.
+
+As I don't actually have hardware in the category that still needs
+highmem, I tested this using a qemu-system for Armv7 and PPC6xx running a
+Debian userland with all combinations of VMSPLIT and HIGHMEM options. I
+ran some kernel builds on the Arm guest to ensure that the new options
+don't cause functional or performance regressions for regular workloads
+that don't exceed the virtual address space. I also ran some tests
+with Firefox and was positively surprised to see that this still works
+on the VMSPLIT_2G_OPT configuration without highmem, though it gets
+close to both the address space and lowmem size limits.
+
+As I had to change the powerpc version a bit for the rebase, this
+current version is entirely untested, but I hope that Richard and
+Christophe are able to help out there, as they both understand this
+code better than I do.
+
+The change to use VMSPLIT_3G_OPT by default on Armv5 means that I could
+include a patch to no longer support highmem at all on VIVT caches,
+as suggested by Jason Gunthorpe. I also included the patch to drop
+HIGHPTE support now, as suggested by David Hildenbrand.
+
+The patches from this series are available in [4] for testing.
+
+     Arnd
+
+[1] https://lore.kernel.org/all/20251219161559.556737-1-arnd@kernel.org/
+[2] https://lore.kernel.org/all/CAHk-=wjPY=kfgnmtx4COEQjD5UzKx9m2-=KLGAZP4d=RKEH+pg@mail.gmail.com/
+[3] https://lwn.net/Articles/1051010/
+[4] https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/log/?h=highmem-7.4
+
+Arnd Bergmann (5):
+  ARM: remove support for highmem on VIVT
+  mm: remove ARCH_NEEDS_KMAP_HIGH_GET
+  ARM: drop CONFIG_HIGHPTE support
+  mm: drop HIGHPTE support altogether
+  arch/*: increase lowmem size to avoid highmem use
+
+ arch/arm/Kconfig                            | 17 ++--
+ arch/arm/configs/aspeed_g5_defconfig        |  1 -
+ arch/arm/configs/gemini_defconfig           |  1 -
+ arch/arm/configs/multi_v5_defconfig         |  1 -
+ arch/arm/configs/mvebu_v5_defconfig         |  1 -
+ arch/arm/configs/u8500_defconfig            |  1 -
+ arch/arm/configs/vt8500_v6_v7_defconfig     |  2 -
+ arch/arm/include/asm/highmem.h              | 56 +-------------
+ arch/arm/include/asm/pgalloc.h              |  8 +-
+ arch/arm/mach-omap2/Kconfig                 |  1 -
+ arch/arm/mm/cache-feroceon-l2.c             | 31 +-------
+ arch/arm/mm/cache-xsc3l2.c                  | 47 ++---------
+ arch/arm/mm/dma-mapping.c                   | 12 +--
+ arch/arm/mm/flush.c                         | 19 +----
+ arch/microblaze/Kconfig                     |  9 ++-
+ arch/microblaze/configs/mmu_defconfig       |  1 -
+ arch/powerpc/Kconfig                        | 14 ++--
+ arch/powerpc/configs/44x/akebono_defconfig  |  1 -
+ arch/powerpc/configs/85xx/ksi8560_defconfig |  1 -
+ arch/powerpc/configs/85xx/stx_gp3_defconfig |  1 -
+ arch/x86/Kconfig                            |  4 +-
+ include/linux/hugetlb.h                     |  5 +-
+ include/linux/mm.h                          |  1 -
+ include/linux/pgtable.h                     |  9 ---
+ mm/highmem.c                                | 86 +++------------------
+ 25 files changed, 50 insertions(+), 280 deletions(-)
+
 -- 
-2.43.0
+2.53.0
 
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Larsson <andreas@gaisler.com>
+Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: David Hildenbrand (Arm) <david@kernel.org>
+Cc: Jason Gunthorpe <jgg@nvidia.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Malin Jonsson <malin.jonsson@est.tech>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: linux-mm@kvack.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-fsdevel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
