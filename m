@@ -2,49 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F772606A321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:35:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7EC48606A8A8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 13:35:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=WXo9wn0N
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=gxvGi8l5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQLwc2pTrz3bYf;
-	Fri, 13 Nov 2026 00:34:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.218
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794490496;
-	cv=none; b=nsJjNWEdPWlw0JwJk9WHyJM0rrGrFJZ6gUj5f5I5IdNIz4WpWYXiDr9+0KY5uhiQE0k+GtMmZ9yTlpzZED4U1cQyZCknxsT9bNSY4jE+kxszCXm3+RjnquqtQctP/eu6UpQYWGF3mJp0J4xI25/7nlFCTSc79ZQ08szoqUPgD85s0U7AijFqgkkXR0VKIwgRCdWU4WYiiYgcmF8i3KbplUIuiAi3UE/3zLdPJeOrhYLZ1SfkIwhskx8ec7hDjKDz/WMxc0fCDTCx7YTKS8pWAoy0Sg9nENyzd9XYfO7iQ9Almx6Z8YsvWKfmHNDW4u8XukL8VyglVUcrIX+WUkZCHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQLwg2wPmz3bh4;
+	Fri, 13 Nov 2026 00:34:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.220
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794490499;
+	cv=none; b=mhnAzM50TLQvMTLJHoAmpTHmIVTDI2ql/LaqAH+NCTBtgzpT8TWk9ISi4XZ7oofUBZyKMpCJqVvBOAm/A6Ot8bEs9bSagRbIo5zbndOZQFIL7QjbUxu38bJ/EapF+BdinjKF7ZTtdyOscfRUQjgsNxn+tYLf9/yLQ++lR9xcpaVTWjHEbFqIQyFNWRqqBuCaDxGGurwRR+PGN+WfGJHUG9ubFA8BJvaX7X9JVlO2mvwgKDizwksBWrhJSveNsDrlRgWhg4IyFFCgEJXJr1escPSXJYgsggKm8Hebn0jf6wG7FIOemlXUPoGSUFztjdw5/UeRrQYqa14DwBwOVJSx2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794490496; c=relaxed/relaxed;
-	bh=ZBHTfkePstkdhYPStihPwpZhe6evYsJ4HxGFWI7xQIQ=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=DBtSPXX0eLzLye+aXaU0WgQlbybyqCqzAB9zOQfQLdXjpeWWZaMIoheAa6GyatV5C94vRta28lBNuLiM+lom1psICfG+vH6JyZRoClMniqsmdouxFdKoFbn3DmLjruphPP1p/qbjClmDfBRJaNc3QIbg7pbJd6UHNHfPobNtyc/1eIY1fRip0+fI41vhHsdoz2FKRlbwmW6TaxviQiBOMYMQo3SlefdRqWXSi+hXcw8mjQMKg8bhCJn48kD4TCzNRONp4B9biT8UweYHMziyQeRN7ijnn1MP2SpuoY9zXWsA2Uc4lHjKSI3lZQlEFLBm83BEGxSv64MXpZSnrlCfzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=WXo9wn0N; dkim-atps=neutral; spf=pass (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	t=1794490499; c=relaxed/relaxed;
+	bh=VAYr9WX92dg3SvFjZudKbj8hGUmjBf0kHQsMj3Huy2A=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=oPXt6lVDjw88En0tE6jEaKeA19SlFTXIFYUo5Q4A/jRpLfe6ID1k27GxcuNdZ0CJBprMVDBsXsimMIOGAaOe24jM1ZOHktNrclKFOa0mmlEIKNTGSZTcOT3NMF6zSP7GuxfHoF+xi15pZ/VXi+clFYPmAbBC1po0ZIjTWJMAV0Il3u7wLjPLNwOgn2cpJOoeOMqjqNWTyLHKtBkxt3JZFQH9Tv4s4kX1o8xuOVVCtdCA8kVS0qJBQAU3gKC1459y2AYmyNjwP1bMyM7G07uv2n02u1zcQcDTvsj1pQIVKdGG11Blc9hD7VW+2BhfMW2h/R6gDZgnxZSTmdb8/S1iNQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=gxvGi8l5; dkim-atps=neutral; spf=pass (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=WXo9wn0N;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=gxvGi8l5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.218; helo=canpmsgout03.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout03.his.huawei.com (canpmsgout03.his.huawei.com [113.46.200.218])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.220; helo=canpmsgout05.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout05.his.huawei.com (canpmsgout05.his.huawei.com [113.46.200.220])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQLwV3L2Wz2ynW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:34:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQLwV3q88z30C6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 00:34:50 +1100 (AEDT)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=ZBHTfkePstkdhYPStihPwpZhe6evYsJ4HxGFWI7xQIQ=;
-	b=WXo9wn0NXhZX7pp7ZUMh/iOPIRLVlUIH2p8LTgXE7ANDOBqTMLMcJn+ioAx56LEYcQClNy3LR
-	fhpJPlEmx97/Kbdl53DCIYli9z7cMxKnOY197T93hS34sNl3vH29acpUDwGroc1TguVRSPeD6C6
-	amzAd2VIz8neRJeZS5pH9T0=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout03.his.huawei.com (SkyGuard) with ESMTPS id 4jQLvT1RGbzpSt9;
-	Thu, 12 Nov 2026 21:33:57 +0800 (CST)
+	bh=VAYr9WX92dg3SvFjZudKbj8hGUmjBf0kHQsMj3Huy2A=;
+	b=gxvGi8l5GYdAixG1QRWsiSMLXXsHyOINqSPUArEqcmmeWhWDwV6nk3CkHtY7MDp+FMWYyzx6n
+	HOBPUbx0XU/w94jHsTYt7dspTnSwdWfKEmGxB/qdyl9efuTCs2wvrwlVEjkDtbQfNn79EZnH2fE
+	I8C2D6gS4O3csk5lTZtUg8E=
+Received: from mail.maildlp.com (unknown [172.19.162.223])
+	by canpmsgout05.his.huawei.com (SkyGuard) with ESMTPS id 4jQLwW6CCwz12Lf0;
+	Thu, 12 Nov 2026 21:34:51 +0800 (CST)
 Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id B50E040579;
-	Thu, 12 Nov 2026 21:34:36 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 4125240575;
+	Thu, 12 Nov 2026 21:34:46 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
  (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Thu, 12 Nov
- 2026 21:34:35 +0800
+ 2026 21:34:44 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -71,10 +72,12 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<linux-kernel@vger.kernel.org>, <loongarch@lists.linux.dev>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
 	<kexec@lists.infradead.org>
-Subject: [PATCH v8 00/11] kexec: Rework segment loading and fix CMA retries
-Date: Thu, 12 Nov 2026 21:34:07 +0800
-Message-ID: <20261112133418.4044428-1-ruanjinjie@huawei.com>
+Subject: [PATCH v8 07/11] powerpc: kexec_file: Use the common segment helpers
+Date: Thu, 12 Nov 2026 21:34:14 +0800
+Message-ID: <20261112133418.4044428-8-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261112133418.4044428-1-ruanjinjie@huawei.com>
+References: <20261112133418.4044428-1-ruanjinjie@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,92 +96,98 @@ Content-Type: text/plain
 X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
  kwepemk200008.china.huawei.com (7.202.194.74)
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-ARM64, LoongArch, RISC-V, x86 and powerpc build the elf core header
-and place it together with the initrd and the DTB with almost identical
-code.
+load_elfcorehdr_segment() builds the elf core header from the powerpc
+crash memory ranges and places it as a segment.  The header needs
+powerpc specific post processing, so keep building it here, but use
+kexec_add_elf_core_header() to place it.
 
-This series reworks that path into common helpers that the architectures
-reuse, and fixes the CMA page and elf core header leaks in the arm64
-and LoongArch placement retry loops.
+elf64_load() also loads the initrd by hand, use kexec_add_initrd()
+for it.
 
-The patch organization is as follows:
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <chleroy@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan He <baoquan.he@linux.dev>
+Cc: Mike Rapoport <rppt@kernel.org>
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ arch/powerpc/kexec/elf_64.c       |  9 ++-------
+ arch/powerpc/kexec/file_load_64.c | 14 ++++----------
+ 2 files changed, 6 insertions(+), 17 deletions(-)
 
-- Patch 1 moves the release of the elf core header into the generic
-  post-load cleanup, so that the architectures no longer free it
-  themselves.
-
-- Patch 2 adds the common helpers
-
-- Patches 3-7 convert arm64, LoongArch, RISC-V, X86 and Powerpc to
-  reuse the common helpers
-
-- Patches 8-11 fix the CMA pages leaked by the retry loops and
-  the loop that makes no progress
-
-Tested with kexec_file_load() on arm64, LoongArch, RISC-V, X86 and
-Powerpc under QEMU, including the CMA retry paths, loading a crash
-kernel and booting the second kernel, with the agent help.
-
-This series is also available at:
-	https://github.com/ruanjinjie-eng/linux/tree/kexec_rework_cma_bugfx_v9
-
-Changes in v8:
-- Rework the common code as Mike suggested: the core provides building
-  blocks and the architectures uses them (Mike)
-- Build the elf core header once and only place it on the retries (Mike)
-- Keep the segment order and the arch placement policy unchanged (Mike)
-- Convert x86 and powerpc as well
-- Move the CMA fixes to the end of the series (Mike)
-- Link to v7: https://lore.kernel.org/all/20261026075201.699550-1-ruanjinjie@huawei.com/
-
-Previous Versions are as below:
-- v6: https://lore.kernel.org/all/20260921090450.807575-1-ruanjinjie@huawei.com/
-- v5: https://lore.kernel.org/all/20260918100442.3841135-1-ruanjinjie@huawei.com/
-- v4: https://lore.kernel.org/all/20260907125404.922123-1-ruanjinjie@huawei.com/
-- v3: https://lore.kernel.org/all/20260826092541.3905933-1-ruanjinjie@huawei.com/
-- v2: https://lore.kernel.org/all/20260729031235.2840255-1-ruanjinjie@huawei.com/
-- v1: https://lore.kernel.org/all/20260723131242.1537633-1-ruanjinjie@huawei.com/#t
-
-Jinjie Ruan (11):
-  kexec: Free the elf core header in kimage_file_post_load_cleanup()
-  kexec: Add helpers to load the elf core header, initrd and FDT
-  arm64: kexec_file: Load the other segments with common helpers
-  LoongArch: kexec_file: Load the other segments with common helpers
-  riscv: kexec_file: Load the extra segments with common helpers
-  x86: kexec_file: Use the common segment helpers
-  powerpc: kexec_file: Use the common segment helpers
-  kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
-  kexec: Add kexec_rollback_segments() helper
-  arm64: kexec_file: Fix CMA segment placement retries
-  LoongArch: kexec_file: Fix CMA segment placement retries
-
- arch/arm64/include/asm/kexec.h             |   4 +-
- arch/arm64/kernel/kexec_image.c            |  15 ++-
- arch/arm64/kernel/machine_kexec_file.c     |  87 ++++----------
- arch/loongarch/include/asm/kexec.h         |   3 +-
- arch/loongarch/kernel/kexec_efi.c          |  15 ++-
- arch/loongarch/kernel/kexec_elf.c          |   3 +-
- arch/loongarch/kernel/machine_kexec_file.c |  80 +++++--------
- arch/powerpc/kexec/elf_64.c                |   9 +-
- arch/powerpc/kexec/file_load_64.c          |  18 +--
- arch/riscv/include/asm/kexec.h             |   4 +-
- arch/riscv/kernel/kexec_elf.c              |   3 +-
- arch/riscv/kernel/kexec_image.c            |   3 +-
- arch/riscv/kernel/machine_kexec_file.c     |  83 ++++----------
- arch/x86/kernel/crash.c                    |  25 +----
- arch/x86/kernel/kexec-bzimage64.c          |   8 +-
- arch/x86/kernel/machine_kexec_64.c         |   4 -
- include/linux/kexec.h                      |  14 +++
- kernel/kexec_core.c                        |  25 +++--
- kernel/kexec_file.c                        | 125 +++++++++++++++++++++
- 19 files changed, 254 insertions(+), 274 deletions(-)
-
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index d9a466cd602e..1ef444494641 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -96,18 +96,13 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 
+ 	kexec_dprintk("Command line: %s", cmdline ? cmdline : "");
+ 
+-	if (initrd != NULL) {
+-		kbuf.buffer = initrd;
+-		kbuf.bufsz = kbuf.memsz = initrd_len;
++	if (initrd) {
+ 		kbuf.buf_align = PAGE_SIZE;
+ 		kbuf.top_down = false;
+-		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+-		ret = kexec_add_buffer(&kbuf);
++		ret = kexec_add_initrd(image, &kbuf);
+ 		if (ret)
+ 			goto out;
+ 		initrd_load_addr = kbuf.mem;
+-
+-		kexec_dprintk("Loaded initrd at 0x%lx\n", initrd_load_addr);
+ 	}
+ 
+ 	ret = get_reserved_memory_ranges(&rmem);
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index 0cf03cee35a7..77652db7d1ca 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -416,9 +416,8 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
+ 	/* Fix the offset for backup region in the ELF header */
+ 	sync_backup_region_phdr(image, headers, false);
+ 
+-	kbuf->buffer = headers;
+-	kbuf->mem = KEXEC_BUF_MEM_UNKNOWN;
+-	kbuf->bufsz = headers_sz;
++	image->elf_headers = headers;
++	image->elf_headers_sz = headers_sz;
+ 
+ 	/*
+ 	 * Account for extra space required to accommodate additional memory
+@@ -427,13 +426,9 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
+ 	kbuf->memsz = headers_sz + kdump_extra_elfcorehdr_size(cmem);
+ 	kbuf->top_down = false;
+ 
+-	ret = kexec_add_buffer(kbuf);
+-	if (ret) {
+-		vfree(headers);
++	ret = kexec_add_elf_core_header(image, kbuf);
++	if (ret)
+ 		goto out;
+-	}
+-
+-	image->elf_load_addr = kbuf->mem;
+ 
+ 	/*
+ 	 * If CONFIG_CRASH_HOTPLUG is enabled, the elfcorehdr kexec segment
+@@ -442,7 +437,6 @@ static int load_elfcorehdr_segment(struct kimage *image, struct kexec_buf *kbuf)
+ 	 * memory in the FDT prepared for kdump.
+ 	 */
+ 	image->elf_headers_sz = kbuf->memsz;
+-	image->elf_headers = headers;
+ out:
+ 	kfree(cmem);
+ 	return ret;
 -- 
 2.34.1
 
