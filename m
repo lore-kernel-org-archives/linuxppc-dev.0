@@ -2,104 +2,101 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA559606A321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:23:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A1108606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Nov 2026 12:23:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=P3crDTR2;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=fSUUtdbR
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dFL0oFGj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQKL23kfpz2yqs;
-	Thu, 12 Nov 2026 23:23:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.154
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794486202;
-	cv=none; b=mG9pLFs2rpXhVRVf8dWtpNpO4F3Xg7F376FdFNL8KCBn80bzc/ehz98h6D7oxJLm6hCtUC91lqNb1TB/uj+3XRnpauSHND3qd9iLU6rALhu2y+c5RkeVH62hl8muzR/dUElN3+EyDidnEuGmcN+ald9KUg8yvdB9D8hCoNkDzPItlZknnuKxcddllF9ALAquEwl1YRCpnoSZarRJ8SJtuHdlqnYYaGLt9pbzrsDgxJP+umcdSfh7kYE+X1rW80ifPOlnwU2vb759wMtZdf0Q06uN84hTbYV9CqkguC+ZW+xQ0NgJGRfBUhSV+uug7sftSfpCOywl4du/vgQ5cBATyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQKLS2tFNz308H;
+	Thu, 12 Nov 2026 23:23:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794486224;
+	cv=none; b=fGflQvN0+cbJ28ejk98KQEw0/FDUMNj1tAMF4yiFBlTDPc0jSXqusuUo4Pf5mC8iTaCgVsr+BzWKMgR6lqIPXtpRVZJEiCjGuiqF9t6gDijtWD39hWoO99T9UcRNaBYtWAQNpx9Ne8J59HYADtZbE4pN8pnSAvXILNhfHEZ+2CeONeE1Gq0Ozpg+eN6bBBs1zcDLDyrAgCZy5dZPQAP6WeO8V9YvfzRe/w3tVwrzF6XVOKkYz5XlLjVDn7j6OyNHiHcTGkWbRA7r8SBr8T+G+Ylj0oEDFLpJatxacgcW69RwFdnNfkVQEBD18qWpqv+nqWo9S1gAdK80NFLMAy6xNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794486202; c=relaxed/relaxed;
-	bh=pQQOtAWIajuSIjlpRm2vXAuyWpPNUiVztPgT4AugiJU=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=ijEz8dr3KIiaMA29FuAr1Z/7BSuUGGXE7grWPeHKH2dPdw0rMnx1ZmAKxKaqH5E1cnGKZcvZ5jwf9hd46lZX2aT6xzYN3mwjaOA71JGj/0pXGBu2vV5r0S3fyONjzPcsyW0eXqjcq51++X7WP8o3wAZVGt8+IEEO096kPhnGG3quL4n+l6UcHEfIi3bdnJwmKkEq/tMA9QPjzQcWdQpFKR1Xk+gvYZXPuKLpTLILs1sOwpXHDfH7i1N3a0ghLrz0+mMKx+QpO5chaaEy6CI98likR9If+QPY4I7EPKQxLyhefzBqKJzW92103eQguKygNXDKpnVQQi386VYZt9/j5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=P3crDTR2; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=fSUUtdbR; dkim-atps=neutral; spf=pass (client-ip=202.12.124.154; helo=fhigh-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1794486224; c=relaxed/relaxed;
+	bh=My+EyMv7kUK9PriD5W/MVAD9Fcc5R9RWddctNSFBcso=;
+	h=From:Date:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=k6cje8uzzY2zfxTX+bfEdZVJUVQraw6mKuf0SIOVLLU706YOl3zxyPfzdyXVay7760pYkc0CnPNXLcmjsWsheYGoM6xHqpWlyvTOffIWm2j6fFAuzXdCFhsXr5vLSX4tDh1NUvSeh+mpvEuMNYDmLneg4gaXwtXeh4d4wFXzMt8+fQ+Gnqm9cpUwJ+PTiW1Dfi4FJV7WCV19Q8O26TuhmWzgD6jDUjVqmS4keapkewZUIIkJ9LDq5i/Pmtshnui/di/W5dEKhjtXlY1xDDAKm7lCFGtao3NdczMcpJW0X8jZuc+6Pp8anlpgJlkX03uPiCl9lXHaWtAy1sOy5YTivQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dFL0oFGj; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=P3crDTR2;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=fSUUtdbR;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=dFL0oFGj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.154; helo=fhigh-b3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fhigh-b3-smtp.messagingengine.com (fhigh-b3-smtp.messagingengine.com [202.12.124.154])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=urezki@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQKKy2K6Dz2ynW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:23:17 +1100 (AEDT)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 8F8D97A0089
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 07:23:14 -0500 (EST)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Thu, 12 Nov 2026 07:23:14 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1794486184;
-	 x=1794572584; bh=pQQOtAWIajuSIjlpRm2vXAuyWpPNUiVztPgT4AugiJU=; b=
-	P3crDTR2QrE3mDKXA0pzvG/J0bybuc/GE0R2+MUdZp264RpkSMcQVZUcYrDDpZgb
-	IF+xz7OFlA2tZ1mPVXTCRlHno9SutFrCMpp0k51JBZDEbv0keJE4XFc7UCBBsbu1
-	z5onelRGFLzhRVe4TDGTEy+caDsXmV/0vQkR9L3QcLqzqVWjjRtJV/GZsPcOQArg
-	TFVocEfVeZn3ldcZG9Zw+36qsWWQweFRqkf561gT/9CziFep7xz+6ynjjfATsBE0
-	dDxnnAdPXLtTWCfAR5HvCihTN1MenKC3qxdhalWsDf9cehT8iPjbkvssqTUmP8Ca
-	rixYuPIXf6Edl8S85rwsgQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794486184; x=
-	1794572584; bh=pQQOtAWIajuSIjlpRm2vXAuyWpPNUiVztPgT4AugiJU=; b=f
-	SUUtdbR4HBO45/mk5eu0YAqBeAKShi7GKHdQyo/BWkb825A8Zi9EIqwWRVSs1pcN
-	2shVokvXjHddAXp7isok9lwDLIHuHWfHz6MNmkmQtn9hidGG8xcTZrxrxLs4ERmj
-	nnVUzsilTXAPPOFMD/tFoVHWYowqJS6SM+jBC74dDQt6d6doMt0uaYne/4RzxYm/
-	89EbxzKiZzolJ3h7lYx/Ky2Cl1+SZPPNnWFwJxKLaG7R284peEknvZBcSlslGRzw
-	5132kjSPejun9DRxwYozg+HXZkI0d5PX085EOoASVy5d7xZ1sJCrtlCPdoVwB7q1
-	IGZa0lXrdLbZFFX1aXggQ==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=arndb.de a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794486184; d=arndb.de;
-	mf=PGFybmRAYXJuZGIuZGU+;
-	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:PjVjSMWo7jbJr5xsML1Qa8CytX1VaXTh+YwE/GnbRz6KKjt
-	IfScJBc76xnIqfbXVQBgpzCuKzhviugOiqeVbhwDR+nABRRfQ5vj+PI4zYD2225q
-	3GuPv2qugLeILLNtB6IaIm2Lfbs6O2+jtmiOAK9s/5KyZvW9Jb968oFZ1Bmh1cMl
-	mkFPJ2F7pzR4iuCGV0c1MrN5N+biCqAqsh0i0D5WeOsoQT2O8BxLtJclt0crkhVN
-	Aewsg57d3N4iuoWj62JYst5qNXqOGl3hJRSyu8Nga7H52JPzgMf3XiO28cM8psFh
-	r/wW/II4oCkt1lfpxdhTnwFyb41Yvo+bqUlXbdg==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
-	from,in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:70yQGtggowVYDRHL6YKfPxDiilpVHlWmnUJX12t/gPs=:O91qDgHCDp/h71v8TAj9HM3/MV9+IU2QNkfmjp6XH8o=;
-X-ME-Sender: <xms:n6_1al4q7t8sPbNHk9ZcDabDfZWI--PS3yobCtKgM18RJUCK6pIt8Q>
-    <xme:n6_1attRr8BlRCZWHT1U2n7s_V_y0dEuMhbW4yU00VZPFcT55_MhPxgRjZRP0LOYJ
-    6l7M0RT8hyR_0q_RtCQItOEBMp-FqCFbVSgk_l-UUC_MGSuMH9MnC0X>
-X-ME-Proxy-Cause: dmFkZTENDWCLZ1AsP1BwOxKngdvuCCtkQqE4MZA6iiupg9JFXObYdnXpxnrsIceDQ9snZR
-    PmdDa3QNSvwQc2VnXG8kK3uQ1fnh26r6EfLM4tXSRfWOEQqnKY9QII707R7oHHunYlR01g
-    GM8ofyASf4KacOR/q5T8wLVy3McGB/LL6qJQykGIUi+PLyL3GEZNkdC7swMBvRvdaUSHOa
-    M6JzuiMhYCBPCJMgSaZEwSMVRz1tUEnOxeRtP65pSti3rsT7bpdM3lDN4Cj8hM9B2GWc3F
-    gYdQn21QY9Vm2bWRWZGFAt8nRliVdU80mdPzxWLE6QfIrmj+LKKjwBinE059J3TaxrezFd
-    z+ptb/+kggG/4zwdHsIjICNOsvzsn93x8woktqYPxE5S138aWckanjQhcqqD3Xz5I3QGwZ
-    HyaIy4NSEFB3rZpP65nB+MFiBId3H/KnEp59m+ePZJsd888ZbLhkbYQZBeCeRGpIjbN/rN
-    xFntOBhfjEJQcdR2QVwqMwq3LV//Yn2vUarjPKtXnJF8ZmzxZS26D454NlUS8+eCVnL8WG
-    j1LYpBLCtx3CXLg73JmvkDA+JkFH5xFnfEXNtSuMu37pKYM8585zicLTLL57nFdGvPMTk0
-    Dqe4DgJjMPnlK4WgoG4UoRPv8KB5d+hbDv2o2t79uWli2h6kBR+54AW77UpA
-X-ME-Proxy: <xmx:oq_1apRThMMkkNGJOzyUpycDUFHQQE4INZFdKrFWfr2OWu8HTU-TLQ>
-    <xmx:oq_1anplsAN-TbH3FxxNXMyiawEjF_2FUQ0eKkV3FpIIPUs0FEFGpw>
-    <xmx:oq_1anYZC5n6m5Iqm1LV-oAHoxmb1zzdOln3kyIuaSt5-UeCt-vtNA>
-    <xmx:oq_1aiQqZcsE9b5m0AGqWLb_c4i5j2hdZ504PsPdpJkby3ByOXXBsw>
-    <xmx:qK_1alc9eIARixlfcZspNkIdgxoj4uKJOu89rmelOEnZi-d-kZjREk4z>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 79EFA32A0099; Thu, 12 Nov 2026 07:22:55 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQKLR2cmJz2yqs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 23:23:43 +1100 (AEDT)
+Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-6b56c428212so5495873a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Nov 2026 04:23:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794486220; x=1795091020; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=My+EyMv7kUK9PriD5W/MVAD9Fcc5R9RWddctNSFBcso=;
+        b=dFL0oFGjwDwyCKL6Fdi/bWa/b9OShzKTEz4BT4cTP7+24kzlQCC8XLhmATHEyPXzb/
+         orOL3IWuUViVK5qgdcvW9U+HqtiQFogTZocT4oFotO3pcVg7yso2zysqq5b2XlVqhmUc
+         tbqkD1kv6XPQpWtBfhkbVMceDVrg4iK1xgL4C934Ce3AzCdmSZpr0g9BF/RBFq/+a7yB
+         /xYavY9Cf4vQAWvq5xOYyqtMtWWAH1aUbLMUM7ZDZhaxpHgBB+S6MHADLVqTbIkj0zGl
+         0SHAOB+k2lP718P+NnpF/ZqadwPpWuUVWKoiLR9/HeEZdEUaWdWDgH0stIFVknd8+gCm
+         HrMA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794486220; x=1795091020;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=My+EyMv7kUK9PriD5W/MVAD9Fcc5R9RWddctNSFBcso=;
+        b=aGFNJP9fHxJ7Rg49cVvHdkTWdy4v5Y2GFUdzNWF0Y3qRsEpualyFBaAUZiMfsCwGv9
+         EIZeOKWScTMXCqzZ/cTYxzXD/UHbzPJALfF27Z1A3ziXEv0e3w0e+w5omEdL6M6XuXrn
+         mN/51o4gbKA9/+DzbHXkmnGz3xWfRhdV6qAe8D/VJyYi9LrQAGJ88tLmnFsrCankQdLM
+         qWQNCm8LxKC9NQZtRG7rERqPnPRB6mn7eifLEZCDZ40uCy4GTgGZlQFt5uiYRKfbiHy3
+         jr73c4QAzxGqAOhUyg7B1REbIqTmVYbq2gx6L6Dj3yHNpg2dbz7QGyX6WpbkjzXpjj0z
+         iv+g==
+X-Forwarded-Encrypted: i=1; AL+hErGI8dYnSfsS0eic0b45oRrip1VSjjXo74Ph7U9yri1Lk7M8Sn6InaNalBUVSfc5u+MYWnwef9SHiaHPP64=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z84wbkcdzgjF1WCm1ZJrZf3cim3qxUdYdRmOotezoGfT0QfsQld
+	kRTZY4HBM3FrfHh+PgYTFsNK5TL4NHhC1iUXSIJ1FmHDsLuL7MY3vv/r
+X-Gm-Gg: AYBFou3HBOLzAJWbLpJQVPl0nYf5o2/GW6SoX9lAf+WDJa1e5b+dWPsvuzFMnBDkcyk
+	+xVRU6qcgN0lk2oyT0jPqDls5kCbbXNvRM3ElWIiEKwun2yzvFO0w6pbq+VWd2t5Uo0BvkwYb/R
+	q0Z5Ga/GaxoHKiJ9wrynXq6iay5z8vc+Zw/8qwWm8gOTqIeFxQpu2s3vfL3qb5U6jl2seW2A53x
+	wNGAEnKlwozF2uDOLrC23/DStk8mdt7x5jM7eN2PCOeeSWp+mwxwEyzxnSMaPT2s4M3ZDoK7OaX
+	a892FycrP+qGZvzHmPWAxKibo1K2Yycxy0SrTE022+LiAMjE1Ul5WTAZ6K88BPnDRnoY9lIuHsM
+	S7qFG/1itZzlIKhhOmVZtWyvJXAer45Zzj9IumeCr43H5Hz1QaUx2mI1nX+/U02Zxa1dX97WyNo
+	lYHhKxkEZ3nnLJYB5845XaWAzzzTRjaGxz2Bnq4hlYRI24w9KVdGMlsp6v2FOfCphTPaXrGr9Yg
+	LjODeKgvJ7At2BQB2VzXZCjLQ9XSkwd2iydDLsnbaRG9KYayv+Z8EryqYhDqgOClNDQOA==
+X-Received: by 2002:a05:6402:2108:b0:6b1:e8e1:a3cd with SMTP id 4fb4d7f45d1cf-6b777828d1dmr4207046a12.35.1794486219647;
+        Thu, 12 Nov 2026 04:23:39 -0800 (PST)
+Received: from milan ([2001:9b1:d5a0:a500::24b])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6b7578eb0b1sm3345874a12.22.2026.11.12.04.23.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Nov 2026 04:23:39 -0800 (PST)
+From: Uladzislau Rezki <urezki@gmail.com>
+X-Google-Original-From: Uladzislau Rezki <urezki@milan>
+Date: Thu, 12 Nov 2026 13:23:36 +0100
+To: Hao Ge <hao.ge@linux.dev>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+	Dennis Zhou <dennis@kernel.org>, Tejun Heo <tj@kernel.org>,
+	Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
+	linux-mm@kvack.org
+Subject: Re: [PATCH v4 3/9] mm/vmalloc: BUG_ON() on an unaligned range in
+ vmap_range_noflush()
+Message-ID: <avWvyNo5qHbuk9hA@milan>
+References: <20261110112546.261415-1-hao.ge@linux.dev>
+ <20261110112546.261415-4-hao.ge@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,52 +110,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: AfXj_ROFnIdR
-Date: Thu, 12 Nov 2026 13:22:35 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Mike Rapoport" <rppt@kernel.org>, "Arnd Bergmann" <arnd@kernel.org>
-Cc: linux-mm@kvack.org, "Andrew Morton" <akpm@linux-foundation.org>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "Jason Gunthorpe" <jgg@nvidia.com>,
- "Linus Walleij" <linus.walleij@linaro.org>,
- "Lorenzo Stoakes" <ljs@kernel.org>, "Matthew Wilcox" <willy@infradead.org>,
- "Malin Jonsson" <malin.jonsson@est.tech>,
- "Richard Weinberger" <richard@nod.at>,
- "Russell King" <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Message-Id: <219f5451-1cb7-4a2a-8423-3a071f8ad42e@app.fastmail.com>
-In-Reply-To: <avWnS7MLyPaJLaLR@kernel.org>
-References: <20261112112528.1116405-1-arnd@kernel.org>
- <20261112112528.1116405-4-arnd@kernel.org> <avWnS7MLyPaJLaLR@kernel.org>
-Subject: Re: [PATCH v2 3/6] ARM: drop CONFIG_HIGHPTE support
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261110112546.261415-4-hao.ge@linux.dev>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026, at 12:47, Mike Rapoport wrote:
-> On Thu, Nov 12, 2026 at 12:25:25PM +0100, Arnd Bergmann wrote:
+On Tue, Nov 10, 2026 at 07:25:40PM +0800, Hao Ge wrote:
+> commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
+> PAGE_SIZE aligned") put the check in vmap_pte_range(), which is too
+> late, because the upper levels may already have installed page
+> tables for a range that is rejected anyway.
+> 
+> The pte loop maps whole pages and stops only when addr lands
+> exactly on end.  An unaligned end lets addr jump over it and the
+> loop keeps mapping past the range.  An unaligned start maps the
+> page below the range and usually misses end too.  Such a range is
+> never a legitimate request, and the corruption it leaves behind is
+> hard to attribute to the caller afterwards, so bug out on addr and
+> end at the entry of vmap_range_noflush() and drop the check from
+> vmap_pte_range().
+> 
+> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+> ---
+>  mm/vmalloc.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 093b8d5f7b0e..27f2674a5556 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -125,9 +125,6 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	unsigned long size;
+>  	unsigned int nr_pages;
+>  
+> -	if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
+> -		return -EINVAL;
+> -
+>  	pfn = phys_addr >> PAGE_SHIFT;
+>  	pte = pte_alloc_kernel_track(pmd, addr, mask);
+>  	if (!pte)
+> @@ -347,6 +344,7 @@ static int vmap_range_noflush(unsigned long addr, unsigned long end,
+>  	 */
+>  	might_sleep();
+>  	BUG_ON(addr >= end);
+> +	BUG_ON(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end));
+>  
+>  	start = addr;
+>  	pgd = pgd_offset_k(addr);
+> -- 
+> 2.25.1
+> 
+Like Suren proposed, there is only one user of vmap_range_noflush() it
+is vmap_page_range() function. You can add warn-on-once() there and
+bail out.
 
->>  	if (!pte)
->>  		return NULL;
->>  	if (!PageHighMem(pte))
->
-> With HIGHPTE out this can be 
->
-> 	if (pte)
-> 		clean_pte_table(pte);
->
-> 	return pte;
->
+Do not add BUG_ON().
 
-Makes sense, changed now.
-
-     Arnd
+--
+Uladzislau Rezki
 
