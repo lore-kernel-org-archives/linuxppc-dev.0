@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 800FE606C958
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:39 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22AEA606E55A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Zx4HqS+o
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=SN+d9u9J
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5LR3XDmz2xRm;
-	Sat, 14 Nov 2026 05:26:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5LS2tlzz3bVh;
+	Sat, 14 Nov 2026 05:26:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594383;
-	cv=none; b=QGAIlxkoK7SlsBQmAbXMfPocx4PHDNcdAMcs5aCh8W15BzPvGYr1vf7s5nm7kZjeT05Gswc1BjwsrV3Qd+ItQdT51maVRZMmnep7NoPUwLskrjHAjP9geOFhzMzFAwzA2U/eUHhcM0XY5MIleHbbsYOWLG99w4tSL0nqTwckTFlbuyLvDKSzZTxx9CbN1cEcvI75EakjRyMUaizPhMUY8efxPxNrzqCQxg0s3GwG9ao31KGKu61bjdJ83lLOr5EcwKa4kiyhWTShOc1BGRAvqKVyKOuTpk2qnQ2xZ8u/bcV9UyWvD+bFrh4nf1m137otM9rnv2FTOnfV7NdJCrJFSA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594384;
+	cv=none; b=iJBzoUWsPKajk/9MYgvfKmlIJLjiTuI7rg8uGmAjQBA3zZCiBssyLsPqZsq+W3Adlgd4LJT78N3lr//5DqzKRQd22TGReEovU7DMoNok/euVCqVbvdU4J+TLCRjKMUMxjYp+YzrR54ZS3RENnyB17BLnB8U9zD/HeBTV8f9GLUgoh8dD8hJjjb3Ouc4A0aykiC82dkTqHQYqiLt4CvvrPpx5dge8xqAfdQZflbr2xrZLYAkOKAu0KDmxJsOClLe93YRcBKtAiPj/Kt0VDPv1+bYyDuFasKwyT81B8jXz43WL0uTeG1VvNXumzIt/6uDQMLHEALofkW77w7+0Pg9Jkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794594383; c=relaxed/relaxed;
-	bh=msKkdHtgD2b3oR0fa9FcUaIRWkyCYgWeMc0j/s9P6i0=;
+	t=1794594384; c=relaxed/relaxed;
+	bh=FJlTkZ/+iGrc2on2sDv49DKbHeUd0ygGYuQcqQHw4O4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KfZVBHipYSsFKnNdyYKmAXy+ONLAy3lk+UiOrRQmgqI2XKioWDq8Vh3ldm8BHwO5T9R+K6vaPXcgK/3jBy5iF8Tip4+RY3+FdleaD4+yduF0Hl58TDRtyqzTnMcdI8rAk/7vaMrDMQ9HAcJQuncgBz2f6McF6qELxPzYFsUKe4vBUpUl10WDbCRhOx1qZlSJs5vE6zpo6tg2Y0quVn/KZ2zFgm5cjsn6AwATR0jGDZAvgG38t02c9gsR+dbHl+X7qFYhJ5+JMdIDNy9WXRFVKq59B902T4Lut+Pq2pgNT0Yn53iTGz+DqqMxc1EfIjgHlwmvqd6kZKvZoHgperTV+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Zx4HqS+o; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+7654657bf7a82263391f+8482+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
+	 MIME-Version; b=AIR3iVuzI3RW9GfgL8CbaAPuI3g/fbpXUYz0dBQJczOYiB3Kq55WeUdR8fy4KboD7Y/YpIXYhwd9VY5d3JIqgkgy52V3DdROIQL8hgV/MCFv20j90RvslgGHrB7bpPC9efBJ+FcaLEy4yDJPjkfKNqn99ZoIfjgKuHIDLsHStDxt9JYKthOxE9oZIO9yIpMM5OglsyaPi+zA60ap14FNYj6KBHepZIs2nZblJz30OvQJNB7BuBCR4Vlo0D50+OuP1qmQgJh7iySTSqeGhvlx+inGMRWn2YUaV5nFrA9HXxMFCinb7WUoZSuUTUHC+7lP2wmmFjNU9yZF1FO8ByIncA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=SN+d9u9J; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+7654657bf7a82263391f+8482+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Zx4HqS+o;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=SN+d9u9J;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+7654657bf7a82263391f+8482+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5LJ6GNdz2xf8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5LJ6KLKz2xg9
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:26:13 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=msKkdHtgD2b3oR0fa9FcUaIRWkyCYgWeMc0j/s9P6i0=; b=Zx4HqS+ofJPysjuxqvHILtgMFz
-	fztLdc4K36XPZ6PZLoefYSbw5DvHM+1xg5D4gEN2t8LvGnjxeeCHChs5cqiQU8+1x/zFQnXQm646l
-	vCozneNrBYMFTQebLmimVaDmt9AlOhKnN8aFK8Ck5mwgxEamqEAohOcXnHxWiAo4ctWEEbIWq232P
-	PtDivBQLBUReqXJ/pN+aqrdQ2PA79OVflNncjbceKvt52DZsZpvaOD+W/NZ8oVFHu11SdZ8Du2CMf
-	BEorl+Ej/aumtFZWUFZU87deTHDoGnNf8xcR6AYFSQsO4S2/ugiQhV9+n/AGOGTMttC3B7jF72eYy
-	/Ez7yqiA==;
+	bh=FJlTkZ/+iGrc2on2sDv49DKbHeUd0ygGYuQcqQHw4O4=; b=SN+d9u9JFQzBGQf4NAy7qocbuh
+	0u7FgiaAx4+xKinMjXCbFmNXxBYZwqp1PbHkFFEAwMi/92Pxm5LWltQuv/fa/pF00zpn4HZuVA2DH
+	t4QVa94FAMgTh7vK7Vl91fkp/MbV6B4nrCJS8qP20fQ7gGOCdQctg5UpiUeLaA2HfDcpAuRnkgmnq
+	WRSmBzqeS2sIKrET1fJth6ATFydSlEsESFwrfoD6k/rvO02kf5M7I5ExzEdSB+tmG9W01vwQpMgQI
+	2cwflpfBsvALHtC+r0o9GwiZFmrpPjE7U4J5f1ubxCLVMdK9xnLy0cQsPjDcXmJ0ufxrO/45Z9Njg
+	TTK9Y63A==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyS-00000004cT7-0Gm0;
+	id 1xRvyS-00000004cT5-0AX8;
 	Fri, 13 Nov 2026 18:26:08 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRvyR-00000000LYZ-3bgH;
+	id 1xRvyR-00000000LYV-3HIa;
 	Fri, 13 Nov 2026 18:26:07 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [RFC PATCH 12/13] KVM: selftests: Check CPUID handling of plane twins
-Date: Fri, 13 Nov 2026 11:26:06 -0700
-Message-ID: <20261113182607.82813-13-dwmw2@infradead.org>
+Subject: [RFC PATCH 11/13] KVM: planes: Let plane twins share DR6
+Date: Fri, 13 Nov 2026 11:26:05 -0700
+Message-ID: <20261113182607.82813-12-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -102,184 +102,159 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-Two checks of how plane twins follow the CPUID they share.
+The TLFS leaves DR6 sharing between VTLs processor-dependent and tells
+the guest which way it went in HvRegisterVsmCapabilities.Dr6Shared. KVM
+cannot know what the VMM advertises there, so make it a share bit and
+let the VMM keep the two consistent: KVM_PLANE_SHARE_DR6.
 
-A plane vCPU created after KVM_SET_CPUID gets its Hyper-V context in
-kvm_arch_vcpu_create(), before its vCPU index is assigned, and used to
-latch a VP index of 0xFFFFFFFF. Create two vCPUs, give them a Hyper-V
-CPUID, then create their plane-1 twins and check that
-HV_X64_MSR_VP_INDEX on each twin reads its vCPU index.
+The twins keep their own arch.dr6, kept equal whenever no plane is in
+the guest:
 
-Once a twin has run, KVM_SET_CPUID2 must accept only the CPUID already
-set, even on a plane 0 that has never run. Run plane 1 with plane 0
-held (a real-mode OUT, then retired), and check that identical CPUID is
-accepted and that CPUID with XTILE added to leaf 0xD fails with EINVAL.
-Before kvm_set_cpuid() checked every twin, that call went on to the
-fpstate code, which failed it with EPERM, or resized the twin that ran
-if the process had AMX permission.
+ - after each plane's run in the KVM_RUN plane loop, its DR6 is copied
+   to the twins. By then the exit has synced any DR6 the guest owned in
+   hardware back into arch.dr6 (sync_dirty_debug_regs() on VMX and SVM,
+   under KVM_DEBUGREG_WONT_EXIT); otherwise DR accesses are intercepted
+   and arch.dr6 is the only copy. A VTL switch done in the kernel
+   returns through the same loop;
+ - KVM_SET_DEBUGREGS copies the new value to the twins at once;
+ - a twin created later starts with plane 0's DR6, as for XCR0.
+
+Converting every arch.dr6 user to a shared location instead would touch
+the vendor, nested, SMM and exception code for no gain. Writers audited
+for the copy-after-run rule:
+
+ - MOV to DR6 (emulated, or direct under KVM_DEBUGREG_WONT_EXIT), #DB
+   payload delivery (kvm_deliver_exception_payload()), RSM, INIT and
+   nested VMRUN on SVM all write the DR6 of the plane that is running,
+   so the next copy carries them;
+ - a #DB still pending on a plane that is switched away from updates
+   DR6 when that plane next takes it, which matches a debug exception
+   that has not been delivered yet;
+ - host-side debugging (KVM_SET_GUEST_DEBUG) reports in
+   kvm_run->debug.arch.dr6 and leaves arch.dr6 alone;
+ - vCPU ioctls on twins take the shared vCPU mutex, so none of them can
+   observe a plane mid-run.
+
+DR0-DR3 and DR7 stay per plane.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- tools/testing/selftests/kvm/x86/planes_test.c | 125 +++++++++++++++++-
- 1 file changed, 122 insertions(+), 3 deletions(-)
+ Documentation/virt/kvm/api.rst  |  5 +++++
+ arch/x86/include/uapi/asm/kvm.h |  1 +
+ arch/x86/kvm/regs.c             |  1 +
+ arch/x86/kvm/x86.c              | 25 +++++++++++++++++++++++++
+ arch/x86/kvm/x86.h              |  4 +++-
+ 5 files changed, 35 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/kvm/x86/planes_test.c b/tools/testing/selftests/kvm/x86/planes_test.c
-index 968f1b099b8e..dd3c251f0b7a 100644
---- a/tools/testing/selftests/kvm/x86/planes_test.c
-+++ b/tools/testing/selftests/kvm/x86/planes_test.c
-@@ -1,16 +1,19 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-  * Test the KVM_CAP_PLANES opt-in and the plane lifecycle uAPI: plane
-- * creation bounds, plane vCPU creation, and the independence of
-- * per-plane vCPU register state.
-+ * creation bounds, plane vCPU creation, the independence of
-+ * per-plane vCPU register state, the Hyper-V VP index of a plane
-+ * vCPU created after KVM_SET_CPUID, and KVM_SET_CPUID2 once a twin
-+ * has run.
-  */
- #include <errno.h>
- #include <string.h>
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 22dc3c793bc4..351cc7448fe1 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -9353,6 +9353,11 @@ is set once.  The bits are:
+ - KVM_PLANE_SHARE_XCR0: XCR0, whether written by the guest with XSETBV or
+   with KVM_SET_XCRS on any plane's vCPU fd.  A plane vCPU created later
+   starts with plane 0's value.
++- KVM_PLANE_SHARE_DR6: DR6.  A guest write, or a debug exception, in one
++  plane is seen by the others once that plane returns from KVM_RUN or
++  switches to another plane; a KVM_SET_DEBUGREGS on any plane's vCPU fd is
++  seen at once.  A plane vCPU created later starts with plane 0's value.
++  DR0-DR3 and DR7 stay per plane.
  
- #include "kvm_util.h"
- #include "processor.h"
-+#include "hyperv.h"
+ 8. Other capabilities.
+ ======================
+diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+index edec00979acf..dbfdc1188c20 100644
+--- a/arch/x86/include/uapi/asm/kvm.h
++++ b/arch/x86/include/uapi/asm/kvm.h
+@@ -924,6 +924,7 @@ struct kvm_sev_snp_launch_finish {
  
--/* Where the run-state test puts plane 0's one instruction. */
-+/* Where the tests that enter a plane put its one instruction. */
- #define CODE_GPA	0x1000
+ /* KVM_CAP_PLANES args[1]: state the planes of a vCPU share */
+ #define KVM_PLANE_SHARE_XCR0				_BITULL(0)
++#define KVM_PLANE_SHARE_DR6				_BITULL(1)
  
- /*
-@@ -317,6 +320,120 @@ static void test_plane_lifecycle(void)
- 	kvm_vm_free(vm);
+ struct kvm_hyperv_eventfd {
+ 	__u32 conn_id;
+diff --git a/arch/x86/kvm/regs.c b/arch/x86/kvm/regs.c
+index 3621f1a47d37..8a856e478095 100644
+--- a/arch/x86/kvm/regs.c
++++ b/arch/x86/kvm/regs.c
+@@ -876,6 +876,7 @@ int kvm_vcpu_ioctl_x86_set_debugregs(struct kvm_vcpu *vcpu,
+ 
+ 	kvm_update_dr0123(vcpu);
+ 	vcpu->arch.dr6 = dbgregs->dr6;
++	kvm_plane_share_dr6(vcpu);
+ 	vcpu->arch.dr7 = dbgregs->dr7;
+ 	kvm_update_dr7(vcpu);
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index ceec10d116a9..7206ee889e9b 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -9362,6 +9362,26 @@ static int __kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu, bool held)
+ 	return r;
  }
  
 +/*
-+ * A plane vCPU created after KVM_SET_CPUID gets its Hyper-V context at
-+ * creation, and its default VP index must be its vCPU index like any
-+ * other vCPU's, not the -1 the vCPU carries until it is published.
++ * With KVM_PLANE_SHARE_DR6, every twin holds the same DR6 whenever no plane
++ * is in the guest.  Copy it from @vcpu to its twins after @vcpu changed it:
++ * after an ioctl write, or after @vcpu ran, by which time its exit has
++ * synced any guest-owned hardware DR6 back into arch.dr6
++ * (sync_dirty_debug_regs() on both vendors).
 + */
-+static void test_late_twin_vp_index(void)
++void kvm_plane_share_dr6(struct kvm_vcpu *vcpu)
 +{
-+	struct kvm_plane_vcpu *twin;
-+	struct kvm_vcpu *vcpu[2];
-+	struct kvm_plane *plane;
-+	struct kvm_vm *vm;
++	struct kvm_vcpu *twin;
 +	int i;
 +
-+	if (!kvm_has_cap(KVM_CAP_SYS_HYPERV_CPUID)) {
-+		print_skip("KVM_CAP_SYS_HYPERV_CPUID not supported");
++	if (!kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_DR6) ||
++	    vcpu->common->vcpus[vcpu->plane_level] != vcpu)
 +		return;
-+	}
 +
-+	vm = vm_create_barebones_irqchip(true);
-+	vm_enable_cap(vm, KVM_CAP_PLANES, 2);
-+	plane = vm_plane_add(vm, 1);
-+
-+	for (i = 0; i < 2; i++) {
-+		vcpu[i] = __vm_vcpu_add(vm, i);
-+		vcpu_set_hv_cpuid(vcpu[i]);
-+	}
-+
-+	for (i = 0; i < 2; i++) {
-+		twin = __vm_plane_vcpu_add(vcpu[i], plane);
-+		TEST_ASSERT_EQ(plane_vcpu_get_msr(twin, HV_X64_MSR_VP_INDEX), i);
-+	}
-+
-+	kvm_vm_free(vm);
++	vcpu_for_each_plane(vcpu->common, i, twin)
++		twin->arch.dr6 = vcpu->arch.dr6;
 +}
 +
-+/*
-+ * CPUID is shared between plane twins, so once any twin has run,
-+ * KVM_SET_CPUID2 on plane 0 only accepts the CPUID already set, even
-+ * while plane 0 itself has never run.  Without that, an enlarged
-+ * dynamic xfeature would resize the fpstate of the twin that ran.
-+ * Plane 1 runs here with plane 0 held: a real-mode OUT at CODE_GPA,
-+ * which is then retired.
-+ */
-+static void test_cpuid_after_twin_ran(void)
-+{
-+	static const u8 out_insn[] = { 0xe6, 0x10 };	/* out %al, $0x10 */
-+	u64 hold = KVM_PLANE_RUN_STATE_USER_HOLD, none = 0;
-+	struct kvm_cpuid_entry2 *leaf_d = NULL;
-+	struct kvm_plane_vcpu *vcpu1;
-+	struct kvm_cpuid2 *enlarged;
-+	struct kvm_plane *plane;
-+	struct kvm_sregs sregs;
-+	struct kvm_vcpu *vcpu0;
-+	struct kvm_regs regs;
-+	struct kvm_vm *vm;
-+	u32 i;
-+
-+	vm = vm_create_barebones_irqchip(true);
-+	vm_enable_cap(vm, KVM_CAP_PLANES, 2);
-+	plane = vm_plane_add(vm, 1);
-+	vcpu0 = __vm_vcpu_add(vm, 0);
-+	vcpu1 = __vm_plane_vcpu_add(vcpu0, plane);
-+	vcpu_init_cpuid(vcpu0, kvm_get_supported_cpuid());
-+
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, CODE_GPA, 1, 1, 0);
-+	memcpy(addr_gpa2hva(vm, CODE_GPA), out_insn, sizeof(out_insn));
-+
-+	plane_vcpu_ioctl(vcpu1, KVM_GET_SREGS, &sregs);
-+	sregs.cs.selector = 0;
-+	sregs.cs.base = 0;
-+	plane_vcpu_ioctl(vcpu1, KVM_SET_SREGS, &sregs);
-+	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs);
-+	regs.rip = CODE_GPA;
-+	plane_vcpu_ioctl(vcpu1, KVM_SET_REGS, &regs);
-+
-+	vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &hold);
-+	plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &none);
-+	TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+	TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_IO);
-+	TEST_ASSERT_EQ(vcpu0->run->io.port, 0x10);
-+
-+	/* Retire the OUT without entering again. */
-+	vcpu0->run->immediate_exit = 1;
-+	TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+	TEST_ASSERT_EQ(errno, EINTR);
-+	vcpu0->run->immediate_exit = 0;
-+
-+	/* Identical CPUID is still accepted. */
-+	TEST_ASSERT_EQ(__vcpu_ioctl(vcpu0, KVM_SET_CPUID2, vcpu0->cpuid), 0);
-+
-+	/*
-+	 * An enlarged dynamic xfeature is refused by the has-run check
-+	 * (EINVAL), before the fpstate code could fail it for lack of
-+	 * permission (EPERM).
-+	 */
-+	enlarged = allocate_kvm_cpuid2(vcpu0->cpuid->nent);
-+	memcpy(enlarged, vcpu0->cpuid, kvm_cpuid2_size(vcpu0->cpuid->nent));
-+	for (i = 0; i < enlarged->nent; i++) {
-+		if (enlarged->entries[i].function == 0xd &&
-+		    enlarged->entries[i].index == 0)
-+			leaf_d = &enlarged->entries[i];
-+	}
-+	if (leaf_d) {
-+		leaf_d->eax |= XFEATURE_MASK_XTILE;
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu0, KVM_SET_CPUID2, enlarged), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+	} else {
-+		print_skip("no CPUID leaf 0xD, enlarged-xfeature check");
-+	}
-+	free(enlarged);
-+
-+	kvm_vm_free(vm);
-+}
-+
- int main(int argc, char *argv[])
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu_plane0)
  {
- 	TEST_REQUIRE(kvm_has_cap(KVM_CAP_PLANES));
-@@ -326,6 +443,8 @@ int main(int argc, char *argv[])
- 	test_enable_cap_bounds();
- 	test_enable_cap_too_late();
- 	test_plane_lifecycle();
-+	test_late_twin_vp_index();
-+	test_cpuid_after_twin_ran();
+ 	struct kvm_vcpu_common *common = vcpu_plane0->common;
+@@ -9374,6 +9394,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu_plane0)
+ 		common->plane_switch = false;
  
+ 		ret = __kvm_arch_vcpu_ioctl_run(vcpu, held);
++		kvm_plane_share_dr6(vcpu);
+ 		if (ret)
+ 		       break;
+ 	} while (vcpu_plane0->common->plane_switch);
+@@ -9854,6 +9875,10 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	if (kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_XCR0) &&
+ 	    vcpu->plane_level && vcpu->common->vcpus[0])
+ 		vcpu->arch.xcr0 = vcpu->common->vcpus[0]->arch.xcr0;
++	/* Likewise for a shared DR6. */
++	if (kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_DR6) &&
++	    vcpu->plane_level && vcpu->common->vcpus[0])
++		vcpu->arch.dr6 = vcpu->common->vcpus[0]->arch.dr6;
+ 	kvm_init_mmu(vcpu);
+ 	vcpu_put(vcpu);
  	return 0;
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+index aa8abd219507..4da224eb1745 100644
+--- a/arch/x86/kvm/x86.h
++++ b/arch/x86/kvm/x86.h
+@@ -927,11 +927,13 @@ unsigned kvm_x86_default_max_planes(struct kvm *kvm);
+  * The per-vCPU state that userspace may ask the planes of a vCPU to share,
+  * in args[1] of KVM_ENABLE_CAP(KVM_CAP_PLANES).
+  */
+-#define KVM_PLANE_SHARE_VALID	KVM_PLANE_SHARE_XCR0
++#define KVM_PLANE_SHARE_VALID	(KVM_PLANE_SHARE_XCR0 | KVM_PLANE_SHARE_DR6)
+ 
+ static inline bool kvm_plane_shares(struct kvm *kvm, u64 state)
+ {
+ 	return READ_ONCE(kvm->arch.plane_share) & state;
  }
+ 
++void kvm_plane_share_dr6(struct kvm_vcpu *vcpu);
++
+ #endif
 -- 
 2.50.1
 
