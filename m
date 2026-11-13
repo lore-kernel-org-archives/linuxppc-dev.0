@@ -2,63 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D745D606A643
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:42:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3CA05606A64E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:47:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cfI/L2eY
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tVYioc1K
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5hW1MtLz2xRm;
-	Sat, 14 Nov 2026 05:42:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794595323;
-	cv=none; b=CeG/Wv4v/ioCwhOYsGTde8bQpoOpmTzV5VRV6B9A+UkZSUH9yeIgtINOuelo2dI6n45XFUc2M/9TV2M/JGEjdcQ4ZytUJ5KDwqjQmuR9QcHZR3odgvbsreduo2oCHCUaLHJ/u2NcI7EB3nbp42rfMDqDv/Bc10LU6T19xyEktEmqw+X1YsLryPF48BE2BxgsJ9eWQ7pBoaP6nGHfQhR6F/2R8aMz4rQNRV6APspc3dbW45Hk8D+s7GLOkuwWUQpPr/FDjQ+2PWxiQkm7u/iwICg1LWgAV7gogEYUjmSN1Tb/o7eLV449hAOWmXw854LCmAyYqgzfK0EW22tY1/kGBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5pH6D4Sz2xP9;
+	Sat, 14 Nov 2026 05:47:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794595623;
+	cv=none; b=U/gU+v9YyD+KvdNxaQbqKYLvl0bO3rYBCJor4m06ata6ZOZzcDcMd2uEc0VDWwDwQq0W7qEJRMxsRfKuyzUeCMe3xkxO9nt76DDzORx4pSu+GL8nNefzuBpUC1IeXsrdJqw0TxjihQjFf34JQV4VVUMdbGbilYENS1D9nrKNFG+K1qsNQbd24S95KENkmHUM7lA5G7MGotu6qyZXDugnQA0AlZtc5iUQMrLNWT9GndrDBod+QUapQunBWY9WcP/vclLYAPxF4aqLb+qGGFYJ+ZkNeKRKlT1j9sIJJScHCXPT6cVXq0DM68GlRUtxOy2wHnZsJRozg2PFNm6x4mrhqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794595323; c=relaxed/relaxed;
-	bh=VytgQi4p8wcmmELrEfY15mVmpLYzi4XAlS7bqFMpaOA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LArSb6yR3t0y0js4UDRXHSj/A8xzC3LH7rZin7WiMwdnAB2uHKi/lw+4cs/wKqejhQjOCVUSeWXpzNlopER9+kSbqMi/26NjQmYgEsAC4BdbROQlr91+knVePbEYRxP5oYvp9gPiBnLTvUm99hPElZlkuAqkzJVoJno/8g/F2PgHnRVV13DYRpSjosett/STOR4M965otnKn+z08iSGFYdDjH6OHQeoMBDyNOHefbvhhMwC1Owxa2tOSrApgOmBlhXRUGAvePf71Q9d6Sphjfczlq8xm3i73woHoqLzIsTWjOAto6XzP8+Dp5Y5Q34vrtXTmQZ6TKHIX/O45PMC88A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cfI/L2eY; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794595623; c=relaxed/relaxed;
+	bh=Jal0E2Mnv0Z77Uatas4UWnyPfvwf7BXhd0FfO5WpX90=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HJp/DgUt89I0HtB7eDzIoPDAUpVs/ZbORMIJDknfli10F77GMcSBcgbv5NPBHwSUzunF5ywnw2R3J+vs74qMAWR51YZxdHpYJstvQbXu/UqxY+s4gqjXNgKSH9gwt/VSSAslBLKcV1cQnhQD9y2ksKgezmUWZKy+rCwOcHqlQkPvdXGoiyqq6tGh2q5tcrDkIe/3L22V5HeG1N0YI5tLROgZv+GmUMRfdHqd5fiYV3fTMZq3LkvaGiQXSbf31HLmE/15TyjF8KcxHmbFXeHW40gmcJ2pV0dh/30k5mOVFLSeTxlhWkUh9Ubuc0wzScmMLQeD+x+SmBfendU/+oHH2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tVYioc1K; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=cfI/L2eY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tVYioc1K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5hV0zdqz2xLG
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:42:02 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id CFC84615E4;
-	Fri, 13 Nov 2026 18:41:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E0221F000C4;
-	Fri, 13 Nov 2026 18:41:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794595319;
-	bh=VytgQi4p8wcmmELrEfY15mVmpLYzi4XAlS7bqFMpaOA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=cfI/L2eY2qjwVL7APHC67QJOIGk/JNOUabcKBMNTHVN19Rcz72eUV6Yh3y5Ea/LHZ
-	 z5QbQ0lofex0YKPkP/CrCot0WtLB3Iun9cb9TpGzWGq7i0diBi7RiTfH+PMAtEzL2+
-	 C0j/tS7srsbkDAQQkLK7ashTa4LxtBlawzOcVQduTw15A7JC0FoBx70BE+lVHeY9Dq
-	 c07fq9ZOjzPKmREqLefO5blbiTlVapyN80u0xRg/xm4Y01ZY7klw7sdg1ydyXEPskb
-	 46DP+YMZNRJ2jvH8liJQifBhGUdO/X8ERo88dTaNWRmserH3XKGKSg7PzJ1GdT/0k3
-	 sU3CZpk80JuTg==
-Date: Fri, 13 Nov 2026 18:41:52 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: Arnd Bergmann <arnd@kernel.org>
-Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>, 
-	Andrew Morton <akpm@linux-foundation.org>, Andreas Larsson <andreas@gaisler.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	"David Hildenbrand (Arm)" <david@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Matthew Wilcox <willy@infradead.org>, 
-	Malin Jonsson <malin.jonsson@est.tech>, Richard Weinberger <richard@nod.at>, 
-	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
-	linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v2 3/6] ARM: drop CONFIG_HIGHPTE support
-Message-ID: <avdZ5SCLnUg29Te8@gremlin>
-References: <20261112112528.1116405-1-arnd@kernel.org>
- <20261112112528.1116405-4-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5pG3qpYz2xLG
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:47:02 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADFicZS2229943;
+	Fri, 13 Nov 2026 18:46:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Jal0E2
+	Mnv0Z77Uatas4UWnyPfvwf7BXhd0FfO5WpX90=; b=tVYioc1KGR9qNbcZtKHrj0
+	SaKq2oA8BFIEehQEreXeF/kevJZZ+shfB04BlDi+X8GKj1WlOnf48Sz/A4vD2iVD
+	tLKiw+xtm+yQTCwUwL3CCfLenMmmLIRBxOTKMSCi6tsZQQSOY8Dox1tJ/IaOedZ4
+	twTD1tvpSkZ9uAc7fvtQKnMaj/AHqu+2DnxXT8/hI5EHzMRZtHRRvyyeMZ+frsK7
+	jFPQwlgbQ0tpf6xbS07Z9ut8aXicICxyHTPSzHDCucMngNJMwQormYT1QVk8k4Mk
+	EQMYitca1UlsQjaVOtrXUBgHK2NlfSdE3XNrEsgmukoliI0RtD7+WqStUNPb188A
+	==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hstdgm1y4-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 13 Nov 2026 18:46:49 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADFYxLA2453165;
+	Fri, 13 Nov 2026 18:46:49 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hwegfd3sw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Nov 2026 18:46:49 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ADIkQQg26936022
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 13 Nov 2026 18:46:26 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4919158017;
+	Fri, 13 Nov 2026 18:46:26 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 34E0558028;
+	Fri, 13 Nov 2026 18:46:23 +0000 (GMT)
+Received: from [9.67.72.137] (unknown [9.67.72.137])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 13 Nov 2026 18:46:23 +0000 (GMT)
+Message-ID: <e4ebac16-58e6-49cd-9ead-20506f562380@linux.ibm.com>
+Date: Fri, 13 Nov 2026 10:46:22 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,101 +81,225 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261112112528.1116405-4-arnd@kernel.org>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v8 05/15] ibmveth: Refactor RX interrupt control
+ for MQ RX queues
+To: netdev-bot+sashiko@kernel.org
+Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
+        horms@kernel.org, edumazet@kernel.org, pabeni@redhat.com,
+        andrew+netdev@lunn.ch, nnac123@linux.ibm.com, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        haren@linux.ibm.com, ricklind@linux.ibm.com, davemarq@linux.ibm.com,
+        bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
+References: <20261109235556.60604-6-mmc@linux.ibm.com>
+ <179452782074.2199510.13462227035463955143@kernel.org>
+Content-Language: en-US
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <179452782074.2199510.13462227035463955143@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=J+M/fwnS c=1 sm=1 tr=0 ts=6af75b1a cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
+ a=-iyn0Ag8WSiOA7Qd_NoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEzMDA3MyBTYWx0ZWRfX5oyqXXKTmPNp
+ XxLk2N+n3VWCE3aYyLKCGcocp0qSLHKwj2ircjT0tEilUU6g3xbyWkb9UdAJdQKM7RKx0Ru1Wmx
+ ytQq63shqi7rqhdTz2VpMthB3QTiwmeSZjVkBR9kjQlNLXUtyEuIt1xcYZiNYXwQJAQPbhmicf4
+ KshXFa1SoRtpilmZdTwcpvvpcPjUX3CEyqwl9X6UMbcKPP4bP+nBjPVsekEfOe/dsg4DfqPagGp
+ nujRwpr3C4Pe++hfiV1PsUcRjKEUNHz1YbepVFJw2WCH/WWypn4/U9U6mbxh3ImRqWqlfImEBCL
+ CBmi17PgZIiQU6vxlo0w2OQHzjG2bod9svPa14X3F8CGdCLsb95goOCUtJRHel4kpMeNMlsMPLa
+ 5l+atm4BHuS4RHnz4j25zW2pPIiiP0g/Ca3qSdG9HOTWJM336B2wa7AOewohL/i+dTud165j5Ec
+ j4/SZAmZjDiZqk1TR3g==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEzMDA3MyBTYWx0ZWRfX8Dukv8Mrw5H7
+ WeGKGZ+Dx8nj96X+0/V5E+CLpL8eZp/Ny91ooLL4GOpvJ1d9H1/PEsKvHCtRQHHnhqPZ2JelmKA
+ 54tEY6hlv9ISuGpxcfOpDq3ZLXi4iN4=
+X-Proofpoint-GUID: -rADtgCQYTUDKWFSRry3bXqcOAEPGRdL
+X-Proofpoint-ORIG-GUID: l7Wa3GyWDJkIswvdVmTOVrqpWhxGI8M2
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-13_05,2026-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 phishscore=0 bulkscore=0 adultscore=0 suspectscore=0
+ malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611130073
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026 at 12:25:25PM +0100, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> CONFIG_HIGHPTE was added in linux-2.6.32, a few years before 64-bit
-> support. At the time it made sense, as the CONFIG_ARM_LPAE option allowed
-> systems with 16GB of memory that made lowmem a particularly scarce
-> resource, and the HIGHPTE implementation gave feature parity with 32-bit
-> x86 and frv machines.
->
-> Since Arm is the last architecture remaining that uses this, and almost
-> no 32-bit machines support more than 4GB of RAM, the cost of continuing
-> to maintain HIGHPTE seems unjustified, so remove it here to allow
-> simplifying the generic page table handling.
->
-> Link: https://lore.kernel.org/lkml/20241204103042.1904639-8-arnd@kernel.org/T/#u
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
-> I sent a patch to drop HIGHPTE support on x86 today, see
-> https://lore.kernel.org/lkml/20241210144945.2325330-9-arnd@kernel.org/T/#u
->
-> If that one gets merged, we can merge this one instead of the one
-> that makes HIGHPTE depend on !PREEMPT_RT, but if we decide against
-> the x86 change, then we probably don't want this one either.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-With Mike's change applied, LGTM and:
-
-Acked-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
-
-> ---
->  arch/arm/Kconfig               | 11 -----------
->  arch/arm/include/asm/pgalloc.h |  8 +-------
->  2 files changed, 1 insertion(+), 18 deletions(-)
+On 11/12/26 3:57 PM, netdev-bot+sashiko@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 2 potential
+> issue(s) to consider.
 >
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index fd01ccab9c12..fc66d52d847e 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -1225,17 +1225,6 @@ config HIGHMEM
+> Critical: 0 · High: 0 · Medium: 1 · Low: 1
 >
->  	  If unsure, say n.
+> If you believe none of the issues are legitimate, please reply to each
+> issue of Medium severity or higher and explain why the AI is wrong.
+> If any of them are legitimate and you plan to respin, please let patchwork
+> know by including "pw-bot: cr" as a separate line at the end of your reply
+> (one such reply per series is enough).
 >
-> -config HIGHPTE
-> -	bool "Allocate 2nd-level pagetables from highmem" if EXPERT
-> -	depends on HIGHMEM && !PREEMPT_RT
-> -	default y
-> -	help
-> -	  The VM uses one page of physical memory for each page table.
-> -	  For systems with a lot of processes, this can use a lot of
-> -	  precious low memory, eventually leading to low memory being
-> -	  consumed by page tables.  Setting this option will allow
-> -	  user-space 2nd level page tables to reside in high memory.
-> -
->  config ARM_PAN
->  	bool "Enable privileged no-access"
->  	depends on MMU
-> diff --git a/arch/arm/include/asm/pgalloc.h b/arch/arm/include/asm/pgalloc.h
-> index a17f01235c29..ef6cb3e6d179 100644
-> --- a/arch/arm/include/asm/pgalloc.h
-> +++ b/arch/arm/include/asm/pgalloc.h
-> @@ -85,18 +85,12 @@ pte_alloc_one_kernel(struct mm_struct *mm)
->  	return pte;
->  }
+> - [Medium] This is speculative and latent.
+> - [Low] For subordinate queues, ibmveth_toggle_irq()
+>    (drivers/net/ethernet/ibm/ibmveth.c) treats an H_PARAMETER return from…
 >
-> -#ifdef CONFIG_HIGHPTE
-> -#define PGTABLE_HIGHMEM __GFP_HIGHMEM
-> -#else
-> -#define PGTABLE_HIGHMEM 0
-> -#endif
-> -
->  static inline pgtable_t
->  pte_alloc_one(struct mm_struct *mm)
->  {
->  	struct page *pte;
->
-> -	pte = __pte_alloc_one(mm, GFP_PGTABLE_USER | PGTABLE_HIGHMEM);
-> +	pte = __pte_alloc_one(mm, GFP_PGTABLE_USER);
->  	if (!pte)
->  		return NULL;
->  	if (!PageHighMem(pte))
 > --
-> 2.53.0
 >
+> ibmveth: Refactor RX interrupt control for MQ RX queues
+>
+> This adds queue-indexed RX interrupt helpers that use h_vio_signal() for
+> queue 0 and H_VIOCTL for subordinate queues. It wires them into
+> open/close/poll/interrupt and the process-context RX kick sites. Runtime
+> stays single-queue (num_rx_queues is still 1).
+>
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>> index 31fad7713dc70..62e6c9a9f5e91 100644
+>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+> [ ... ]
+>
+>> @@ -347,6 +349,325 @@ ibmveth_cleanup_rx_resources(struct ibmveth_adapter *adapter)
+> [ ... ]
+>
+>> +static int
+>> +ibmveth_toggle_irq(struct ibmveth_adapter *adapter, int queue_index,
+>> +		   bool enable)
+>> +{
+>> +	unsigned long h_rc;
+>> +	unsigned long irq = adapter->queue_irq[queue_index];
+>> +	const char *action = enable ? "enable" : "disable";
+>> +
+>> +	if (queue_index == 0) {
+>> +		/* Primary queue: use h_vio_signal() */
+>> +		h_rc = h_vio_signal(adapter->vdev->unit_address,
+>> +				    enable ? VIO_IRQ_ENABLE : VIO_IRQ_DISABLE);
+>> +	} else {
+>> +		/* Subordinate queues: use H_VIOCTL with hardware IRQ */
+>> +		struct irq_data *irq_data = irq_get_irq_data(irq);
+>> +		irq_hw_number_t hwirq;
+>> +		u64 vioctl_cmd = enable ? H_ENABLE_VIO_INTERRUPT :
+>> +			H_DISABLE_VIO_INTERRUPT;
+>> +
+> [ ... ]
+>
+>> +		hwirq = irqd_to_hwirq(irq_data);
+>> +		h_rc = plpar_hcall_norets(H_VIOCTL,
+>> +					  adapter->vdev->unit_address,
+>> +					  vioctl_cmd,
+>> +					  hwirq, 0, 0);
+> [Severity: Medium]
+> This one is speculative. Do subordinate queues need the post-migration
+> EOI that ibmvnic issues for the same kind of H_VIOCTL-controlled queue
+> interrupt?
+>
+> drivers/net/ethernet/ibm/ibmvnic.c:
+>
+> /* Due to a firmware bug, the hypervisor can send an interrupt to a
+>   * transmit or receive queue just prior to a partition migration.
+>   * Force an EOI after migration.
+>   */
+> static void ibmvnic_clear_pending_interrupt(struct device *dev,
+> 					    struct ibmvnic_sub_crq_queue *scrq)
+> {
+> 	if (!xive_enabled())
+> 		ibmvnic_xics_eoi(dev, scrq);
+> }
+>
+> ibmveth_toggle_irq() is the only place that re-arms subordinate queues.
+> At the end of the series, ibmveth.c has no H_EOI or xive_enabled()
+> handling anywhere.
+>
+> Suppose ibmveth subordinate RX queues have the same firmware behaviour.
+> On XICS, an interrupt pending across LPM would then never get an EOI.
+> That queue would stop taking interrupts: NAPI idle, PHYP enabled, RX
+> stalled on that queue.
 
---
-Cheers, Lorenzo
+Not reachable for now: the HMC blocks LPM while ILLAN multi-queue is
+active, so a partition can't migrate with subordinate queues live.
+ibmveth also doesn't get a firmware migration event like ibmvnic does,
+so there's nowhere it could issue that EOI today.
+
+On the Power11 LPAR I tested, XIVE is the default, but XICS is still
+possible with xive=off, and the ibmvnic workaround is XICS-only. Once
+PHYP and the HMC allow LPM with ILLAN multi-queue, I'll check whether
+the same firmware issue applies to the subordinate RX queues and add
+the post-migration H_EOI if it does.
+
+Thanks,
+Mingming
+
+> Nothing would start recovery either. After LPM, ibmveth only schedules a
+> reset if the MQ buffer hcalls return H_FUNCTION.
+>
+> Queue 0 has migrated over XICS for years without this EOI. It is
+> controlled by h_vio_signal() rather than H_VIOCTL, though, so that does
+> not answer the question for subordinate queues.
+>
+> This path is latent until the later "ibmveth: Enable multi-queue RX
+> receive path" commit. Could it be checked against PAPR/PHYP behaviour
+> before multi-queue is enabled?
+>
+>> +
+>> +		/*
+>> +		 * Fold H_PARAMETER only on disable (idempotent mask). On
+>> +		 * enable it is not already-enabled: a trivial enable
+>> +		 * returns success. H_PARAMETER means the interrupt
+>> +		 * number was not in the valid range for that unit
+>> +		 * address. Keep that an error so a missed LISN stays
+>> +		 * visible to poll/resize recovery.
+>> +		 */
+>> +		if (h_rc == H_PARAMETER && !enable) {
+>> +			dev_warn_ratelimited(&adapter->netdev->dev,
+>> +					     "H_VIOCTL %s IRQ returned H_PARAMETER for queue %d (hwirq=%lu)\n",
+>> +					     action, queue_index, hwirq);
+>> +			return 0;
+>> +		}
+> [Severity: Low]
+> Does the comment above this fold actually support it? It says a trivial
+> enable already returns success, and that H_PARAMETER means the interrupt
+> number was not in the valid range for the unit address.
+>
+> That describes a bad hwirq argument, not an interrupt that is already
+> masked. The same reading would seem to apply to H_DISABLE_VIO_INTERRUPT.
+> The commit message calls this an "idempotent mask".
+>
+> ibmvnic makes the same hcall and treats any non-zero rc as a failure:
+>
+> drivers/net/ethernet/ibm/ibmvnic.c:disable_scrq_irq() {
+>      ...
+> 	rc = plpar_hcall_norets(H_VIOCTL, adapter->vdev->unit_address,
+> 				H_DISABLE_VIO_INTERRUPT, scrq->hw_irq, 0, 0);
+> 	if (rc)
+> 		dev_err(dev, "Couldn't disable scrq irq 0x%lx. rc=%ld\n",
+> 			scrq->hw_irq, rc);
+> 	return rc;
+> }
+>
+> Two teardown paths rely on the mask actually taking effect:
+> ibmveth_cleanup_rx_interrupts() and the err_disable_napi rollback in
+> ibmveth_setup_rx_interrupts(). Both run mask, synchronize_irq(),
+> napi_disable(), synchronize_net(), remask, then free_irq(). With the
+> fold, a disable that PHYP rejected looks like a successful mask there.
+>
+> No subordinate-queue caller of ibmveth_disable_irq() checks the return
+> value. So today the visible effect is only the log level (dev_warn
+> instead of dev_err) and the self-contradicting comment. The path is also
+> only reachable once num_rx_queues > 1, after the later "ibmveth: Enable
+> multi-queue RX receive path" commit. The fold is still there at the end
+> of the series.
+>
+> Should H_PARAMETER on disable stay an error, as it does on enable?
+> Alternatively, the comment and commit message could explain why disable
+> is treated differently.
+>
+> [ ... ]
+>
 
