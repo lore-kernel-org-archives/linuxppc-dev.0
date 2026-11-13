@@ -2,72 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 90AC3606B35E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 19:01:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C3048606A327
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 19:07:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k3dST9qf
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EKrsvFtq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR66M2P7Cz2xP9;
-	Sat, 14 Nov 2026 06:00:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794596459;
-	cv=none; b=gf5zSHUknVFufx++GRhtqsC1nqoEJ0sOsKkBThGK2N3y6Oh5QVJqsEXe6FGpTbqdSMOgxgNjXRy+yY4ixPlaKqKAg2oImrK9EitoGFyvcYtY5CYW/QmkbheaTM1YmaWbg+XQ7dJTKKvKbeIPlBMhiFn5EDYrvw30fN+lb7KwsYo3V8l5HywoEohgcVatfP9J8dbNaXqJFcLU8GK2z5jXfITdV4kmOPGpJiQqau+7Epac0Pyk37k6MIy4drMRzSGWzkcrU65m1F+CKhFiAtsPaiIB4bsWTQSQKK3nf+gg4i1zFVnhBxqTUTtu1eDPITnfYJRDWEn1/YmshDxj/7lEaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR6Fr3cZ5z2xP9;
+	Sat, 14 Nov 2026 06:07:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794596848;
+	cv=none; b=NxfTIisUUQb1OpwEEvODltJPxPVDYHvJjmIw7Jp2roSB7RZlwvaFrwBgHXOEku/lBySniTWElJgQXgWw9DMAET9yvNF6FnhOBY3Ae3F91SnlAjdNK0H7JMRBnRuJZzF0+mfh+VcsLBzyNhWJV2byoW8fah4lwrT8ICXR1Th3eHbDVLgAC0PIQNLSNQw7S8NOl3MUS5dfF0Jx09EwnNIX1+nWSfOlJVTgqamW6jQ0CyZgywD1NNw86h0DilhhhbJNQ6xu4X/HoI+6Y4ti6k0DXLCir4uXEUC81KwCBjHTEpyiBqANoPuU3t+vwoLgLaBWnpcKSoIqjiEioqnDQ3ztWw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794596459; c=relaxed/relaxed;
-	bh=fuewAPLlqIvqq2VHFaSIXpBbZE+s6t70GvF1/X1V2MI=;
+	t=1794596848; c=relaxed/relaxed;
+	bh=GAsUCwQqONKDIWfF0xZg3jW0auGhQeLmRMmjwIeZSYg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eBUem3ootqx+O3EZLUgFVAeCKNRGhI3fXV4QM0DPa09Vpl2DFVUXzSs1rp3R8pBUFtMdlyo8wudrY7c0PClE65pWf8ynLEgAswVe40UGIicXDTo70OTolIJdW6DWPMU1ofrO/wKO8XFZyyUEaRczhEG6YSmgEl1IM6S1fRqdkbYx7HF3wwPB1t/cjXzSVFst3gZ7d0JbFHubURyMVLVV1sqNyUV1/xMEruhsHw/MegfkNYoHb8JSL7ij4uKnjDhVCPaY8obfCI7Z6G62agg+3Zg6A+6kuUJGft7LodS1mK7sHQKmN46G4fnd873CQzbYUqpBsDB7Hx6o5BK3RRAnjA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k3dST9qf; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=lHvCZ7UKs/7MuTQd+XRbUOkNkk43L4J7M3DMjDUe1mv+ngX5TSayDpfTlAM1DlCJE6KksFY7LtVJ4fMe4JOvptuT/iQ103RKsDgr2EWH5dCdRfIPOx+fkBw0UfkH796cup02jlbNirmqZLQ4MLf54od2GYi6woKVC9lAoZxSlYbhl6Yfz7zr+e43xWEJdg8vVfroSjsZL00hAyZxUPqvBiGOGOxOX2SZ9Q+dlV0NhPHo5J5e+HU2qCywOXT1WiPwjCIXjpsgfwpq+lTgy8TOnfxW2pE0PFQGCG1efgYUJZHL+7jkWMBTZZ5XD+NlX5YZ6hJ6Vzggf8HWv30r+d7Sog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EKrsvFtq; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k3dST9qf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EKrsvFtq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR66L3q5qz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 06:00:58 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADIvi5t2705793;
-	Fri, 13 Nov 2026 19:00:47 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR6Fq3mYjz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 06:07:27 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADIvcpw4124198;
+	Fri, 13 Nov 2026 19:07:17 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=fuewAP
-	LlqIvqq2VHFaSIXpBbZE+s6t70GvF1/X1V2MI=; b=k3dST9qfahmvoyhDfdMMTx
-	nXZN+U4RCeWMiHRoqwqNPc429nqECawJHwmWyjFHuU4T4aFnOAQitU/qKshnshEt
-	8+RCxdHW8MqYwETwNsfalYhnph3EIlF5ZxBi+pN2BfKjCcmba9cdqPNmnRDQ9RMB
-	YJ7JDooQ/slwtxJmqOaa4HycS6zH5AgogB/G2CWTcymVnUHgmaKawNy0ov+mHwiS
-	PZBCPmhME77kVCDqLhM5aUmjQPeNSqSv7MI5sS4eNgo+d33U/9g0FcVz3Cf36EBI
-	HRyKCXkxv97Y8CehWAbc37xJMEysGv5tUdLUSi/bKR2yOPxk8Zkj7rvuy3IHECBw
+	:message-id:mime-version:references:subject:to; s=pp1; bh=GAsUCw
+	QqONKDIWfF0xZg3jW0auGhQeLmRMmjwIeZSYg=; b=EKrsvFtqwevvvXf3uI6Z3s
+	xDRsOm8MGxNcJp8wL/+tCs5fzHnzeuXw8s4ux1qeCJpDzuoqTYa2IJbXLgsWhkes
+	PLnFGBDHVNMKBETkF4OATlxUu4mKsOlOG8GcIMwG4TDRO6p8UIvmH6SRu/VqwOYG
+	jCv4nWweEEfp38yx6dAta7vAzw6r00/QQYcNVAPkSKwfpbok9fz/SEpSEbsoLjZS
+	nZD42MgIgQzyQhyKwRgFf4/yUrBWzNE5xSMO9/9p5oHEsCaLUpsrQRRCih8kKMHR
+	VXtf/x9WSKXyzcpaC5L9AddzcIW4Bh1hVm9IESTsDEWt4oGzIMzVc8Qs6JKoADlg
 	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hstdgm3fb-1
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hsug6nb8m-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 13 Nov 2026 19:00:46 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADFYxd22531475;
-	Fri, 13 Nov 2026 19:00:45 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hwjcf47ek-1
+	Fri, 13 Nov 2026 19:07:16 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ADJ51PT2722803;
+	Fri, 13 Nov 2026 19:07:16 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4hwd85de2m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Nov 2026 19:00:45 +0000 (GMT)
+	Fri, 13 Nov 2026 19:07:16 +0000 (GMT)
 Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ADJ0hkJ16974510
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ADJ7ECQ61800926
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 13 Nov 2026 19:00:44 GMT
+	Fri, 13 Nov 2026 19:07:14 GMT
 Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4FABF58028;
-	Fri, 13 Nov 2026 19:00:43 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 190C25805D;
+	Fri, 13 Nov 2026 19:07:14 +0000 (GMT)
 Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3BBBD58017;
-	Fri, 13 Nov 2026 19:00:40 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0AAAB58017;
+	Fri, 13 Nov 2026 19:07:11 +0000 (GMT)
 Received: from [9.67.72.137] (unknown [9.67.72.137])
 	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 13 Nov 2026 19:00:40 +0000 (GMT)
-Message-ID: <bb29cbf9-20dc-4574-b084-0c3832849645@linux.ibm.com>
-Date: Fri, 13 Nov 2026 11:00:39 -0800
+	Fri, 13 Nov 2026 19:07:10 +0000 (GMT)
+Message-ID: <ea18450c-bfc6-48f4-9b08-fad59c880807@linux.ibm.com>
+Date: Fri, 13 Nov 2026 11:07:10 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,8 +82,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v8 11/15] ibmveth: Add per-queue RX and TX
- statistics collection
+Subject: Re: [PATCH net-next v8 14/15] ibmveth: Implement incremental MQ RX
+ queue resize
 To: netdev-bot+sashiko@kernel.org
 Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
         horms@kernel.org, edumazet@kernel.org, pabeni@redhat.com,
@@ -92,39 +92,39 @@ Cc: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
         chleroy@kernel.org, ritesh.list@gmail.com, sshegde@linux.ibm.com,
         haren@linux.ibm.com, ricklind@linux.ibm.com, davemarq@linux.ibm.com,
         bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
-References: <20261109235556.60604-12-mmc@linux.ibm.com>
- <179452783113.2199510.7647821675893385517@kernel.org>
+References: <20261109235556.60604-15-mmc@linux.ibm.com>
+ <179452783301.2199510.7559323985625318822@kernel.org>
 Content-Language: en-US
 From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <179452783113.2199510.7647821675893385517@kernel.org>
+In-Reply-To: <179452783301.2199510.7559323985625318822@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=J+M/fwnS c=1 sm=1 tr=0 ts=6af75e5e cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-ORIG-GUID: 9mJL50QWYoRXKIAGeA916XNcbsG2aENP
+X-Authority-Analysis: v=2.4 cv=PeVqFShd c=1 sm=1 tr=0 ts=6af75fe5 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=cprOaneoDXahzPzRN7oA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEzMDA3NSBTYWx0ZWRfXy+UThZ55DPLP
- ys4aqRW5bQBAr4RAd6bEucztZGD00mfVj/BBJjXl1X/qFQG2TZH54EW5n0RgDh93dj77MXPpqCw
- uMT0LzGO17Q86ibVRfcDPU4YMNAKQnSBpXHbK1nXmHfoFOTxB6Nt+mSSuhEn9umK1hWG6K6WPH6
- NY/Oby31TZNc40fPNDpW81JYoXhupUfd0e7Rh2QalZM6Q7VU7g+Mq8PODje2JzJg5meaJz8t3PB
- 5NBnQFw46gq9GZd++W7+zdP/2icFw8SXYH6xx4PMfaFZymDGaFeYF91B0gvlY0gLp1JoSTHGzID
- 8MGYk1jrCK1wERdSl7FYt5fMWBH5cHhYYaj8hXHwrOTovdn7E79/b97groymGBABCK+zsKnT9mX
- UayW4pXbSZ4l5H00phBzyTuW8gFBuopNk+I11Lrvw6jpcV8GNRlHs8dQ97aATrPFqCOEQY2oT3c
- WJ26Wuf9dykkCIQ100A==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEzMDA3NSBTYWx0ZWRfX10IzPe0IsRmi
- zqNyBg0XN9slpEep4EmOM/64kbYaJLhbsmLI6ZhlElT21YrOPFvUyRBmFAULMXsY2MMEu+UcGod
- BwLqMqK6+sPD2nllor8PbA31TMf2QKo=
-X-Proofpoint-GUID: Iai_D2yEjCc3ivGtgRB6SpyVECBPCytn
-X-Proofpoint-ORIG-GUID: EDDk7E4hx0onW7rFHgm0WFFocMd8dBDD
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=CLErgtDeiL7DLUOR4LsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: z5URPQSP-djic6QwNf-qhUpg-56OH_ta
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTEzMDA3NSBTYWx0ZWRfXzGGJdyFmL7Io
+ V2K4pEEeWgDyxs/vfxfeSEBJPLH6uURrblnzmfXRB3n1dHmYxQdeOyTfx3DB9xCDJpK8tsNskpS
+ f1YKVv1aJGwdSl6kdTYBjCvMCNPTz1kpsfG6djFimtnDbiYn9Tkehji0ehmlemnGEMtlMqXjW6Y
+ XMBb88kkmVJthcZURvBs+dL9vlx3ERSbEB0L8F3b5eqYNohKN3wQkMpRHRXFRj40Ls2Vf3j9PEZ
+ RyrnekreqAUGTcbnQqcRy92Z8PSh972TaahAV2OqtlRsPk00HP35SOok9WNGec8Z+qbRntzO9YN
+ V+O8QiFju8PJy+LVFk+k1kAekM5SM0ILuJlZ4x1IRBcatvILlB56DHnnvJpO4voK+4iC/9BlzgC
+ 2PeWXObgmZc7ufOuodOWZF0raYWmTMo3ikVvZicKylzRevX0RGDXCZDQdv4UbHTPebyFgeqAhch
+ xqpqWNMYSilbQZNsELw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTEzMDA3NSBTYWx0ZWRfX0NelG6oNgeEG
+ Yp+QBzSLBWO3CxHzdkgVh2Z435iXP68q+DmxB2IbhOKz4PF9I5xTV4qK7qdoPCYOYENQzUuqbqn
+ ok+v8OD6MgmCuoQb+4quP2YXRPusFRE=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-13_06,2026-11-11_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 phishscore=0 bulkscore=0 adultscore=0 suspectscore=0
- malwarescore=0 clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
+ bulkscore=0 phishscore=0 suspectscore=0 impostorscore=0 priorityscore=1501
+ lowpriorityscore=0 spamscore=0 malwarescore=0 clxscore=1015 adultscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611130075
 X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -136,10 +136,10 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 11/12/26 3:57 PM, netdev-bot+sashiko@kernel.org wrote:
-> Thank you for your contribution! Sashiko AI review found 1 potential
+> Thank you for your contribution! Sashiko AI review found 3 potential
 > issue(s) to consider.
 >
-> Critical: 0 · High: 0 · Medium: 1 · Low: 0
+> Critical: 0 · High: 0 · Medium: 1 · Low: 2
 >
 > If you believe none of the issues are legitimate, please reply to each
 > issue of Medium severity or higher and explain why the AI is wrong.
@@ -147,113 +147,133 @@ On 11/12/26 3:57 PM, netdev-bot+sashiko@kernel.org wrote:
 > know by including "pw-bot: cr" as a separate line at the end of your reply
 > (one such reply per series is enough).
 >
-> - [Medium] Statistics readers now take every RX queue's replenish_lock
->    with spin_lock_bh().
+> - [Medium] ibmveth_destroy_subordinate_rx_queue() is used for live
+>    ethtool -L scale-down, the scale-up enable_irq-failure branch and the…
+> - [Low] When a scale-down hits the destroy-failure keep path,
+>    ibmveth_scale_down_rx_queues() (drivers/net/ethernet/ibm/ibmveth.c)…
+> - [Low] The kernel-doc of ibmveth_scale_up_rx_queues() says "A failure
+>    unwinds only the queues this call added; a queue PHYP refuses to…
 >
 > --
 >
-> ibmveth: Add per-queue RX and TX statistics collection
+> ibmveth: Implement incremental MQ RX queue resize
 >
-> This patch moves the adapter-wide RX and TX counters into per-queue
-> ibmveth_rx_queue_stats and ibmveth_tx_queue_stats arrays allocated at
-> probe. It exports packets, bytes and hardware drops through
-> netdev_stat_ops, adds ndo_get_stats64(), and keeps the existing ethtool -S
-> keys by summing the per-queue slots. It also adds a per-queue
-> no_buffer_retired carry so that rx_no_buffer never goes backwards across a
-> reopen.
+> This commit lets ethtool -L change the RX queue count on a live ibmveth
+> adapter one queue at a time. It adds ibmveth_scale_up_rx_queues() and
+> ibmveth_scale_down_rx_queues(), with unwind paths for hypervisor
+> failures. It also factors ibmveth_desired_dma_for_rxqs() out of
+> ibmveth_get_desired_dma(), and frees queues stranded above the live
+> count after a successful H_FREE_LOGICAL_LAN.
 >
 >> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index a0c3c06d2b9d9..45adf6e9be09b 100644
+>> index e805e7b1d2fe2..510d9d80e2df5 100644
 >> --- a/drivers/net/ethernet/ibm/ibmveth.c
 >> +++ b/drivers/net/ethernet/ibm/ibmveth.c
 > [ ... ]
 >
->> @@ -1063,7 +1197,45 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter,
->>   	p = adapter->buffer_list_addr[queue_index] + 4096 - 8;
->>   	drops = be64_to_cpup(p);
+>> @@ -2028,6 +2315,644 @@ static void ibmveth_release_lan_resources(struct ibmveth_adapter *adapter)
+>>   	ibmveth_free_filter_list(adapter);
+>>   }
 >>   
->> -	adapter->rx_no_buffer = drops;
->> +	qstats = &adapter->rx_qstats[queue_index];
->> +
->> +	if (drops < qstats->no_buffer_drops)
->> +		IBMVETH_STAT_ADD(qstats->no_buffer_retired,
->> +				 qstats->no_buffer_drops);
->> +	WRITE_ONCE(qstats->no_buffer_drops, drops);
->> +}
->> +
->> +/* Snapshot live+retired under replenish_lock; see retire_rx_no_buffer(). */
->> +static u64 ibmveth_rx_no_buffer_pair(struct ibmveth_adapter *adapter, int i)
+> [ ... ]
+>
+>> +/**
+>> + * ibmveth_destroy_subordinate_rx_queue - Tear down one subordinate RX queue
+>> + * @adapter: ibmveth adapter structure
+>> + * @queue_idx: Queue index to destroy (1..N)
+>> + *
+>> + * Deregister with PHYP before unmapping buffer pools so hypervisor buffer
+>> + * ownership is released while queue metadata is still valid. After a
+>> + * successful H_FREE, fold the last no_buffer sample into retired while
+>> + * the page is still mapped. If the hcall fails, leave the queue mapped,
+>> + * keep the handle, and skip retire.
+>> + *
+>> + * Return: 0 on success, -EIO if deregister failed
+>> + */
+>> +static int
+>> +ibmveth_destroy_subordinate_rx_queue(struct ibmveth_adapter *adapter,
+>> +				     int queue_idx)
 >> +{
->> +	struct ibmveth_rx_q *rxq = &adapter->rx_queue[i];
->> +	struct ibmveth_rx_queue_stats *qstats = &adapter->rx_qstats[i];
->> +	u64 drops, retired;
+>> +	int rc;
 >> +
->> +	spin_lock_bh(&rxq->replenish_lock);
->> +	drops = qstats->no_buffer_drops;
->> +	retired = qstats->no_buffer_retired;
->> +	spin_unlock_bh(&rxq->replenish_lock);
->> +	return drops + retired;
+>> +	rc = ibmveth_deregister_single_rx_queue(adapter, queue_idx);
+>> +	if (rc)
+>> +		return rc;
+>> +	ibmveth_retire_rx_no_buffer(adapter, queue_idx);
+>> +	ibmveth_cleanup_single_rx_interrupt(adapter, queue_idx);
+>> +	ibmveth_free_single_rx_queue(adapter, queue_idx);
+>> +	return 0;
 >> +}
 > [Severity: Medium]
-> Should the stats readers be taking replenish_lock here?
+> Is the order of H_FREE_LOGICAL_LAN_QUEUE and the IRQ teardown safe here?
 >
-> This lock sits on the RX datapath. ibmveth_remove_buffer_from_pool() takes
-> it from NAPI for every received frame. ibmveth_replenish_task() holds it
-> for a whole multi-pool refill, which includes netdev_alloc_skb(),
-> dma_map_single_attrs() and the h_add_logical_lan_buffers*() hcalls.
+> ibmveth_deregister_single_rx_queue() issues H_FREE_LOGICAL_LAN_QUEUE
+> first. Only after that does ibmveth_cleanup_single_rx_interrupt() run
+> free_irq() and irq_dispose_mapping() on the queue's virq. That virq was
+> created by irq_create_mapping(NULL, hwirq), using the hwirq returned by
+> H_REG_LOGICAL_LAN_QUEUE. So the interrupt source belongs to the queue
+> being freed.
 >
-> The new ndo_get_stats64 calls this helper for every slot, whether the
-> queue is live or not:
+> On pseries XIVE, free_irq() reaches xive_irq_shutdown(), which does an
+> ESB access and an H_INT_SET_SOURCE_CONFIG hcall against that source:
 >
-> ibmveth_get_stats64() {
-> 	for (i = 0; i < IBMVETH_MAX_RX_QUEUES; i++) {
-> 		...
-> 		stats->rx_missed_errors +=
-> 			ibmveth_rx_no_buffer_pair(adapter, i);
-> 	}
+> arch/powerpc/sysdev/xive/common.c:xive_irq_shutdown() {
+>      ...
+> 	xive_do_source_set_mask(xd, true);
+> 	xive_ops->configure_irq(hw_irq,
+> 				get_hard_smp_processor_id(xd->target),
+> 				0xff, XIVE_BAD_IRQ);
+>      ...
 > }
 >
-> The rx_no_buffer ethtool -S key, ibmveth_get_queue_stats_rx() and
-> ibmveth_get_base_stats() also call it.
+> irq_dispose_mapping() then tears down the per-source XIVE data and its
+> ESB mapping.
 >
-> As a result, every /proc/net/dev read, RTM_GETLINK dump or bonding/team
-> stats poll takes up to 16 BH-disabling spinlocks. Unprivileged users can
-> trigger these reads.
->
-> Each acquisition pulls the lock cacheline away from the NAPI CPUs. A
-> reader can also spin with BH disabled for as long as a refill takes, for
-> example during the initial replenish in ibmveth_open().
->
-> Before this patch the driver had no ndo_get_stats64, and netdev->stats was
-> read without taking any lock.
->
-> Writers already hold replenish_lock. Could they keep a single combined
-> monotonic value (retired plus live drops) updated with WRITE_ONCE()? Then
-> readers could use READ_ONCE() and skip the lock.
->
-> This also looks unchanged at the end of the series, in "ibmveth: Complete
-> set_channels down-path". There, ibmveth_rx_no_buffer_pair() still uses
-> spin_lock_bh() and ibmveth_get_stats64() still calls it for every slot.
->
-> [ ... ]
-The lock is only there to get a consistent snapshot of the live and
-retired no-buffer counts. The retire path moves the live count into the
-retired one and clears it, so without the lock a reader could see a
-mixed pair and report a transient double count or a lower
-rx_missed_errors.
+> If H_FREE_LOGICAL_LAN_QUEUE releases the LISN, these operations would
+> run against a source the partition no longer owns. Could that produce
+> failed hcalls, stale irq_desc state, or an ESB access to a page the
+> hypervisor no longer backs?
 
-It's a cost on the stats readers, not a correctness problem in the RX
-path. The reader holds each per-queue lock just for two loads, with no
-allocation, DMA mapping or hcalls under it. It can still contend with a
-refill that holds replenish_lock though, so I agree a lockless counter
-is the better shape.
+Checked this with the PHYP team. H_FREE_LOGICAL_LAN and
+H_FREE_LOGICAL_LAN_QUEUE don't release the interrupt source; the sources
+stay allocated while the adapter is allocated, including while it's
+down, and can be masked or unmasked during that time. Before this path
+calls H_FREE_LOGICAL_LAN_QUEUE, scale-down has already masked the queue
+in PHYP with H_VIOCTL and waited for the handler with synchronize_irq().
 
-I don't think that should block the series. If there's a respin I'll
-fold in a single combined monotonic value that the writers update and
-readers load with READ_ONCE(); otherwise I'll send it as a follow-up
-cleanup.
+> The rest of this driver tears the IRQ down first:
+>
+>    - ibmveth_close() runs ibmveth_cleanup_rx_interrupts() before
+>      ibmveth_free_all_queues().
+>    - The open() error path disposes the mappings before
+>      H_FREE_LOGICAL_LAN.
+>    - The scale-up request_irq failure branch disposes before it
+>      deregisters.
+>
+> ibmvnic's release_sub_crqs() also calls free_irq() and
+> irq_dispose_mapping() before release_sub_crq_queue() issues
+> H_FREE_SUB_CRQ.
+>
+> The commit message explains why deregister has to come before the DMA
+> unmap, but not why it has to come before the IRQ teardown. Would it
+> work to keep PHYP masked, call free_irq() (and dispose the mapping),
+> then issue H_FREE_LOGICAL_LAN_QUEUE, and re-request the IRQ in the rare
+> case the hcall fails?
+The order is there for the rollback path, not the normal success path.
+If H_FREE_LOGICAL_LAN_QUEUE fails with something other than busy, the
+queue stays registered and PHYP may still DMA into it. Scale-down and
+the scale-up unwind then put that same queue back in service by
+enabling NAPI and unmasking the same virq. If we'd already freed the
+IRQ and disposed the mapping before the H_FREE, the failure path would
+have to rebuild the mapping and request the IRQ again in the middle of a
+rollback that's already failing.
+
+So destroy keeps the IRQ until H_FREE succeeds, or until H_PARAMETER
+says the queue is already free. I'd rather not reorder just to match
+close(): close() can free the IRQs first because it never has to put
+the LAN back in service after a failed H_FREE_LOGICAL_LAN.
+
 
 Thanks,
 Mingming
-
 
