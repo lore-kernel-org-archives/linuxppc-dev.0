@@ -1,51 +1,70 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72CEA606A8AF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 14:36:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 27780606A898
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 14:43:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDjzVVrU
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m1s8OUdm
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR0F03G3Wz2xMt;
-	Sat, 14 Nov 2026 01:36:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794580580;
-	cv=none; b=S0dIZi0SE2Wt26rh1OWyCqgQ8qksCH6FCwkzlKwohMQeUAjVpLSZIByjmh/MMU8kbmWoogTJHqBe+85ODwWWXsr6PSmAldj/VhUmNrkMURAxkWGqFLtbzG5zyybBvEa5YQlD3xvu/1hFwWnRFyPr57UqS+2t6+3Sv7mZcAkL8wabrp3BIaE//vgdab6+2F5jcXe4bMWiZRWngDBYcow3RW5cQq0UX7Zg77QzDxMPEGy7IhCLoKeznXJfQkKz4Rrn0/pgiyjTa4JvmttMd/0NNNbfzwA2Se7zE0MkjvOz7a65YyjFWduIfW0AiiR6ehiQuj/dY8NVO9pD+xjjw+ocYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR0Nx2ck0z2xQr;
+	Sat, 14 Nov 2026 01:43:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794580993;
+	cv=none; b=Ihxaq1JLjm6euhLYcZRLiA+9mYX+uIMnBSzR9br8BjSlZuLB0vwejDIy0dEg6n2KJ4W4IyGOX/GTDyCdZ1n7rHlwordOXB1fSSiA0polUx38ANRJtDG0AfPReESiON5kRW6a3Mv3AfAFYjcfxsB8ayDVjBX0nbX3/05XKIesvakl8WbecwdZtVwsbTNlx2/FWP1AI3z/sh8hBKg/0pfSqycD9tCAhkQhufjUDeHQQFuTFoHDBkelBYVAOjMfZeMjcb35wWOhK7zPohawIE46tMI/WQsaEU+C9oQ4X+kUfetYFcdsORiKQdNx+kMRr7Ff1dKqnht5ZbsAJS1lOcPUtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794580580; c=relaxed/relaxed;
-	bh=w49hyKAjJNYQc0T0xEVaI68+0oF+m2dcDRcRYzEk8rs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Aqhrfcn2xqO2ndvjcoSjaBILFVQJbf44ZeUKmeIlkD7NGl78OamrAAmUsxA4Noyv0k1p4i5C7iNNZebzPApqbUAdi1EZzuepE1NJYHnFrPE3eCefZAG1VMQqowfmjetHG7mxeTDs6XAPiMCGOAv23Pa58VPH0Ge+o7icCaUFTiHJf6aibsTXt0xTTf+AHCcNsqd/QEKdj+qWTenT6p4l3iHsaIfYLJR15IXGVW33w+Fq40PDBPWHXRcJDdGQ/2e8HZkebRXfhhyTDdlJPYD5VVppbD5Y8fZ9QP2kVpuOcrMW3G9TLKIXYaQg8gFxirMHIukwjDyK2AQAAbJtJXvI9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDjzVVrU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1794580993; c=relaxed/relaxed;
+	bh=ZeJA76pSYL/29D1SUxOsf1XnK3pl538xdtA25Rrvpo4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cc9Kx5oiCIRjj4YxxInz1Sze1pY52/435D8U1/EX4t/bp7D0SoTFzwTXO4bgv+EfwI2RuG9cZjqrtuo1cSeERf1/vgPnmBQX82CK5D1MlX6vtdD/v+ftOTIrcHVVu+bPRg+EjaGwwa5cz3wXrG0dldwoVH7S0hjPDzTxjdADjYRECRxBo2wuCmFLGDCAUQXflD4Xy6pDIiNGK0zK5WePA08WNzegUhgfm61b9QdqwwQQoG+Lsbr9jEHMRhmdCx70VOYY+1/Dyk7cTchJe4WPTNICZJ2pPSpnYH4UpccI4vJfNOXoKURIA9y8dm53Bx7NOK7ja2M2aj0Iu6HCx7rf5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m1s8OUdm; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDjzVVrU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=m1s8OUdm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR0Dz3Pfvz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 01:36:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR0Nw4KDqz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 01:43:12 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 47A0540039;
-	Fri, 13 Nov 2026 14:36:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88B8A1F000C4;
-	Fri, 13 Nov 2026 14:36:05 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 9959460F21;
+	Fri, 13 Nov 2026 14:43:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26FF81F000C4;
+	Fri, 13 Nov 2026 14:43:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794580577;
-	bh=w49hyKAjJNYQc0T0xEVaI68+0oF+m2dcDRcRYzEk8rs=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=jDjzVVrUjcqqvOcF2zRf/R4D2SkobqauH5sB4E4FWc03X74m4jxFCQSio9YHHHuuR
-	 9Ml4Tlrckfk60OSmZz+hec4p2l9kmjLvQBMrX/YWsRQQvgUFJp0NHQZIrCyw0Gwiek
-	 QZbpgzhogd+cwsY3Nd25gGqUKt3Baw/aKdlCaoUNBkxmn6Z5pyPj2weF8qqKc3/A8M
-	 /Hvf3OTZxfDyyZ1sLXoNdqhyld8LAWFVmEcfNS1X7e6OGeS63NUqhOrnPQq/ZF6Igj
-	 DMtYYds7K9Hh4P0SFcSWYXYIJSddoBhMr/8mdEZ/t7+gx48plf7GD6vYahVdtRVM4l
-	 DMbaEQTybkmNw==
-Message-ID: <3f7af771-87a7-4ae7-9919-bc4c23bd31c9@kernel.org>
-Date: Fri, 13 Nov 2026 15:36:01 +0100
+	s=k20260515; t=1794580989;
+	bh=ZeJA76pSYL/29D1SUxOsf1XnK3pl538xdtA25Rrvpo4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=m1s8OUdmwP41N/y2KWKb5jHCOlvKLqkZBWbDu3E14YEh5d76fNLkhxj1nUGmB5chr
+	 7Sj0wBrGftxeG7S73VUUhCDhVwtQ0KlbpL/3bWT4vz4d5kYedh2cXX2pqCpSoDU0hI
+	 urYVSrcZI0pIHIlyazLa6XUoGn8nmLbNcCCJUQFlZefVZQnzqdqI93UQHPfuoEJ72E
+	 pDsYdbop+FjGLAmzwafXZt801QB6887kHaxQ5XuTrp4EE7sPTZAIgVeMb8mh7KTU5E
+	 Eu5kZT0S+YCgXQTzWZEIw4F2HVmyIjNvEuD+V38wOUZkMqUCgKWGCkPdYuTnm2lXSe
+	 3hAQ3kpK5bNTA==
+Date: Fri, 13 Nov 2026 08:43:06 -0600
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Vincent Jardin <vjardin@free.fr>
+Cc: Conor Dooley <conor+dt@kernel.org>, imx@lists.linux.dev,
+	NXP S32 Linux Team <s32@nxp.com>, Frank Li <Frank.Li@nxp.com>,
+	Linus Walleij <linusw@kernel.org>,
+	linux-arm-kernel@lists.infradead.org,
+	Sascha Hauer <s.hauer@pengutronix.de>, devicetree@vger.kernel.org,
+	Jacky Bai <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
+	Fabio Estevam <festevam@gmail.com>, linux-gpio@vger.kernel.org,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Vladimir Oltean <vladimir.oltean@nxp.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Dong Aisheng <aisheng.dong@nxp.com>, linux-kernel@vger.kernel.org,
+	Pengutronix Kernel Team <kernel@pengutronix.de>
+Subject: Re: [PATCH v3 1/5] dt-bindings: pinctrl: add the NXP LX2160A RCW pad
+ mux
+Message-ID: <179458098591.828545.5346870650734056259.robh@kernel.org>
+References: <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-0-5a0063f1da9e@free.fr>
+ <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-1-5a0063f1da9e@free.fr>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,143 +78,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND v8 11/16] powerpc: extend execmem_params for
- kprobes allocations
-To: Mike Rapoport <rppt@kernel.org>, linux-kernel@vger.kernel.org,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: Alexandre Ghiti <alexghiti@rivosinc.com>,
- Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?=
- <bjorn@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- "David S. Miller" <davem@davemloft.net>, Dinh Nguyen <dinguyen@kernel.org>,
- Donald Dutile <ddutile@redhat.com>, Eric Chanudet <echanude@redhat.com>,
- Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>,
- Huacai Chen <chenhuacai@kernel.org>,
- Kent Overstreet <kent.overstreet@linux.dev>, Liviu Dudau
- <liviu@dudau.co.uk>, Luis Chamberlain <mcgrof@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Nadav Amit <nadav.amit@gmail.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Peter Zijlstra <peterz@infradead.org>,
- =?UTF-8?Q?Philippe_Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
- Rick Edgecombe <rick.p.edgecombe@intel.com>,
- Russell King <linux@armlinux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
- Song Liu <song@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
- bpf@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
- linux-mm@kvack.org, linux-modules@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
- netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-References: <20240505160628.2323363-1-rppt@kernel.org>
- <20240505160628.2323363-12-rppt@kernel.org>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20240505160628.2323363-12-rppt@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-1-5a0063f1da9e@free.fr>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Mike,
 
-Looks like I missed this change ...
-
-Le 05/05/2024 à 18:06, Mike Rapoport a écrit :
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+On Sun, 08 Nov 2026 11:06:49 +0100, Vincent Jardin wrote:
+> The LX2160A muxes its IIC, XSPI, SDHC, UART, IRQ and EVT pads from
+> fields of the RCW: read-only in RCWSR12..14 of DCFG, changed at runtime
+> through the override registers of its DCSR view.
 > 
-> powerpc overrides kprobes::alloc_insn_page() to remove writable
-> permissions when STRICT_MODULE_RWX is on.
+> Describe the pad mux as a child of DCFG at its RCWSR12 to RCWSR14
+> window: the override registers are at the same offset of the DCSR view
+> of the parent. One group per RCW field, one function per encoding.
 > 
-> Add definition of EXECMEM_KRPOBES to execmem_params to allow using the
-> generic kprobes::alloc_insn_page() with the desired permissions.
+> Each function lists the groups that take it, so a pair the driver
+> would refuse, such as can on iic1, is refused by the schema.
 > 
-> As powerpc uses breakpoint instructions to inject kprobes, it does not
-> need to constrain kprobe allocations to the modules area and can use the
-> entire vmalloc address space.
-
-Using breakpoint means the segment must still be executable.
-On book3s/32 VMALLOC segment is not executable, while module segment is.
-
-See commit 6ca055322da8 ("powerpc/32s: Use dedicated segment for modules 
-with STRICT_KERNEL_RWX")
-
-See report and fix at 
-https://lore.kernel.org/all/ed03d290d440d579a81ae0b7de5243721291d903.1794543909.git.ritesh.list@gmail.com/
-
-Christophe
-
-
-
-> 
-> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> Signed-off-by: Vincent Jardin <vjardin@free.fr>
 > ---
->   arch/powerpc/kernel/kprobes.c | 20 --------------------
->   arch/powerpc/kernel/module.c  |  7 +++++++
->   2 files changed, 7 insertions(+), 20 deletions(-)
+>  .../bindings/pinctrl/fsl,lx2160a-rcw-pinmux.yaml   | 264 +++++++++++++++++++++
+>  1 file changed, 264 insertions(+)
 > 
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index 9fcd01bb2ce6..14c5ddec3056 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -126,26 +126,6 @@ kprobe_opcode_t *arch_adjust_kprobe_addr(unsigned long addr, unsigned long offse
->   	return (kprobe_opcode_t *)(addr + offset);
->   }
->   
-> -void *alloc_insn_page(void)
-> -{
-> -	void *page;
-> -
-> -	page = execmem_alloc(EXECMEM_KPROBES, PAGE_SIZE);
-> -	if (!page)
-> -		return NULL;
-> -
-> -	if (strict_module_rwx_enabled()) {
-> -		int err = set_memory_rox((unsigned long)page, 1);
-> -
-> -		if (err)
-> -			goto error;
-> -	}
-> -	return page;
-> -error:
-> -	execmem_free(page);
-> -	return NULL;
-> -}
-> -
->   int arch_prepare_kprobe(struct kprobe *p)
->   {
->   	int ret = 0;
-> diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-> index ac80559015a3..2a23cf7e141b 100644
-> --- a/arch/powerpc/kernel/module.c
-> +++ b/arch/powerpc/kernel/module.c
-> @@ -94,6 +94,7 @@ static struct execmem_info execmem_info __ro_after_init;
->   
->   struct execmem_info __init *execmem_arch_setup(void)
->   {
-> +	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
->   	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
->   	unsigned long fallback_start = 0, fallback_end = 0;
->   	unsigned long start, end;
-> @@ -132,6 +133,12 @@ struct execmem_info __init *execmem_arch_setup(void)
->   				.fallback_start	= fallback_start,
->   				.fallback_end	= fallback_end,
->   			},
-> +			[EXECMEM_KPROBES] = {
-> +				.start	= VMALLOC_START,
-> +				.end	= VMALLOC_END,
-> +				.pgprot	= kprobes_prot,
-> +				.alignment = 1,
-> +			},
->   			[EXECMEM_MODULE_DATA] = {
->   				.start	= VMALLOC_START,
->   				.end	= VMALLOC_END,
+
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
 
