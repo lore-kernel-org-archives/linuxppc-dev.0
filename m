@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5A5F0606A323
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:27:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0FA7606A337
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:27:39 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Qn2EM2hE
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=duVHnfjj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5Ls5rfjz2y8W;
-	Sat, 14 Nov 2026 05:26:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5Lt2y5Sz3bpG;
+	Sat, 14 Nov 2026 05:26:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594405;
-	cv=none; b=CWkOJalnCDQsPCbJGIGScFRyQsilQw2VPz3Nxb7OW2EJ8Xjz7G6m0ioHjsg+noTs2RtYuzgHZ5Kpa1WqmksANVuFolBf+NtVDRCELLdm4/XN6qkZXeQKu8lQLQdESONGgBValwvSMT1eM+CL6ro1ARUe0q1KmTRDL2tc17gejZgIjTpGcek/aRt7YcHPlpDRvtoyDu9qk81d3NmucA7mk/tMCf0tYhtT22AhVfe42K+XFiDef4aLgjoiq2sKsLENsgui57qZjKkd6+qaGwTGsOdRSe3xL9XhUjk7tPxZ8fNHWvydaEoanDvcC/+W6bdW1uYvt1dhwwIuOXDkI5cmow==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594406;
+	cv=none; b=fg3M2/doMdxhBaxh7nH/DqMcJqyG4doQZKOo2SDNZb9jPs2epUVWUF5W7v0efFDLmr1NHhJwo8HEx2Lqtms2+S3CSUvj9mrg/VyrLMHpS8haDUgGVXBTTDVtOqMCvr1A0lPRmVXA/XqcfDfyT4gTtMvKegm5oBbc7wBv5E7kkfTjDBfSUvsG3GXuwMiNEWCr/u+VSGlg9wMBZdmyz+bRG1tvxvSnF/HZvV8Lm4fiFta/NoI/5BhWq8pKo9yeIK/JraaSWNSSGTksU48PafyggMoOgdtzMoj64vHr31RKXBG81CRhHG/1ZVX29BNb0CKZBByQjKwstxjf25Hw2Zz4Og==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794594405; c=relaxed/relaxed;
-	bh=vhD9zqcQ9I2xlJwWYwXWk6MJvw5eWbXdZkn7PypG6JM=;
+	t=1794594406; c=relaxed/relaxed;
+	bh=nsZl3tFZmRcUaiRHX00B61/eCfNM8JCwY3bqxS7ggUE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LuCzs03i0B4QUDhFrgrCMHezuOiPfcaUsKewHIn66w/uhSfji/JQelM402AIOgOyDQRuc5b278hYc0xAY0mjOVbR3t4Rimvk4iOtSbnNjBNC59uIaRxtDDo5h/9Ht8AqdmqZGvOgJpE5k+VXuD+jdkQs0ZpYQQY3YJMVM1T5QJPybrjtl1v1mqBH7Znto3rGsFzX/7SNYzgYCZFcPjoUUMpEGWQBNxyJ+Ez3A1i+QDSKHTGLTldJ9O6ahGvw0HlqHZBcTlNpGQ31J0VtCZ5rdn5ee7j+o33Egq3bV4MIew171cEckfZH26sfJznt3RhM97zeK2HRZwDw5zLx7gOOfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Qn2EM2hE; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+93247ba2969c1d9fc2b6+8482+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
+	 MIME-Version; b=gdR4YP4qW3P111EqqcoU2A5dHjqmHPNKs8M1QYeVjMGDR0K7vQtv5PvZnS20teLppCewGbXkQFVcnA5aVZqgogcEvIc+gQhlObO9OfmTXieRA6mcYB94dfRzazsgSLA3FeL8hL97CuKfOjgOgZgiYd1H2a66Xokug3k24pFZuLnH/liPyT73dlqhQCXGmeGYNPXf8NRTROMb9ip8ha3JbAPMhzBe6k5ktW+WLqDTRQ2mKN9ibs3MxLU0qWGxCv3K9CgT6gUuc+rhlUoDLJETij4G+kqVK+y71KfVI6uz7aXiIaC4dB22xilcGgXzQYCjGljOaO+4yi7c1BK/K0krUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=duVHnfjj; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+93247ba2969c1d9fc2b6+8482+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=Qn2EM2hE;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=duVHnfjj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+93247ba2969c1d9fc2b6+8482+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5Lm2zskz2xlf
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5Lm2yyyz2xjQ
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:26:38 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=vhD9zqcQ9I2xlJwWYwXWk6MJvw5eWbXdZkn7PypG6JM=; b=Qn2EM2hE0DULE2YXO4vgcYFo1P
-	IYQRBXfu5Zo3umDl2NdDTuLwTNWFabPCd3j5t1h91xjDlCS5pJ0CmOxv67hbFfb5drKJyaB6qOemN
-	ScYg5FHhGeIb/KyK+/bHLpYntOkeARbWkWixTpy5vcG3Zwx9GxIEl1eDhy7dyrJV54u8LZb4b9fIJ
-	LW/Eg949YM/nytwZEn4lu4Tq2+cVwunnQKuw44D6sWwCZBJHhZ2ZYRXDeStPvLqP5cMO0d6zkx9Pj
-	UoAiRvGnAmaxOLMwiAtJMlsB8Dhv3TTgUzDFAuSIHVBj1HgPAzAy8kjOgFhugc+7uTWXqDy8JQysF
-	U/PL5A9g==;
+	bh=nsZl3tFZmRcUaiRHX00B61/eCfNM8JCwY3bqxS7ggUE=; b=duVHnfjjfs7oZIGcTSBEDN7BNU
+	+cYQZ68uDPNzEHtoy0wTiqM12shQl3WiudyVcXLMZ5JfrLLc/zcuwzr1DSGCcMz5EYFJCQB/W0QR5
+	feZ+OM4FK9lA1tFv4a7xkrtJcyGngKC6uF8pkuNN1ru+ELeg0U+f69g5faSG1/9yUiftmZ2MRn0MP
+	1QJ4iZLPmTpEjGjOjeswUs7vsZ9WG5g2SqN6tymcJiyS1/rZGnng23j1AIMCL8nNITcujDAKFdTaL
+	bxTtvvd/LyjSdqkmtXUKrLYTHHqU0v1oYx0TxelJmv7ug3Ys96UW0Lc9+/TEtHD1LoqvOw4+P6USi
+	wGdBArpw==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyU-0000000BeOb-16OL;
+	id 1xRvyU-0000000BeOX-16Ec;
 	Fri, 13 Nov 2026 18:26:30 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRvyR-00000000LYR-38ur;
+	id 1xRvyR-00000000LXr-1c4N;
 	Fri, 13 Nov 2026 18:26:07 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [RFC PATCH 10/13] KVM: planes: Let plane twins share XCR0
-Date: Fri, 13 Nov 2026 11:26:04 -0700
-Message-ID: <20261113182607.82813-11-dwmw2@infradead.org>
+Subject: [RFC PATCH 01/13] KVM: x86: Let userspace opt in to multiple planes with KVM_CAP_PLANES
+Date: Fri, 13 Nov 2026 11:25:55 -0700
+Message-ID: <20261113182607.82813-2-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -102,167 +102,242 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-XCR0/XFEM is shared between VTLs (TLFS 15.4). The planes series keeps
-arch.xcr0 per vCPU, so an XSETBV in one VTL is invisible in the other,
-and VTL1 reads a stale XFEM: a feature VTL0 enabled (AVX, for the
-Windows secure kernel) is not enabled in VTL1's XCR0. The register
-contents themselves are a separate matter, carried by the code that
-switches VTLs.
+A VMM implementing a software privilege model such as Hyper-V VSM
+needs more than one plane, but kvm_arch_max_planes() returns the
+vendor ceiling, which is 1 everywhere except SEV-SNP (where VMPLs are
+guest-architectural), so KVM_CREATE_PLANE rejects every id above zero.
 
-Add KVM_PLANE_SHARE_XCR0 to the KVM_CAP_PLANES share mask. With it set,
-propagate the validated value to every plane twin in __kvm_set_xcr(),
-covering both guest XSETBV and the KVM_SET_XCRS ioctl path, and let a
-twin created later inherit plane 0's current value. The CPUID
-dynamic-bits dirty marker lives in the shared common state, so the
-existing single set covers the twins. Update the planes section of
-api.rst and the kvm_cpuid_apply_runtime() comment, which still listed
-XCR0 among the per-plane registers.
-
-SEV-SNP VMPLs bank XCR0 per VMSA, and sharing it there would be wrong
-in two ways: sev_es_sync_from_ghcb() feeds a VMPL's GHCB XCR0 to
-__kvm_set_xcr(), so a less-privileged VMPL would overwrite its siblings'
-values (and the MSR-protocol CPUID leaf 0xD sizes would then follow the
-wrong VMPL); and a pre-launch KVM_SET_XCRS on one twin would change
-plane 0's VMSA, and with it the launch measurement. An SNP VM cannot
-set the share mask, since KVM_CAP_PLANES refuses its VM type, so its
-VMPLs keep XCR0 of their own by construction.
-
-The twins' fpstate sizing does not depend on this bit: the planes share
-CPUID, so any twin's own XSETBV can enable a dynamic xfeature whether or
-not XCR0 is shared.
+Make KVM_CAP_PLANES a VM enable capability taking the number of planes
+userspace is going to manage, up to KVM_MAX_USER_PLANES (4), which the
+system fd now reports. It must be set before any vCPU or extra plane
+exists, so nothing is sized against the old limit, and cannot be changed
+once set. It also needs a split irqchip, which kvm_arch_max_planes()
+already requires before it reports more than one plane, so enabling it
+without one fails instead of silently granting a single plane, and
+KVM_CREATE_IRQCHIP is refused afterwards. Non-default VM types are
+rejected: SEV-SNP keeps deriving its count from the supported VMPLs,
+and protected-state VM types need their own audit first. So is more
+than one plane without TDP: with shadow paging every plane would
+write-track the guest page tables, and the per-gfn write-track count
+is only 16 bits wide. The same count is why the opt-in stops at four
+planes even with TDP: nested guests still have write-tracked shadow
+pages, each plane can add its own for a gfn, and four planes is the
+most that keeps the count below 2^16. KVM_MAX_PLANES stays 16, the
+bound for plane ids. A VM that does not enable the capability keeps
+reporting a single plane.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- Documentation/virt/kvm/api.rst  | 11 ++++++++---
- arch/x86/include/uapi/asm/kvm.h |  3 +++
- arch/x86/kvm/cpuid.c            |  4 +++-
- arch/x86/kvm/x86.c              | 34 +++++++++++++++++++++++++++++++++
- arch/x86/kvm/x86.h              |  2 +-
- 5 files changed, 49 insertions(+), 5 deletions(-)
+ Documentation/virt/kvm/api.rst  | 36 +++++++++++++++++++++
+ arch/x86/include/asm/kvm_host.h |  1 +
+ arch/x86/kvm/x86.c              | 55 +++++++++++++++++++++++++++++++--
+ include/linux/kvm_host.h        | 12 +++++++
+ virt/kvm/kvm_main.c             | 11 ++++---
+ 5 files changed, 108 insertions(+), 7 deletions(-)
 
 diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index a6008cb33e99..22dc3c793bc4 100644
+index 9aa09d8a39dc..25ce35d5361a 100644
 --- a/Documentation/virt/kvm/api.rst
 +++ b/Documentation/virt/kvm/api.rst
-@@ -374,8 +374,9 @@ The planes of a vCPU share its CPUID model, set through the plane 0 fd with
- KVM_SET_CPUID2.  The CPUID bits that follow a vCPU's own registers (OSXSAVE
- from CR4.OSXSAVE, OSPKE from CR4.PKE, the APIC enable, MWAIT from
- MISC_ENABLE, and the XSAVE area sizes from XCR0 and XSS) reflect the plane
--that executes CPUID, since every plane has these registers of its own.
--KVM_GET_CPUID2 returns them as plane 0 sees them.
-+that executes CPUID, since every plane has these registers of its own,
-+unless the VM asked the planes to share XCR0 with KVM_PLANE_SHARE_XCR0 (see
-+:ref:`KVM_CAP_PLANES`).  KVM_GET_CPUID2 returns them as plane 0 sees them.
+@@ -6834,6 +6834,12 @@ See also: :ref:`KVM_SET_MEMORY_ATTRIBUTES`.
  
- 4.8 KVM_GET_DIRTY_LOG
- ---------------------
-@@ -9347,7 +9348,11 @@ through one plane is seen by all of them.  KVM_CHECK_EXTENSION
- (KVM_CAP_PLANES_SHARE) returns the bits KVM supports on the system fd, and
- the bits the VM enabled on a VM fd.  Setting an unsupported bit, or a
- non-zero args[2] or args[3], fails with -EINVAL.  Like the count, the mask
--is set once.
-+is set once.  The bits are:
+ Creates a new *plane*, i.e. a separate privilege level for the virtual machine.
+ 
++The range of valid plane ids is [0, N) where N is the value returned by
++KVM_CHECK_EXTENSION(KVM_CAP_PLANES) on the VM file descriptor.  Plane 0 is
++the VM itself; for VM types where the plane count is not guest-architectural,
++ids above 0 only become valid after userspace enables KVM_CAP_PLANES with
++the number of planes it is going to manage (see :ref:`KVM_CAP_PLANES`).
 +
-+- KVM_PLANE_SHARE_XCR0: XCR0, whether written by the guest with XSETBV or
-+  with KVM_SET_XCRS on any plane's vCPU fd.  A plane vCPU created later
-+  starts with plane 0's value.
+ Each plane has a numeric id that is used when communicating with KVM.  While
+ KVM is currently agnostic to whether low ids are more or less privileged, it is
+ expected that this will not always be the case in the future.  For example KVM
+@@ -9234,6 +9240,36 @@ enabled, cmma can't be enabled anymore and pfmfi and the storage key
+ interpretation are disabled. If cmma has already been enabled or the
+ hpage_2g module parameter is not set to 1, -EINVAL is returned.
  
++.. _KVM_CAP_PLANES:
++
++7.48 KVM_CAP_PLANES
++-------------------
++
++:Architectures: x86
++:Target: VM
++:Parameters: args[0] contains the number of planes to make available
++
++Opts the VM in to using multiple planes, raising the limit on plane ids
++that KVM_CREATE_PLANE accepts to args[0], which must be between 1 and the
++value KVM_CHECK_EXTENSION(KVM_CAP_PLANES) returns on the system fd.  That
++ceiling is currently 4: on x86 every plane can add its own shadow pages for
++a gfn, and the per-gfn write-tracking count is only 16 bits wide.
++
++Planes other than plane 0 only exist when userspace manages them, so by
++default a VM reports and accepts a single plane.  VM types whose plane
++count is guest-architectural (such as SEV-SNP, where it reflects the
++supported VMPLs) report that count without this capability, and enabling
++it on them fails with -EINVAL.  Multiple planes also require two-dimensional
++paging: without TDP, enabling more than one plane fails with -EINVAL.
++
++Planes require a split irqchip.  Enable KVM_CAP_SPLIT_IRQCHIP first;
++otherwise enabling this capability fails with -EINVAL.  Once it is
++enabled, KVM_CREATE_IRQCHIP fails as well.
++
++This capability must be enabled before any vCPU or extra plane has been
++created, and the chosen count cannot be changed afterwards; otherwise
++-EEXIST is returned.
++
  8. Other capabilities.
  ======================
-diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
-index 00ce265391e1..edec00979acf 100644
---- a/arch/x86/include/uapi/asm/kvm.h
-+++ b/arch/x86/include/uapi/asm/kvm.h
-@@ -922,6 +922,9 @@ struct kvm_sev_snp_launch_finish {
- #define KVM_X2APIC_ENABLE_SUPPRESS_EOI_BROADCAST	_BITULL(2)
- #define KVM_X2APIC_DISABLE_SUPPRESS_EOI_BROADCAST	_BITULL(3)
  
-+/* KVM_CAP_PLANES args[1]: state the planes of a vCPU share */
-+#define KVM_PLANE_SHARE_XCR0				_BITULL(0)
-+
- struct kvm_hyperv_eventfd {
- 	__u32 conn_id;
- 	__s32 fd;
-diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
-index 971ebd781c6e..aa89d1b6f6c4 100644
---- a/arch/x86/kvm/cpuid.c
-+++ b/arch/x86/kvm/cpuid.c
-@@ -2155,7 +2155,9 @@ get_out_of_range_cpuid_entry(struct kvm_vcpu *vcpu, u32 *fn_ptr, u32 index)
- 
- /*
-  * The planes share the CPUID table but not CR4, the APIC enable, MISC_ENABLE
-- * or XCR0/XSS: the bits that follow those come from the executing plane.
-+ * or XSS, nor XCR0 unless userspace asked for KVM_PLANE_SHARE_XCR0, in which
-+ * case __kvm_set_xcr() keeps it equal across the twins: the bits that follow
-+ * those come from the executing plane.
-  */
- static void kvm_cpuid_apply_runtime(struct kvm_vcpu *vcpu, u32 function,
- 				    u32 index, u32 *eax, u32 *ebx, u32 *ecx,
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index a4912735ad3d..d4628ab99197 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1193,6 +1193,7 @@ struct kvm_arch {
+ 	bool has_protected_eoi;
+ 	bool has_protected_pmu;
+ 	bool pre_fault_allowed;
++	unsigned int user_max_planes;
+ 	struct hlist_head *mmu_page_hash;
+ 	struct list_head active_mmu_pages;
+ 	struct kvm_possible_nx_huge_pages possible_nx_huge_pages[KVM_NR_MMU_TYPES];
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 4d70e111eeb0..ceec10d116a9 100644
+index 29beb5791c15..79ea075eceec 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -799,6 +799,31 @@ int __kvm_set_xcr(struct kvm_vcpu *vcpu, u32 index, u64 xcr)
+@@ -320,11 +320,29 @@ EXPORT_SYMBOL_FOR_KVM_INTERNAL(kvm_x86_default_max_planes);
  
- 	vcpu->arch.xcr0 = xcr0;
- 
-+	/*
-+	 * XCR0/XFEM is shared across VTLs (TLFS 15.4): propagate the new
-+	 * value to every plane twin so the other VTLs observe it.  This
-+	 * covers both guest XSETBV and the KVM_SET_XCRS ioctl path.  The
-+	 * CPUID dirty marker below lives in the shared common state, so one
-+	 * set covers the twins too.
-+	 *
-+	 * Only planes that userspace asked to share XCR0 do so.  SEV-SNP
-+	 * VMPLs bank it per VMSA, and an SNP VM cannot set the share mask
-+	 * (KVM_CAP_PLANES refuses its VM type), so they never fan out.
-+	 *
-+	 * Skip the fan-out until this vCPU is published in
-+	 * common->vcpus[]: the architectural reset of a twin still being
-+	 * created must not clobber a live sibling's XCR0 (the new twin
-+	 * inherits the shared value instead, in kvm_arch_vcpu_create()).
-+	 */
-+	if (kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_XCR0) && vcpu->common &&
-+	    vcpu->common->vcpus[vcpu->plane_level] == vcpu) {
-+		struct kvm_vcpu *twin;
-+		int i;
-+
-+		vcpu_for_each_plane(vcpu->common, i, twin)
-+			twin->arch.xcr0 = xcr0;
-+	}
-+
- 	if ((xcr0 ^ old_xcr0) & XFEATURE_MASK_EXTEND)
- 		cpuid_set_dirty(vcpu);
- 	return 0;
-@@ -9820,6 +9845,15 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- 	kvm_vcpu_after_set_cpuid(vcpu);
- 	kvm_set_tsc_khz(vcpu, vcpu->kvm->arch.default_tsc_khz);
- 	kvm_vcpu_reset(vcpu, false);
-+	/*
-+	 * With XCR0 shared, a twin created after its plane-0 sibling has run
-+	 * (Hyper-V VSM enables VTL1 at runtime) inherits the current shared
-+	 * value; the architectural reset value only stands when no sibling
-+	 * exists yet, or when the planes keep XCR0 of their own.
-+	 */
-+	if (kvm_plane_shares(vcpu->kvm, KVM_PLANE_SHARE_XCR0) &&
-+	    vcpu->plane_level && vcpu->common->vcpus[0])
-+		vcpu->arch.xcr0 = vcpu->common->vcpus[0]->arch.xcr0;
- 	kvm_init_mmu(vcpu);
- 	vcpu_put(vcpu);
- 	return 0;
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-index 2f51b476dbd1..aa8abd219507 100644
---- a/arch/x86/kvm/x86.h
-+++ b/arch/x86/kvm/x86.h
-@@ -927,7 +927,7 @@ unsigned kvm_x86_default_max_planes(struct kvm *kvm);
-  * The per-vCPU state that userspace may ask the planes of a vCPU to share,
-  * in args[1] of KVM_ENABLE_CAP(KVM_CAP_PLANES).
-  */
--#define KVM_PLANE_SHARE_VALID	0
-+#define KVM_PLANE_SHARE_VALID	KVM_PLANE_SHARE_XCR0
- 
- static inline bool kvm_plane_shares(struct kvm *kvm, u64 state)
+ unsigned kvm_arch_max_planes(struct kvm *kvm)
  {
++	unsigned int vendor_planes;
++
+ 	/* For now, planes are only supported with irqchip=split */
+ 	if (!irqchip_split(kvm))
+ 		return 1;
+ 
+-	return kvm_x86_call(max_planes)(kvm);
++	vendor_planes = kvm_x86_call(max_planes)(kvm);
++
++	/*
++	 * When the plane count is guest-architectural (SEV-SNP VMPLs),
++	 * the vendor module owns it.  Otherwise planes are a software
++	 * construct and only exist when userspace has opted in to the
++	 * number of planes it is going to manage, via KVM_CAP_PLANES.
++	 */
++	if (vendor_planes > 1)
++		return vendor_planes;
++
++	/*
++	 * Lockless readers (KVM_CHECK_EXTENSION) race the KVM_ENABLE_CAP
++	 * store; the value is set once, so a torn-free read is all that
++	 * is needed.
++	 */
++	return READ_ONCE(kvm->arch.user_max_planes) ? : 1;
+ }
+ 
+ struct kvm_plane *x86_alloc_plane(void)
+@@ -4146,6 +4164,38 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
+ 		mutex_unlock(&kvm->lock);
+ 		break;
+ 	}
++	case KVM_CAP_PLANES: {
++		mutex_lock(&kvm->lock);
++		r = -EINVAL;
++		if (cap->args[0] < 1 || cap->args[0] > KVM_MAX_USER_PLANES)
++			goto planes_unlock;
++		/* Planes are only supported with a split irqchip. */
++		if (!irqchip_split(kvm))
++			goto planes_unlock;
++		/*
++		 * Only ordinary VMs for now.  SEV-SNP VMs get their plane
++		 * count from the architectural VMPL support, and VM types
++		 * with protected state need per-plane audits first.
++		 */
++		if (kvm->arch.vm_type != KVM_X86_DEFAULT_VM)
++			goto planes_unlock;
++		/*
++		 * Every plane builds its own MMU roots.  With shadow paging
++		 * each one would also write-track the guest page tables, and
++		 * the per-gfn write-track count is only 16 bits wide.
++		 */
++		if (cap->args[0] > 1 && !tdp_enabled)
++			goto planes_unlock;
++		r = -EEXIST;
++		if (kvm->created_vcpus || kvm->has_planes ||
++		    kvm->arch.user_max_planes)
++			goto planes_unlock;
++		WRITE_ONCE(kvm->arch.user_max_planes, cap->args[0]);
++		r = 0;
++planes_unlock:
++		mutex_unlock(&kvm->lock);
++		break;
++	}
+ 	case KVM_CAP_X2APIC_API:
+ 		r = -EINVAL;
+ 		if (cap->args[0] & ~KVM_X2APIC_API_VALID_FLAGS)
+@@ -4594,7 +4644,8 @@ int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
+ 			goto create_irqchip_unlock;
+ 
+ 		r = -EINVAL;
+-		if (kvm->created_vcpus || kvm->has_planes)
++		if (kvm->created_vcpus || kvm->has_planes ||
++		    kvm->arch.user_max_planes)
+ 			goto create_irqchip_unlock;
+ 
+ 		r = kvm_pic_init(kvm);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 6922e3063ad8..562489ab444d 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1195,6 +1195,18 @@ void kvm_unlock_all_vcpus(struct kvm *kvm);
+ void vcpu_load(struct kvm_vcpu *vcpu);
+ void vcpu_put(struct kvm_vcpu *vcpu);
+ 
++/*
++ * The most planes userspace may enable with KVM_ENABLE_CAP(KVM_CAP_PLANES).
++ * KVM_MAX_PLANES (16, the Hyper-V VTL limit) stays the bound for plane ids
++ * and per-plane arrays.  The opt-in is lower because on x86 each plane can
++ * shadow a gfn with its own upper-level shadow pages: the per-gfn count of
++ * those is a bit less than 2^14 per plane (see union kvm_mmu_page_role),
++ * and the per-gfn write-track count is 16 bits wide, so four planes is the
++ * most that keeps it from overflowing.  The architecture defines 4 SEV-SNP
++ * VMPLs, so 4 is also the most planes any x86 VM can have.
++ */
++#define KVM_MAX_USER_PLANES	4
++
+ unsigned kvm_arch_max_planes(struct kvm *kvm);
+ struct kvm_plane *kvm_alloc_plane(void);
+ void kvm_free_plane(struct kvm_plane *plane);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 62d33f24dd7f..75ceab2d4838 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5438,10 +5438,11 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ 		if (kvm)
+ 			return kvm_arch_max_planes(kvm);
+ 		/*
+-		 * The system fd reports the ceiling a VM may be given; a VM
+-		 * fd reports what the VM actually has.
++		 * The system fd reports the ceiling a VM may opt in to via
++		 * KVM_ENABLE_CAP(KVM_CAP_PLANES); a VM fd reports what the
++		 * VM actually has.
+ 		 */
+-		return KVM_MAX_PLANES;
++		return KVM_MAX_USER_PLANES;
+ 	default:
+ 		break;
+ 	}
+@@ -5656,8 +5657,8 @@ static int kvm_vm_ioctl_create_plane(struct kvm *kvm, unsigned id)
+ 	guard(mutex)(&kvm->lock);
+ 
+ 	/*
+-	 * Check the limit under kvm->lock, which KVM_CAP_SPLIT_IRQCHIP (and
+-	 * later the KVM_CAP_PLANES opt-in) take when they raise the limit.
++	 * Check the limit under kvm->lock, which KVM_CAP_SPLIT_IRQCHIP and
++	 * the KVM_CAP_PLANES opt-in take when they raise the limit.
+ 	 */
+ 	if (id >= kvm_arch_max_planes(kvm) ||
+ 	    WARN_ON_ONCE(id >= KVM_MAX_PLANES))
 -- 
 2.50.1
 
