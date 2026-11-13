@@ -2,69 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 15DF4606A323
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 13:48:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 72CEA606A8AF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 14:36:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R+pkqZv7
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDjzVVrU
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQz9c5wybz2xQD;
-	Sat, 14 Nov 2026 00:48:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::647"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794577700;
-	cv=none; b=LlksQJc7Hge8GW8/4Sy+xOuRUHFk3iTLwpMqUNDc+JwVb+tGY5fD1QH6qfD5XMyabGOSFrusIg/Juh6yj3WaSO2ch82kfdb7G5NpayWf+nlZGoPX863tYWrpgUmJ29XoVy5+9m59v+IAye7FJG2mLbothVMg5FgFMmZa36kWhut2WkWGyIDSJvJ07xPbJd0KrYN4g4WNrLhnYzRNge5ImsNsQHQEMhHK9fpubmpkbA617pWK4M2tGWkMOBtejjoctbdzDl6fY9YlgVfDF61s9zmZ0dx3fBtTK+j5NG4uREp6MiBCurQJvwyFcThlQk52b0DGQW2kzbw2+tf4zcogMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR0F03G3Wz2xMt;
+	Sat, 14 Nov 2026 01:36:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794580580;
+	cv=none; b=S0dIZi0SE2Wt26rh1OWyCqgQ8qksCH6FCwkzlKwohMQeUAjVpLSZIByjmh/MMU8kbmWoogTJHqBe+85ODwWWXsr6PSmAldj/VhUmNrkMURAxkWGqFLtbzG5zyybBvEa5YQlD3xvu/1hFwWnRFyPr57UqS+2t6+3Sv7mZcAkL8wabrp3BIaE//vgdab6+2F5jcXe4bMWiZRWngDBYcow3RW5cQq0UX7Zg77QzDxMPEGy7IhCLoKeznXJfQkKz4Rrn0/pgiyjTa4JvmttMd/0NNNbfzwA2Se7zE0MkjvOz7a65YyjFWduIfW0AiiR6ehiQuj/dY8NVO9pD+xjjw+ocYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794577700; c=relaxed/relaxed;
-	bh=PHxtB1Gf4ENCC56HT1H7/YouUUYQa+0aDpYwbN8Kj/M=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=aBF6WC7p8v4IORUP0XcdwnbcBMvK98Ibp88ZEKeKK1GIJcgqWld23+93s1wB4kfKTYjf1VxSEF7Xd14kuvRJd/PWcWoG2Bmb/1OQfAowCB+4RtV2QCvP94Q+BymslczHZ5rC30q2EyLr2GHhKzpXWcd3zSkaEyPl7daMN+gNx6mBz0rTeuW82vHYXTa+QOEu9S0NceopDE5B77M4QWl6/D0wHg+3CmEYeiAq9UqT0mUoffZBU16z+SgMUa2nIjpu3x0G/yEe9+vI/yLdLKPemETW2pLrPmpsqxNFM2JWgbK3LvFetuneVaF4lkmsnBjUcMyRzk5VC1ou3wdz18zMsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R+pkqZv7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com; envelope-from=3irx3agykdiy2okxtmqyyqvo.mywvsx47zzm-no5vs232.y9vkl2.y1q@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1794580580; c=relaxed/relaxed;
+	bh=w49hyKAjJNYQc0T0xEVaI68+0oF+m2dcDRcRYzEk8rs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Aqhrfcn2xqO2ndvjcoSjaBILFVQJbf44ZeUKmeIlkD7NGl78OamrAAmUsxA4Noyv0k1p4i5C7iNNZebzPApqbUAdi1EZzuepE1NJYHnFrPE3eCefZAG1VMQqowfmjetHG7mxeTDs6XAPiMCGOAv23Pa58VPH0Ge+o7icCaUFTiHJf6aibsTXt0xTTf+AHCcNsqd/QEKdj+qWTenT6p4l3iHsaIfYLJR15IXGVW33w+Fq40PDBPWHXRcJDdGQ/2e8HZkebRXfhhyTDdlJPYD5VVppbD5Y8fZ9QP2kVpuOcrMW3G9TLKIXYaQg8gFxirMHIukwjDyK2AQAAbJtJXvI9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDjzVVrU; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=R+pkqZv7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jDjzVVrU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::647; helo=mail-pl1-x647.google.com; envelope-from=3irx3agykdiy2okxtmqyyqvo.mywvsx47zzm-no5vs232.y9vkl2.y1q@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x647.google.com (mail-pl1-x647.google.com [IPv6:2607:f8b0:4864:20::647])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQz9c1Br3z2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 00:48:20 +1100 (AEDT)
-Received: by mail-pl1-x647.google.com with SMTP id d9443c01a7336-2ea446ea8c9so15379085ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 05:48:19 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1794577698; x=1795182498; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=PHxtB1Gf4ENCC56HT1H7/YouUUYQa+0aDpYwbN8Kj/M=;
-        b=R+pkqZv73+eC85Zzq/FRrc8CHOcir5LtVSawUHfbt9u37wcYZXIUTPazZQtDp0RC0f
-         n0MpmhE7nbZHML0s+f2Fvs7u31BF/cEc0Tzpp0sR1himLdYXLEzowCj/mhfri65wGzGl
-         O7TzB/2K5BEVq1SWlcWmMyHinl6xyLrGfgufDFh0mRQTY7V+BDCkfXnPlqLslnH3DUj7
-         wrS7zBorHlfh1poOSF8idMbH6fX+Z/h8mdkjmwDqQE2Dabthbg82X3ogw9VJkTf6Q2w2
-         kWuKsQLsqYxQ7MhI3yWR0/g6WdVeT5V7aUzW6VpbAuwl3JyOzoICw2+7OUr6mXTWiTYw
-         QVqA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794577698; x=1795182498;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=PHxtB1Gf4ENCC56HT1H7/YouUUYQa+0aDpYwbN8Kj/M=;
-        b=Bf5iKB638NnSYwrde4msZ0t2wElkJe6Edu1vxBgTSkfgVTfJU8xPvYvr1qOiCPMjty
-         aDfDBrZ8no7Q6wV0IDK6ptv/S649K7Jg7jTwpRAhWYjHpV/Ng1HDjMFii1oMjyNPCN7M
-         g/dSlC7R89R+Nq8QW90qpDyxQkVc6+VhMn1Hop4ScNRzcbSbn3A3Kee2YP/e/dNvamIe
-         ZXxDl5IOAAFRRdi+BT8YzD7S1DJ0FYV6wZ5XFJUkjckdul7ptDCk0EKbmjOnkPQ0A94S
-         hE25WTgEYVoKAnP39EEjrbEVnCPVqJOXz5h19s5MzeS5uDsR96DFN9qCLo/kgbEOcQ+Q
-         ECLA==
-X-Forwarded-Encrypted: i=1; AL+hErHE0tMACBQvhhrWQa+feFkliJ/R5KsR8c46WetZLtJnPeIjJIgmoHkyGgw1dGJXvesimx4mxe/XRpYlVjs=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8YXp33UJs42ZkQbaibGhdLM3uisHQEgSUvDLngQ+MI+7Uzx7tl
-	VUxhEnWcdgdxl5n1tCQS49U+e6G+DqVoXV6+0CI1yHv6xMXim8fTps1wHc9GaYxtMRluMGfU7CJ
-	+2SpcQg==
-X-Received: from pjbfz9.prod.google.com ([2002:a17:90b:249:b0:3a8:8d0:61eb])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4a45:b0:3ac:7406:b49
- with SMTP id 98e67ed59e1d1-3b1b0b5c202mr1376156a91.15.1794577697434; Fri, 13
- Nov 2026 05:48:17 -0800 (PST)
-Date: Fri, 13 Nov 2026 05:46:22 -0800
-In-Reply-To: <20261030212112.2598640-1-seanjc@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR0Dz3Pfvz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 01:36:19 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 47A0540039;
+	Fri, 13 Nov 2026 14:36:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88B8A1F000C4;
+	Fri, 13 Nov 2026 14:36:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794580577;
+	bh=w49hyKAjJNYQc0T0xEVaI68+0oF+m2dcDRcRYzEk8rs=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=jDjzVVrUjcqqvOcF2zRf/R4D2SkobqauH5sB4E4FWc03X74m4jxFCQSio9YHHHuuR
+	 9Ml4Tlrckfk60OSmZz+hec4p2l9kmjLvQBMrX/YWsRQQvgUFJp0NHQZIrCyw0Gwiek
+	 QZbpgzhogd+cwsY3Nd25gGqUKt3Baw/aKdlCaoUNBkxmn6Z5pyPj2weF8qqKc3/A8M
+	 /Hvf3OTZxfDyyZ1sLXoNdqhyld8LAWFVmEcfNS1X7e6OGeS63NUqhOrnPQq/ZF6Igj
+	 DMtYYds7K9Hh4P0SFcSWYXYIJSddoBhMr/8mdEZ/t7+gx48plf7GD6vYahVdtRVM4l
+	 DMbaEQTybkmNw==
+Message-ID: <3f7af771-87a7-4ae7-9919-bc4c23bd31c9@kernel.org>
+Date: Fri, 13 Nov 2026 15:36:01 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,48 +58,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261030212112.2598640-1-seanjc@google.com>
-X-Mailer: git-send-email 2.56.1.703.gf848ed807c-goog
-Message-ID: <179441847158.83355.13758439775824427618.b4-ty@b4>
-Subject: Re: [PATCH v4 00/23] KVM: Fix+harden against bad uaccess using dying VM
-From: Sean Christopherson <seanjc@google.com>
-To: Sean Christopherson <seanjc@google.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, Jim Mattson <jmattson@google.com>, 
-	James Houghton <jthoughton@google.com>, Chris Mason <mason@kernel.org>
-Content-Type: text/plain; charset="utf-8"
-X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND v8 11/16] powerpc: extend execmem_params for
+ kprobes allocations
+To: Mike Rapoport <rppt@kernel.org>, linux-kernel@vger.kernel.org,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: Alexandre Ghiti <alexghiti@rivosinc.com>,
+ Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?=
+ <bjorn@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ "David S. Miller" <davem@davemloft.net>, Dinh Nguyen <dinguyen@kernel.org>,
+ Donald Dutile <ddutile@redhat.com>, Eric Chanudet <echanude@redhat.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Kent Overstreet <kent.overstreet@linux.dev>, Liviu Dudau
+ <liviu@dudau.co.uk>, Luis Chamberlain <mcgrof@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nadav Amit <nadav.amit@gmail.com>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Peter Zijlstra <peterz@infradead.org>,
+ =?UTF-8?Q?Philippe_Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+ Rick Edgecombe <rick.p.edgecombe@intel.com>,
+ Russell King <linux@armlinux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+ Song Liu <song@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
+ bpf@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+ linux-mm@kvack.org, linux-modules@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
+ netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
+References: <20240505160628.2323363-1-rppt@kernel.org>
+ <20240505160628.2323363-12-rppt@kernel.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20240505160628.2323363-12-rppt@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, 30 Oct 2026 14:20:48 -0700, Sean Christopherson wrote:
-> Stupid SMM.  Patches 1-3 need to go to 7.4, everything else can and should wait.
+Hi Mike,
+
+Looks like I missed this change ...
+
+Le 05/05/2024 à 18:06, Mike Rapoport a écrit :
+> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
 > 
-> Fix a class of bugs (limited to nested VMX, as far as we know) where KVM can
-> corrupt an unrelated process' memory if KVM (attempts to) write to guest memory
-> during VM destruction.  Because current->mm usually isn't kvm->mm when a VM is
-> dying, e.g. because the associated kvm->mm process has already exited, writing
-> to what KVM thinks is guest memory will corrupt the current address space if
-> the associated userspace address happens to be writable in the victim.
+> powerpc overrides kprobes::alloc_insn_page() to remove writable
+> permissions when STRICT_MODULE_RWX is on.
 > 
-> [...]
+> Add definition of EXECMEM_KRPOBES to execmem_params to allow using the
+> generic kprobes::alloc_insn_page() with the desired permissions.
+> 
+> As powerpc uses breakpoint instructions to inject kprobes, it does not
+> need to constrain kprobe allocations to the modules area and can use the
+> entire vmalloc address space.
 
-Applied patch 1-3 to kvm-x86 fixes.  I'll probably create a dedicated topic
-branch for the rest based on a later -rc.
+Using breakpoint means the segment must still be executable.
+On book3s/32 VMALLOC segment is not executable, while module segment is.
 
-[01/23] KVM: Reject user accesses to guest memory if current->mm != kvm->mm
-        https://github.com/kvm-x86/linux/commit/2520694e6048
-[02/23] KVM: nVMX: Don't force a full nested VM-Exit when destroying a vCPU
-        https://github.com/kvm-x86/linux/commit/99872af7b904
-[03/23] KVM: PPC: Flush/zap all memslots on kvm_arch_flush_shadow_all()
-        https://github.com/kvm-x86/linux/commit/93862ef1afdd
+See commit 6ca055322da8 ("powerpc/32s: Use dedicated segment for modules 
+with STRICT_KERNEL_RWX")
 
---
-https://github.com/kvm-x86/linux/tree/next
+See report and fix at 
+https://lore.kernel.org/all/ed03d290d440d579a81ae0b7de5243721291d903.1794543909.git.ritesh.list@gmail.com/
+
+Christophe
+
+
+
+> 
+> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> ---
+>   arch/powerpc/kernel/kprobes.c | 20 --------------------
+>   arch/powerpc/kernel/module.c  |  7 +++++++
+>   2 files changed, 7 insertions(+), 20 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index 9fcd01bb2ce6..14c5ddec3056 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -126,26 +126,6 @@ kprobe_opcode_t *arch_adjust_kprobe_addr(unsigned long addr, unsigned long offse
+>   	return (kprobe_opcode_t *)(addr + offset);
+>   }
+>   
+> -void *alloc_insn_page(void)
+> -{
+> -	void *page;
+> -
+> -	page = execmem_alloc(EXECMEM_KPROBES, PAGE_SIZE);
+> -	if (!page)
+> -		return NULL;
+> -
+> -	if (strict_module_rwx_enabled()) {
+> -		int err = set_memory_rox((unsigned long)page, 1);
+> -
+> -		if (err)
+> -			goto error;
+> -	}
+> -	return page;
+> -error:
+> -	execmem_free(page);
+> -	return NULL;
+> -}
+> -
+>   int arch_prepare_kprobe(struct kprobe *p)
+>   {
+>   	int ret = 0;
+> diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+> index ac80559015a3..2a23cf7e141b 100644
+> --- a/arch/powerpc/kernel/module.c
+> +++ b/arch/powerpc/kernel/module.c
+> @@ -94,6 +94,7 @@ static struct execmem_info execmem_info __ro_after_init;
+>   
+>   struct execmem_info __init *execmem_arch_setup(void)
+>   {
+> +	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>   	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+>   	unsigned long fallback_start = 0, fallback_end = 0;
+>   	unsigned long start, end;
+> @@ -132,6 +133,12 @@ struct execmem_info __init *execmem_arch_setup(void)
+>   				.fallback_start	= fallback_start,
+>   				.fallback_end	= fallback_end,
+>   			},
+> +			[EXECMEM_KPROBES] = {
+> +				.start	= VMALLOC_START,
+> +				.end	= VMALLOC_END,
+> +				.pgprot	= kprobes_prot,
+> +				.alignment = 1,
+> +			},
+>   			[EXECMEM_MODULE_DATA] = {
+>   				.start	= VMALLOC_START,
+>   				.end	= VMALLOC_END,
+
 
