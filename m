@@ -2,68 +2,66 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AE084606D624
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 16:43:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 16D83606A331
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 16:55:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=HM6inVUr
+	dkim=pass (1024-bit key) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=n78FvPB7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR33y30lNz2xMt;
-	Sat, 14 Nov 2026 03:43:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0c:1:1599::12"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794588222;
-	cv=none; b=iwe5JIpRjAXmCIWPStC23/fzmK7p47zf0KZPjs40cue7wgIUXFB1IW6LzYVuJvkXLQkBmYZGtD4Yttwotkg6Pdmo2hl3IVK5SUydSeJf7wEE4umh330ViCs0Pt2FtxWYSGboV0ft4O0FPFhmkuZZNNBWWB1pH3Pl9boWqsGyOPHkc56qdhqSSpniKPu2h+8Xc8Xdg1M7RsonJzu8ddKi0GfvVEYtF+8s7HZbM2/vjOWxwNJevI4/Chiv+saJV+oklEIIMD7cu4/2txL2CDvXzIs7VM50D9o5UI5tnANa5zc9ipCVF0bo7toCvdQNtp6RLcLf7+DhSUMnlCOmJcvM2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR3KW2FDjz2xXB;
+	Sat, 14 Nov 2026 03:55:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.136.161.50
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794588927;
+	cv=none; b=gcJAmDUKYLmyiE3SL4YsgzTWfZAYgnhEr7qLYm5ykX4R0rEVm4jOcJBD0Qr4SZf27Rdg3SF69xXxpXzuv3lSeDS0vBAO7qkyxT/2CRf9zGthvqkmpVxG1pFMPN8V7y4j5rSb4n22aA5YFkcx9wolyxN/4rAA3Wt6sqgRoHmhaVeLot7DLjB8P2SFOHU/vMewOvVxxCPYtSJ1fVRpNJbUYxDoKW9hW+DxETxyHvTjz6ujeUr+jixn7GqqJ586b7JiYdJN5B0Pc6QKAOpyNzAkp0dD0yvIzd7MSTnrEGmm6linzs7GngJg5zh/IK+LSzq7UHV6k63o6Riv6fDgw5Hxvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794588222; c=relaxed/relaxed;
-	bh=Von8RsBp854kjbWitsXhRdJUlu1QgEP7MszYVID9w9o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Pod06WQAfs8Bmru++FGgSjvgMTLZnJqc5eqCav/8gWSU3iP9cqSaF6g8Klb44mZE2RWAtq0o3uHkRrHeXCNg9cXGejjgGYWQHRu20H99qeoMXeqLBbjaJkMzuTjUQ0M40Jh5iEN2iIiwb3dQ6pb5wyo1IqroiTbuwIyzibmoHbmJ4IQOhNyUj8B1RyAZryUiAUULbnT1Av9Hs21m+u4fvt7ftbCNPGYMJZzj3ZrorJxs4DlLQGFZbnyQT4K7jbZI8g5XDyjzioHgN8Yt7zbW1F+RcAUOf3nOfTmS6jaIY6BfoDyp03HANXyx5GxwLsaosf0MUHlqoeCln+KFCu37Jg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=HM6inVUr; dkim-atps=neutral; spf=pass (client-ip=2a01:e0c:1:1599::12; helo=smtp3-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
+	t=1794588927; c=relaxed/relaxed;
+	bh=B1hLmphDmkmygIAVjANKrw3p72oqsJ/6EjwlPW6mWQw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HPlRtHrBISpY69rTVtToI+IzsI9EL8zHHpn8Vwv6A1TtJtR8tyfBR5b9Px+N9tg1Z997JZWbwfu31Wl/XsTnyUyVy72fF8neD1YsoNJpD6YAXJjER8Lek6RXtz9JQqCrfvgJBn2VCTHbzmvgSb5eP7OrrRTXoGhVVffHNcSKbzLrrZRgYL84C4wX4tpL7uAd2/4vphvUocAbwRGwyOojqPJ/5SWkR+SBKdJ1gqXcpF3nsdaPWbWM8BMaNcLy8qOnXVlFMual8szjbqYjN07mTYmxp7G9wMAhC0FEhTfwaojSqsWENsy8wYQW0ast4DFwnA1zzkXpX+YZAK9tkG+/UQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=n78FvPB7; dkim-atps=neutral; spf=pass (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=HM6inVUr;
+	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=n78FvPB7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=2a01:e0c:1:1599::12; helo=smtp3-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
-Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [IPv6:2a01:e0c:1:1599::12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR33x4Kvyz2xM9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 03:43:41 +1100 (AEDT)
-Received: from L30177.local (unknown [158.255.110.170])
-	(Authenticated sender: vjardin@free.fr)
-	by smtp3-g21.free.fr (Postfix) with ESMTPSA id AD61613F92C;
-	Fri, 13 Nov 2026 17:43:10 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
-	s=smtp-20201208; t=1794588213;
-	bh=5xzBNkaSBIwsby4+iTJvSunuWxT8nAvHfJoI83KVZUo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HM6inVUr3h+5hT4j2wq5zg5TH/nz4NrbKLsWvdW8BDitD52J8P8MDhFA0EiO8bDmV
-	 mCuBvX4M8HGeSD4Hn2JFl/MlJ+y962RUhxuAubENIx5f1Cu6ZNckGAqfu601STKc3J
-	 dsH6aqzOPE5d5WQwxhWCT0OMZJQVVuV4hZWJ1Db0o9cr7q5Zqq2WbrX84oBMkMDoBh
-	 mM96MfXiI5GqohedOQdIRui1XYqXe6A8ypHHL5WJdWUht1PxLFs1okuf0eFd3tO3H0
-	 zgw38AiCs4gbZp9Gc4sU6SmJ9WA/IcEkgbTkax1N+eMdNlmu+UPQcitr/rU1VnMsNb
-	 Uof0sAubw5Tww==
-Date: Fri, 13 Nov 2026 17:43:09 +0100
-From: Vincent Jardin <vjardin@free.fr>
-To: Frank Li <Frank.Li@nxp.com>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>
-Subject: Re: [PATCH v3 4/5] pinctrl: freescale: add the LX2160A RCW pad-mux
- driver
-Message-ID: <avc-HWnGVhhR3m8J@L30177.local>
-References: <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-0-5a0063f1da9e@free.fr>
- <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-4-5a0063f1da9e@free.fr>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
+Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [130.136.161.50])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR3KS3ktQz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 03:55:22 +1100 (AEDT)
+Received: from eipi10.cs.unibo.it (host0.studiodavoli.it [109.234.61.1])
+	by mail.virtlab.unibo.it (Postfix) with ESMTPA id EF9C71C0146;
+	Fri, 13 Nov 2026 17:55:17 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
+	s=virtlab; t=1794588918;
+	bh=lt54Q9G0U7Kj8Ffssc6luBMSVhoer/ff/txPnMLhsL0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=n78FvPB7s/BXwbQI3xuquKHigK/K2G+UXKTKZJg082JgmfZj6R9aLS4DC1SHgJK/J
+	 GVmtuBkAwxc8gWswvpbpHtAncO4wypohHgKewscQQmwJXCML0BAxNMA22PWgEJ2oxR
+	 cEn7rM1FF4C0gzYTbshLa60zMBEWg7djp9NGPS7k=
+From: Renzo Davoli <renzo@cs.unibo.it>
+To: linux-kernel@vger.kernel.org
+Cc: Renzo Davoli <renzo@cs.unibo.it>,
+	Oleg Nesterov <oleg@redhat.com>,
+	=?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>,
+	Kees Cook <kees@kernel.org>,
+	Andy Lutomirski <luto@amacapital.net>,
+	Will Drewry <wad@chromium.org>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Shuah Khan <shuah@kernel.org>,
+	"Dmitry V . Levin" <ldv@strace.io>,
+	Alexey Gladkov <legion@kernel.org>,
+	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Davide Berardi <berardi.dav@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org,
+	linux-kselftest@vger.kernel.org,
+	strace-devel@lists.strace.io
+Subject: [PATCH v10 0/3] PTRACE_SET_SYSCALL_INFO: add support for seccomp syscall skipping
+Date: Fri, 13 Nov 2026 17:55:02 +0100
+Message-ID: <20261113165509.229869-1-renzo@cs.unibo.it>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,46 +75,136 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-4-5a0063f1da9e@free.fr>
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Frank,
+PTRACE_SET_SYSCALL_INFO is a generic ptrace API that complements
+PTRACE_GET_SYSCALL_INFO by allowing a tracer to modify details of a
+system call in which the tracee is currently blocked.
 
-Le 08/11/26 11:06, Vincent Jardin via B4 Relay a écrit :
-> From: Vincent Jardin <vjardin@free.fr>
-> 
-> The LX2160A muxes its IIC, XSPI, SDHC, UART, IRQ and EVT pads from
-> fields of the RCW, read-only in RCWSR12..14 of DCFG and changed at
-> runtime through the same fields of the override registers in its DCSR
-> view, which read 0 until written.
-> 
-> Since commit 8a1365c7bbc1 ("arm64: dts: lx2160a: add pinmux and i2c
-> gpio to support bus recovery") Linux drives them with pinctrl-single on
-> the override registers, so its first pin state clears every other field
-> of the word: a board whose RCW programs a non-zero pad mux loses those
-> pads at the first I2C probe.
-> 
-> Add a driver for the pad mux as a child of the DCFG node: the fields
-> of RCWSR12..14 and their encoding.
-> Then pin states select them with the generic function and groups
-> properties, and every change goes through the RCW override
-> of fsl-guts, which reads the status register, writes the override and
-> waits for the status register to follow.
+This patch set extends PTRACE_SET_SYSCALL_INFO with support for
+skipping a system call at a PTRACE_EVENT_SECCOMP stop and setting its
+return value.  To do this, the tracer changes 'op' from
+PTRACE_SYSCALL_INFO_SECCOMP to PTRACE_SYSCALL_INFO_EXIT and fills in the
+exit union fields (rval and is_error).
 
-Following the review on the patch 1 and 2, then can I have your advise
-on this topic ?
+Michal pointed out in the review of v7 [1] that the register state alone
+cannot tell whether a syscall has to be executed or skipped with a
+preset return value, since on some architectures the return value
+shares a register with the syscall number or the arguments, and that
+the "already dispatched" information should be architecture
+independent rather than an architecture-specific thread flag.
 
-I am looking for the review of this serie, then I'll adapt it
-for u-boot along with the integration of Linux.
+v8 does exactly that: the tracer no longer sets the syscall number to -1
+and relies on syscall_get_nr() reading it back as negative.  Instead,
+patch 1 adds a per-task flag owned by seccomp, which the tracer sets
+while the tracee is stopped.  When the tracee resumes, seccomp skips the
+system call just like for SECCOMP_RET_ERRNO, a path every architecture
+already handles without touching the return value.  This also fixes
+skipping on s390, where -1 is read back as syscall 65535.
 
-best regards,
-  Vincent
+On powerpc, a separate fix has been posted [2]:
+syscall_set_return_value() currently sets TIF_SYSCALL_RET on the
+*caller*, i.e. on the tracer when called from PTRACE_SET_SYSCALL_INFO,
+and skipped system calls lose non-error return values.  These problems
+are already present in the source tree and break the existing
+set_syscall_info selftest and seccomp_bpf user_notification_basic on
+ppc64le independently of this series, which therefore no longer
+depends on [2].
+
+[1] https://lore.kernel.org/lkml/apWFHkZnCMfxQCEk@kunlun.suse.cz/
+[2] https://lore.kernel.org/lkml/20261030084926.1068384-1-renzo@cs.unibo.it/
+
+Testing (QEMU, v7.3-rc6, done on v9; the code is unchanged in v10,
+tools/testing/selftests/ptrace/set_syscall_info and
+tools/testing/selftests/seccomp/seccomp_bpf):
+
+                               x86_64 (KVM)   ppc64le (TCG)   s390x (TCG)
+  ptrace/set_syscall_info      2/2            2/2             2/2
+  seccomp/seccomp_bpf          111/111        111/111         110/111 (*)
+
+  Skipping getpid() at a PTRACE_EVENT_SECCOMP stop, with a filter that
+  kills the process on unknown syscall numbers:
+
+  op=SECCOMP, nr=-1 (before)   error          r3 left as is   SIGSYS kill
+  op=SECCOMP->EXIT (this)      -ESRCH         -ESRCH          -ESRCH
+
+  (*) user_notification_wait_killable_after_reply timed out under TCG
+      while another VM was running; it passes 5/5 both with and without
+      this series on an idle x86_64 KVM guest.
+
+  ppc64le results were obtained with an earlier version of the powerpc
+  fix [2] applied.
+
+  Build-tested also with CONFIG_SECCOMP=n and CONFIG_SECCOMP_FILTER=n.
+  Not tested: MIPS, arm64, riscv, loongarch, real hardware.
+
+Changes in v10:
+* rebased to Linux 7.4-rc2
+* no longer depends on the powerpc fix [2], which addresses a bug
+  already present in the source tree
+
+Changes in v9:
+* selftests/ptrace/set_syscall_info.c: check for seccomp filter support,
+  fix failure report
+* rebased to Linux 7.3
+
+Changes in v8:
+* skip the system call via a seccomp per-task flag instead of
+  syscall_set_nr(-1), as suggested by Michal Suchánek
+* new helper ptrace_set_syscall_info_seccomp_skip() instead of a bool
+  argument to ptrace_set_syscall_info_exit() (Michal Suchánek)
+* once the system call is skipped, reject further
+  PTRACE_SYSCALL_INFO_SECCOMP updates during the same stop
+* selftest: also test an error return value and the above
+* dropped the Reviewed-by tags of Oleg and Dmitry, as patch 2 changed
+  significantly
+
+Changes in v7:
+* rebased to Linux 7.3-rc1
+
+Changes in v6:
+* selftests/ptrace/set_syscall_info.c: improve messages in case of failure.
+
+Changes in v5:
+* reworded the explanation for not supporting PTRACE_SYSCALL_INFO_ENTRY yet.
+* selftests/ptrace: removed a redundant check.
+
+Changes in v4:
+* Reworded the commit messages for clarity.
+* Renamed the local variable child_op to op in ptrace_set_syscall_info()
+* Clean up and improve the coding style of selftests/ptrace/set_syscall_info.c
+  (suggested by Dmitry V. Levin)
+
+Changes in v3:
+* restrict the syscall skipping feature to PTRACE_SYSCALL_INFO_SECCOMP
+
+Changes in v2:
+bugfix: _NONE -> _EXIT transition was erroneously permitted
+
+Davide Berardi (1):
+  seccomp: let the tracer skip a syscall independently of its number
+
+Renzo Davoli (2):
+  ptrace: add PTRACE_SET_SYSCALL_INFO syscall skipping support
+  selftests/ptrace: add a test case for PTRACE_SET_SYSCALL_INFO syscall
+    skipping
+
+ include/linux/seccomp.h                       |  33 +++
+ include/linux/seccomp_types.h                 |   4 +
+ kernel/ptrace.c                               |  45 +++-
+ kernel/seccomp.c                              |  11 +-
+ .../selftests/ptrace/set_syscall_info.c       | 230 +++++++++++++++++-
+ 5 files changed, 319 insertions(+), 4 deletions(-)
+
+base-commit: 7e1392a42ea288d70a266f6553fe06f57f8647ea
+-- 
+2.55.0
+
 
