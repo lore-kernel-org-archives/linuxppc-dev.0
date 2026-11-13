@@ -2,81 +2,80 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E8919606A330
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 23:35:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E30EE606A336
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 23:35:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=b1+NJ9jl
+	dkim=pass (2048-bit key) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=C58uwuRA
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRDCR4hK1z3bRp;
-	Sat, 14 Nov 2026 10:35:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794564962;
-	cv=none; b=VmW5nq8Wc/PYtsTGH+WBf0keSfVmTLCwrGxBRQFFByX/QnuxRG6ml+ybU3y/UfH9V25IrwfsOD483Fuy7ktTf2qzMBthGV2ydoaEx7nFf04OnBifTP2yPKbuzCNDYE7WiDr2IeSNb3lajeg8L9cb6fBPtJcHgc15V5yNf321dkkvYokluwMm7ME3ylbdNB5ZALr51ohXXzOjazC1jjKjTdKfbPJZZx0e3xXmIbpwTQxJLzYRwmp1Cn9x21OJa4ulg9/z5ZQDd6nK/YCSQy975jnHqSN4HjihVY22Rx+rUUszeE9ZMxquUhttJN2xqQGKUL/hSxxz8sIGaW0hdxABRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jRDCc4kqDz2yLY;
+	Sat, 14 Nov 2026 10:35:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::332"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794565076;
+	cv=none; b=ZYt1LfVw1nXNZJUzuUk5UId+C855A0wlj0qNDBephSW1MZjMSOPa7orInlfTbJk6cIqBnK5E1rqoF4USrazBarnAEJNpTyejRuIPIRBU5ndkiXGrZMXFP/lmbEComQ85KRLekypTrDa01r8uuqqOzXYdUdheLvt2E6VZPV+mVPJuLXlUIg+WRDEPux9V9PKC5PRkpiiBtSNkIPJkRKBXTDSsM0rlMjCB0VBWm3EbqOxxvDWYpx8FiELYLRtQd9RNisyP3D2+Dr88i8i+aXY4IQ2P7vkhDk7EQzCq6oRBxexsKbVLVoAz8x/UD2UEDgYH0xra5RCzetvIlhbvcmDPKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794564962; c=relaxed/relaxed;
-	bh=PfCz/38ILdxPmJBY1NDzDaIsiECcLTMyKpoKPJStEV0=;
+	t=1794565076; c=relaxed/relaxed;
+	bh=zqPqkCGOaO5RL/5NE1UeXRxAO7AqEHmUDDsiHSGxDsA=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PUZvcDfUx1p8y6BAfdbjcN/BBMNgg0Rbm+OElXvoPflbLMobqOGbWUtPUgVeetaaMjuKSfNfmXKF5Y6sLWH34fbuGMDfxdxEXmVr6jsR42DAgXmPO/UMWmNZ8j3pYPLkW5X6CvD5Vq6vdav9b+tHq/ct8cYrh/nDMsafDx1tpJj/ThsLZJo236pJ4pxFI/nDukFEPXVLkVQLePAppp1AGne+ouGxNKHJgDBpmtzcmemlkyQ85FCqRLLCkwJoL+1eLBoNFOKLmUIOC1Bg4R6glrHWL3+1HX5FyqsTaQv8pv2LGXLRqZrXIhMgrrxCJqwM43wzOEzddmKsmqmtQk307w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=amutable.com; dkim=pass (2048-bit key; unprotected) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=b1+NJ9jl; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=alex@amutable.com; receiver=lists.ozlabs.org) smtp.mailfrom=amutable.com
+	 Content-Type:MIME-Version; b=FmIZ/90KqtzXXXXknImpJKavwSkYSi9/ewtWwZXFbH08PDUPvJMi7tgVsjEfAoiZUgy4oz++6m0jB7rHFMuDNmwqLbFmEJu3K5kTYPxUUznLkosqDKhpoAiAH2ve5t58RxLOihgGJFFxX2ujEKEE7fHdvxrKQpZcl1M7msjm2GcPisnOxHNcz1MQlmzSsTlG+JvvuKc1jQ0NAoMj+vfTx3tQBqkE5Af2/zfvmF5IpgHyvDa0g/roRc8OWb2dsxUd6qyHbNapSORWOIZemaUH1E08RPjSp4R7Z5I8jCsZGZEbm7da1LIy3oJ+9bCxCOANjFpoT5oqX+mtoSvswGuewQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=amutable.com; dkim=pass (2048-bit key; unprotected) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=C58uwuRA; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=alex@amutable.com; receiver=lists.ozlabs.org) smtp.mailfrom=amutable.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=amutable.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=b1+NJ9jl;
+	dkim=pass (2048-bit key; unprotected) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=C58uwuRA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amutable.com (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=alex@amutable.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amutable.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=alex@amutable.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQtSd6SqCz3bbx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 21:16:01 +1100 (AEDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-c4cb6834eaaso156034566b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 02:16:01 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQtVq1zPhz3bgw
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 21:17:54 +1100 (AEDT)
+Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-4a2d6d01ecbso7049425e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 02:17:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amutable-com.20260707.gappssmtp.com; s=20260707; t=1794564958; x=1795169758; darn=lists.ozlabs.org;
+        d=amutable-com.20260707.gappssmtp.com; s=20260707; t=1794565072; x=1795169872; darn=lists.ozlabs.org;
         h=mime-version:user-agent:content-transfer-encoding:content-type
          :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
          :cc:subject:date:message-id:reply-to:content-type;
-        bh=PfCz/38ILdxPmJBY1NDzDaIsiECcLTMyKpoKPJStEV0=;
-        b=b1+NJ9jlK9LpXcHE7bPhZJ1+TArHsVfU2ajFIan1yEmVePh3mRw3s35t9co0oc5LeI
-         ZkEq6d+N+ovACa8azhbS7uInYpusPCL98XCgcVy5aI6Q61hmOf/A4VeJXxHmNd0xWq78
-         2bZRtU/+x9rKdStm2bBtNRxawc+7xxr3jzoHh5Gy+b9ea5SSgifAKEyBTFO69ZwAwb1B
-         sizb1xwy/qkF7+Ma0uQp9XXlrbvMO/mg6vp0JgWno0qXS6BzJJLUOix5dfyyTCWes0se
-         Vfgxhg2rQnBLuzbHqe3kZU8RS/NdhQd8WSCxuECVOsoXV4kLJrSz6rjoPGVldWCoIDBL
-         bF+w==
+        bh=zqPqkCGOaO5RL/5NE1UeXRxAO7AqEHmUDDsiHSGxDsA=;
+        b=C58uwuRALK00Efbqi1lkevcopXsljKIGkylbObObEvCAYKV3AZJy9c9bZwaJZb87SX
+         3jYFix8xNSJ7C2gp12IdeDAOOvAMMX33hbdJSsX2CePZxf6J3sv8tIRvt2V47VNZmtMT
+         3JKBzeaRnF0rsfmBT2e03P/Wkjw0vcfxpjj6qBNuwQGC7crYBTaDtyTWcLtKjeeVv+gx
+         fBznFBoRYPfyke4TD8WEGoPWqn3HvJUDaN/aFPounUZufVyYHvVOAPWU1/d2qOZ648N9
+         h59Nzyl4UUBTsIgX5WyFBOAj9P+lrqObpg4C2hc6r3pSaSpKvhUerFiuGIkGdPb+H0zY
+         A4/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794564958; x=1795169758;
+        d=1e100.net; s=20260707; t=1794565072; x=1795169872;
         h=mime-version:user-agent:content-transfer-encoding:content-type
          :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=PfCz/38ILdxPmJBY1NDzDaIsiECcLTMyKpoKPJStEV0=;
-        b=vtBf16MdgglkHHQ5fXJSvuLH/tHOD/XleNl+F+Xt7VMSTvpWitPZjxBZsFK7w2pacq
-         N4cUveCRkauXdeYvcCsuKfliO+/3B8gswQjGVv+48lQqRJS06HGn5RPMVkgvueojPyBo
-         0jAtirFKVjsAoq1gRzEePInGMPN0lflE5P6gqYJCmE/R4EGEVe76hdIzFhdHJ/0IjyeP
-         XNTePEa4xOiRNpmzW2Y+G9nydfm1UzFXQMkAW8v6AP7p2IMscAo5ImaD+2JLvwc7hgze
-         H+y/r+sB8/Yge2pmClY1WG4PfFQaqrlC/d+aiHFZSrw4BJ6fvNmlGLFvWDKaPZXOp+WP
-         CfwQ==
-X-Forwarded-Encrypted: i=1; AL+hErHbVDiTM8dR5cdRpPygA4OJa2g0tIjh3ZNgFviK98tm/NjYK5haEzUcJBnTE6HRZD0dxkFoIRqb0/kXJWk=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z90PQjnwzEGWjlERRY1JPsCmrMgKRUFOPejhs6mu08YP+bTArbk
-	UiE2ctnThhAvNSlvbYz8TlhHo/hqVoEbYKYzUns9D8gUDoNkC5kod89fqoPgVTc2NANd
-X-Gm-Gg: AYBFou16y6X8wTD7n7X+TDHEljq+679bSAPj1GKIZI/ZnJ2pK0Rpc5n/ZSJJeZW4Zla
-	MdrvYBHIn4ULHIIPJinWUosI0YUD2ia8TzCNRA/nx5wBVBEcaupe0Wt2JpS3S7Gsfk2y8QYoUA5
-	vM0oXpTmE726fH02wEXGnWW5IJJ4ZxMerkpejIEI0wb+hpNtLChFC/kiyoudWiR6tFrZVSFr1sY
-	UBsvPIOBy3spRWxU+kZ8GYkdDNc8eUz9BB1iRZMRvaS6RXy/cvKgcVrZoJeMs+SEuYE2eR/5NA2
-	MJwyZ4ro3UOT7KcrNV1RoS7i6u37dioXxmehOaZm2nRcC/XSzgcXQKwAzRpPrb6kLXKFA1XzIlY
-	RIJGm/rtZ4embKxlbQ1c1I61SY4K/0+B8qX9XRXoy/9DorXmYrRysGoHoO0NnY52KbiRMLzL0LD
-	nTXTSz4hzGfz27fCyHsQo9szk5zBWlNtst1cK4THlfUupfX91MzMbY51gKbWk/jBfq8Z3P0u62j
-	GJQtIuqhzz6gpqe9WzdGlSRKVjJLZyRSRFcXcBcExBW/McYKziKkxX1Ue/k61yckO+Um0yNqNFs
-	FuWfKMPP4muqltgfuUr3Tt3UWV9ph9hfsKWh/TlxsTvOaJUDEUeGLZR/I1fu3AI=
-X-Received: by 2002:a17:906:f59c:b0:c42:102f:15f0 with SMTP id a640c23a62f3a-c509614d4c1mr171873666b.3.1794564958075;
-        Fri, 13 Nov 2026 02:15:58 -0800 (PST)
+        bh=zqPqkCGOaO5RL/5NE1UeXRxAO7AqEHmUDDsiHSGxDsA=;
+        b=kYoXPqQ3jQLScb0uitDMrvY1veceTvMEFELIWfanfxJrpzvRaQQ5p1rcZFty7Ys60w
+         uMAFDvb90A8l4nsTEYqm8OV8xXyGYr2jmzSgvsKhlWEGGlhy4Ygx3hhrzd9VmKg/wQiQ
+         X8kwIwClSLelMyIaiksKc2TWrV2AZNZ9dYPELws059d0Tv301TfHgn3O7yhzyb6+pOsD
+         Cul+t/NwpiKaUi0h8AxUkvZvnKqzXgFRFk8tXWP1ju1wAOGdG7+wfTw7lw8u3R22S8Yc
+         rWQh7yiEF9czfdoFEmIAGmRvyA38JDWbfl2Wx4Sa3KpAe4EKQlN456LdQ0pYmunz8VFn
+         G+Ew==
+X-Forwarded-Encrypted: i=1; AL+hErHPhyQ3EqBDQGkenCefUJjsW4BlBtUwroJuKzNqEbS6V1po7kqvhNg6yRaInMALx2iAeJoukvdQlVI7jY4=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+rhPtk7wb3MamydLbHnptNydWCADeK35L7gZrIwefK+946JCNh
+	jTVAtDuzY5eyYW12+puaN2mVaDxQgCjZ/ZUTHFBOHjNKGJbfwD22BN0uc4yV7TI8FlVS
+X-Gm-Gg: AYBFou2HfsYmnbe0jRe/sk821sRQMm72kiEOKPKp5NcT4kdTZrIzn3spSqVGUuaJjBF
+	bCk0s/l0JAKactdmVcq3UWFLXOlSsUjkBctTgloa/G9Z9HzNCHnl04dmaEwKMF4he5O0Hk/mcJ4
+	aa6qlP+WFSNbxDzy9WvjZtOz5TBMD3ShQgxgv/8gUr0JFBmpyX0taHT1VhG7uiOzdJK7cL5I5xF
+	SIC/NbwdpqmDaJZ9Zuq6ez1iZDVKJBeAldtErdGGp9m/c6xOr3BygbO8BqU3eipW1Wc8QYXfKL7
+	dFXvj/rVjkXmV+E3zc7LFLATHIkUlGEq+55ts/aOjHcTd8dC2lxrAcFFYtcjfVG5VGYEgFX6hYl
+	3BO+ZcGg8WGSmNxze7sKrShVsX6IirYsUYR7N2BKHkAe4aIp5MgAI3HS5ZGtcRD3lHYa6V52q99
+	efVAlHWHCjq0C7hCeE40Jtjavn6V5Ul8D1MmAcXE0wVz/eGeotTR+kyeT51pumHSKmvfsOKAiUl
+	k6GTr8ltx0ReCw74iUnu8TI0NzQzwrk2lSJrn1ZeNUikOdP6XQFrlWQSAuKbbcPv/bi8TbbitVc
+	jvMA9Adkmdr7h+4J9Tf+Vc/7bZL1148xqOun+9U2lOMMLGznLQo/sS26kB3Tkow=
+X-Received: by 2002:a05:600c:45d4:b0:4a0:23f:8b0d with SMTP id 5b1f17b1804b1-4bb559f6f31mr43851425e9.2.1794565071804;
+        Fri, 13 Nov 2026 02:17:51 -0800 (PST)
 Received: from [10.0.0.233] (tmo-086-54.customers.d1-online.com. [80.187.86.54])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c5095b7d1b7sm75606066b.74.2026.11.13.02.15.56
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-49c7da37b19sm3937770f8f.5.2026.11.13.02.17.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2026 02:15:57 -0800 (PST)
-Message-ID: <c5a694991af7e9182fd475a20bf4cfd73a13e395.camel@amutable.com>
-Subject: Re: [PATCH RFC 34/41] loop: refuse files on pseudo filesystems as
- backing files
+        Fri, 13 Nov 2026 02:17:51 -0800 (PST)
+Message-ID: <7cde6f3091f9d90593e4a6441723b6b889cc4024.camel@amutable.com>
+Subject: Re: [PATCH RFC 35/41] zloop: refuse zone files on pseudo filesystems
 From: Alexander Mikhalitsyn <alex@amutable.com>
 To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
 Cc: Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>, Josef
@@ -94,10 +93,10 @@ Cc: Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>, Josef
  linuxppc-dev@lists.ozlabs.org, 	linux-usb@vger.kernel.org, Amir Goldstein
  <amir73il@gmail.com>, 	linux-erofs@lists.ozlabs.org,
  linux-kselftest@vger.kernel.org
-Date: Fri, 13 Nov 2026 11:15:56 +0100
-In-Reply-To: <20261110-work-loop-pseudo-v1-34-4c998976c6c7@kernel.org>
+Date: Fri, 13 Nov 2026 11:17:48 +0100
+In-Reply-To: <20261110-work-loop-pseudo-v1-35-4c998976c6c7@kernel.org>
 References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
-	 <20261110-work-loop-pseudo-v1-34-4c998976c6c7@kernel.org>
+	 <20261110-work-loop-pseudo-v1-35-4c998976c6c7@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -122,77 +121,35 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 On Tue, 2026-11-10 at 10:14 +0100, Christian Brauner wrote:
-> Currently loop accepts any regular file that implements ->read_iter()
-> as
-> a backing file and any that also implements ->write_iter() as a
-> writable
-> one. That includes files on procfs, sysfs and other pseudo
-> filesystems.
-> For example, /proc/kcore attaches read-only as a loop device the size
-> of
-> the kernel's virtual address space, 64 PiB with 5-level paging. sysfs
-> attributes attach read-write as 4096 byte loop devices. Writing a
-> block
-> to the loop device of /sys/kernel/mm/transparent_hugepage/enabled
-> changes the THP setting.
->=20
-> That's not just nonsensical, it can be abused. Loop calls -
-> >read_iter()
-> and ->write_iter() of the backing file directly from its worker which
-> runs with kernel credentials. But pseudo files enforce part of their
-> access rules at read and write time against current. Dozens of sysfs
-> ->show() and ->store() methods call capable(). Behind a loop device
-> all
-> of these checks are done against the loop worker instead of the task
-> that opened the file. And setting up a loop device requires no
-> capabilities, only access to the device nodes. So on v7.4-rc1:
->=20
-> - uid 0 without any capabilities can't write to
-> /sys/kernel/reboot/mode
-> =C2=A0 as mode_store() requires CAP_SYS_BOOT. Writing "warm" through a
-> loop
-> =C2=A0 device works.
->=20
-> - uid 0 without any capabilities can't read the files in
-> =C2=A0 /sys/firmware/dmi/entries/*/ as dmi_sysfs_attr_show() requires
-> =C2=A0 CAP_SYS_ADMIN. Reading them through a loop device works.
->=20
-> - An unprivileged container that was handed a loop device can't
-> change
-> =C2=A0 gro_flush_timeout of its own network devices as
-> =C2=A0 gro_flush_timeout_store() requires CAP_NET_ADMIN in the initial
-> user
-> =C2=A0 namespace. Writing it through a loop device works.
->=20
-> The same goes for hard_offline_page, the md and sd attributes, rfkill
-> and others.
->=20
-> Refuse files on pseudo filesystems as loop backing files. Note that
-> file_is_pseudo() looks through overlayfs so stacking overlayfs on top
-> of
-> sysfs doesn't get around this.
+> zloop opens its zone files by name below the base directory but a
+> bind
+> mount can put any file there, including a procfs or sysfs file.
+> Refuse
+> files on pseudo filesystems as zone files just like loop does.
 >=20
 > Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
 
 Reviewed-by: Alexander Mikhalitsyn <alex@amutable.com>
 
 > ---
-> =C2=A0drivers/block/loop.c | 3 +++
-> =C2=A01 file changed, 3 insertions(+)
+> =C2=A0drivers/block/zloop.c | 5 +++++
+> =C2=A01 file changed, 5 insertions(+)
 >=20
-> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-> index c96e35c3ef42..1482580a1979 100644
-> --- a/drivers/block/loop.c
-> +++ b/drivers/block/loop.c
-> @@ -537,6 +537,9 @@ static int loop_check_backing_file(struct file
-> *file)
-> =C2=A0	if ((file->f_mode & FMODE_WRITE) && !file->f_op->write_iter)
-> =C2=A0		return -EINVAL;
+> diff --git a/drivers/block/zloop.c b/drivers/block/zloop.c
+> index 65634a39b0bf..dcc06dd47b04 100644
+> --- a/drivers/block/zloop.c
+> +++ b/drivers/block/zloop.c
+> @@ -1137,6 +1137,11 @@ static int zloop_init_zone(struct zloop_device
+> *zlo, struct zloop_options *opts,
+> =C2=A0		goto out_fput;
+> =C2=A0	}
 > =C2=A0
-> +	if (file_is_pseudo(file))
-> +		return -EINVAL;
+> +	if (file_is_pseudo(zone->file)) {
+> +		ret =3D -EINVAL;
+> +		goto out_fput;
+> +	}
 > +
-> =C2=A0	return 0;
-> =C2=A0}
-> =C2=A0
+> =C2=A0	if (zlo->block_size) {
+> =C2=A0		ret =3D zloop_get_block_size(zlo, zone);
+> =C2=A0		if (ret)
 
