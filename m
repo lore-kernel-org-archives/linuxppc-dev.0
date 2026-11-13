@@ -2,81 +2,63 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2EA7606A33F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:27:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D6FCD606A890
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:29:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=hEmKYu4c
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IVa1pdaT
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5Lt5Kw2z3bpn;
-	Sat, 14 Nov 2026 05:26:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594406;
-	cv=none; b=YzsjHYxzGaOZxUJJvn+VIZMakHDXjQ4wh9T76omuzQPnun8bb703b4vgW/riEc6WT72tF4UmTMr/47BCqnsaBpSoJd+TcFAYikCwqxL7C32V/y6x3R60W3vFq1J//WZqz38E7I+52ZBUQjx0hTl83Yc+D08FlwNSLEmGNrCEF6+6N/k6K3pECxP3N0YYP+eXROORnpnTRI/J55cDGQJz8fqvArYvwoklBmc5uR469oBpHTU/pLhaS4yqz6myIob6ybUWmAWtKVRhpZ4LY5kVbI0XvImLt8/h/mIFaZAd1WcLG23KoG49yCjxKRzWn/LNSUuPyB08n3kEp5rRSJ5v+w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5Pd4P2yz2xg9;
+	Sat, 14 Nov 2026 05:29:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594549;
+	cv=none; b=aZj8RvOPk/t1tbdtJrNCiKwoVcuhXS+UGtyPCVIx2MMOBxl6d1Wogy8XWq5w3KWomwFf5xVuDj4F4ZydN0VvjRUmFMxGXZTlWSW5PxitdwHb+4y0F/9ptNoH7KP8tIXw7t8Sg8P7esA3YMWCDw/2rKpcW4gpN0TsO1Fd9jzodxAxrhYqW2h0UFqj/KyinKhZapOoIyoV0SNLJ705BRluTkvhurLNtbwjx0cAyxJctmdJNQduJaaHY4UKJAVJTdFKFCeGua2udcFFjT67J2Xlf/1r8h3afyPdhzS08ABEryi9/50Be2gD+Tbm6n4bXdYrEALgMpYlgp675zuedDypNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794594406; c=relaxed/relaxed;
-	bh=1AnoyR0j7y5hdrymYbL+ph5cczEf+Al0Tzoil8ZfR/Q=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Zel7lU6vTWteYMxo7QZ7Uz3svIsYfmmu1RKbSbRwxHNkNCM7pLu9OYOcoZx6/u0YXj7veOOjs2s8mWLskdVuB/A6qqgsLOdWhoLWWCokj+Vm3qZfROY3wEEnPO1IhqGzWT12Blr89LXUKdAbFvom08hTRlOb97Zqz27NmmFAxvziDzq21i/3G0W7hyUEzy3b3hbuqzerDalVrWyLFgFIzr9j6JYkH7Ygm0joRqfIVj3xAEBWWjKBXAZO1NIKyXTlWFkeogSx8Px447nIP+TupS44b0liIL+EeMlgNQYTP5HwbaDW+1rL4NQk0PjXNz7GV5R6cSRZo7F57EcpSOa/7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=hEmKYu4c; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+93247ba2969c1d9fc2b6+8482+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=desiato.srs.infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
+	t=1794594549; c=relaxed/relaxed;
+	bh=VA8bk9ERwXuNEDBoJnHNSRw6hKUgevqXTx1c8nNVso8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Vc05kWSMdIHjs7BfPcJQ2K9VLi0vBU1X7jlMv1+rl5kPcfxKraeaGIoTbPspdPjGTKvNycHlTSS2XamS0LYTBP7CFXGq5E/hIloenf69SzHTDkvmdNqfr1tTgpqCUr2alILO1ggz9o+aqVLPULvnX1xkrbmyxlZF+LPMXiJMOjJX6XbUlK2qaE3Q3DtC6XQQc5lYPrHXAhb23sSI5XVxO3uTKQLMLMmxUe31+AA0L+0IonWCfo166jzyio2YK8SGJBfgFcAcoef7Bj+n2pZckYAGYJQuI38TgMEqY/E9Amo7Ak8sLaxhHY6te+kUO21S20mMCHvkHJtf7qLtIsJCOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IVa1pdaT; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=hEmKYu4c;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=IVa1pdaT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=desiato.srs.infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=batv+93247ba2969c1d9fc2b6+8482+infradead.org+dwmw2@desiato.srs.infradead.org; receiver=lists.ozlabs.org)
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5Lm31MMz2xnv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:26:39 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Sender:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
-	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=1AnoyR0j7y5hdrymYbL+ph5cczEf+Al0Tzoil8ZfR/Q=; b=hEmKYu4crsHN6alaS6gx4febeC
-	bBb2NUhbMZ5nWRl3GR3qDIUZZj9V3hZFviUpX5E2SmikEwTum+wkvcL4hR0+ud4EXfbfT1pTv97r7
-	H4nSpPnODolqqQyw81YXnMDLl0QPwSyDqGfhmTW7fXZZ8+vwMO0rVE5rjn8OPd9mCSstFbUmL8VKp
-	C4gP2NpnmJg/mzEAIWov1vU4Y6mRSlilz+pPxacK8RJLR6siF04H7xrN0yrsJXKReF40AqvkNEXAM
-	L+zp+1MsgIWI5PCEqROMMPtxAiLdq0lcO2na+uqUF9pTLSSafp6xbLjyHWyynqv6BPqWFTL6CBVCY
-	e26pXl9g==;
-Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
-	by desiato.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyU-0000000BeOY-15uE;
-	Fri, 13 Nov 2026 18:26:30 +0000
-Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRvyR-00000000LY7-2B60;
-	Fri, 13 Nov 2026 18:26:07 +0000
-From: David Woodhouse <dwmw2@infradead.org>
-To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
-Cc: Paolo Bonzini <pbonzini@redhat.com>,
-	Sean Christopherson <seanjc@google.com>,
-	Tom Lendacky <thomas.lendacky@amd.com>,
-	ashish.kalra@amd.com,
-	michael.roth@amd.com,
-	nsaenz@amazon.com,
-	anelkz@amazon.de,
-	James.Bottomley@HansenPartnership.com,
-	Melody Wang <huibo.wang@amd.com>,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	kvmarm@lists.linux.dev,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	kvm-riscv@lists.infradead.org,
-	x86@kernel.org,
-	coconut-svsm@lists.linux.dev,
-	joerg.roedel@amd.com,
-	Mushahid Hussain <hmushi@amazon.co.uk>,
-	Sriram Nambakam <snambakam@linux.microsoft.com>,
-	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [RFC PATCH 05/13] KVM: selftests: Cover plane run-state ioctls in planes_test
-Date: Fri, 13 Nov 2026 11:25:59 -0700
-Message-ID: <20261113182607.82813-6-dwmw2@infradead.org>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
-References: <20260608144252.351443-1-joro@8bytes.org>
- <20261113182607.82813-1-dwmw2@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5Pc3Dqgz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:29:08 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id A73C7609ED;
+	Fri, 13 Nov 2026 18:29:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B26B1F000C5;
+	Fri, 13 Nov 2026 18:29:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794594545;
+	bh=VA8bk9ERwXuNEDBoJnHNSRw6hKUgevqXTx1c8nNVso8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=IVa1pdaTdvJPJW//quHT797JAknHetwTWP7XqIoxrHXy3p4kDfkDlbx/DJJxbKsog
+	 rVFaQbg1Xck2HGSyWeu56XkGjrKwJPV0lS+xf5BDNqkkNmvShfyS2sbc1jFKZIOewA
+	 dJiBcGQ9c5b79av0BG88cuTvdQG51W4RdcMPeVA/yOq6gfQ9JazFJwgKGV1TsFFpez
+	 G3/qzHYX9Fsiu09GVI+/44p89d/EhN8NqzC+7WCjmY2yfIdF6US3wYkdAj9qcHtMmW
+	 ulHbdzl8VNIr0omw2Ava7FxqFWAvagnGxDQdCSQB/MMZ6HIsYv3Bza2BR2Dz0h2hSV
+	 Lt4YVL9fVueKA==
+Date: Fri, 13 Nov 2026 18:28:58 +0000
+From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+To: Arnd Bergmann <arnd@kernel.org>
+Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>, 
+	Andrew Morton <akpm@linux-foundation.org>, Andreas Larsson <andreas@gaisler.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	"David Hildenbrand (Arm)" <david@kernel.org>, Jason Gunthorpe <jgg@nvidia.com>, 
+	Linus Walleij <linus.walleij@linaro.org>, Matthew Wilcox <willy@infradead.org>, 
+	Malin Jonsson <malin.jonsson@est.tech>, Richard Weinberger <richard@nod.at>, 
+	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
+	linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v2 1/6] ARM: remove support for highmem on VIVT
+Message-ID: <avdWJOWX3X2KlZfr@gremlin>
+References: <20261112112528.1116405-1-arnd@kernel.org>
+ <20261112112528.1116405-2-arnd@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,271 +72,451 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: David Woodhouse <dwmw2@infradead.org>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by desiato.infradead.org. See http://www.infradead.org/rpr.html
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261112112528.1116405-2-arnd@kernel.org>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: David Woodhouse <dwmw@amazon.co.uk>
+On Thu, Nov 12, 2026 at 12:25:23PM +0100, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> As Jason Gunthorpe noticed, supporting VIVT caches adds some complications
+> to highmem that can be avoided these days:
+>
+> While all ARMv4 and ARMv5 CPUs use virtually indexed caches, they no
+> longer really need highmem because we have practically discontinued
+> support for large-memory configurations already.  The only machines I
+> could find anywhere for memory on ARMv5 are:
+>
+>  - The Intel IOP platform was used on relatively large memory
+>    configurations but we dropped kernel support in 2019 and 2022,
+>    respectively.
+>
+>  - The Marvell mv78xx0 platform was the initial user of Arm highmem,
+>    with the DB-78x00-BP supporting 2GB of memory. The only remaining
+>    board file is for Buffalo WLX (Terastation Duo), which has only
+>    512MB and is going to be removed soon.
+>
+>  - The Kirkwood platform supports 2GB, and there are actually boards
+>    with that configuration that can still work. However, there are
+>    no known users of the OpenBlocks A7, and the Freebox V6 is already
+>    using CONFIG_VMSPLIT_2G to avoid enabling highmem.
+>
+> Remove the Arm specific portions here, making CONFIG_HIGHMEM conditional
+> on modern caches. Since the cache type is enforced by Kconfig, no
+> boot time check is needed here.
+>
+> Link: https://lore.kernel.org/all/20251219171412.GG254720@nvidia.com/
+> Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Assert that a new plane-1 vCPU starts with KVM_PLANE_RUN_STATE_INACTIVE
-and plane 0's with no flags, that every valid combination of
-KVM_PLANE_RUN_STATE_USER_HOLD, KVM_PLANE_RUN_STATE_SUSPENDED and
-KVM_PLANE_RUN_STATE_INACTIVE reads back as written (so a saved state
-restores), and that clearing them reads back as runnable. INACTIVE on
-plane 0, INACTIVE together with SUSPENDED and the lowest undefined bit
-are refused with EINVAL, and a refused SET leaves an existing hold in
-place. On a VM that did not enable more than one plane both ioctls fail
-with EINVAL.
+Really lovely! All looks reasonable AFAICT so:
 
-With plane 0 held and nothing runnable, KVM_RUN still honours
-immediate_exit with EINTR, and otherwise exits with KVM_EXIT_PLANE_EVENT
-and cause KVM_PLANE_EVENT_HELD, with kvm_run's if_flag and apic_base
-filled in as on any other exit. That exit leaves registers marked in
-kvm_dirty_regs unconsumed and unrefreshed, and once plane 1 is released
-they land in plane 1, not plane 0. If plane 0 holds a pending I/O
-completion, here from a real-mode OUT, a held KVM_RUN fails with EBUSY,
-with or without immediate_exit, leaves the KVM_EXIT_IO in kvm_run and
-plane 0's RIP on the OUT, and the OUT retires once plane 0 is released.
+Acked-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- tools/testing/selftests/kvm/x86/planes_test.c | 198 +++++++++++++++++-
- 1 file changed, 196 insertions(+), 2 deletions(-)
+> ---
+>  arch/arm/Kconfig                    |  1 +
+>  arch/arm/configs/gemini_defconfig   |  1 -
+>  arch/arm/configs/multi_v5_defconfig |  1 -
+>  arch/arm/configs/mvebu_v5_defconfig |  1 -
+>  arch/arm/include/asm/highmem.h      | 56 ++---------------------------
+>  arch/arm/mach-omap2/Kconfig         |  2 +-
+>  arch/arm/mm/cache-feroceon-l2.c     | 31 ++--------------
+>  arch/arm/mm/cache-xsc3l2.c          | 47 +++---------------------
+>  arch/arm/mm/dma-mapping.c           | 12 ++-----
+>  arch/arm/mm/flush.c                 | 19 +++-------
+>  10 files changed, 17 insertions(+), 154 deletions(-)
+>
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 0cc289a7184a..fd01ccab9c12 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -1208,6 +1208,7 @@ config ARCH_SPARSEMEM_ENABLE
+>  config HIGHMEM
+>  	bool "High Memory Support"
+>  	depends on MMU
+> +	depends on !CPU_CACHE_VIVT
+>  	select KMAP_LOCAL
+>  	select KMAP_LOCAL_NON_LINEAR_PTE_ARRAY
+>  	help
+> diff --git a/arch/arm/configs/gemini_defconfig b/arch/arm/configs/gemini_defconfig
+> index 5860b2fe7d1f..95debf46581b 100644
+> --- a/arch/arm/configs/gemini_defconfig
+> +++ b/arch/arm/configs/gemini_defconfig
+> @@ -11,7 +11,6 @@ CONFIG_KEXEC=y
+>  CONFIG_ARCH_MULTI_V4=y
+>  # CONFIG_ARCH_MULTI_V7 is not set
+>  CONFIG_ARCH_GEMINI=y
+> -CONFIG_HIGHMEM=y
+>  CONFIG_CMDLINE="console=ttyS0,115200n8"
+>  CONFIG_PM=y
+>  CONFIG_PARTITION_ADVANCED=y
+> diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+> index a0d2fb2fcf9a..bc34b6026e37 100644
+> --- a/arch/arm/configs/multi_v5_defconfig
+> +++ b/arch/arm/configs/multi_v5_defconfig
+> @@ -27,7 +27,6 @@ CONFIG_MACH_D2NET_DT=y
+>  CONFIG_MACH_MSS2_DT=y
+>  CONFIG_ARCH_SUNXI=y
+>  CONFIG_ARCH_VERSATILE=y
+> -CONFIG_HIGHMEM=y
+>  CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_CPU_FREQ=y
+> diff --git a/arch/arm/configs/mvebu_v5_defconfig b/arch/arm/configs/mvebu_v5_defconfig
+> index dbc6c511e70b..5adf6c75304e 100644
+> --- a/arch/arm/configs/mvebu_v5_defconfig
+> +++ b/arch/arm/configs/mvebu_v5_defconfig
+> @@ -13,7 +13,6 @@ CONFIG_MACH_RD88F5182_DT=y
+>  CONFIG_MACH_LINKSTATION_MINI=y
+>  CONFIG_MACH_D2NET_DT=y
+>  CONFIG_MACH_MSS2_DT=y
+> -CONFIG_HIGHMEM=y
+>  CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_CPU_FREQ=y
+> diff --git a/arch/arm/include/asm/highmem.h b/arch/arm/include/asm/highmem.h
+> index bdb209e002a4..67ed46d1922b 100644
+> --- a/arch/arm/include/asm/highmem.h
+> +++ b/arch/arm/include/asm/highmem.h
+> @@ -11,66 +11,14 @@
+>  #define PKMAP_NR(virt)		(((virt) - PKMAP_BASE) >> PAGE_SHIFT)
+>  #define PKMAP_ADDR(nr)		(PKMAP_BASE + ((nr) << PAGE_SHIFT))
+>
+> -#define flush_cache_kmaps() \
+> -	do { \
+> -		if (cache_is_vivt()) \
+> -			flush_cache_all(); \
+> -	} while (0)
+> +#define flush_cache_kmaps() do { } while (0)
+>
+>  extern pte_t *pkmap_page_table;
+>
+> -/*
+> - * The reason for kmap_high_get() is to ensure that the currently kmap'd
+> - * page usage count does not decrease to zero while we're using its
+> - * existing virtual mapping in an atomic context.  With a VIVT cache this
+> - * is essential to do, but with a VIPT cache this is only an optimization
+> - * so not to pay the price of establishing a second mapping if an existing
+> - * one can be used.  However, on platforms without hardware TLB maintenance
+> - * broadcast, we simply cannot use ARCH_NEEDS_KMAP_HIGH_GET at all since
+> - * the locking involved must also disable IRQs which is incompatible with
+> - * the IPI mechanism used by global TLB operations.
+> - */
+> -#define ARCH_NEEDS_KMAP_HIGH_GET
+> -#if defined(CONFIG_SMP) && defined(CONFIG_CPU_TLB_V6)
+> -#undef ARCH_NEEDS_KMAP_HIGH_GET
+> -#if defined(CONFIG_HIGHMEM) && defined(CONFIG_CPU_CACHE_VIVT)
+> -#error "The sum of features in your kernel config cannot be supported together"
+> -#endif
+> -#endif
+> -
+> -/*
+> - * Needed to be able to broadcast the TLB invalidation for kmap.
+> - */
+> -#ifdef CONFIG_ARM_ERRATA_798181
+> -#undef ARCH_NEEDS_KMAP_HIGH_GET
+> -#endif
+> -
+> -#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+> -extern void *kmap_high_get(const struct page *page);
+> -
+> -static inline void *arch_kmap_local_high_get(const struct page *page)
+> -{
+> -	if (IS_ENABLED(CONFIG_DEBUG_HIGHMEM) && !cache_is_vivt())
+> -		return NULL;
+> -	return kmap_high_get(page);
+> -}
+> -#define arch_kmap_local_high_get arch_kmap_local_high_get
+> -
+> -#else /* ARCH_NEEDS_KMAP_HIGH_GET */
+> -static inline void *kmap_high_get(const struct page *page)
+> -{
+> -	return NULL;
+> -}
+> -#endif /* !ARCH_NEEDS_KMAP_HIGH_GET */
+> -
+>  #define arch_kmap_local_post_map(vaddr, pteval)				\
+>  	local_flush_tlb_kernel_page(vaddr)
+>
+> -#define arch_kmap_local_pre_unmap(vaddr)				\
+> -do {									\
+> -	if (cache_is_vivt())						\
+> -		__cpuc_flush_dcache_area((void *)vaddr, PAGE_SIZE);	\
+> -} while (0)
+> +#define arch_kmap_local_pre_unmap(vaddr) do { } while (0)
+>
+>  #define arch_kmap_local_post_unmap(vaddr)				\
+>  	local_flush_tlb_kernel_page(vaddr)
+> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+> index 79f8afe3a6bf..f0f1d7a8640c 100644
+> --- a/arch/arm/mach-omap2/Kconfig
+> +++ b/arch/arm/mach-omap2/Kconfig
+> @@ -135,7 +135,7 @@ config ARCH_OMAP2PLUS_TYPICAL
+>  	bool "Typical OMAP configuration"
+>  	default y
+>  	select AEABI
+> -	select HIGHMEM
+> +	select HIGHMEM if !CPU_CACHE_VIVT
+>  	select I2C
+>  	select I2C_OMAP
+>  	select MENELAUS if ARCH_OMAP2
+> diff --git a/arch/arm/mm/cache-feroceon-l2.c b/arch/arm/mm/cache-feroceon-l2.c
+> index 2bfefb252ffd..1316b6ab295a 100644
+> --- a/arch/arm/mm/cache-feroceon-l2.c
+> +++ b/arch/arm/mm/cache-feroceon-l2.c
+> @@ -12,7 +12,6 @@
+>  #include <linux/init.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> -#include <linux/highmem.h>
+>  #include <linux/io.h>
+>  #include <asm/cacheflush.h>
+>  #include <asm/cp15.h>
+> @@ -38,30 +37,6 @@
+>   * between which we don't want to be preempted.
+>   */
+>
+> -static inline unsigned long l2_get_va(unsigned long paddr)
+> -{
+> -#ifdef CONFIG_HIGHMEM
+> -	/*
+> -	 * Because range ops can't be done on physical addresses,
+> -	 * we simply install a virtual mapping for it only for the
+> -	 * TLB lookup to occur, hence no need to flush the untouched
+> -	 * memory mapping afterwards (note: a cache flush may happen
+> -	 * in some circumstances depending on the path taken in kunmap_atomic).
+> -	 */
+> -	void *vaddr = kmap_atomic_pfn(paddr >> PAGE_SHIFT);
+> -	return (unsigned long)vaddr + (paddr & ~PAGE_MASK);
+> -#else
+> -	return __phys_to_virt(paddr);
+> -#endif
+> -}
+> -
+> -static inline void l2_put_va(unsigned long vaddr)
+> -{
+> -#ifdef CONFIG_HIGHMEM
+> -	kunmap_atomic((void *)vaddr);
+> -#endif
+> -}
+> -
+>  static inline void l2_clean_pa(unsigned long addr)
+>  {
+>  	__asm__("mcr p15, 1, %0, c15, c9, 3" : : "r" (addr));
+> @@ -78,14 +53,13 @@ static inline void l2_clean_pa_range(unsigned long start, unsigned long end)
+>  	 */
+>  	BUG_ON((start ^ end) >> PAGE_SHIFT);
+>
+> -	va_start = l2_get_va(start);
+> +	va_start = __phys_to_virt(start);
+>  	va_end = va_start + (end - start);
+>  	raw_local_irq_save(flags);
+>  	__asm__("mcr p15, 1, %0, c15, c9, 4\n\t"
+>  		"mcr p15, 1, %1, c15, c9, 5"
+>  		: : "r" (va_start), "r" (va_end));
+>  	raw_local_irq_restore(flags);
+> -	l2_put_va(va_start);
+>  }
+>
+>  static inline void l2_clean_inv_pa(unsigned long addr)
+> @@ -109,14 +83,13 @@ static inline void l2_inv_pa_range(unsigned long start, unsigned long end)
+>  	 */
+>  	BUG_ON((start ^ end) >> PAGE_SHIFT);
+>
+> -	va_start = l2_get_va(start);
+> +	va_start = __phys_to_virt(start);
+>  	va_end = va_start + (end - start);
+>  	raw_local_irq_save(flags);
+>  	__asm__("mcr p15, 1, %0, c15, c11, 4\n\t"
+>  		"mcr p15, 1, %1, c15, c11, 5"
+>  		: : "r" (va_start), "r" (va_end));
+>  	raw_local_irq_restore(flags);
+> -	l2_put_va(va_start);
+>  }
+>
+>  static inline void l2_inv_all(void)
+> diff --git a/arch/arm/mm/cache-xsc3l2.c b/arch/arm/mm/cache-xsc3l2.c
+> index d20d7af02d10..477077387039 100644
+> --- a/arch/arm/mm/cache-xsc3l2.c
+> +++ b/arch/arm/mm/cache-xsc3l2.c
+> @@ -5,7 +5,6 @@
+>   * Copyright (C) 2007 ARM Limited
+>   */
+>  #include <linux/init.h>
+> -#include <linux/highmem.h>
+>  #include <asm/cp15.h>
+>  #include <asm/cputype.h>
+>  #include <asm/cacheflush.h>
+> @@ -55,34 +54,6 @@ static inline void xsc3_l2_inv_all(void)
+>  	dsb();
+>  }
+>
+> -static inline void l2_unmap_va(unsigned long va)
+> -{
+> -#ifdef CONFIG_HIGHMEM
+> -	if (va != -1)
+> -		kunmap_atomic((void *)va);
+> -#endif
+> -}
+> -
+> -static inline unsigned long l2_map_va(unsigned long pa, unsigned long prev_va)
+> -{
+> -#ifdef CONFIG_HIGHMEM
+> -	unsigned long va = prev_va & PAGE_MASK;
+> -	unsigned long pa_offset = pa << (32 - PAGE_SHIFT);
+> -	if (unlikely(pa_offset < (prev_va << (32 - PAGE_SHIFT)))) {
+> -		/*
+> -		 * Switching to a new page.  Because cache ops are
+> -		 * using virtual addresses only, we must put a mapping
+> -		 * in place for it.
+> -		 */
+> -		l2_unmap_va(prev_va);
+> -		va = (unsigned long)kmap_atomic_pfn(pa >> PAGE_SHIFT);
+> -	}
+> -	return va + (pa_offset >> (32 - PAGE_SHIFT));
+> -#else
+> -	return __phys_to_virt(pa);
+> -#endif
+> -}
+> -
+>  static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+>  {
+>  	unsigned long vaddr;
+> @@ -92,13 +63,11 @@ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+>  		return;
+>  	}
+>
+> -	vaddr = -1;  /* to force the first mapping */
+> -
+>  	/*
+>  	 * Clean and invalidate partial first cache line.
+>  	 */
+>  	if (start & (CACHE_LINE_SIZE - 1)) {
+> -		vaddr = l2_map_va(start & ~(CACHE_LINE_SIZE - 1), vaddr);
+> +		vaddr = __phys_to_virt(start & ~(CACHE_LINE_SIZE - 1));
+>  		xsc3_l2_clean_mva(vaddr);
+>  		xsc3_l2_inv_mva(vaddr);
+>  		start = (start | (CACHE_LINE_SIZE - 1)) + 1;
+> @@ -108,7 +77,7 @@ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+>  	 * Invalidate all full cache lines between 'start' and 'end'.
+>  	 */
+>  	while (start < (end & ~(CACHE_LINE_SIZE - 1))) {
+> -		vaddr = l2_map_va(start, vaddr);
+> +		vaddr = __phys_to_virt(start);
+>  		xsc3_l2_inv_mva(vaddr);
+>  		start += CACHE_LINE_SIZE;
+>  	}
+> @@ -117,13 +86,11 @@ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+>  	 * Clean and invalidate partial last cache line.
+>  	 */
+>  	if (start < end) {
+> -		vaddr = l2_map_va(start, vaddr);
+> +		vaddr = __phys_to_virt(start);
+>  		xsc3_l2_clean_mva(vaddr);
+>  		xsc3_l2_inv_mva(vaddr);
+>  	}
+>
+> -	l2_unmap_va(vaddr);
+> -
+>  	dsb();
+>  }
+>
+> @@ -135,13 +102,11 @@ static void xsc3_l2_clean_range(unsigned long start, unsigned long end)
+>
+>  	start &= ~(CACHE_LINE_SIZE - 1);
+>  	while (start < end) {
+> -		vaddr = l2_map_va(start, vaddr);
+> +		vaddr = __phys_to_virt(start);
+>  		xsc3_l2_clean_mva(vaddr);
+>  		start += CACHE_LINE_SIZE;
+>  	}
+>
+> -	l2_unmap_va(vaddr);
+> -
+>  	dsb();
+>  }
+>
+> @@ -178,14 +143,12 @@ static void xsc3_l2_flush_range(unsigned long start, unsigned long end)
+>
+>  	start &= ~(CACHE_LINE_SIZE - 1);
+>  	while (start < end) {
+> -		vaddr = l2_map_va(start, vaddr);
+> +		vaddr = __phys_to_virt(start);
+>  		xsc3_l2_clean_mva(vaddr);
+>  		xsc3_l2_inv_mva(vaddr);
+>  		start += CACHE_LINE_SIZE;
+>  	}
+>
+> -	l2_unmap_va(vaddr);
+> -
+>  	dsb();
+>  }
+>
+> diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+> index fb2eb0ed7bb8..917a546af0b9 100644
+> --- a/arch/arm/mm/dma-mapping.c
+> +++ b/arch/arm/mm/dma-mapping.c
+> @@ -647,18 +647,10 @@ static void dma_cache_maint_page(phys_addr_t phys, size_t size,
+>  			if (len + offset > PAGE_SIZE)
+>  				len = PAGE_SIZE - offset;
+>
+> -			if (cache_is_vipt_nonaliasing()) {
+> -				vaddr = kmap_atomic_pfn(pfn);
+> +			vaddr = kmap_atomic(phys_to_page(phys));
+> +			if (vaddr) {
+>  				op(vaddr + offset, len, dir);
+>  				kunmap_atomic(vaddr);
+> -			} else {
+> -				struct page *page = phys_to_page(phys);
+> -
+> -				vaddr = kmap_high_get(page);
+> -				if (vaddr) {
+> -					op(vaddr + offset, len, dir);
+> -					kunmap_high(page);
+> -				}
+>  			}
+>  		} else {
+>  			phys += offset;
+> diff --git a/arch/arm/mm/flush.c b/arch/arm/mm/flush.c
+> index 66270904f874..e21c5af6f34c 100644
+> --- a/arch/arm/mm/flush.c
+> +++ b/arch/arm/mm/flush.c
+> @@ -208,21 +208,10 @@ void __flush_dcache_folio(struct address_space *mapping, struct folio *folio)
+>  					folio_size(folio));
+>  	} else {
+>  		unsigned long i;
+> -		if (cache_is_vipt_nonaliasing()) {
+> -			for (i = 0; i < folio_nr_pages(folio); i++) {
+> -				void *addr = kmap_local_folio(folio,
+> -								i * PAGE_SIZE);
+> -				__cpuc_flush_dcache_area(addr, PAGE_SIZE);
+> -				kunmap_local(addr);
+> -			}
+> -		} else {
+> -			for (i = 0; i < folio_nr_pages(folio); i++) {
+> -				void *addr = kmap_high_get(folio_page(folio, i));
+> -				if (addr) {
+> -					__cpuc_flush_dcache_area(addr, PAGE_SIZE);
+> -					kunmap_high(folio_page(folio, i));
+> -				}
+> -			}
+> +		for (i = 0; i < folio_nr_pages(folio); i++) {
+> +			void *addr = kmap_local_folio(folio, i * PAGE_SIZE);
+> +			__cpuc_flush_dcache_area(addr, PAGE_SIZE);
+> +			kunmap_local(addr);
+>  		}
+>  	}
+>
+> --
+> 2.53.0
+>
 
-diff --git a/tools/testing/selftests/kvm/x86/planes_test.c b/tools/testing/selftests/kvm/x86/planes_test.c
-index f7db6cb6807d..968f1b099b8e 100644
---- a/tools/testing/selftests/kvm/x86/planes_test.c
-+++ b/tools/testing/selftests/kvm/x86/planes_test.c
-@@ -8,6 +8,10 @@
- #include <string.h>
- 
- #include "kvm_util.h"
-+#include "processor.h"
-+
-+/* Where the run-state test puts plane 0's one instruction. */
-+#define CODE_GPA	0x1000
- 
- /*
-  * Whether this host lets a VM have more than one plane: the opt-in also
-@@ -61,12 +65,22 @@ static void test_enable_cap_bounds(void)
- static void test_enable_cap_too_late(void)
- {
- 	struct kvm_vm *vm = vm_create_barebones_irqchip(true);
--
--	__vm_vcpu_add(vm, 0);
-+	struct kvm_vcpu *vcpu = __vm_vcpu_add(vm, 0);
- 
- 	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 2), -1);
- 	TEST_ASSERT_EQ(errno, EEXIST);
- 
-+	/* Without more than one user-managed plane there is no run state. */
-+	{
-+		u64 flags;
-+
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu, KVM_GET_PLANE_RUN_STATE, &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+		flags = 0;
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu, KVM_SET_PLANE_RUN_STATE, &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+	}
-+
- 	kvm_vm_free(vm);
- }
- 
-@@ -107,6 +121,186 @@ static void test_plane_lifecycle(void)
- 	vcpu0 = __vm_vcpu_add(vm, 0);
- 	vcpu1 = __vm_plane_vcpu_add(vcpu0, plane);
- 
-+	/*
-+	 * A new plane-1 vCPU is inactive, and plane 0's has no flags.
-+	 * Every valid combination reads back as written, so a saved state
-+	 * restores; unknown bits, INACTIVE on plane 0 and INACTIVE together
-+	 * with SUSPENDED are refused.
-+	 */
-+	{
-+		static const u64 states[] = {
-+			KVM_PLANE_RUN_STATE_USER_HOLD,
-+			KVM_PLANE_RUN_STATE_SUSPENDED,
-+			KVM_PLANE_RUN_STATE_USER_HOLD |
-+				KVM_PLANE_RUN_STATE_SUSPENDED,
-+			KVM_PLANE_RUN_STATE_INACTIVE,
-+			KVM_PLANE_RUN_STATE_USER_HOLD |
-+				KVM_PLANE_RUN_STATE_INACTIVE,
-+			0,
-+		};
-+		u64 flags = ~0ULL;
-+		int i;
-+
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(flags, KVM_PLANE_RUN_STATE_INACTIVE);
-+		flags = ~0ULL;
-+		vcpu_ioctl(vcpu0, KVM_GET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(flags, 0);
-+
-+		flags = KVM_PLANE_RUN_STATE_INACTIVE;
-+		TEST_ASSERT_EQ(__vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE,
-+					    &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+
-+		for (i = 0; i < ARRAY_SIZE(states); i++) {
-+			flags = states[i];
-+			plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+			flags = ~0ULL;
-+			plane_vcpu_ioctl(vcpu1, KVM_GET_PLANE_RUN_STATE, &flags);
-+			TEST_ASSERT_EQ(flags, states[i]);
-+		}
-+
-+		/* A refused SET leaves the hold in place. */
-+		flags = KVM_PLANE_RUN_STATE_USER_HOLD;
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+
-+		flags = KVM_PLANE_RUN_STATE_INACTIVE | KVM_PLANE_RUN_STATE_SUSPENDED;
-+		TEST_ASSERT_EQ(__plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE,
-+						  &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+
-+		/* The lowest bit that no flag defines. */
-+		flags = ~(u64)(KVM_PLANE_RUN_STATE_USER_HOLD |
-+			       KVM_PLANE_RUN_STATE_SUSPENDED |
-+			       KVM_PLANE_RUN_STATE_INACTIVE);
-+		flags &= -flags;
-+		TEST_ASSERT_EQ(__plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE,
-+						  &flags), -1);
-+		TEST_ASSERT_EQ(errno, EINVAL);
-+		flags = ~0ULL;
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(flags, KVM_PLANE_RUN_STATE_USER_HOLD);
-+	}
-+
-+	/*
-+	 * Plane 1 is held from above.  With plane 0 held too, nothing is
-+	 * runnable, and KVM_RUN hands that back to userspace instead of
-+	 * running the held plane 0.
-+	 */
-+	{
-+		u64 flags = KVM_PLANE_RUN_STATE_USER_HOLD;
-+		struct kvm_regs regs;
-+
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+
-+		/* immediate_exit yields EINTR, as on any KVM_RUN. */
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EINTR);
-+		vcpu0->run->immediate_exit = 0;
-+
-+		/* The exit fills in kvm_run like any other: poison two fields. */
-+		vcpu0->run->if_flag = 0xff;
-+		vcpu0->run->apic_base = 0;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_PLANE_EVENT);
-+		TEST_ASSERT_EQ(vcpu0->run->plane_event.cause, KVM_PLANE_EVENT_HELD);
-+		TEST_ASSERT_EQ(vcpu0->run->plane_event.plane, 0);
-+		TEST_ASSERT_EQ(vcpu0->run->if_flag, 0);
-+		TEST_ASSERT_EQ(vcpu0->run->apic_base,
-+			       vcpu_get_msr(vcpu0, MSR_IA32_APICBASE));
-+
-+		/*
-+		 * Registers userspace marks dirty are for the plane that runs
-+		 * next: the held exit neither consumes nor overwrites them.
-+		 */
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &vcpu0->run->s.regs.regs);
-+		vcpu0->run->s.regs.regs.rdx = 0x5ca1ab1e;	/* arbitrary marker */
-+		vcpu0->run->kvm_valid_regs = KVM_SYNC_X86_REGS;
-+		vcpu0->run->kvm_dirty_regs = KVM_SYNC_X86_REGS;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_PLANE_EVENT);
-+		TEST_ASSERT_EQ(vcpu0->run->kvm_dirty_regs, KVM_SYNC_X86_REGS);
-+		TEST_ASSERT_EQ(vcpu0->run->s.regs.regs.rdx, 0x5ca1ab1e);
-+
-+		/*
-+		 * Released, plane 1 is next and takes them; immediate_exit
-+		 * stops it before entry, after the registers are applied.
-+		 */
-+		flags = 0;
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EINTR);
-+		vcpu0->run->immediate_exit = 0;
-+		TEST_ASSERT_EQ(vcpu0->run->kvm_dirty_regs, 0);
-+		vcpu0->run->kvm_valid_regs = 0;
-+
-+		plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs);
-+		TEST_ASSERT_EQ(regs.rdx, 0x5ca1ab1e);
-+		vcpu_ioctl(vcpu0, KVM_GET_REGS, &regs);
-+		TEST_ASSERT(regs.rdx != 0x5ca1ab1e,
-+			    "plane 0 took the registers dirtied while it was held");
-+
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+	}
-+
-+	/*
-+	 * A completion plane 0 still owes its last exit stays pending while
-+	 * plane 0 is held: KVM_RUN fails with EBUSY and leaves the exit in
-+	 * kvm_run, and the completion runs once plane 0 runs again.  The
-+	 * exit is a real-mode OUT at CODE_GPA, which userspace handles.
-+	 */
-+	{
-+		static const u8 out_insn[] = { 0xe6, 0x10 };	/* out %al, $0x10 */
-+		u64 flags = KVM_PLANE_RUN_STATE_USER_HOLD;
-+		struct kvm_sregs sregs;
-+		struct kvm_regs regs;
-+
-+		vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, CODE_GPA,
-+					    1, 1, 0);
-+		memcpy(addr_gpa2hva(vm, CODE_GPA), out_insn, sizeof(out_insn));
-+
-+		vcpu_sregs_get(vcpu0, &sregs);
-+		sregs.cs.selector = 0;
-+		sregs.cs.base = 0;
-+		vcpu_sregs_set(vcpu0, &sregs);
-+		vcpu_regs_get(vcpu0, &regs);
-+		regs.rip = CODE_GPA;
-+		vcpu_regs_set(vcpu0, &regs);
-+
-+		/* Plane 1 stays held, so only plane 0 can run. */
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), 0);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_IO);
-+		TEST_ASSERT_EQ(vcpu0->run->io.direction, KVM_EXIT_IO_OUT);
-+		TEST_ASSERT_EQ(vcpu0->run->io.port, 0x10);
-+
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EBUSY);
-+		vcpu0->run->immediate_exit = 0;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EBUSY);
-+		TEST_ASSERT_EQ(vcpu0->run->exit_reason, KVM_EXIT_IO);
-+		TEST_ASSERT_EQ(vcpu0->run->io.port, 0x10);
-+		vcpu_regs_get(vcpu0, &regs);
-+		TEST_ASSERT_EQ(regs.rip, CODE_GPA);
-+
-+		/* Released, plane 0 retires the OUT before immediate_exit. */
-+		flags = 0;
-+		vcpu_ioctl(vcpu0, KVM_SET_PLANE_RUN_STATE, &flags);
-+		vcpu0->run->immediate_exit = 1;
-+		TEST_ASSERT_EQ(__vcpu_run(vcpu0), -1);
-+		TEST_ASSERT_EQ(errno, EINTR);
-+		vcpu0->run->immediate_exit = 0;
-+		vcpu_regs_get(vcpu0, &regs);
-+		TEST_ASSERT_EQ(regs.rip, CODE_GPA + sizeof(out_insn));
-+
-+		plane_vcpu_ioctl(vcpu1, KVM_SET_PLANE_RUN_STATE, &flags);
-+	}
-+
- 	/* Register state is per plane: write plane 1, plane 0 unaffected. */
- 	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs1);
- 	regs1.rbx = 0x5157ca11;	/* arbitrary marker */
--- 
-2.50.1
-
+--
+Cheers, Lorenzo
 
