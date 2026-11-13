@@ -2,86 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6CF5C606A331
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 21:30:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B4CC9606A338
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 21:37:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DSj2pJOz
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l8iDfR4F
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR9QW48Pxz2xLr;
-	Sat, 14 Nov 2026 08:30:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c202::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794605411;
-	cv=pass; b=VN6wyziESZCReZAR5q5Z1JEbpZ70/Df9L6+Bn8i2lUyzmS0TPKso5PF2J2pt8WoT79ckPGjITAVfOHmCA2rH9Lr/b5n09nDhrhbbdlejB6jO9oW+xFmVRZxA+NklxZ7HQPxoAg0Le661iHPDf5Coxrap6ZsPozANcSc324BWRnlRgxaLjAmepV37ZnEg9mmE/SKP7YaVzVU//7RX3JTmRlIbJkf1d837UaM2CVlwHjAlmuFp1ImmlI/2vBQJX90rbbf56+2QF90fskz7kEcjwddaODj/mr0Gbpx/5Eq+oVenzlG399nkg1nGO4RynJ8xHkzhja2lah4xE1rcfh1EZQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794605411; c=relaxed/relaxed;
-	bh=UPLlBhEFkzCKdx/9gg1lylf9okJBK3VnemYGQ3dag7k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=RCxgSQkGpFx5SijCSvMjlCT6ogab/wkNjr/SP+PiDcKB/8VCSxT9/fB4mDU1/UxWZlA/QjAFpVwwsckB+XCEqGm5zgj9A3ZHGdeL1n/unZaRe25SF3t4DovK5DNobCGjUiA5Ewo5kG7KcVUfycW3tsaYxoPptZSkQrrKgb5m7K9PzdvFTYbiV26tX7C+SKflzP0m2K5ycLq6nvn3ZnvqOGPX4bybYXla18VFrhCvI2E7OViQeY2/xJGXzonbcvOlUDEKGfio91gqCTR4Pn0QOKLyTslTrC1JdoMSsI4Ftdc+BgshzLx4Do6nhDES1sGF/b8PEh2L3jJj6wJGkVnkWQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com; dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DSj2pJOz; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=oss.nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR9bP2r02z2xLr;
+	Sat, 14 Nov 2026 08:37:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794605873;
+	cv=none; b=REdzZ9P5FNXFvsTV6HP1lzyKOfl1XKbZy4Kori8ej5PeawPN3AsOHRQvzHomhLMe/SOMkwBMrxo8C32yT10JvepVaF2nq3F+QkkFcUAzUrDRgqTvrFMUxSrPMCzL56dxT3t8AeGkWeV9DAP1Zh+WDa9V7jZLHlb71dd1gHRkpFD3fXbLdKsbejxUf1NOPdl9ifsl+X2Bdw7GMcD2m9WWbew+lrYp3qYemar+kKO3Aa1og2Dbhadkjvurw0DPFx66kKRCKjWX3HIVaWHNoHqvFcMnosevNm/5mH2E+y6JqAw5T+QLZnfaxh4Y2h4wLJq9EhYHVJ49Vbwq/RJS8GeTgQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794605873; c=relaxed/relaxed;
+	bh=PLiqukr56C60XaYU/sHWlWdxScdz3EOuf+dLUbwdnhA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TxZkGXt+MZURGXBBSHRFytvRBcYsVfHuJDV4QiSODUi7yX3MoecX74afDN3DCLumg9L8s3pwdi1Cyb0mLSfNiIh3yJroXhbNb2qTteMS2VcybFFmlWo1Y6yCjvNomT1kV8K0QSDmQuYG1djK75i5vOvK8DWYjOCz0gf1TZ0cFg631GbNIA69WF9T2fP+yHZmfoEoS/OU6+kd2ZooSzg+GZrEznXwBIhAKk/mYwFkkeGTHzAOGsN95gwTJvz9gn2Zi5J6W3UXnSMkWxlZCioI+rk/YEJzonVJud/aBluaEVFoXkpXZ+J1DV8v5geonwAbDCduC5A9wczFgUaUI9o82g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l8iDfR4F; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.a=rsa-sha256 header.s=selector1-NXP1-onmicrosoft-com header.b=DSj2pJOz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=l8iDfR4F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=oss.nxp.com (client-ip=2a01:111:f403:c202::7; helo=gvxpr05cu001.outbound.protection.outlook.com; envelope-from=frank.li@oss.nxp.com; receiver=lists.ozlabs.org)
-Received: from GVXPR05CU001.outbound.protection.outlook.com (mail-swedencentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c202::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR9QV0SBHz2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 08:30:09 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=tV7JdjmPpe+GSvEDPw6GinjJIwBZh/L6VsMNATUdR0ZrP79JMwGtCTQ0aLACWdtKGzqTQeqoOjz0wFGkNbzPCKIy2REs/4tBmL69ueui56E4ukcZloZVrBQ67ImpQ6rL9VhOwklew9/eTk40AwIsq3GjRAGPhtPSyOEXvXje5gkZPEkMIaL3P26CKaazWkiZ5Ga4BmRFfKOsZNJFsfa1gnjZ9ADPdrU3n849bair9uVFPo0k3N0Ex5P6JiOjec7M/AucU+yPdm+ckkS78GZXRyZWob8ivJzyRzN9vWdP6p8g+eXYx8wCiKdXO1iu4NArS6GPB8zuCL3d8PRgTuup8w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=UPLlBhEFkzCKdx/9gg1lylf9okJBK3VnemYGQ3dag7k=;
- b=Vkfn/ywlksmikcgVaERM2DJ50szSVysejiR6w/s6O/l+M8bqrGf3bL4N0w0T+Wt+dx7b4Ir9Z1xUbcJycS5a2T1zgAdMVWue/N3ujt0HKqepCEBC8N0xgLM0KFCGJbaNw2ED6SRyzttqM5hard4qge1MfFo5jrsisbj3UfIQWz8Xrd/EjEkO1D7gzjDn0BqkqKQ/BHYyR/VRzUU5j9CQr3zcGj6RBgrFWVb/epnMGuhzrQZQhYpDzqJgpkHWJSfKMCKcXuSmlrP57yCt24FhmalMl6Y8jLZ78BE6Ul+oSM7oaY1dQd52nEt5OyWGTQEAXktdc1dahGalrrFGDAcNKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
- dkim=pass header.d=oss.nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
- s=selector1-NXP1-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=UPLlBhEFkzCKdx/9gg1lylf9okJBK3VnemYGQ3dag7k=;
- b=DSj2pJOz31PAWsWUbUYIsPBXghyZAZAvJpvktziniubiBQMEbVjR81SXyOobq+NpJLlzxBcFkAmH6L/dLGWRdH8slQgWzzMYYp5SQn9UeILF2CWjzhrLmrCHXB1Ch9D3ta+3ulQJk7lgE4XrRVBDOn/epNAkEjd74dxvHmXc37IE2mj0Iz9XWbIUCataAKSO5MO6VPuoTKFI45QXwtCndC4CQHCXWZzM0p066RHN8paVJnzla3CtU19H/CUWFSmuNUbqYZT8YpQGSV9kXFi2vulp9YYFGplhkYG4nXC7pERl8kpIHPiPJiYzckB9UKjMQ879A+1KLCBO2qrGNODhPw==
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=oss.nxp.com;
-Received: from MI3PR04MB12438.eurprd04.prod.outlook.com (2603:10a6:290:76::14)
- by PAXPR04MB8655.eurprd04.prod.outlook.com (2603:10a6:102:21e::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.9; Fri, 13 Nov
- 2026 21:29:46 +0000
-Received: from MI3PR04MB12438.eurprd04.prod.outlook.com
- ([fe80::c715:c32:8bb1:b70b]) by MI3PR04MB12438.eurprd04.prod.outlook.com
- ([fe80::c715:c32:8bb1:b70b%4]) with mapi id 15.21.0615.009; Fri, 13 Nov 2026
- 21:29:46 +0000
-Date: Fri, 13 Nov 2026 15:29:36 -0600
-From: Frank Li <Frank.li@oss.nxp.com>
-To: vjardin@free.fr
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>
-Subject: Re: [PATCH v3 1/5] dt-bindings: pinctrl: add the NXP LX2160A RCW pad
- mux
-Message-ID: <aveBQPeyjvHV98ZH@SMW015318>
-References: <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-0-5a0063f1da9e@free.fr>
- <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-1-5a0063f1da9e@free.fr>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261108-for-upstream-lx2160a-rcw-pinmux-v1-v3-1-5a0063f1da9e@free.fr>
-X-ClientProxiedBy: DM6PR06CA0085.namprd06.prod.outlook.com
- (2603:10b6:5:336::18) To MI3PR04MB12438.eurprd04.prod.outlook.com
- (2603:10a6:290:76::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR9bN2Dkhz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 08:37:52 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 7FFF063201;
+	Fri, 13 Nov 2026 21:37:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A744E1F000C8;
+	Fri, 13 Nov 2026 21:37:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794605869;
+	bh=PLiqukr56C60XaYU/sHWlWdxScdz3EOuf+dLUbwdnhA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=l8iDfR4Fn+bZOr3+4kgWweW+qnLrj4VKaTg7QNEbpGu/bEFZFs5nxDoj/kJFmkOuy
+	 EswQFyeO0xhnKCfhg9Fxv8R+Ji1avzOxEhknOfUoFWfFiXvnBRtnwyyyT1s1E5sLGu
+	 rIPhwMSSDY/K7NBkMePLqfgNHfXEju4yXrJZUlkEDDfvGmMgZ+2xSUi5eCDJEAeMnq
+	 WMzbhlrefYk1jGACsD+PV+Ez4GFWp47Mw/5VoaKhHD++z7JVYv/6kJRB9nIiu2zwJO
+	 GmY07jFS33ITqgEDCXs0F5jYryk6WirTuUlUhlluTjjhZp/zdu9BtuPbQv8qObwJJe
+	 2RxDNmut2VdaQ==
+Message-ID: <b290d347-1cd3-4ff1-b303-3cc074667689@kernel.org>
+Date: Fri, 13 Nov 2026 22:37:14 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,363 +59,123 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MI3PR04MB12438:EE_|PAXPR04MB8655:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3658702b-8c90-4f55-ba70-08df41cd3d3a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|19092799006|366016|7416014|23010399003|376014|6133799003|22082099003|10067099003|18002099003|3023799007|11063799006|261028144727099003|56012099006|4143699003|261021121427099003|261026140227099003|261026121527099003|261009223027099003|261022105027099003|261102123227099003|41080700001|15866825006;
-X-Microsoft-Antispam-Message-Info:
-	EojC4cjPh2TLQyVfDDukZvEhpr4THOOTIK3KrNxCw2Fo5Hvgtsv/6H22DYsDCB/DyMESUS0HrquFXATh4Re+rB7BW8ExyuTsyQrIxcKp/Jwpa3DCyMfNpLvtiEwFTZqxp49y8wK0IdFMvgQyHU2NuVF8IS9Nt59Gcbt9LYYk2fclKMdcb0q3yCHlPHdy2I95Mg12aQxoxIN/Ehyed6m4iOx4FbdVTO22sbR/ZwfJWbyVKFx2lzvGNwNhQeQcMcPUYuO9v2lm2BGpHQKOAB4kgaBqnnD4zPxScOl683tPZHC5BKAyqpJCKGj9rpDExl5hAwLwKaKN1Q/kxQghkDM8u/kDKn8Fzw7z5oFjm2kFZcE7SQeshNLqNSGyQ8hz06U4kIMXMO6KymUYsuUgbDtcQxLAAj0Aa/ZqwIp55iAzZglF2//QlOxCNHL44jfQh6fplpAUSci+rFD23I0XHMhBotKmOKOg2IzWIjamqNeRmiFY5/OalhbScLyzqFoYrm/tcZkhveZQL27b/DHM5BKXNvlJjXvc0w6hGudOgRmDv7MPqHbnzXlatfQZv+7D3otU8AppvA1GSdBjtMkrdvj0wkjbYXsP9bxjxZYWbnxOP1vCKfuwwmxj2QEF3GHqMAv0Kzx1rqkNDItUTiIANqAUqZnU4xKvr3QhrWCU78m6ltKW6rYWV08o3616IhOz7PYAa1HoP3aK1MWQ0gLW5olw9Q==
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MI3PR04MB12438.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(19092799006)(366016)(7416014)(23010399003)(376014)(6133799003)(22082099003)(10067099003)(18002099003)(3023799007)(11063799006)(261028144727099003)(56012099006)(4143699003)(261021121427099003)(261026140227099003)(261026121527099003)(261009223027099003)(261022105027099003)(261102123227099003)(41080700001)(15866825006);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?sci7rZ5vLilHe1wVtn4M+a9gIIG8YA4jhlesdVzFfF/fJU+anEeijfiFX3gh?=
- =?us-ascii?Q?K3K4hxY/l7W+7GQcHF1AWqzP0ohmVlUoZwUvGzLoevdOyG3MyqB5TIzRNKsH?=
- =?us-ascii?Q?QK81RhxWusi+gPQ0fhY/5eXTaY/NLSu2GH0fUNYXrL4RdibJAHZ0Ok5v/d/B?=
- =?us-ascii?Q?FN6AtN3DF5SVWMzazUQBAFIpludm6Y7nGEAmEgvr2jDQuaGWMoBsoITkZM8m?=
- =?us-ascii?Q?aIxJjAjVtSmDRaJkVfkRtL8/lX0fRVYTSF0kid/fdvhWUPboshKhN9jvAFFV?=
- =?us-ascii?Q?Od9xV84Tewti4KR0ZWrPX+hiEYq+AV5s7tUFVxZKOuLbVt06N7dra/uBfBSF?=
- =?us-ascii?Q?8oKtysfP+Bf3HW9hHLGOT6hrwW2z6YSmWKnwUYJngp/lvj2lIDSGGZeLjRtk?=
- =?us-ascii?Q?GP4NMfIA9J4m7UNdzBXvVNguPko7gJXj/Tl4o8Zk+/62b9nGcwwO22UEFx+/?=
- =?us-ascii?Q?WD7ufGxxS1SL0ixntsbDXvsQbjV7nYUvVw2K2TrcV1DU95qcW7g/30ofC5VS?=
- =?us-ascii?Q?03HnX6Uq5U0zTHbm0I6SfWYHMVPI/hlQxpTt3m5071lk0sZ/HsFoOzZW4q0U?=
- =?us-ascii?Q?WpF7W7dO+lwYvHjeqtFZ2NvVlBgdwY/0sEx/EZI8XS3pClb/gsNKtuiULjEx?=
- =?us-ascii?Q?y+em92u4aPRRT9ic0z6+D9AdrJmGnLDiw0qtuhoUuYg5y2Lxt8t1LNuCBrdN?=
- =?us-ascii?Q?JXvGZkBw9JYc4C58dcZCS6y5YwVvvL64XXqHSgmhrnpwGsp34Xh58jo3Hepq?=
- =?us-ascii?Q?vLWuCnkU6b5fGYNstpjKbCv6gVdGg71HEYP94R5CbWEZgm63ZA77YpS/kDQi?=
- =?us-ascii?Q?gM7WI6JRJMidF+PLP2QFhbjccoeE7rF36J0oK223kw97EbwInpUfrxskmyj0?=
- =?us-ascii?Q?UfcMJ70l0VWU3xzxeiFU5r7wT9iUrX+PiAsm/QeTyCQx85U4P7NQWZYPjbS7?=
- =?us-ascii?Q?9477ZOPZqq8qSgn3+g8MhamU9OjP+uBPUXw7bsFHg5j5adVwReeK86PBtCsa?=
- =?us-ascii?Q?J1cySmwIFvoCRVi3IBvS5cho6wm1n2UmMMqhoJtQOeA+Il4nfiQvSsKdlKpP?=
- =?us-ascii?Q?/xAOss0M8wob8TgSdZuTE0wczzrXXJsJ1dJcGlZI/e2yduOfRUvih5Dbp3U/?=
- =?us-ascii?Q?oEReZH+aJVs/2Px0SFhicyQ97yt7Hg8VvKoqVLRSlWdzbTU5cD4sIa49cOqn?=
- =?us-ascii?Q?lkKS/ePMmRKEiYbwWPIj9DbBcruYvNghZKAnnLJ3+Dnxd1WG0P8mH1Wq2aZP?=
- =?us-ascii?Q?WmRGrRJKnJETqGiWZ77cgTUSXflGQivbTbBOs9fRrtBsF/hZxQTWUsmM+N9l?=
- =?us-ascii?Q?mnqRYTFpo7ABMIChdeXQrJTGOYLwjvs/+3lY6JvOiB4/MReOpUJrdk/8sDEE?=
- =?us-ascii?Q?bwAKu+8eNFBr5pPT8cJNFbk3hyHrbT7sbdScKFZLNc83Wxe2UF0Xz/5NlWAJ?=
- =?us-ascii?Q?itOrKMbI051SnV//HtngU8FOdC4HQbgK2nAyz7n0H7PqNO4JAc1IM9pPe7kG?=
- =?us-ascii?Q?ui+OKxWXUz0ioKw/XmL/h8BwkKmXTOgdWYqLSbH06DtqJemSafrspH1Cwhkd?=
- =?us-ascii?Q?Cg7eVeC3xSncGwLugsbDtm+PxD/y8L5YzlfdcUdueYdpTkfbUepZr57/qKgz?=
- =?us-ascii?Q?w2Z5JHY1sqEWtyR9YA3J9cVdWo2y8Zi1fmTA6G6S+LpR8VOoP/N4vBpNVyOD?=
- =?us-ascii?Q?q9ogXjGoXGkDkwAEx73YYLWB68tx5R108AypR/hjPogDXrWJawKU7hXh9ANQ?=
- =?us-ascii?Q?1kgoqZMmG+hBn/VlskJaX+AoGTc/jnQ4HnNgNaTVCTkyq86OmSMh?=
-X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3658702b-8c90-4f55-ba70-08df41cd3d3a
-X-MS-Exchange-CrossTenant-AuthSource: MI3PR04MB12438.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Nov 2026 21:29:46.2395
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: zEK3vuuIBsqOHodsi/Rf2hkjTKVtACl70TjYJCd9oIbczDPaqtv49674tR37y+rxhQAL+zTRW/scBNE2FDt+AC6MqxgrCqh08fEnGf85QqrbTFmRHlJYtQx9l+mGHb/g
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8655
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/5] mm: check permissions and bounds for vm_ops->access
+To: "Kuehling, Felix" <felix.kuehling@amd.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>,
+ Matthew Auld <matthew.auld@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ Chris Mason <mason@kernel.org>
+References: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
+ <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
+ <4b9042de-973a-4036-a6a0-2294c65a1ee1@amd.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <4b9042de-973a-4036-a6a0-2294c65a1ee1@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, Nov 08, 2026 at 11:06:49AM +0100, Vincent Jardin via B4 Relay wrote:
-> From: Vincent Jardin <vjardin@free.fr>
->
-> The LX2160A muxes its IIC, XSPI, SDHC, UART, IRQ and EVT pads from
-> fields of the RCW: read-only in RCWSR12..14 of DCFG, changed at runtime
-> through the override registers of its DCSR view.
->
-> Describe the pad mux as a child of DCFG at its RCWSR12 to RCWSR14
-> window: the override registers are at the same offset of the DCSR view
-> of the parent. One group per RCW field, one function per encoding.
->
-> Each function lists the groups that take it, so a pair the driver
-> would refuse, such as can on iic1, is refused by the schema.
->
-> Signed-off-by: Vincent Jardin <vjardin@free.fr>
-> ---
+On 11/13/26 21:25, Kuehling, Felix wrote:
+> 
+> On 2026-11-12 17:09, David Hildenbrand (Arm) wrote:
+>> GUP rejects VM_IO and VM_PFNMAP mappings early. __access_remote_vm() then
+>> falls back to vm_ops->access without checking VMA permissions and without
+>> limiting the request to the VMA size.
+>>
+>> Consequently, /proc/<pid>/mem can bypass protections even without
+>> FOLL_FORCE, or cross into another mapping without checking its
+>> permissions.
+>>
+>> Check VMA permissions before calling ->access and limit each request to
+>> the current VMA. Implement similar access permission checks as GUP,
+>> however:
+>>   (1) Reject writes to CoW mappings because the callbacks access backing
+>>       memory directly and cannot handle CoW.
+>>   (2) Allow forced writes to non-CoW mappings with VM_MAYWRITE.
+>>
+>> This intentionally breaks forced writes through legacy amdgpu PROT_NONE,
+>> MAP_PRIVATE debugger mappings. The workaround in commit fa5239f2af98
+>> ("drm/amdgpu: workaround failed COW checks for Thunk VMAs") cleared
+>> VM_MAYWRITE to avoid CoW, but debugger writes still succeeded by
+>> exploiting the missing access-permission checks fixed here. Reads remain
+>> supported. Userspace must use MAP_SHARED instead; ROCm 5.5.0, released
+>> in May 2023, already does so.
+> 
+> Thank you for considering this use case and checking the ROCm history. The patch is
+> 
+> Acked-by: Felix Kuehling <felix.kuehling@amd.com>
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Thanks a lot for the confirmation, appreciated!
 
->  .../bindings/pinctrl/fsl,lx2160a-rcw-pinmux.yaml   | 264 +++++++++++++++++++++
->  1 file changed, 264 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/pinctrl/fsl,lx2160a-rcw-pinmux.yaml b/Documentation/devicetree/bindings/pinctrl/fsl,lx2160a-rcw-pinmux.yaml
-> new file mode 100644
-> index 000000000000..6bd21c27a00c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/pinctrl/fsl,lx2160a-rcw-pinmux.yaml
-> @@ -0,0 +1,264 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/pinctrl/fsl,lx2160a-rcw-pinmux.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: NXP LX2160A RCW pad muxes
-> +
-> +maintainers:
-> +  - Vincent Jardin <vjardin@free.fr>
-> +
-> +description:
-> +  The LX2160A muxes its IIC, XSPI, SDHC, UART, IRQ and EVT pads based on its
-> +  RCW. The related fields are from the read-only RCWSR12 to RCWSR14 registers
-> +  of DCFG, and can be changed at runtime by writing the RCW override registers
-> +  in the DCSR view of DCFG. The node is a child of the DCFG node, which owns
-> +  both views. Its reg is the RCWSR12 to RCWSR14 window of the CCSR view, and
-> +  the override registers are at the same offset of the DCSR view.
-> +
-> +properties:
-> +  compatible:
-> +    const: fsl,lx2160a-rcw-pinmux
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +patternProperties:
-> +  '-pins$':
-> +    type: object
-> +    $ref: pinmux-node.yaml#
-> +    additionalProperties: false
-> +
-> +    properties:
-> +      function:
-> +        enum: [ asleep, can, evt, flexspi, flextimer, gpio, i2c, irq,
-> +                reset-req, sdhc, sdhc-clk, sdhc-data, sdhc-data4, sdhc-spi,
-> +                spi, uart, uart3, uart4 ]
-> +
-> +      groups:
-> +        items:
-> +          enum: [ iic1, iic2, iic3, iic4, iic5, iic6, xspi1-data74,
-> +                  xspi1-data30, xspi1-base, sdhc1-base, sdhc1-dir,
-> +                  sdhc2-data74, sdhc2-base, uart1-soutsin, uart1-rtscts,
-> +                  uart2-soutsin, uart2-rtscts, irq11-8, irq7-4, irq3-0,
-> +                  evt4-3, evt2-0, clk-out, asleep, reset-req ]
-> +
-> +    required:
-> +      - function
-> +      - groups
-> +
-> +    allOf:
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: asleep
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ asleep ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: can
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic3, iic4 ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: evt
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic3, iic4, evt4-3, evt2-0, asleep ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: flexspi
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ xspi1-data74, xspi1-data30, xspi1-base,
-> +                        sdhc2-data74, sdhc2-base ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: flextimer
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic2, irq7-4, irq3-0, evt4-3, evt2-0, clk-out ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: gpio
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic2, iic3, iic4, iic5, iic6, xspi1-data74,
-> +                        xspi1-data30, xspi1-base, sdhc1-base, sdhc1-dir,
-> +                        sdhc2-data74, sdhc2-base, uart1-soutsin,
-> +                        uart1-rtscts, uart2-soutsin, uart2-rtscts,
-> +                        irq11-8, irq7-4, irq3-0, evt4-3, evt2-0, clk-out,
-> +                        asleep, reset-req, iic1 ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: i2c
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic2, iic3, iic4, iic5, iic6, sdhc2-data74, iic1 ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: irq
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ irq11-8, irq7-4, irq3-0 ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: reset-req
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ reset-req ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: sdhc
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic2, sdhc1-base, sdhc1-dir, sdhc2-data74,
-> +                        sdhc2-base ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: sdhc-clk
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic5, iic6 ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: sdhc-data
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ sdhc1-dir ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: sdhc-data4
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ sdhc1-base ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: sdhc-spi
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ sdhc1-base ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: spi
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ iic5, sdhc1-base, sdhc1-dir, sdhc2-base ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: uart
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ uart1-soutsin, uart1-rtscts, uart2-soutsin,
-> +                        uart2-rtscts ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: uart3
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ uart1-rtscts ]
-> +
-> +      - if:
-> +          properties:
-> +            function:
-> +              const: uart4
-> +        then:
-> +          properties:
-> +            groups:
-> +              items:
-> +                enum: [ uart2-rtscts ]
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +allOf:
-> +  - $ref: pinctrl.yaml#
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    pinctrl@12c {
-> +        compatible = "fsl,lx2160a-rcw-pinmux";
-> +        reg = <0x12c 0xc>;
-> +
-> +        iic3-i2c-pins {
-> +            function = "i2c";
-> +            groups = "iic3";
-> +        };
-> +
-> +        iic3-gpio-pins {
-> +            function = "gpio";
-> +            groups = "iic3";
-> +        };
-> +    };
->
-> --
-> 2.43.0
->
->
->
+-- 
+Cheers,
+
+David
 
