@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5135C60A6F59
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E4B50606C15A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 18:26:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bymOiu+6
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=MDoVmDfF
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5LM16BYz2xlh;
-	Sat, 14 Nov 2026 05:26:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jR5LR3BxXz2xLG;
+	Sat, 14 Nov 2026 05:26:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594379;
-	cv=none; b=KtOmsdQ15vphta2bcuPgnXa7eRAarxDakLe9OnEWkuN6etX8JnOO6OApKzHevWZLweFpQ5TmfDn0eVicKN8AqSZORJiS3M9+LoFAnDZ9pefX03gRDpw4GLys7Cvn+s49PU6Nq7U1LXMxoWsFt9lTgVink6nnoDXB5zUNocLkhGtXZn83oeU2XY2UaHawLSboIp2ezj7k1/Q2ls2YwjYLET04uB9UAtYlAfdgVA6A6RQDO35HTSKx7DrIGxNpOpCVDvkng4ok0uMvqMsY4jIT9/oPkjD0gjUu7wo3kwbWE5IjSlTWdD+w/+SvtApBDkEK4Z4Z3KuUJ0BXGUFY0HPkBw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794594383;
+	cv=none; b=JdOg0GsvoDRsx/vc909BDEH8xkCph0BvhODp61RhwmjFrtoqX93qg40UWPtTbpxHSBxGFConS+69Ut1ArknLxzTus3vK+e3591eh5AKHhvIpfYZ/4svQ9A0RnIBuFIL84CUGM7BI7Bgzb/KgPZMTFZlXRg550IccgdmNUyzt3tXUZHJx/Yvsec3l3OLh9X222vOfrDn4jzhdrcIWi0FyhgyymEczkUU8d0TlxPWAeqXdUjXnRRCI0SJiIlPDFTZi8oOWh2D5lWgFhGNYgrtr5K/B/VAy8DV5ojf0N+uK6MhfgCaEeRlurrNpv69puAmiGA/kDjfxVF+MOvXRYz92Fg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794594379; c=relaxed/relaxed;
-	bh=IX1iZaNJLB1qFWspuJQ627JyfU1mRPwlI1mRlrUZmuc=;
+	t=1794594383; c=relaxed/relaxed;
+	bh=L0/xkeoaYWQSJNfGfg1c3/dC03KyiBSAIbTg/u+AAuc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oAPzRNzYU80j3vKrFthwpAPzO6xwLh7oe28iyxV/9EYYvGkN8w805Kv2aVRBybCK6Hi8bIFgCy5C8CuGBgbPwGmz/ndqlWJ7LPrSkvPaiS0CzorNp9/kV43oi+Dk/1OWcB6oZooJAme30fjTReQbp8dz6c3z9ywdF2tck/gH9qdbOeGdTFncUOw2HNpjCdUxuiOyLOQSf45a7eK91TW3D+jdhtvEB6ObVAJzMlUkryISN2MkeCkjdZGXp2K1wuUCuU9nmr6yDmaQ42FzTKjlganFraYZqchLgf/dHsEZUEIne+Qhi2y+83e7T1VDMUhZBNYV7erxiFlMkYp10wvkhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bymOiu+6; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+7654657bf7a82263391f+8482+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
+	 MIME-Version; b=lN3R9e3xX257/3dSUsqmyzUJiRL7HtpfBl08Nfsq0N5o8VSm0VnQIMu+0YiZKnkWk6he3Sqwyz3Ou4YgTrew4/pZl2EYcGFZJaA8fRka+rMvrdnmcS6r8GX/cq4HuVaTrsu3VAReEZi6vVg5UvPAbFaxR1YNHCtURl3V9YaE/5lyjQJUpjsx7rdNSQyeuZs6haKwVhWBaei1X3kj2vpf2c9l4/hOIn8+Qj65v3EDosnX/bk7urdtdaVJRT/EGmRp+IZXPiStcGVNA2rPV+w70Rn2e2CKUuFuH8b4xX3vAK4FNZxnwvu7PVM/9F7CUFZctmUXi6EpdyMbtg3ubxj3hA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=MDoVmDfF; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+7654657bf7a82263391f+8482+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bymOiu+6;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=MDoVmDfF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+7654657bf7a82263391f+8482+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5LJ61F0z2xLG
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jR5LJ6NHRz2xjP
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 05:26:13 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=IX1iZaNJLB1qFWspuJQ627JyfU1mRPwlI1mRlrUZmuc=; b=bymOiu+6kimhBRiDzENbm3XDZC
-	pfqZW0XcWU5qq6cfuVRFHEc3eGaFM8DlREQeS6M+MFvNAvHMcdVtGBW6tCRagT4qzPGpkhIRDtM/c
-	Yqmf1VAdaiKPhfgv9cppdW59tICSP0umJ3J4ajnWuQuuvggzTBtC46aa4NR/R+64rwttGYSWm3RCU
-	V3HQJi3bsyzakhlMs78UymZBOFwJn9W1tigGvazIpq0DuG04xyqC3ve1jxKIJLpVk7LOMQRDOqi3h
-	FZq2Xu2TAe5LqfVxwKJSqdRu1YMJNfrAIMVIJF3EwFvaHJeBAPKD/ilfTIq3rrb0bY9igQHoriAsT
-	4nDChIbQ==;
+	bh=L0/xkeoaYWQSJNfGfg1c3/dC03KyiBSAIbTg/u+AAuc=; b=MDoVmDfFjbP858b/jFt58GtX4T
+	Pxy1Co3vnlEUbk6lLShLJOcmUhsZrj4d9zQHs4e7mkpiMrPurWdpF9wqXbeKrEQWjptNTCF3XyqRT
+	HgqxSr+qjqEk08qIbpPIVurxch4WPFz2iiIG6rIN9CB8J1ovmvuI8A0zghVqWjzGdyOtyrjJXZY2+
+	Gwo7aOsrT0F6KzJ0IC2orRGtUs0Q3hK/bAIhDmLJaufaFUDNuUUjzWNwjNcIYk/oZ3ktc86/eIL1s
+	EWY7sWZlLutzgIuBacYRikb5udeNwuxXAoe8MahzU7+lBv+p4k96n1QqjcoDIP/3NyhDuk6DfRHtz
+	pLgKmx7g==;
 Received: from [2001:8b0:10b:1::425] (helo=i7.infradead.org)
 	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
-	id 1xRvyR-00000004cSz-3Qgp;
+	id 1xRvyR-00000004cSs-2gKx;
 	Fri, 13 Nov 2026 18:26:07 +0000
 Received: from dwoodhou by i7.infradead.org with local (Exim 4.99.5 #2 (Red Hat Linux))
-	id 1xRvyR-00000000LYF-2eXe;
+	id 1xRvyR-00000000LXz-1tUE;
 	Fri, 13 Nov 2026 18:26:07 +0000
 From: David Woodhouse <dwmw2@infradead.org>
 To: =?UTF-8?q?J=C3=B6rg=20R=C3=B6del?= <joro@8bytes.org>
@@ -70,9 +70,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>,
 	Mushahid Hussain <hmushi@amazon.co.uk>,
 	Sriram Nambakam <snambakam@linux.microsoft.com>,
 	David Woodhouse <dwmw@amazon.co.uk>
-Subject: [RFC PATCH 07/13] KVM: x86: Inhibit APICv when VM planes are enabled
-Date: Fri, 13 Nov 2026 11:26:01 -0700
-Message-ID: <20261113182607.82813-8-dwmw2@infradead.org>
+Subject: [RFC PATCH 03/13] KVM: selftests: Add x86 planes lifecycle test
+Date: Fri, 13 Nov 2026 11:25:57 -0700
+Message-ID: <20261113182607.82813-4-dwmw2@infradead.org>
 X-Mailer: git-send-email 2.55.0
 In-Reply-To: <20261113182607.82813-1-dwmw2@infradead.org>
 References: <20260608144252.351443-1-joro@8bytes.org>
@@ -102,140 +102,174 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-With APICv live on plane-0 vCPUs while their plane-1 twins use
-software injection, the twins trip the APICv coherency checks: stale
-vcpu-vs-VM activation state at vcpu_enter_guest(), and timer interrupt
-injection against a vCPU that is not the running one. Cross-plane
-event delivery depends on software-injection bookkeeping that hardware
-acceleration bypasses.
-
-Add APICV_INHIBIT_REASON_PLANES, set it when a plane above 0 is
-created, and include it in the VMX and AVIC required-inhibit masks;
-__kvm_set_or_clear_apicv_inhibit() silently ignores a reason the
-vendor mask does not carry. Drop the inhibit again when the
-KVM_CREATE_PLANE error path destroys the last nonzero plane of a live
-VM; at VM teardown plane 0 is already gone and the update is skipped.
+Cover KVM_CAP_PLANES argument validation against the system fd's
+ceiling, its split-irqchip and ordering requirements, plane creation
+bounds, plane vCPU creation, and per-plane isolation of vCPU register
+state. Skip on hosts that cannot give a VM more than one plane, such
+as those without TDP.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/x86/kvm/svm/svm.h  |  3 ++-
- arch/x86/kvm/vmx/main.c |  3 ++-
- arch/x86/kvm/x86.c      | 41 +++++++++++++++++++++++++++++++++++++++++
- arch/x86/kvm/x86.h      |  8 ++++++++
- 4 files changed, 53 insertions(+), 2 deletions(-)
+ tools/testing/selftests/kvm/Makefile.kvm      |   1 +
+ tools/testing/selftests/kvm/x86/planes_test.c | 137 ++++++++++++++++++
+ 2 files changed, 138 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/x86/planes_test.c
 
-diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
-index 2b7663722be6..e7fced399e05 100644
---- a/arch/x86/kvm/svm/svm.h
-+++ b/arch/x86/kvm/svm/svm.h
-@@ -982,7 +982,8 @@ extern struct kvm_x86_nested_ops svm_nested_ops;
- 	BIT(APICV_INHIBIT_REASON_APIC_ID_MODIFIED) |	\
- 	BIT(APICV_INHIBIT_REASON_APIC_BASE_MODIFIED) |	\
- 	BIT(APICV_INHIBIT_REASON_LOGICAL_ID_ALIASED) |	\
--	BIT(APICV_INHIBIT_REASON_PHYSICAL_ID_TOO_BIG)	\
-+	BIT(APICV_INHIBIT_REASON_PHYSICAL_ID_TOO_BIG) |	\
-+	BIT(APICV_INHIBIT_REASON_PLANES)		\
- )
- 
- bool __init avic_hardware_setup(void);
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index 2d84910df724..14d21d02bff4 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -1004,7 +1004,8 @@ static int vt_handle_exit(struct kvm_vcpu *vcpu,
- 	 BIT(APICV_INHIBIT_REASON_BLOCKIRQ) |			\
- 	 BIT(APICV_INHIBIT_REASON_PHYSICAL_ID_ALIASED) |	\
- 	 BIT(APICV_INHIBIT_REASON_APIC_ID_MODIFIED) |		\
--	 BIT(APICV_INHIBIT_REASON_APIC_BASE_MODIFIED))
-+	 BIT(APICV_INHIBIT_REASON_APIC_BASE_MODIFIED) |	\
-+	 BIT(APICV_INHIBIT_REASON_PLANES))
- 
- struct kvm_x86_ops vt_x86_ops __initdata = {
- 	.name = KBUILD_MODNAME,
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index e8cefde75838..6d3d93e85a65 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10247,12 +10247,53 @@ int kvm_arch_plane_init(struct kvm *kvm, struct kvm_plane *plane,
- {
- 	mutex_init(&plane->arch.apic_map_lock);
- 
-+	/*
-+	 * Cross-plane event delivery (forced VTL entry, twin kicks, NMI
-+	 * folding) relies on software injection via KVM_REQ_EVENT; hardware
-+	 * APIC virtualization on one twin would bypass the bookkeeping the
-+	 * other twin's plane depends on.
-+	 */
-+	if (plane_level > 0)
-+		kvm_set_apicv_inhibit(kvm, APICV_INHIBIT_REASON_PLANES);
+diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
+index cdc6039d32d2..2926817baad0 100644
+--- a/tools/testing/selftests/kvm/Makefile.kvm
++++ b/tools/testing/selftests/kvm/Makefile.kvm
+@@ -111,6 +111,7 @@ TEST_GEN_PROGS_x86 += x86/nested_vmsave_vmload_test
+ TEST_GEN_PROGS_x86 += x86/nested_x2apic_test
+ TEST_GEN_PROGS_x86 += x86/platform_info_test
+ TEST_GEN_PROGS_x86 += x86/plane_x86_test
++TEST_GEN_PROGS_x86 += x86/planes_test
+ TEST_GEN_PROGS_x86 += x86/pmu_counters_test
+ TEST_GEN_PROGS_x86 += x86/pmu_event_filter_test
+ TEST_GEN_PROGS_x86 += x86/private_mem_conversions_test
+diff --git a/tools/testing/selftests/kvm/x86/planes_test.c b/tools/testing/selftests/kvm/x86/planes_test.c
+new file mode 100644
+index 000000000000..f7db6cb6807d
+--- /dev/null
++++ b/tools/testing/selftests/kvm/x86/planes_test.c
+@@ -0,0 +1,137 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Test the KVM_CAP_PLANES opt-in and the plane lifecycle uAPI: plane
++ * creation bounds, plane vCPU creation, and the independence of
++ * per-plane vCPU register state.
++ */
++#include <errno.h>
++#include <string.h>
 +
- 	return 0;
- }
- 
- void kvm_arch_plane_destroy(struct kvm_plane *plane)
- {
-+	struct kvm *kvm = plane->kvm;
-+	int i;
++#include "kvm_util.h"
 +
- 	kvfree(rcu_dereference_check(plane->arch.apic_map, 1));
++/*
++ * Whether this host lets a VM have more than one plane: the opt-in also
++ * fails without two-dimensional paging, which the system fd cannot show.
++ */
++static bool have_multiple_planes(void)
++{
++	struct kvm_vm *vm = vm_create_barebones_irqchip(true);
++	bool ok = !__vm_enable_cap(vm, KVM_CAP_PLANES, 2);
 +
-+	if (plane->level == 0)
-+		return;
++	kvm_vm_free(vm);
++	return ok;
++}
++
++static void test_enable_cap_bounds(void)
++{
++	int max_planes = kvm_check_cap(KVM_CAP_PLANES);
++	struct kvm_vm *vm;
++
++	/* Planes require a split irqchip: without one the opt-in fails. */
++	vm = vm_create_barebones();
++	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 2), -1);
++	TEST_ASSERT_EQ(errno, EINVAL);
++	kvm_vm_free(vm);
 +
 +	/*
-+	 * Drop the APICv inhibit taken in kvm_arch_plane_init() when the
-+	 * last nonzero plane goes away.  Only the KVM_CREATE_PLANE error
-+	 * path destroys a nonzero plane while the VM is live; at VM
-+	 * teardown plane 0 is destroyed first and kvm->planes[0] is
-+	 * already NULL, which skips the update (the inhibit machinery
-+	 * needs plane 0 and SRCU, both gone by then).
++	 * With one, the system fd's value is the most a VM may be given,
++	 * and a full in-kernel irqchip cannot replace the split one later.
 +	 */
-+	if (!kvm->planes[0])
-+		return;
++	vm = vm_create_barebones_irqchip(true);
 +
-+	/*
-+	 * Reaching here means a nonzero plane died while the VM is live,
-+	 * which only the KVM_CREATE_PLANE error path does - under
-+	 * kvm->lock.  A future kvm_destroy_planes() reordered to tear
-+	 * nonzero planes down before plane 0 would get here locklessly;
-+	 * catch that instead of silently poking freed APICv state.
-+	 */
-+	lockdep_assert_held(&kvm->lock);
++	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 0), -1);
++	TEST_ASSERT_EQ(errno, EINVAL);
 +
-+	for (i = 1; i < KVM_MAX_PLANES; i++)
-+		if (kvm->planes[i] && kvm->planes[i] != plane)
-+			return;
++	TEST_ASSERT(max_planes > 1 && max_planes <= KVM_MAX_PLANES,
++		    "system fd KVM_CAP_PLANES ceiling %d", max_planes);
++	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, max_planes + 1), -1);
++	TEST_ASSERT_EQ(errno, EINVAL);
 +
-+	kvm_clear_apicv_inhibit(kvm, APICV_INHIBIT_REASON_PLANES);
- }
- 
- int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-index 498974d38773..fb87ceaa9563 100644
---- a/arch/x86/kvm/x86.h
-+++ b/arch/x86/kvm/x86.h
-@@ -580,6 +580,13 @@ enum kvm_apicv_inhibit {
- 	APICV_INHIBIT_REASON_APIC_ID_MODIFIED,
- 	APICV_INHIBIT_REASON_APIC_BASE_MODIFIED,
- 
-+	/*
-+	 * APICv is inhibited when the VM has multiple planes (Hyper-V VTLs).
-+	 * Cross-plane event delivery relies on software injection; hardware
-+	 * acceleration on one twin would bypass it.
-+	 */
-+	APICV_INHIBIT_REASON_PLANES,
++	vm_enable_cap(vm, KVM_CAP_PLANES, max_planes);
++	TEST_ASSERT_EQ(vm_check_cap(vm, KVM_CAP_PLANES), max_planes);
 +
- 	/******************************************************/
- 	/* INHIBITs that are relevant only to the AMD's AVIC. */
- 	/******************************************************/
-@@ -637,6 +644,7 @@ enum kvm_apicv_inhibit {
- 	__APICV_INHIBIT_REASON(PHYSICAL_ID_ALIASED),	\
- 	__APICV_INHIBIT_REASON(APIC_ID_MODIFIED),	\
- 	__APICV_INHIBIT_REASON(APIC_BASE_MODIFIED),	\
-+	__APICV_INHIBIT_REASON(PLANES),			\
- 	__APICV_INHIBIT_REASON(NESTED),			\
- 	__APICV_INHIBIT_REASON(IRQWIN),			\
- 	__APICV_INHIBIT_REASON(PIT_REINJ),		\
++	/* ENOTTY where KVM_CREATE_IRQCHIP is compiled out (KVM_IOAPIC=n). */
++	TEST_ASSERT_EQ(__vm_ioctl(vm, KVM_CREATE_IRQCHIP, NULL), -1);
++	TEST_ASSERT(errno == EEXIST || errno == ENOTTY,
++		    "KVM_CREATE_IRQCHIP after the opt-in: errno %d", errno);
++
++	kvm_vm_free(vm);
++}
++
++static void test_enable_cap_too_late(void)
++{
++	struct kvm_vm *vm = vm_create_barebones_irqchip(true);
++
++	__vm_vcpu_add(vm, 0);
++
++	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 2), -1);
++	TEST_ASSERT_EQ(errno, EEXIST);
++
++	kvm_vm_free(vm);
++}
++
++static void test_plane_lifecycle(void)
++{
++	struct kvm_vm *vm = vm_create_barebones();
++	struct kvm_plane_vcpu *vcpu1;
++	struct kvm_regs regs0, regs1;
++	struct kvm_plane *plane;
++	struct kvm_vcpu *vcpu0;
++	int r;
++
++	vm_enable_split_irqchip(vm);
++
++	/* Without the opt-in a VM has a single plane. */
++	TEST_ASSERT_EQ(vm_check_cap(vm, KVM_CAP_PLANES), 1);
++	TEST_ASSERT_EQ(__vm_ioctl(vm, KVM_CREATE_PLANE, (void *)1UL), -1);
++	TEST_ASSERT_EQ(errno, EINVAL);
++
++	vm_enable_cap(vm, KVM_CAP_PLANES, 2);
++	TEST_ASSERT_EQ(vm_check_cap(vm, KVM_CAP_PLANES), 2);
++
++	/* The configured count is a hard bound, and reconfiguration a hard no. */
++	TEST_ASSERT_EQ(__vm_ioctl(vm, KVM_CREATE_PLANE, (void *)2UL), -1);
++	TEST_ASSERT_EQ(errno, EINVAL);
++
++	plane = vm_plane_add(vm, 1);
++
++	TEST_ASSERT_EQ(__vm_enable_cap(vm, KVM_CAP_PLANES, 3), -1);
++	TEST_ASSERT_EQ(errno, EEXIST);
++
++	/* A plane fd takes plane ioctls only; capabilities are a VM matter. */
++	r = __plane_ioctl(plane, KVM_CHECK_EXTENSION, (void *)KVM_CAP_PLANES);
++	TEST_ASSERT(r == -1 && errno == ENOTTY,
++		    "KVM_CHECK_EXTENSION on a plane fd, expecting ENOTTY. ret: %d, errno: %d",
++		    r, errno);
++
++	vcpu0 = __vm_vcpu_add(vm, 0);
++	vcpu1 = __vm_plane_vcpu_add(vcpu0, plane);
++
++	/* Register state is per plane: write plane 1, plane 0 unaffected. */
++	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs1);
++	regs1.rbx = 0x5157ca11;	/* arbitrary marker */
++	plane_vcpu_ioctl(vcpu1, KVM_SET_REGS, &regs1);
++
++	vcpu_ioctl(vcpu0, KVM_GET_REGS, &regs0);
++	TEST_ASSERT(regs0.rbx != 0x5157ca11,
++		    "plane 0 RBX changed by plane 1 KVM_SET_REGS");
++
++	memset(&regs1, 0, sizeof(regs1));
++	plane_vcpu_ioctl(vcpu1, KVM_GET_REGS, &regs1);
++	TEST_ASSERT_EQ(regs1.rbx, 0x5157ca11);
++
++	kvm_vm_free(vm);
++}
++
++int main(int argc, char *argv[])
++{
++	TEST_REQUIRE(kvm_has_cap(KVM_CAP_PLANES));
++	TEST_REQUIRE(kvm_has_cap(KVM_CAP_SPLIT_IRQCHIP));
++	TEST_REQUIRE(have_multiple_planes());
++
++	test_enable_cap_bounds();
++	test_enable_cap_too_late();
++	test_plane_lifecycle();
++
++	return 0;
++}
 -- 
 2.50.1
 
