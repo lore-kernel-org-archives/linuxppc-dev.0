@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1370606A8AA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 12:32:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 86C85606A88E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Nov 2026 12:32:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=PRbxp832
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MmjWyU0p
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jQxTY2l78z30Vm;
-	Fri, 13 Nov 2026 23:32:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1231"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794573121;
-	cv=none; b=LIz+gdcono0vOp9ZDQxF3EIUfr6Jsw/6IXr8a/sECSAU3opM/7xM/LUowweSH7oIH4BvmU/c8Dj1dEYKXeGfbaQInchfVZ+oGJdn1gFbe1Nhs8aO+cbxeaUI4bp/pp+Xipq4vMqOGuzJO/ghA4zPq+fkh6gUo+y9tuTuefVCwTTYFTexZCn0dj5ErzzVHth9gfnHzS0v3eIOg9YdOUsP42casMh3Nrf7HSNNPIPj9jRGsJLNq2Z5RO7YvQF2wlz08oM6jNkS2A/ny1Jn+Sue17vZYG3qg15+3tbDTkQLX17AXLVnASpWF8A4Ens7Ef5BAG90HP76pfKJQqppDhhhGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jQxTd5TrXz3bYf;
+	Fri, 13 Nov 2026 23:32:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794573125;
+	cv=none; b=ge+7zy1Fc3VDpswW9C3vuSQWUaF9tMrW8MosGj6FZBtbndeB7OyQmXrLpFGE16NalgCalt++Hw8snJg7DSsFiM8DQy3WX85FM2ZOgA+QZdFLwsB8utZnPH9G3zCD+Okpv03ZvMhB5fZszEasAK9BAbV8pfs3ODQL1qKSKfs/1tXhwpOovnbXexlYda7ztXNR0m1i8UfLaH0oXQcKE9ir06JFcoERjteqK47vbKF4gMg8dwPsk60xytMj67dvHzbWmvEnoPs3GDoYhOA1RgJNH1fLkzYNWlQIWtQYUgUuy43I8KPOoBbZLjQCDiajqeqvlfRASSZhfBcg4M8zKaSOlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794573121; c=relaxed/relaxed;
-	bh=khvjomnGU8bEDjFqLljgS/oBqM+vVqEvr9qW8v1bN2k=;
+	t=1794573125; c=relaxed/relaxed;
+	bh=1TRAHROLyPFOQPbURw5yPb6dBc0t0u89LYQ9L587dP8=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=W8ynoHWwogPp/ZCZiyby9Zht/Xlpe9uWiYo9TTh/uD3pyPzUJVOk/xEvxMuft3Nmg8AiXYjX2ssP2+MJU4wdZgu7k/Q/urAWsLK6LqxjpX2xUZz1McOBecBsJE/5CAB/o2Trc/r9VdMGkv9zFMcXcan/LnBbJDQcnsBs8VA4UDVQY4DQnx3gLckZ/LlCdl0CNvLT63nYQyJYsMkIbyUT1q84R3hnW/hB9EesUqhE58H6ustpeUf9eUhIcQh+585fuYET8KnAt+P02UuCm0EESJko8sP9/yBeclqMCWj4tHqUzeRQttAInE7dDiycQcodYoFQdf2Dz4mhcn3UttyXtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=PRbxp832; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=kItJfApg6FNIoxB53lkoDcC10U4M/Vs2FYk7xNpreCNhe8xVqCYPFrqnb6zhW4etW16M5sv+zUg8fp4xEOMyR/KosFrqPCjeqpCduVBmG52b/HmAHEsf5oQkcKJi+SPxLIDn95LbSN3ZnloyMVvr/SK6RZXW5lnlA+MTaDi5V0bC26PzSm84oPLodkFiLPX9LCMREg8mNZh1edo/Vm192Rjf6iziHGndTqxhlQWPw9RH5Q9aOd8L4PqNd54Ftqh+cri7c/ov9RCw0XzQT4z1z4X9WXpBeBauOn4SERqmE37DTj8jcdVopl44j+H8+VJuLTphb9mBR2r/QcDqCyn6dg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MmjWyU0p; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=PRbxp832;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MmjWyU0p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1231.google.com (mail-dl1-x1231.google.com [IPv6:2607:f8b0:4864:20::1231])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQxTX5j42z2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 23:32:00 +1100 (AEDT)
-Received: by mail-dl1-x1231.google.com with SMTP id a92af1059eb24-1b3acec6677so993568c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 04:32:00 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jQxTd0Rsqz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 23:32:04 +1100 (AEDT)
+Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-372bdb942dbso991862eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Nov 2026 04:32:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794573118; x=1795177918; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794573123; x=1795177923; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=khvjomnGU8bEDjFqLljgS/oBqM+vVqEvr9qW8v1bN2k=;
-        b=PRbxp832ZshLja1yfR9hzzt2EpZWy4vL+adxqylfmKbHqfFPOsT3+dBEojlB6bgRJj
-         V8bImBBbGprHXYFW3I5YgEYy0VPtlKlMdEBbIix/wrXzNbb2XpXXzmCJ19J2jij5mFTE
-         DvlThqjBUlpgOCUXen5rnR3unn7SmBKzItKmil0nN/G/79BmUryxl1FqOOd2Y2s0+woR
-         wcGpq+UcJ+c6q/lCXdAMysIfyGkNBCzR4VYMpEbrjPwH7+wIe52m7/gTQTA6Kwh3T0kF
-         y/d8jBqG00qKpk3QEerHW6/xybnZGSo+P6OW7+czk9A/DtNxsDMgAGr+Anoq7wC1DkZ2
-         pziw==
+        bh=1TRAHROLyPFOQPbURw5yPb6dBc0t0u89LYQ9L587dP8=;
+        b=MmjWyU0pCFuFikKnaCEImcnZ3QgvXaGGzwf3Kp+tee9tGzfH0OO+w4C7Yr7vd4xZBu
+         eyICblbHxpBuR3ty76KRkTGFx1Xyr6S3doGvnNsW76CoYKrywZjR0aMbDCXg7LpMZtXi
+         WFPaVrVO73iXJKeGSmcg32z3qw/hvREFhtlQ4QeAlNqWxFIcyiHpqHnWWlhI36eVZ4Mh
+         aANgCGvyASgEjnEzvQ/600OpB6cjVzMHeNMiGG9gmCeG+nL0+kynNdrmWderG0RhfrX/
+         D83QTLvPVwtSb+goSGOPFeszDbqs6HHIsnwe07Q8dQjzKhNmlH+w42XUxWFcU5oF+G26
+         M4Ow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794573118; x=1795177918;
+        d=1e100.net; s=20260707; t=1794573123; x=1795177923;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=khvjomnGU8bEDjFqLljgS/oBqM+vVqEvr9qW8v1bN2k=;
-        b=kYrGTIzn4CE7zpsxQcJ+FmT3Ur34sVKxgDQViY7rOmFUl0jgjgnTR9Doygqcyvn1O2
-         JFnXv6O2ulR/M+5bM3EOKNphYebOBdzQ+GCQOrHdDO/roNACJGR6Gw+HGSN/1/gpTNxS
-         clVCqK4v5rnujql1VxboqEsLoIEOF4YYtT7iQrA46j4WmwzH+eju3GFU4eaKiPNy5Y5T
-         Mg3D1YJbgRZyTAyg4qdn4jlZwGw6pO9SVT05z8hBadbj4XoqAQBSSHsTMe/SM7Eb+KZ4
-         lXzLe1Ymrvu05WKwggQcaU7zUIAIZWB8df79o8UCO0bny9pm/ZPg8EVLco+HhJrYKD0u
-         9Brw==
-X-Gm-Message-State: APuU4Z/nztG1ds/VDT4MgJz3KKoD0Th9h00c6ZpKNrXXUfFJnuRtzko/
-	ooBZtAqxGuJMZyxYHWnXS3o25rm99aH7h8S3A8VpbJ5kDpWYaHifVU+cYeEp0Q==
-X-Gm-Gg: AYBFou1Bi05hdHU4DjAoNARoLc2IBFno0BKsVcxQ4ugmJ9X7i0kpBK86fdhpwm+EVnc
-	nPRhgxzNonk5JlwOwKJVAnWemYhhQAqH0RR48weieRkAdoWy5SjtoWEIP/qqadu0xE3kW6PNnvE
-	ze3k7CpDN5a0zzKy7SJlPOCgTtmUbazjIxAbeRvpAQwV1+X/w9YC+TFGxuGTxU+zA48Wkqf4THj
-	q6+0UzIumaGKnfDiuL3G4xIV2RAdwQmHnzicerDlNoH4mBeSP728HOHcj0WsRcbwKq6NFX2AUEg
-	rJ+1lG8K1n/9kVTudrST/ZAQ4d2RTlv4DtD/3qorZzjchEemhQzzBdZlIXFPdW7PzyMPS7XI1G7
-	ggwwv+OpjkEzUgwB3a5bsZCd1QIXzIW9K21d8madZlrA3h/l33pGjqSITN1Jpq+u7OqtZtEneiA
-	T4aiG6QamjQq8cKFUVRv2FErYnzIynT1N6kr8QjyC4uWK5Ql1abJhcRBNU5quwc5SK13fgO1nmy
-	li3RUwTCJKP7XYE4WceVV7zFsuBoWBAvUoiP6F6NICF9vqmBmZ7CknohUoD9YFl+M0Tq3j466nn
-	K7I79RvvRDaSq55mcglDijDvTG94fySa3jE=
-X-Received: by 2002:a05:701b:2519:b0:1b2:373c:997 with SMTP id a92af1059eb24-1b5031128damr2279412c88.25.1794573117837;
-        Fri, 13 Nov 2026 04:31:57 -0800 (PST)
+        bh=1TRAHROLyPFOQPbURw5yPb6dBc0t0u89LYQ9L587dP8=;
+        b=or8UFfCflAmUipTfRxWAY1/4vby04OYKT5VCEfs2d8UKN5iNSJz7HQRcmE7jSNDreT
+         EqVgWBY+iB/idXMd8M6do5SlaRh0Yaze8dc9GqgWULNbOjqdKWnAjjypUSZHUsvYSD2q
+         7ePNqNMckFd18PfzynRuFzPXTznPYqu4exqUurSBALhfCxo1obz7INn1XLAqf5oDC7V+
+         UL9OzjTwEt2LvCSuQMKx8CB9NOVtUpX8S0TQnGlkNuCMEtb64i9659TzTe3ERhSYCUVt
+         HrsjDXRZtrklDPEfy67InIreKSWluDLltCtP3FFC9KFtzfd+fnTIL/4yGJMdeDRxgpI6
+         96LA==
+X-Gm-Message-State: APuU4Z9ssyAVWE8esNigBHTysRM99cjFti/P6I+J9dfDD0ZB4tchgfEi
+	kxTVeC+FXkgZj5ROs8Mqo25+LYX9j+Awa8svyMts+oOqwbkiQu8g2D7Pa/3Fdg==
+X-Gm-Gg: AYBFou0vR1LqxwxbD2pYhpZAxOzDyXmeAylyqgVdMgopIBdDKi2jR/MqfQ1UQpmAA1P
+	pcw8VGc65X8K/nbwrZeSJZ/3fUYMSI41f0XamK77KK/VUlrJZBs1FoKI1bcHmgEbrBLmqwi9oxC
+	50iUG7Po1bPgLZVpjFvrbkUuty92HdQJEwyKOmwCSAqT+OaCcLPvJJyVvvzyVdbe2N0K+qEaiFS
+	B894ZcJcDQrr1OFasEQC672I9eCSSp6rxAAdgL2Zz34Nte9yX7EctXs+vo8Br9vpEMKlPcZG9JV
+	mjMTCatmhHyctPhZO+7t3gcc+7DTRXM9UoGh2dZyMokfnoJPSoU4Pn6ot1al0Z75f12IYNlu5zb
+	X3m0KV+BYxXqaMaPdvf1CBDn36nZbTIfxRooTZp3O7Nlg19m+L1YyjITUsfQIpsg3ztY4g87l9s
+	pM4c5vmDRMBWBSF3PistsApRtuGOWokNj2jooY5oAWXqQdmQ7n0a1vfCqhCkg0FJs3jJ8li34sU
+	HYwAHzHiZZzLUyF51ctCAPsaOVsZMEFVSsja81kXLg09iL9gBWpwcbmTy7nwuvGhs9PGKanQoNB
+	xEcEuiGr1Y3sxUoQSc6cHDsj3HU1LwcJ34OJQSc4vOTmJQFQKD6RiLA=
+X-Received: by 2002:a05:7300:d40d:b0:360:d4c5:7243 with SMTP id 5a478bee46e88-37966e3a7cfmr2139549eec.11.1794573122574;
+        Fri, 13 Nov 2026 04:32:02 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37955822d58sm7215936eec.10.2026.11.13.04.31.53
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37955822d58sm7215936eec.10.2026.11.13.04.31.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Nov 2026 04:31:57 -0800 (PST)
+        Fri, 13 Nov 2026 04:32:01 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -83,9 +83,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	Hari Bathini <hbathini@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv2 1/3] powerpc/execmem: Don't leave kprobes insn pages W+X when CONFIG_MODULES=n
-Date: Fri, 13 Nov 2026 18:01:36 +0530
-Message-Id: <f75f2cf97f44375fd2c8820e0caeab703cdb371c.1794572365.git.ritesh.list@gmail.com>
+Subject: [PATCHv2 2/3] powerpc/execmem: Allocate kprobes insn pages from the modules area on book3s/32
+Date: Fri, 13 Nov 2026 18:01:37 +0530
+Message-Id: <82c4973addebd82923c460cb44221f5b76146afe.1794572365.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1794572365.git.ritesh.list@gmail.com>
 References: <cover.1794572365.git.ritesh.list@gmail.com>
@@ -111,58 +111,99 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-commit 2e83e2ce34ff ("arch, mm: promote DEBUG_WX to CHECK_WX"), made
-CHECK_WX default STRICT_KERNEL_RWX.
+On book3s/32, a kprobe on an instruction that can't be emulated and has
+to be single stepped out of line, crashes the kernel. For e.g. with the
+following cmds...
+    ~> echo 9 > /proc/sys/kernel/printk
+    ~> mount -t debugfs debugfs /sys/kernel/debug
+    ~> echo 'p:wx filldir64+0xb8' > /sys/kernel/debug/tracing/kprobe_events
+    ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/wx/enable
+    ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
 
-Now on powerpc, when we boot with CONFIG_KPROBES=y and CONFIG_MODULES=n,
-we can see the following warning splat at boot:
+...we can see the following crash:
+    kernel tried to execute exec-protected page (f101a008) - exploit attempt? (uid: 0)
+    BUG: Unable to handle kernel instruction fetch
+    Faulting instruction address: 0xc02b919c
+    Vector: 400 (Instruction Access) at [f19a9d60]
+        pc: c02b919c: filldir64+0xb8/0x2dc
+        lr: c02b9148: filldir64+0x64/0x2dc
+        sp: f19a9e20
+       msr: 10029032
+      current = 0xc112e900
+        pid   = 102, comm = ls
+    enter ? for help
+    [f19a9e20] c1a8d420 (unreliable)
+    [f19a9e50] c02e4074 dcache_readdir+0x208/0x2a8
+    [f19a9e90] c02b8c5c iterate_dir+0x88/0x1fc
+    [f19a9ec0] c02b96e0 sys_getdents64+0x88/0x198
+    [f19a9f10] c0014400 system_call_exception+0xf8/0x20c
+    [f19a9f30] c00191ac ret_from_syscall+0x0/0x2c
+    ---- Exception: c00 (System Call) at a7596164
+    SP (af802310) is in userspace
 
-    powerpc/mm: Found insecure W+X mapping at address 000000002ea08992/0xc008000000000000
-    WARNING: arch/powerpc/mm/ptdump/ptdump.c:194 at note_page+0x4dc/0x4fc, CPU#0: swapper/0/1
-    NIP [c0000000000ac204] note_page+0x4dc/0x4fc
-    LR [c0000000000ac200] note_page+0x4d8/0x4fc
-    Call Trace:
-     note_page+0x4d8/0x4fc (unreliable)
-     ptdump_pte_entry+0x70/0x94
-     walk_pte_range_inner+0x15c/0x260
-     walk_pgd_range+0x6d8/0xd5c
-     walk_page_range_debug+0xa4/0xf0
-     ptdump_walk_pgd+0xec/0x304
-     ptdump_check_wx+0xd8/0x154
-     kernel_init+0x94/0x26c
-     ret_from_kernel_user_thread+0x14/0x1c
-    Checked W+X mappings: FAILED, 1 W+X pages found
+This happens because on book3s/32 the exec permission is per segment
+(256MB), not per page. The page tables have no hardware exec bit, only
+the segment registers have a no-execute (N) bit. mmu_mark_initmem_nx()
+sets N on all the kernel segments except the ones of the modules area.
+So nothing in the vmalloc area can be executed, even when the page is
+mapped with PAGE_KERNEL_ROX or PAGE_KERNEL_EXEC, because _PAGE_EXEC is
+a software only bit there and the segment's N bit is what the MMU
+enforces.
 
-This happens because CHECK_WX noted a writeable + executable mapping.
+Before commit 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes
+allocations"), the kprobes insn pages came from module_alloc(). That
+commit moved them to the whole of the vmalloc space, on the grounds
+that kprobes use a breakpoint and don't need to be near the kernel
+text. That is fine on platforms where the exec permission is per page,
+as PAGE_KERNEL_ROX is then enough to make a vmalloc page executable.
+It is not on book3s/32, where the modules area is not only close to
+the kernel text but is also the only page-mapped area whose segment is
+left executable. So the insn pages must keep coming from there.
 
-This happens because execmem_arch_setup(), checks for
-struct_modules_rwx_enabled(), while kprobes depenency on modules was
-earlier removed via commit:
-    7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
-Since the insn slots are only written with patch_instruction(), which
-does not need this mapping to be writable. This patch fixes it by
-checking for strict_kernel_rwx_enabled() instead.
+Hence, use the modules area for EXECMEM_KPROBES on book3s/32.
 
-Fixes: 7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
+Fixes: 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes allocations")
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/mm/mem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/mem.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index b617b69452cd..77b63b52d8f2 100644
+index 77b63b52d8f2..ae1bc7359353 100644
 --- a/arch/powerpc/mm/mem.c
 +++ b/arch/powerpc/mm/mem.c
-@@ -388,7 +388,7 @@ static void prealloc_execmem_pgtable(void) { }
- 
- struct execmem_info __init *execmem_arch_setup(void)
- {
--	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
-+	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+@@ -391,6 +391,7 @@ struct execmem_info __init *execmem_arch_setup(void)
+ 	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
  	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
  	unsigned long fallback_start = 0, fallback_end = 0;
++	unsigned long kprobes_start = VMALLOC_START, kprobes_end = VMALLOC_END;
  	unsigned long start, end;
--- 
+
+ 	/*
+@@ -410,6 +411,11 @@ struct execmem_info __init *execmem_arch_setup(void)
+ 	}
+
+ 	end = MODULES_END;
++
++	if (IS_ENABLED(CONFIG_PPC_BOOK3S_32)) {
++		kprobes_start = MODULES_VADDR;
++		kprobes_end = MODULES_END;
++	}
+ #else
+ 	start = VMALLOC_START;
+ 	end = VMALLOC_END;
+@@ -428,8 +434,8 @@ struct execmem_info __init *execmem_arch_setup(void)
+ 				.fallback_end	= fallback_end,
+ 			},
+ 			[EXECMEM_KPROBES] = {
+-				.start	= VMALLOC_START,
+-				.end	= VMALLOC_END,
++				.start	= kprobes_start,
++				.end	= kprobes_end,
+ 				.pgprot	= kprobes_prot,
+ 				.alignment = 1,
+ 			},
+--
 2.39.5
 
 
