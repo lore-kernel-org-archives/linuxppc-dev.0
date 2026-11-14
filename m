@@ -1,50 +1,51 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E2247606A33D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 13:55:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68EB4606A333
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 16:17:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lC1rRmz7
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H+o0zQKe
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRbH037WDz3dT8;
-	Sun, 15 Nov 2026 00:55:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794664508;
-	cv=none; b=h26lx9xxkVk5c3QSMH12DPm+u6PjfZoSJ41m9Qv/iZkMwOVVRgOG8R9lr6hHaFxAck/2RHQtTkata1MwJhC/EtuW76sSUvZO8ORnmWyRaIBDQojreRkfnTZuKj61L0focr7Dsyo+qg+7Xe3q9eQD8aTMhq7vsqFqBnlCzoD7e0suFuX+lL2ISRh9VrPqC1qSBTWXvbvM4UspTrw448IFAlqxyKzXgOo1Crn6edfX7JluYn4CMCp784XMfvAPAtB7KFjqmsTu5D9cQgOsRPkLbmpOAH/xoG+ML7tQUstRBHAjlcnlJOxxmKgDglGNVua0gHbpSyO7SD3LABEYY2UGgA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jRfRY471vz3c3g;
+	Sun, 15 Nov 2026 03:17:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794673065;
+	cv=none; b=X4FhGl+5ALJEiSfri9B79xU7Ll1JukC2xzW/ZNtW5bxtOakmLOQXCSxKXlllH5M/Rqb4MMeASl79VH3SWla+p+0gslXpEkDNjnX4yPDorCrqkg6oeiCIYQP2MKwqnX6Aad88nS1SAvnQ1wKYav+bFvitKUJ2dsYy37sjOaQ0yAm5h/GpzL2DfsWyzaRHEZV4UeQTIcprDu8hgznoiOu6Rassm1+xHTYqPwKbqDDD24f2z92z/1G2+CRrkHsXiq7IpJMigTY71Nwqwm7Y1Jpfvr7D6k21Y9RavQAX4TxxLY83c62eUdIxTTjuyjKRdGOLbZFd5xXf9pps5NczSN295A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794664508; c=relaxed/relaxed;
-	bh=gZCOg3PYW5/XzYktPPO7fZbRJ9jC/nh9/3WC5LHdP9k=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=E6aH3pu3VnDLuhP2HzBTvlwUsY3xr6PpUSQxMGB6ijHhSd3OKGvndVaQ+c515q/x8v+cYBlA7uMFxikZ+Zn5W91llZAQ9mzRBtksJAJrA+uIXdg8zNoN3q7Cvzg5HsTzw6TtfkOvGPxelFoqiDi2n2b1WxMB3uj1d/2eCiqaICkEUNrhEou+uzeRwdqIyEhWa79TFiTxJbbR3CKkskqWkOHZSPneDMzjyq/DNgvyEUMqolxvSi7Kkgw9e08WLBDe547Qt6LvYw3P0laabulzdyncL80xLw6Jn9F4Q1McXevM7dnPFw0mSxSuWYaRh/NvFIhGX23pz8Vc5qTbHbudxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lC1rRmz7; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1794673065; c=relaxed/relaxed;
+	bh=LG93qKhG+N0YzkKVt1kZxr2I4R5vNgIJxzUIUOArJxg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fbqSqRKIKtS/MDSPiNqT5KSSRFMKiy/lR+4qUKgw+5wVtb0RR73zOtpAVIFj3Pa8OoCFMtJ0H//+5yN6pMvtlDpXUYPwJt1CxZYdVT3SrcWn4MgQkW9KOzV0Sj3HyeYU32MxhO9SJl/+s3ByJqcI8qwXMPXiOerzw7NijgwjTTO9W08DbShQquzRs3N71VV3haCqXctkOhwCuzQdW/eWr/w1kgcJN9sMNfrjPlWMdZg8MmuhzPrznnYuYZVQyy5k0w26PI1+qApN/QX/TZxuCNDIL4nBSGDfsIA+y1UM+eodIS8VkayKvOaBVemdRoaySifs+yuYHAiv7ojh1sjJcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H+o0zQKe; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lC1rRmz7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=H+o0zQKe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRbGz5FjXz3bY7;
-	Sun, 15 Nov 2026 00:55:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRfRW5z7nz3c3D
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 03:17:43 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3B2EF45800;
-	Sat, 14 Nov 2026 13:55:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E73891F000C5;
-	Sat, 14 Nov 2026 13:55:02 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 99C91400CE;
+	Sat, 14 Nov 2026 16:17:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8B4631F000C5;
+	Sat, 14 Nov 2026 16:17:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794664506;
-	bh=gZCOg3PYW5/XzYktPPO7fZbRJ9jC/nh9/3WC5LHdP9k=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date;
-	b=lC1rRmz7ahj/srEYA2ijCYwgAqxvBpBEiZzJTz1BT/wrTEWhRCAJRjIQUg90ualPp
-	 8fNiGIog6yGBq7jcPWwPg3KTZ4hhP7wzOgQinag8fVT+8JrN/YD10tUBIHBk4t50YO
-	 lVbRqj+kObH/VFAULApyIEa7KJo13ikHhn4sjSYyAVLzN15VB21GTINJSJZ5zSjoJ2
-	 SqbEpuE67Y8c73FjyTC9QAtGI69lnMt18W/xx4/7c8YFqB+lo9IQTij1vjYC2G1yJC
-	 gbXcz8wGq7FFvOpMP/hQpyy359bbb1860T3yz8/mr3WEBUyRt+SVvwAJEu6hB8hDoE
-	 Jru9mkTF+Jtaw==
-Content-Type: multipart/mixed; boundary="===============0802335019258284520=="
+	s=k20260515; t=1794673061;
+	bh=LG93qKhG+N0YzkKVt1kZxr2I4R5vNgIJxzUIUOArJxg=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=H+o0zQKevrxN2RqI7ZiEvtvyYAmczSPPRUty+Me1GnOITblIdxrCfOPY1BtO+Qb3x
+	 FwLY8mphgY8Y8Tey96xcy7xmmtpXOpSJOR4lt1PbvUsFAyVyaHoYa4Z6kmpTrPhzmf
+	 Yejfri/UxWoUkzbk/4Pt0DpyHJuCVKE3oantMWAJ84BpkYO5csTlSFqjDF6REMmZSF
+	 pnbnVPelq5lrwhWx/avtuYaYXGpa/zk3XdGOysdZ5Nta1VFwSNJn3XmafKfjboFLxC
+	 Jamcx1VKWKOIZskFqsMxw0wgW7UcWmBsHxQWNmLb5E6/qRT/S50HIogXBoVDTkksUu
+	 hGy8wtvaqIfwg==
+Message-ID: <beb98f9c-c6fb-4bf6-962a-46f542a19c53@kernel.org>
+Date: Sat, 14 Nov 2026 17:17:27 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,104 +59,140 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Message-Id: <91e245da9f3df6d6e61808e72a4ad0213a9a6b838f594d0be74dd70ab228422f@mail.kernel.org>
-In-Reply-To: <20261114-work-loop-pseudo-v2-33-98639a2286fb@kernel.org>
-References: <20261114-work-loop-pseudo-v2-33-98639a2286fb@kernel.org>
-Subject: Re: [PATCH RFC v2 33/42] fs: add file_check_backing()
-From: bot+bpf-ci@kernel.org
-To: brauner@kernel.org,linux-fsdevel@vger.kernel.org
-Cc: jannh@google.com,mason@kernel.org,josef@toxicpanda.com,hch@lst.de,linux-block@vger.kernel.org,linux-kernel@vger.kernel.org,linux-nvme@lists.infradead.org,viro@zeniv.linux.org.uk,jack@suse.cz,linux-scsi@vger.kernel.org,target-devel@vger.kernel.org,driver-core@lists.linux.dev,linux-mm@kvack.org,bpf@vger.kernel.org,linux-security-module@vger.kernel.org,selinux@vger.kernel.org,apparmor@lists.ubuntu.com,linux-nfs@vger.kernel.org,netdev@vger.kernel.org,fuse-devel@lists.linux.dev,linux-efi@vger.kernel.org,xen-devel@lists.xenproject.org,ocfs2-devel@lists.linux.dev,linux-s390@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-usb@vger.kernel.org,amir73il@gmail.com,linux-erofs@lists.ozlabs.org,linux-kselftest@vger.kernel.org,brauner@kernel.org,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,mason@kernel.org,ihor.solodrai@linux.dev
-Date: Sat, 14 Nov 2026 13:55:02 +0000 (UTC)
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/5] mm,drm/i915,powerpc/spufs: vm_ops->access related
+ fixes
+To: Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>,
+ Matthew Auld <matthew.auld@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linuxppc-dev@lists.ozlabs.org, Chris Mason <mason@kernel.org>,
+ stable@vger.kernel.org, Felix Kuehling <Felix.Kuehling@amd.com>,
+ =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+References: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
---===============0802335019258284520==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+On 11/12/26 23:08, David Hildenbrand (Arm) wrote:
+> While working on vm_ops->access related fixes in core code for FOLL_ANON
+> and VMA access permission + size handling, I stumbled over two driver
+> issues. Also, I have to update one selftest that specifies PROT_WRITE
+> but actually wants read-access.
+> 
+> Fixing it all in this series, because it's all intertwined.
+> 
+> In patch #5 we break a debugging use case for older ROCm versions, where
+> the amdgpu driver hacked around it by exploiting broken access checks in
+> core-mm.
+> 
+> Tested as good as I can with selftests. I cannot really test the
+> i915 and powerpc/spufs stuff on real hardware.
+> 
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+> ---
+> Chris Mason (1):
+>       mm: do not call vm_ops->access with FOLL_ANON
+> 
+> David Hildenbrand (Arm) (4):
+>       drm/i915: consider vm_pgoff in vm_access()
+>       drm/i915/selftests: request read access for mmap access tests
+>       powerpc/spufs: consider vm_pgoff in spufs_mem_mmap_access()
+>       mm: check permissions and bounds for vm_ops->access
+> 
+>  arch/powerpc/platforms/cell/spufs/file.c           |  3 ++-
+>  drivers/gpu/drm/i915/gem/i915_gem_mman.c           |  4 +++-
+>  drivers/gpu/drm/i915/gem/selftests/i915_gem_mman.c |  3 ++-
+>  mm/memory.c                                        | 28 ++++++++++++++++++++--
+>  4 files changed, 33 insertions(+), 5 deletions(-)
+> 
 
-> fs: add file_check_backing()
+We get some test failures regarding error handling: e.g.,
+https://intel-gfx-ci.01.org/tree/drm-tip/Patchwork_178442v1/shard-glk6/igt@gem_mmap_offset@oob-read.html
 
-TL;DR: file_check_backing() may call d_real_inode() on O_PATH overlayfs files,
-which could hit WARN in ovl_d_real() (panic with panic_on_warn) and let the
-pseudo-fs check pass wrongly; reachable via fuse backing open, needs
-CAP_SYS_ADMIN.
+It's all about error handling.
 
-> diff --git a/fs/read_write.c b/fs/read_write.c
-> --- a/fs/read_write.c
-> +++ b/fs/read_write.c
+Before the correct handling in patch #5, we would pass a size that exceeds the
+actual VMA to vm_access(), and that one would return -EIO.
 
-[ ... ]
+In the test above 8 bytes whereby the VMA only allowed for 4 more bytes.
 
-> +int file_check_backing(const struct file *file, fmode_t mode, umode_t type)
-> +{
+Now we properly handle that in core code and get a partial read completion on
+the 4 bytes.
 
-[ ... ]
+I think the test should be fixed to expect a partial read completion.
 
-> +	/* Look through stacking filesystems at the inode with the data. */
-> +	if (d_real_inode(file->f_path.dentry)->i_sb->s_iflags & SB_I_PSEUDO)
-> +		return -EINVAL;
+We won't hack around this in core-mm.
 
-With FMODE_PATH accepted, can d_real_inode() be reached for an O_PATH file
-here?  No ->open() has run on such a file.
+-- 
+Cheers,
 
-For an overlayfs metacopy file whose data is in a data-only lower layer,
-the lowerdata redirect is only resolved lazily, by ovl_open() via
-ovl_verify_lowerdata() or by ovl_d_real().  For an O_PATH file this means
-d_real_inode() goes into ovl_d_real(), which does the lookup and verity
-check itself:
-
-    err = ovl_verify_lowerdata(dentry);
-    if (err)
-        goto bug;
-    ...
-bug:
-    WARN(1, "%s(%pd4, %d): real dentry not found\n", __func__, dentry, type);
-    return dentry;
-
-ovl_maybe_lookup_lowerdata() treats a failed lookup as a normal runtime
-event (pr_warn_ratelimited("lazy lowerdata lookup failed ...")).  It can
-also return -EINTR from ovl_inode_lock_interruptible(), and
-ovl_maybe_validate_verity() returns -EIO for a missing or wrong digest with
-verity=require.  Each of these would hit WARN(1) when reached through this
-helper, which panics with panic_on_warn.
-
-In that case ovl_d_real() returns the overlayfs dentry, so the SB_I_PSEUDO
-test looks at the overlayfs superblock and passes.  Does the check fail
-open there?
-
-Nothing calls the helper in this commit, but later in the series
-f79b9e79484f ("fuse: refuse files on pseudo filesystems as passthrough
-backing files") adds file_check_backing(file, FMODE_PATH, 0) to
-fuse_backing_open_file().  That gets its fd via CLASS(fd_raw), which
-accepts O_PATH:
-
-FUSE_DEV_IOC_BACKING_OPEN
-  fuse_backing_new()
-    fuse_backing_open_file()
-      file_check_backing()
-        d_real_inode()
-          ovl_d_real()
-            ovl_verify_lowerdata() fails -> WARN
-
-This needs CAP_SYS_ADMIN and an overlayfs with data-only layers where the
-data file is missing, the digest check fails, or the inode lock is
-contended while a signal is pending.  No fix for this was found later in
-the series.
-
-Could the pseudo filesystem check avoid forcing the lazy lowerdata lookup
-on O_PATH files, or should ovl_d_real() stop warning on lookup failures now
-that it has callers besides trace_uprobe?
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/43599461726
---===============0802335019258284520==--
+David
 
