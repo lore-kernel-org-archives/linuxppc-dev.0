@@ -2,68 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EABE606A32E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 10:06:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46D06606A882
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 10:29:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=AQuAO0+L
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oP+CwZcV
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRVCj5ZQZz30DY;
-	Sat, 14 Nov 2026 21:06:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.27.42.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794650817;
-	cv=none; b=EfhZpkRjuFyOcJz8fnZzio9i2ldeM/uV8AJ9FjgjnQihhTzEPeCZqSm/+V60XHsc6DO/53fg9INAxZh3F9Wdv8hrluvmcUtArxnENklG6PLn29/ci56LRC6vCdAnWY5Gcw2o0YW4tNPg1LH3fMan4xhKoxeaPXvjtS/r3KN+M9jbeQ+LCm+bbE+ogguciGSAYVehV6JN5fPySss2g0q6HJLl9E+In6O6nBmz4admV1fYyAxdrvDzcKqVLXy3acFHbLvtR2z5rTBccV6LU6+tpEB3W+GlmxOL6hI9IiO6lkPhwdf9iKPeVt+fxqhy/nz7Bg61479fA0NI6gcptl5sRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jRVjV5wLjz30P3;
+	Sat, 14 Nov 2026 21:29:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794652158;
+	cv=none; b=RCXJJvYzfzvL5GTWyWdMGHbyWBSujUZvXalp2MfxfCZi/zn4gs/19/h1Sb1Ilqxv1V0ZuEMGQ3YWKQQSDRiGqnoydZPwnKurj5li3xfrs8VcaI+Or4Eg27xNJS/iU9DaVUME5c2BRs0C4Yrn3A4qIUL3VwUDIclaZBqIQbBuKpsCd1bGQdLygmBY1eiXyDkFxivCeUUFUjB7QzeicAc3Mz7P1w6clOTQlVFE0qlL7GXO6gr/GMooquiFqwE2P2k+M1Me20dQYLrarGkr8JfB9DV4WTYOIcK5XGr+ZdZQQzpJ/ZP5ioV0YU08zHbG4sBDRvrSeMP+MoB0isPhXYKRVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794650817; c=relaxed/relaxed;
-	bh=nA9uVd9Z0U/OOJAJirWA9SKPkRY0C9MO6GKy6l0PlO8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ISKU9GYMEYzUO2YlnMlWN+l8/a/18Vy3U+2BSxmuKGBemKNITigROVkXtMVhxZC8TzVK+JcHZg4sMKMRgMIBCNFQy9e08Fys91rDdhanSUeUXY2DdqHlP30O/Ak3HjrzxvTUfKSSdfCDvxS042EBCCqJT2ybyXWSvyheH6yunyKr6Sa84LHnNBowJK34NZoGOkZ1leQ2nxhjKZGQ4BNES3nKOScc7dy/QJ6O6j9Lp1kir4B5K0VIMM7fDgSZo+Azvd4/+9FZpjlZFw0DTReCNsKsIR3US7ytnRM8C3hb2hpO1rMkaa4uXFXRvXGBLfIe17ulhiRDJlDu+MQlH3Sr4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=AQuAO0+L; dkim-atps=neutral; spf=pass (client-ip=212.27.42.4; helo=smtp4-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
+	t=1794652158; c=relaxed/relaxed;
+	bh=dcmfpT9IKALT3AMaYE02cIzt82rWcSY8cPriyi8AD/Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ZL4d/CpMbhSivLBHFYktwJZ70p8ulgFPqx+luLkqalNQNV5lNTCCYUHO8Lv9P8yrLy8GVhpFxUBCKFy55OLGzXHgUQcF7nWMzjoKX3VKEAznIMV6j50o6Se6OzRiydsxij+dAMmjIcrdfHlCUvPfEP6E4iPjh+u81106NtzVCgnpkVfqKlsG9auPBNB9XfpotKioeFSLUR5rMtLhQtBeUR3gWeBQjatwyTlX0eo3sK4WcOGcnUX14lkbbXDJCtPc5SBWj2SJOJlJ68yYBZNkO4VWWH4gaaG7SYpaEkTn+fQxG12ovbGxQNibydtz81zXgwLbqloW7P7+8nQ16XxWUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oP+CwZcV; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=AQuAO0+L;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=oP+CwZcV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=212.27.42.4; helo=smtp4-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
-Received: from smtp4-g21.free.fr (smtp4-g21.free.fr [212.27.42.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRVCg3l8fz2yqw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 21:06:54 +1100 (AEDT)
-Received: from L30177.local (unknown [78.241.242.250])
-	(Authenticated sender: vjardin@free.fr)
-	by smtp4-g21.free.fr (Postfix) with ESMTPSA id BBAB619F57E;
-	Sat, 14 Nov 2026 11:06:23 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
-	s=smtp-20201208; t=1794650809;
-	bh=g0Aj3QD5cJIwmcGFVWYqEOdOoEhMM0NOddv6KOjkgb8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AQuAO0+LZLEF/gQfONel9daJSQ5G+M95vDYtU9EaA81yx0jCh7xMnXqRLFgMJBU9K
-	 jeOuqebH4GbanWCKhqhNViberAirFwC36UCWL77DI4wzGunWvC5L7kd1A0VyS2kvzv
-	 q1ANqthOBT7i5HnPa6QJVVK1pWT8laUcldqzv5BvOYFdmwEkhliKxq6HWuLnNMJnJc
-	 J8eEOBvLyLi+Grsj+LX16XZw2uVEhzq42HFUCJbHMBREzYGMMPbyL5n5bG1NIAiQIT
-	 vS8liQaaogXWcElLIw2rjPZBVMty3c9qR5g6YqYGv9+CHx13rwb+N4Vuk3Kbvb3lis
-	 Dt0bnTZBHj5YA==
-Date: Sat, 14 Nov 2026 11:06:22 +0100
-From: Vincent Jardin <vjardin@free.fr>
-To: Linus Walleij <linusw@kernel.org>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>,
-	Ioana Ciornei <ioana.ciornei@nxp.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Subject: Re: [PATCH v4 3/5] soc: fsl: guts: add the RCW override of any RCWSR
-Message-ID: <avgynp6NS1u2-2Qv@L30177.local>
-References: <20261114-for-upstream-lx2160a-rcw-pinmux-v1-v4-0-eefcea066a55@free.fr>
- <20261114-for-upstream-lx2160a-rcw-pinmux-v1-v4-3-eefcea066a55@free.fr>
- <d0f781bf-a325-4eee-9431-7eb387279934@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRVjT2knVz30Lw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 21:29:17 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id B99A5618E7;
+	Sat, 14 Nov 2026 10:29:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B18271F000C4;
+	Sat, 14 Nov 2026 10:29:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794652154;
+	bh=dcmfpT9IKALT3AMaYE02cIzt82rWcSY8cPriyi8AD/Y=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=oP+CwZcVcFSC3QvevnrIzew+WDs8zC9DmXsnq2G/7H2yeFPN+RyqU+HU4xj5HwjQj
+	 vHdMlcxd4eI4x7z75kVK2ljbcLX5dRP+Zo6M3RaTut3u/mSirmLQSvVTq172Nn7bJb
+	 9eyl2HFHcPGjBIryaGA2CR++sko1J3Tibq7YUBL6wtT8my3PJ12O4clWPxPHXm54TY
+	 61O0Jh2IOAVsjHTJE6DNkMelf4Tg/LTPHJSBlWTmN9ctIQM+muyrA7qMEg8RbcISLw
+	 3DoKrxM7nVqnTprQqH5INM54aesKZ5kp8+VXvVyix1hqsAxyiDakU4b7I2z4bbjEZR
+	 yLVeoQgcZXtdA==
+Message-ID: <39b3b80c-54ca-4fee-9a56-bb2999705e2b@kernel.org>
+Date: Sat, 14 Nov 2026 11:29:04 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,26 +59,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <d0f781bf-a325-4eee-9431-7eb387279934@kernel.org>
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/2] powerpc/configs: drop CONFIG_INPUT_YEALINK from
+ ppc6xx_defconfig
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Henk Vergonet <Henk.Vergonet@gmail.com>, Jiri Kosina <jikos@kernel.org>,
+ Benjamin Tissoires <bentiss@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Oliver Neukum <oneukum@suse.com>, Martin Diehl <m-diehl@gmx.de>,
+ "Alfred E . Heggestad" <aeh@db.org>, Thomas Reitmayr <treitmayr@devbase.at>,
+ Slawomir Stepien <sst@poczta.fm>, Jie Wang <jie.wang@intel.com>,
+ Manuel Ebner <manuelebnerli@mailbox.org>,
+ Randy Dunlap <rdunlap@infradead.org>, usbb2k-api-dev@nongnu.org,
+ linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20261111215723.3802209-1-dmitry.torokhov@gmail.com>
+ <20261111215723.3802209-2-dmitry.torokhov@gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20261111215723.3802209-2-dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Linus,
 
-> Acked-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-With this ack and the reviews from Rob and Frank, my understanding it
-that the patches 1 to 4 can go into the pinctrl tree, while the
-patch 5 can go into Frank's tree once the driver is in.
+Le 11/11/2026 à 22:57, Dmitry Torokhov a écrit :
+> The yealink driver is obsolete and being removed. Drop its module
+> selection from ppc6xx_defconfig.
+> 
+> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Am I correct ?
+Acked-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
-Thank you,
-  Vincent
+
+
+> ---
+>   arch/powerpc/configs/ppc6xx_defconfig | 1 -
+>   1 file changed, 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+> index 8aab229fb909..29acc77573d6 100644
+> --- a/arch/powerpc/configs/ppc6xx_defconfig
+> +++ b/arch/powerpc/configs/ppc6xx_defconfig
+> @@ -537,7 +537,6 @@ CONFIG_INPUT_PCSPKR=m
+>   CONFIG_INPUT_ATI_REMOTE2=m
+>   CONFIG_INPUT_KEYSPAN_REMOTE=m
+>   CONFIG_INPUT_POWERMATE=m
+> -CONFIG_INPUT_YEALINK=m
+>   CONFIG_INPUT_CM109=m
+>   CONFIG_INPUT_UINPUT=m
+>   CONFIG_SERIO_RAW=m
+
 
