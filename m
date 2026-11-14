@@ -1,106 +1,91 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC57A606A337
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 11:55:46 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B461606A327
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 12:34:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ogihjrtX
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IWv41y06
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRXdD6kFnz30P3;
-	Sat, 14 Nov 2026 22:55:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794657344;
-	cv=none; b=ABfIi9RMHnfiumY0P8TG32gDOEcfdoaYpLgujbwoElYz8954wV//t9+c2tPKdwpEHd/+CO9HCmXPecewXzvSZBYz7iJsXsUfsjH7AGtpybD98rWn8WFLm3OC5ZeMBAAXg4aQx1DcjUu+UTd+AY6R+6iA5yJoTYMP458rNJzIF8I0Tf8M3GSONmqKdQvWzIz9cpS/7+UZzJMfr+rWQRcsYjfrYl8qGH5SFb2jpOlK0VT8zsQThzvWy6ds/BCQdqWm5EC9fGKCbqu6uJbgcSYrL1oq8j3Yw9Kv/XfFfjtay9/WGJgRrIhgf9/8VzWx1OL2/a/0RSn2W2Q2FcvRWUgJQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jRYTV6sbsz30HB;
+	Sat, 14 Nov 2026 23:34:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1335"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794659646;
+	cv=none; b=lWIoggAo1XJrkeCiR6Lu6fbPXqpeW/UfMfAME0Au9hppBrzCB6Lpxb+PGeH7AFPJ/7vQ3HDqc8RH1SQ8Rpeu86jG2Xr/VqTiDIVKn+Wm/DvWx23Q/t52rCXbJIpkTILhJUHrQdogUtvE6JD382caWwRknGNgXYUFEBt4r9uGavM/vYZCsnLZyXYomiXRbcz6Z95VoSL2NHWDLuQsneQ8QD6t1bJfS7rDvVGPZnGtMRluA4i37mIQhVLbNO9Y/FcPItx00+AUqrzBCtWgLQeWs1PUBXHL+59yVhNmnwsNSt0OFDaHQmTqg8klxJzAtiH+qBmRHa36qfKlOQC7cogiVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794657344; c=relaxed/relaxed;
-	bh=nJvs09p7QWIuuw8YOzj5TR133+2IJ5+yRajckn/hsO0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GpDvsLBnbG3TOGJ+f92aPI+/6VHhmjOcsLP1T1IeyvLpRXU1hZLhH7yjLWUF/ch+yvismeb4PfKQRPYOXLCh3/eHXfQL2PJSRldPGlmMU6wMpV6If64+xzpZTX7r1M81s+dW26JmiwF5Rj7sRqll7N/vew3IsGjgecmgyUs9bOAtC+nMbpDhKW287jK9xJckPOmC3wDgjvIzBnxWLt6TD/LOjMO8cJd//MKhYOR61oH3WE3p/5KtS9IqufGGp2lYTFIs5xco0O/blv5k8y74Lpt8lNXyHTIGOPIknvdwRCPoKs/vsI6qQ2qBNvquZdRyiQtaWIu46OoxA0H+H38hAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ogihjrtX; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1794659646; c=relaxed/relaxed;
+	bh=YluE8J+/JrXXpXAxA9V3z+4IjC8O0zarKz/bVofFq0M=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=Oo0hQ7ggKikP5A5wJ4P/CpSdlw1zZfZ9BPsxUZgBcgcQ4c+9i8AkMgtq+4Vyf72Xs22u3kI/k+y8yyErAd3tuFbVmzpa9FRA0KSQwfh40xLSUrBrzqUOxcehIYvRBDa0VYu3QZuz9KW5KIrtFoCXikqMi2smUSTAaRIuNlvu6Eiv+/IbUacDu4Qjvh6qmzjx93s9+sEZGqSBtEjCn8pd6FcgpXdS8DiFFm/kDOKLmFgWjaWhl4HNSB3XeNHt6V/SPHmnWl+bdHK5/LhltA9pp76wSOsepe/3OTuuNqt+0VEPGG00wqS78OnP9TyG//ZVQIZItLjzeEjQPAVkoJfJDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IWv41y06; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1335; helo=mail-dy1-x1335.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ogihjrtX;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IWv41y06;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1335; helo=mail-dy1-x1335.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1335.google.com (mail-dy1-x1335.google.com [IPv6:2607:f8b0:4864:20::1335])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRXdB5vzyz30C0
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 22:55:41 +1100 (AEDT)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-c4cdc606b47so373829366b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 03:55:41 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRYTT6v2Wz2xnh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 23:34:05 +1100 (AEDT)
+Received: by mail-dy1-x1335.google.com with SMTP id 5a478bee46e88-36e99cf7bb3so2454348eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 04:34:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794657337; x=1795262137; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=nJvs09p7QWIuuw8YOzj5TR133+2IJ5+yRajckn/hsO0=;
-        b=ogihjrtXfGm9JQvbk00KbXfqXPO7Yp1GaAaiKdNmCstKlmYxX2zzLimrSZEy4tsFlp
-         A6t8rE6ybVO4gZS3urgDXp/nBoqaR/jkCFH4xwzkc5pXUwAEU7qdstkI5LI97jcik6Xa
-         O1T10hg/PmuNwywTjPMBLi+1fPZCWTnEqAvwRpJCqaydU9m9vpZNQtV9s2cKasc3gN5m
-         QQQdY2qqQmZL2dEkFRsQ/NxqLubpy5P+mbqkP9iHBjxmxQdnaGPLhFQ0uO03+Bk1eCWK
-         zk0fyRzvlxyomR6swcg5K+mI1nTef9Rn2k+YiFv/NeFNFZASKS29Ik5vwByEFIJmVwHo
-         YXYQ==
+        d=gmail.com; s=20260707; t=1794659642; x=1795264442; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=YluE8J+/JrXXpXAxA9V3z+4IjC8O0zarKz/bVofFq0M=;
+        b=IWv41y065GcZXXYMR1DdYXcR/+X8rr2QIJqC5ZeKGuvZC/QTgOe0IAZ/spTMq3l/9C
+         Q44qZ3MBgZTmoauAnTc9ezisUC62a6q0I8i6s/vu9g7uQndNRgTZaWGBohjBUvSiW44V
+         fNYpBLRgEE5Bi5aWn9LGxchPo0KePS/HQMoZUy15gRgjBfcdAEA3mdP7xp3MytfC8VJU
+         87hEc4Abe4C0R8DB6QOEHaWxGQfmGnshrDSRfdcozZxowF8rxdfflsp8KkWR3e+2vNKt
+         d3AXxO6HEYFqdJ4nPkzBykRvhM7D1X9vaIBHKWHGVqLTX/w+wn2wn5Zkw24PFqSIkwtO
+         t4nQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794657337; x=1795262137;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=nJvs09p7QWIuuw8YOzj5TR133+2IJ5+yRajckn/hsO0=;
-        b=cSM1aP+13Hr2W7d5X4PFgCqLlzPy6zHCFnk+ysovDDunnsOlvUUAjFe0nGOLBtqpIC
-         7CCbtcLvKcDK6appYCDFKx7L2Ek4BBoBzbjMQvDeAlt243dDyj0PXGFt8IxFSYJXH24D
-         OL1YD6g3a/tfqIXsOynyJUeJ4fKoUSFtI//bp70kRJGyUYMl3HgYHfp0UuE3TONEDiFD
-         S1mJdFYyNdSaF4ZeWLIUt21ybGTOI9vlIgpbxiEp6wa5/Wb1aoRtLVumfzFKTyrDADL3
-         RwtlfQXKNv7y/KtIPwq8pODt/4L9C6em/e6QfYuuvuAF45BYnogSBsw4dTWUoqquO6gQ
-         i1tw==
-X-Forwarded-Encrypted: i=1; AL+hErFpLJpL6ztgU+zTn4r5RQaaMagi5OXTzfvqLeDtRwaIZZG6+5ZBaLCfGho562xqOxVhSZSZwmwu+x0fWPI=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+rJpa71IVUjmLc9Iov1L74qWYrG20dQagRme3OhuMM7sRPth0f
-	3ol5N1C5OqTRA5DKBS2ecfiRNuZfdOhlc0OdT/PWtoc9j3eCL6GGClcM
-X-Gm-Gg: AYBFou3w4w1tYKunB+W2QjSK305BvqgkhdTHHyXQE1jfUHDKOzKQYmxVySCtfXi8NmI
-	/UiwXwSiXrWP6IibRh2UDOaKwIyulNlzZKPn2lhl5NTXAznjc2TZInKL/SGAfrV28Ztb6xLOtGz
-	KZLA/mH1pq93w/lNvONkAZMe29puu+r1K5ZMu9ekSMForiO6lHJxF5CRG5l6JS3UhVECeZE9vsS
-	DpG+H611P90pOxzx/aD1oKD670H0zyaQggUguCJJY7EZwq1Pz3Swuxaia25+qfrDrK2LP80vQ4H
-	KQZ4caEAUDVymdJ68+R/+Xw9tjiiwuOQGa3EYSjzrV9RlW0qxsGRi5yZ4EufR0EEhrqiG+zGQym
-	fvIJPE4xYl6htvsdTUdU3z2CXpAden9qiTs7sjx+6FO3JpeQdhkZ4w/rKu57oWSmm6nrtCWKF2d
-	3JXFQ1Fs3CZ4KMBAtl66qBOrDJKmcD4mSEy8ZaAHIqrUaazGru7syW4HOBzvwlCZCZ/dwnCz9X+
-	GQ6CGuTYFkNYczMqdB3IQOddNdgMiw1+1gfSYlU8OgL/j5Gmf85nTJk3Zlk3EFQiP3WLlJVG5ZN
-	VVugCDvIJeeBjsgIefIMIs+2U1n3arxnR2M4MDqzmLnHVn6rNWI2DVIMSMvCMWKckjTppR3PHUZ
-	UhkEbV9lrozg=
-X-Received: by 2002:a17:907:3e10:b0:c40:231:6eab with SMTP id a640c23a62f3a-c5096370c31mr441592966b.16.1794657336589;
-        Sat, 14 Nov 2026 03:55:36 -0800 (PST)
-Received: from localhost (178-84-201-199.dynamic.upc.nl. [178.84.201.199])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c5095b41f44sm206223866b.31.2026.11.14.03.55.35
+        d=1e100.net; s=20260707; t=1794659642; x=1795264442;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=YluE8J+/JrXXpXAxA9V3z+4IjC8O0zarKz/bVofFq0M=;
+        b=1XyPTQKQ6MV8kiD84TXL9AnC6M8LlcmpPsGBLCE128xs4zyKTy/T5oUmoQcH3vLUO0
+         FWPagUXHX2vr/eb4XDheajJMzl8ObQDJNoZWXJKf8HNGlz+wB/wy0jK62GlAKBucp5ia
+         t3pEeonTCuh7QtOjGQT+dC7vUOrnnSt2PWZ1RZh9rSv/ZmIZXG3tV+pVPyIjNggLjalR
+         3cH/OUgKmzH4BUXJOOqgPSZskGsCyZz1afawTnCfC7qjjk0Js06C/Q+LoThEJeTTd1yw
+         RGkEd6qdE+OcjLxKKe3xkYniuolvZYDz5+yh5ZfIPeAv/B3d5DdJefic1nb4WUVOryJj
+         9zTQ==
+X-Forwarded-Encrypted: i=1; AL+hErGRZxQ5v2naGTUundpcJ1cRe/5jk0gtsgaDg5FSVTSs7PgeSgmP9RROopA2q23cr1szlxgh26BlY3kEVNY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z84z8bY2D8i/VJeSTVshF6Rq3McjZOpGurEkZsW17DXMbxlfZ3K
+	dOeF9P1h4OEr/WqIP1leW8XsQXXA7r3BGHjXJIpPVMa0a8npCYREnOLL
+X-Gm-Gg: AYBFou02TUlXVBgs/LEx78WyvxT/hkPx0GqrhuSB7TqkpEXo03UOACaTvC40xzKwHDg
+	TTj7G1MPGcLScjNXyo5xzRbfZ5PTU2Am8Hz1QUFXv2H7n/2xbw5BJkVcp1IN0g9t41VzFVdhv4p
+	sB5bG1sek6MxSzVWJ8V0DrNBVuCvvC0QdMXnA1oHQ0G9Z84kY6t185+xPKE/Vb3uh6FUgTYOTOu
+	i7VlqyVL1FXjfJhVBvMSKflaQ9KOxmTRPEAP65eDRlbn26pXaNsi6dnMg8Z0ucD7WqDAVed7RRl
+	s+lTjI3jUxlByf6+Tqd34XS0PskNCKReEPfD55asL0u5fYZ3uBQq0+2sgSaKLz5iJabTV6f081O
+	AA5vNEPDdYxiHpoE1m7lhLTFi0yFMOyxN9xhG+LJz/ZbtQ6FhA7rOiwKOSj01Tv1A/HyPemW19H
+	dEjntf5A8dHbgUSjKzCWcZ/4IFc3RtsLV8fU9S+JMPhFKMULRDjjnAFF4nMLDhz0dmFGCqrLF2U
+	7imYeUXm6yN/M/mguYt3GTnJT+/txWXK65vozhYn0eq4/Jy97vqRQLZC4ie6rh4jgb7gFQjPoaW
+	3cWDBtbRjmbGh0fT/8ubKaNosf4=
+X-Received: by 2002:a05:693c:831c:b0:376:c352:2fcb with SMTP id 5a478bee46e88-37966e3ad42mr4866293eec.9.1794659641790;
+        Sat, 14 Nov 2026 04:34:01 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37955332ae7sm26708201eec.8.2026.11.14.04.33.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 03:55:36 -0800 (PST)
-Date: Sat, 14 Nov 2026 12:55:35 +0100
-From: Amir Goldstein <amir73il@gmail.com>
-To: Alexander Mikhalitsyn <alex@amutable.com>
-Cc: Christoph Hellwig <hch@lst.de>, Christian Brauner <brauner@kernel.org>,
-	linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
-	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
-	linux-block@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-nvme@lists.infradead.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-mm@kvack.org,
-	bpf@vger.kernel.org, linux-security-module@vger.kernel.org,
-	selinux@vger.kernel.org, apparmor@lists.ubuntu.com,
-	linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
-	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
-	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-usb@vger.kernel.org, linux-erofs@lists.ozlabs.org,
-	linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC 38/41] fuse: refuse files on pseudo filesystems as
- passthrough backing files
-Message-ID: <avhMN39TECaur0sS@amir-ThinkPad-T480>
-References: <20261110-work-loop-pseudo-v1-0-4c998976c6c7@kernel.org>
- <20261110-work-loop-pseudo-v1-38-4c998976c6c7@kernel.org>
- <20261111151202.GA11391@lst.de>
- <fb1d72cf25d10a960da627f6d93a3e041820ed3a.camel@amutable.com>
+        Sat, 14 Nov 2026 04:34:01 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: John Ogness <john.ogness@linutronix.de>, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/smp: parse_thread_groups() return error on missing property
+In-Reply-To: <87mrrbrhf2.fsf@jogness.linutronix.de>
+Date: Sat, 14 Nov 2026 18:01:51 +0530
+Message-ID: <eccn8uh4.ritesh.list@gmail.com>
+References: <87mrrbrhf2.fsf@jogness.linutronix.de>
+X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,42 +98,26 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fb1d72cf25d10a960da627f6d93a3e041820ed3a.camel@amutable.com>
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 13, 2026 at 11:25:57AM +0100, Alexander Mikhalitsyn wrote:
-> Hi Christoph,
-> 
-> On Wed, 2026-11-11 at 16:12 +0100, Christoph Hellwig wrote:
-> > I've seen setups where people use fuse to mediate access to sysfs
-> > sysfs in odd ways.  No idea if that's still around, but if so, this
-> > patch will break it.
-> 
-> 
-> Oh, that's painful. Do they use backing files for that?
-> It's a relatively new feature in FUSE...
-> 
+John Ogness <john.ogness@linutronix.de> writes:
 
-Very unlikely that they use FUSE passthrough and if they did
-very unlikely that it would break their filesystem.
+> parse_thread_groups() is supposed to return -EINVAL if the property
+> does not exist and -ENODATA if property does not have a value.
+> However, it is currently assuming it exists and blindly calling
+> kzalloc_objs() with whatever of_property_count_u32_elems() returns.
+>
+> Since of_property_count_u32_elems() returns exactly these same error
+> values in those cases, simply return with the returned error value.
+>
+> Signed-off-by: John Ogness <john.ogness@linutronix.de>
+> ---
+>  arch/powerpc/kernel/smp.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-The API for fuse passthrough is that the server requests to setup a
-backing file before open via ioctl and if ioctl fails (as this patch
-does) then server falls back to non-passthrough open.
+Thanks! However, the fix for this is already queued to powerpc's fixes branch.
 
-The ioctl can already fail for many reasons such as MAX_STACK_DEPTH on
-procfs as the commit message says, so server needs to cope with the
-fall back.
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=126b47221b7b98d83c118781ce724c0515d86d9c
 
-Thanks,
-Amir.
+
+-ritesh
 
