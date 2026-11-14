@@ -2,98 +2,59 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1727B606A327
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 20:06:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3F812606A323
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 20:11:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=nV5RXcAG
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eBSI6JF1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRlW05nW4z3cNj;
-	Sun, 15 Nov 2026 07:06:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794686764;
-	cv=none; b=Q81gs3i1VbseXNDMBJXHLQfncnH8US+F7jKvwW4LUgEP8XoxN28V3569ULBE7Jt+nKCW8By1kA+pcER+HWiudoxV29s3gocJNPMYOvg3TOFg83KRE5yK1PHEiZUc8PGb4uc9ecl4Nd22hKbCT5iCDFo3MtrKomvzQbeQXwo3MMB+SbQ2amrBrC3fOCWGz+xu9vLzxV2ULO385bJmZ47KlOxo2JRNrchKJogg6cYc2F3ZbzvJGj24+BUyR7XCtrqBTk2yev0XxXEER/+XU7Jpi3uYv5/JphPJ3+sGq24q1DpkOtirDvuKxxzrR6HmFGFx0Z4QUeT5xBjVwoUhG03heg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jRlcp4GxHz2ypY;
+	Sun, 15 Nov 2026 07:11:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794687066;
+	cv=none; b=i54u0JLifc6BB72P4VKFZKKCei42llPgdAgQd/KZmfmXWXjpStS0zdbAk1u9jlaPcxD5jwFNx/820r4/acev+lQiTPuth00YkuKh0elwhpC73TitPErRU3MVkes/T2PaevfP95J9KGECLjv8a0SMEBpoiJhGBZUPCWbvUyC69IpDc0fVZsO+vru76Yh+WspINFG95iM6DOpV06qGkg+B3rJcmBtS8yV2vPrNRYG+1Y0Z4LqpSXGzXLySQNvmcqH3Y4NUeAx6D1Je6yMj2OWejFYrPZGTtSgENJr1tbxc4MF3HZvTmlKCnt/2vCPwk6qpinZ3hwzlUflTTQVIp/2lKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794686764; c=relaxed/relaxed;
-	bh=L9fh6nGpkdQ3PKE1Pv6VuACg3WWhS00/MicQv00SggM=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:MIME-Version:
-	 Content-Type:Content-Disposition:Message-ID; b=PkspV/sGfFsY/WF/emxDw1yvwAfh2qsa/cSerk3JczrTx74aBBsV2Kdy14JW6963hqAewT/fVSwZ8Ojwa06luolZPoW3bvrlZ2lufctE9F9R5hytgzQoWCjzwlj5FgBXZizZ8uAc/VTyeP7tc6fDJlKtSsz1HSmUu4EDGxjKcxUvzM6CimqOI+z4h3cppUxVmAZ21+OFjpyxUipaV/nLiwNc9r3Ev9nJ109bcspVAT65mv2djjZEknoZXpgyDCusThhNEgOWbU+QFBqdesugqC2WTHN5t4EHZl4HL/T5vz4wDej/Sr4xFfy1kujDiq4Rr79WChkB8t45HKay+yer2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=chrisdown.name; dkim=pass (1024-bit key; unprotected) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=nV5RXcAG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=chris@chrisdown.name; receiver=lists.ozlabs.org) smtp.mailfrom=chrisdown.name
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=chrisdown.name
+	t=1794687066; c=relaxed/relaxed;
+	bh=8l+12b6m4tjoQkXqXgXCvA2lEKsZmoFOuBWiDGcCyxw=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=GfEEVInF3rzxp0mEQnfJBDCoieRP9nZFUc40DguvR6CylkgfsaTvUvM0ViozSDaN1G/iZGgwPTIAN1/Ezn8XRtVQg+BblqtjdCBVX8hGCedRcGHVb0QRIQhwCCdwukbq5IpDzwE8C/prtTocO0wglQuLhlhx+adyrUMwk0ymmZ534QngYVmOk5j4SVRxiAAIeiDqx7lUKfCDbb/kyVR7G620mxZR9sbFJuIW/qWtpM4kBivNOJKfAeQ4mgu6aWbqX3Abu1Zf6qy8Xzzc5EnCBUjeP2hZT+yRvXfuY+pEjTedVCvB4LQqR5JBFAFhdxAyw1SkGHR5tr1+Ktqnhh8eJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eBSI6JF1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=alx@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=nV5RXcAG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=eBSI6JF1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chrisdown.name (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=chris@chrisdown.name; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=alx@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRlVz4sXwz3bjN
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 07:06:03 +1100 (AEDT)
-Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-cdd9d0c9bbdso2097065a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 12:06:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chrisdown.name; s=google; t=1794686761; x=1795291561; darn=lists.ozlabs.org;
-        h=user-agent:message-id:content-disposition:content-type:mime-version
-         :references:in-reply-to:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=L9fh6nGpkdQ3PKE1Pv6VuACg3WWhS00/MicQv00SggM=;
-        b=nV5RXcAGUsYxIwGwFCOeZgIpoXWzEtmPBtlSIdHencdTQQs4b38rK24JrkX7xbB1m1
-         ozUK/KqRhCmQNwdP9xgsqzDitR15XCvqwPmDurmJ05f/W6mKTCjSxE1aFbhWO5nd3/7H
-         Npovnc+gVGzgpen3Yz8ugKhNX51m/s6T4Mwpk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794686761; x=1795291561;
-        h=user-agent:message-id:content-disposition:content-type:mime-version
-         :references:in-reply-to:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=L9fh6nGpkdQ3PKE1Pv6VuACg3WWhS00/MicQv00SggM=;
-        b=fblawAarIvOu7/5wDJOyN079ptv3BQMnDieT+GozFrIOPXqhc+QVtNjMBs+iQXQUKL
-         bKGQpsc0wbkP2dei6OCiUndlxxSY3kOfPevuG2L3OynOhqCSdX85lTHK7vqnf0zSzZzt
-         XHTUwp+mNjms1shNYsKmcdz+qikbZ3+9/9HQOu0slNNFkwFbTxufukHIHlaijeo+GD6P
-         P3Ta+nDw5Dp7d+Td1/Kv1/nQPk8488n7Xpj5M4DHlAqJtikMmdp0vgYXIJeltjgXSafj
-         7Zi6FIeNjvwjKIEn0h3kl4oms/S1yTL8F0Y5p/ANKtbrJP7GPHikt/3qj7bOciLxZLkB
-         Bhkw==
-X-Forwarded-Encrypted: i=1; AL+hErFN5/nO5goZtSlRE1kB/1nl41C9pr32ZE+UYBPd0n05Ur7w/PhCpAv8AeYFaKXwpyKwXr/u2Mgn2glP+Ds=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/aWyKluSQ1CkRHdtru/ZVnBa1tNkgDHUrI4DSe+8edZT15vaBk
-	2qArNgQ/NgzYMk0wbu4mnKJTDaYmQafOR62GOBhms7W0xxWZokdoysqJiA9p8pAB65g=
-X-Gm-Gg: AYBFou2Ha0CcK4AB9d0/Uzvp0mSo59JnLV+Ai931qAoYS5d3xLc8IB/JAPZmHg8zbf7
-	KzmepF+O9wb+vpnfdst4MLWvuPeYv1rUHYf55iUeLArKFc8yippuaWEgya2w/izRfDdNfFkzXZN
-	rJPdIgQ8UL3R+1cr9h5z5tbkDkfwfTnJkoXy0DJyVM/hkunEHcQ21VRWVTYZEIDzppoFCV+YzjJ
-	VVt4DIAWbj9Q6zPdH9l2SjKdKYSf7TZ7+cFCu+sBDreVVKLoCezIdyfE+x1XSTExaEA3aU2mSeG
-	7mfQC5lbPxgjFIjQ/Xr7tsHcin5hL5rnV89jnF92U3+HreX4f+Aw7W+sfS6Cz/wIqRy35ljs1Kk
-	9ggsTpCKZDgH/j314z83A3d8tnQriWMvOx8JgVTj2xhk4dOdVBchb9ObkDZOKFR22XhaxGi2aFU
-	iKjB1sM4fKkeoWSRwCSjQQlZnBbvmVgzmxTi/Rxyoi2ru27SjS3xexyXXmzy2yPqHssTKb7hF1U
-	x/jUV3KNTfG36fWwhguR49/7fJ2sc0XO7m74H/uKqRrwKNpEnZhSWEiLViQDGNbiivp/NG3S1qQ
-	36ZQ79LhNTGfh6qqTksngLLVjcqjTVu7+bNUxmJFZOcb3nGOzSi60vx8qhgQDKXeJgQDMvxcceX
-	Gnk6GYxGi03Mp+tXBXjydvwm9z0PM6WM19llyuOKNAUmFSSUw/d+uz5nMO1zhb3qUZBQTED7khT
-	lKUyJTXC+1/7IQYBaLSXd4OwPQirvt7rcI1ODQ+3P0QqSYzwXKPYIHmmKr
-X-Received: by 2002:a17:90b:2584:b0:3ac:9f00:3bc7 with SMTP id 98e67ed59e1d1-3b1b0ba61famr5629200a91.33.1794686761104;
-        Sat, 14 Nov 2026 12:06:01 -0800 (PST)
-Received: from [172.22.0.2] ([64.16.22.130])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b1b1e9ef15sm5258887a91.0.2026.11.14.12.05.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 12:06:00 -0800 (PST)
-Date: Sat, 14 Nov 2026 12:05:57 -0800
-From: Chris Down <chris@chrisdown.name>
-To: Christian Brauner <brauner@kernel.org>
-Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
-	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
-	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
-	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
-	driver-core@lists.linux.dev, linux-mm@kvack.org, bpf@vger.kernel.org,
-	linux-security-module@vger.kernel.org, selinux@vger.kernel.org,
-	apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
-	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
-	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>,
-	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC v2 33/42] fs: add file_check_backing()
-In-Reply-To: <20261114-work-loop-pseudo-v2-33-98639a2286fb@kernel.org>
-References: <20261114-work-loop-pseudo-v2-0-98639a2286fb@kernel.org>
-	<20261114-work-loop-pseudo-v2-33-98639a2286fb@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRlcn2SYrz2yb9
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 07:11:05 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 7933E618BD;
+	Sat, 14 Nov 2026 20:11:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 136DB1F000C5;
+	Sat, 14 Nov 2026 20:10:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794687062;
+	bh=8l+12b6m4tjoQkXqXgXCvA2lEKsZmoFOuBWiDGcCyxw=;
+	h=Date:From:To:Cc:Subject;
+	b=eBSI6JF1lDfzpJJDi7TK0oMXlsKjtQ7UNRLafCsJuvHgULdsOyvFqLf/kJpzwcSMw
+	 r3v2KldMc24FCma3IuwM0nBwF8Hi/lEtrLfbGQ4rAGA/nfjzfzx8alb2h19HlOXlVR
+	 8j3nRTRQlRwiBovwHGFQ2Rg4AEJ5dwGHqJdryE1NGQ/oqmiXy08KSYSxVbSXVa89Oj
+	 K41c0pi32TJK04JoBA3tuDkISSW2zOUjzekpP22FDBGocyPXl97x47lTeGlcN5D8DH
+	 PO+BZuIWTPO3bGkzyer1h0De6DB/HZohW65dP52xPkSpPGOenRWBybGswNuOyuMYUN
+	 YmQDxwICtDocg==
+Date: Sat, 14 Nov 2026 21:10:58 +0100
+From: Alejandro Colomar <alx@kernel.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alejandro Colomar <alx@kernel.org>, linux-hardening@vger.kernel.org, 
+	alx+linux-hardening@kernel.org, Nicholas Piggin <npiggin@gmail.com>, 
+	Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, 
+	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH v1] powerpc: Fix off-by-one bug
+Message-ID: <1f7d29cebba5823400ad0bc5d95610f05f55e2d0.1794686962.git.alx@kernel.org>
+X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,54 +68,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ys7an7pdgy32so6a"
 Content-Disposition: inline
-Message-ID: <20261114120557.4bc1eb6e57218cdc@chrisdown.name>
-User-Agent: Mutt/2.4.3 (cc9e3943) (2026-10-09)
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Christian,
 
-Christian Brauner writes:
->+	/* Look through stacking filesystems at the inode with the data. */
->+	if (d_real_inode(file->f_path.dentry)->i_sb->s_iflags & SB_I_PSEUDO)
->+		return -EINVAL;
+--ys7an7pdgy32so6a
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+From: Alejandro Colomar <alx@kernel.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alejandro Colomar <alx@kernel.org>, linux-hardening@vger.kernel.org, 
+	alx+linux-hardening@kernel.org, Nicholas Piggin <npiggin@gmail.com>, 
+	Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michael Neuling <mikey@neuling.org>, 
+	Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH v1] powerpc: Fix off-by-one bug
+Message-ID: <1f7d29cebba5823400ad0bc5d95610f05f55e2d0.1794686962.git.alx@kernel.org>
+MIME-Version: 1.0
 
-This looks good in general, but what the bots said about O_PATH files
-here is real. With FMODE_PATH this is reached for a file that was never
-opened, so on overlayfs nothing has been through ovl_open() to look up
-the lowerdata of a metacopy file yet. ovl_d_real() then does the lookup
-itself, and when that fails it hits the WARN(1) at its end and returns
-the overlayfs dentry, so the check passes as well.
+=46rom the surrounding similar calls, the intention seems obvious: this
+seems intended to check for a prefix.
 
-Only fuse passes FMODE_PATH, so it takes CAP_SYS_ADMIN to get there, but
-it's easy to trigger with that. From a quick test with a metacopy file
-whose redirect into a data-only layer points at nothing, registering an
-O_PATH fd of it with FUSE_DEV_IOC_BACKING_OPEN gives
+However, I do not understand this code, so take my reading with a grain
+of salt.
 
-     ovl_d_real(/f, 0): real dentry not found
-     WARNING: fs/overlayfs/super.c:79 at ovl_d_real+0xc9/0x210
-     [...]
-      file_check_backing+0x308/0x5e0
-      fuse_backing_new+0x219/0x4a0
-      fuse_backing_open+0xe8/0x390
-      fuse_dev_ioctl+0x53a/0x7d0
+Fixes: a048a07d7f453 ("powerpc/64s: Add support for a store forwarding barr=
+ier at kernel entry/exit")
+Signed-off-by: Alejandro Colomar <alx@kernel.org>
+---
 
-and the ioctl still succeeds. A normal open of that file fails with
-ENOENT, so nothing could have used it as a backing file anyway, but with
-panic_on_warn this is now a panic.
+I found this while looking into replacing this code with calls to
+strprefix().
 
-Maybe ovl_d_real() should just stop warning when the lookup fails, now
-that it has a caller that isn't trace_uprobe? The check would still pass
-for an O_PATH file whose lowerdata couldn't be looked up at that point,
-though.
+ arch/powerpc/kernel/security.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks!
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index 600596cb4ffb..37999555bfe6 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -273,7 +273,7 @@ enum stf_barrier_type stf_barrier_type_get(void)
+ /* This is the generic flag used by other architectures */
+ static int __init handle_ssbd(char *p)
+ {
+-	if (!p || strncmp(p, "auto", 5) =3D=3D 0 || strncmp(p, "on", 2) =3D=3D 0 =
+) {
++	if (!p || strncmp(p, "auto", 4) =3D=3D 0 || strncmp(p, "on", 2) =3D=3D 0 =
+) {
+ 		/* Until firmware tells us, we have the barrier with auto */
+ 		return 0;
+ 	} else if (strncmp(p, "off", 3) =3D=3D 0) {
+--=20
+2.55.0
 
-Chris
+
+--ys7an7pdgy32so6a
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEES7Jt9u9GbmlWADAi64mZXMKQwqkFAmr4wFIACgkQ64mZXMKQ
+wqkSTQ/9Hl6YBCGT4ghLfidjZfi5Br8fuavBYgESR82RDZB/BJGlXWUoj9wcdnWN
+JzQPQgDQPE0oWF1jm54rUZgrntBNDMzvuBT5l9QRJa7gf6PDw44DKeNDv1d1P6J0
+TzSHek5YKoAkNWI6K9nRabXWGqwGnwwP0ICcfZSoTvV6u2KunSGVQCm6y+rN2s8I
+xsZKBxq2oc204UiddF14m8WA5WrUBO4v8+Fn1fT7W43qztLwz/olTUmg9dg7qqI4
+eqQLqIRMKT80H303iyeR06LrcMMvOnUUlSEI6HbK+czzGidLi6eDZxq/rRWEQuls
+PAK5X563XyDWupHl8wOkFZKOqtEXRyWBkDwGUxmQIb2KY3Ac9cmq4VY+4h/AkZSS
+qAo9stRufUbZGI7ysmWpkao+PoeT2mD5vkU+Mdt5EAS91J0bQGl9GW+TS/eZNgO5
+GELjmQ1m4+gEDpuanoOiml/h00w85L58kpyupHF1hP4tcpyE1dJHjBtvgAmMtLaO
+a3Ej4DMXZi2/IEnw4f8ppjM6Ec72qaOVIbXoiyFtChLTfYuAkwAn09Slo4Q4mKs+
+Per3v/Q0HEGE13hR7E/InaXVP75qNNUIxt671RIxc+K73dus/XjFEt8PltUCjxl0
+q2FN3zdKmOLUurBDxFZB+XZyJn6USwIRo0H1TlAy3XoO3/VVXZ4=
+=VL6+
+-----END PGP SIGNATURE-----
+
+--ys7an7pdgy32so6a--
 
