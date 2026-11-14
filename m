@@ -2,71 +2,101 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E3CE4606A323
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 19:08:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9D96606A889
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Nov 2026 20:06:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QYNoTnXj
+	dkim=pass (1024-bit key) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=kkQ5o71K
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jRkDJ6BgGz3cLN;
-	Sun, 15 Nov 2026 06:08:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794683296;
-	cv=none; b=SBj2FkUMhumilZvD9RORDB37N5z9f6cN241AIYdJBXKsT21jOKbSeOxjM8aOoctxl6p4DAGQjITx88w9yXS7Iuzh7/tQjxgyaQ+gGIZRr7H/HXuAykXvm1/ENs8oox/isii33pitmBtso3nBoTKMDIsWKJS0850KGClIjdSl04PnwhhTpwjQmetfMXPVHBVXDumjA1PuuoupIvfQ4Jos/PKw+NGGjqbPuui7PSoCIQlLdsuV1RMlbXAa09b4uBC4JwSCWimAVVQldjrBuv6mi3EoX1bdOZFoXr/yqU+hW7ZxrhnjmbKxorj+ZV8/CuhjNRb001LiLEhAYaONaeV/mg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jRlVy3PnMz2yMn;
+	Sun, 15 Nov 2026 07:06:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794686762;
+	cv=none; b=XPuwfATrLdg9+JAiaIwETr7CCP7VGXwYhCaKT6T5o4MKNJZcyeX/BuZXNp9m3Y1NaHRevXQT4vdII6zYtBnnMjwrEURKl4ih/CVT/pnSsWz9BWaHvhzm1Z7PWuszW8ea0k1QwicbP1ngGtmpFAjAcOHWAIVumKB7ITZElmFvwtgfK1KTfQRpdJlfQVpAhZtpGOpKVU7xp2yyEIxaQ/CcFAS4ywFxIhav5ergQDoH17KaNUtC7w6a2LjYbXeziUTmN5KHumvk9wDY4l99Cl+9BuXYJyazeQjbsBPtY1le86KtL6q7R5xnGjNSANVnBt+QgwBg/ANFaNpoTJ+NubEuFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794683296; c=relaxed/relaxed;
-	bh=jrpYg7S3w1u/s304fksd+9WkuwgFpjkNMJMjxnYOktE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=EEBsecIgtU0HrcpsjdZnZy5EEJwZ6VDJCo8sffaT+UnZlV+PwHVkLa6soT0j94Khzo/7nK4Z0nNssXL7QyNtnpETS9FAlAax7oO0HHK3iHFkm8S/G3GE1Ra16h36VGMbVA67mn3TDu8lOAK08d2siLM+6MB2mTL654tF3x2/KIbiw+Dsct7UFrXxgOlOmm4dylyVZ4GInZGKNbZBgkA0v8yJmeA9HBSmoddT0L+CqJ9f/2Eg7cKIoK3qJFjNdxlssX3x1KOV9x48pTDYvstWm1e8wIecY3/PIqO5OLB+GnuEbzY+yvV3PVo0ztcEN54MMWkG1M2kuv6Ys1HzYzakDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QYNoTnXj; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794686762; c=relaxed/relaxed;
+	bh=SncZUWGrBOxT9WurRufkDIe8hGFcWm37DANGybHY+fQ=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:MIME-Version:
+	 Content-Type:Content-Disposition:Message-ID; b=ft9rM4/9D41c2e2g8Fn2tSRgECx/0qFYEdmgpGW1YmBn/F7OvNms3NZNewFN2p24U7ywZ2lEkdd161ONptvZegQ5+c9OmYVtwKj/lPMze9hbuQbxqNSBfDeOjX7eQDxEfwAJ+W4xqxFaph/3vqEPU3K3cvMyrr//Bm/JLs/B0QnP7kXKCL3rzyhC/8HAeEF7jlx4xqjGtfTmU1tXKT3950FLJhaxZH6O3ysUPSIbRF+vmCkAMRgCqUPPiZwcB6Algng5l/Eq6KEKtmvC8OEhy7mHDQ4Jew7Dfbb7AkM4OFi+P4GLh8+8sADUDIE7wXRE4+jvb+03tasGYxVlL+f5qg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=chrisdown.name; dkim=pass (1024-bit key; unprotected) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=kkQ5o71K; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=chris@chrisdown.name; receiver=lists.ozlabs.org) smtp.mailfrom=chrisdown.name
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=chrisdown.name
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QYNoTnXj;
+	dkim=pass (1024-bit key; unprotected) header.d=chrisdown.name header.i=@chrisdown.name header.a=rsa-sha256 header.s=google header.b=kkQ5o71K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chrisdown.name (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=chris@chrisdown.name; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRkDJ0Hf8z3cKQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 06:08:15 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DFB1E60DE6;
-	Sat, 14 Nov 2026 19:08:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C2531F000C4;
-	Sat, 14 Nov 2026 19:08:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794683292;
-	bh=jrpYg7S3w1u/s304fksd+9WkuwgFpjkNMJMjxnYOktE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=QYNoTnXjjZhBPnpa8pOfyk2yFfApF74bnIOvALp/oKYkwpyK77UolVRCAS9PWBwUT
-	 vTBNeJc2BT3hD65bSUXiJIzuZRodbsdX1fnL8/SMLFCYNn/+H570eO0UW2ZwVw9sWk
-	 GMxUycxR4kFYE/1x4BsPOWM6QfVcHWY7lAkRzLGYC2spj4KtaAwckhv3IaoPq1c+i0
-	 7WJXBqF1BvvLoxaDFl2abs10ZuIiJ39Ub7KZHMiai60iJ0e/m7v+0PTgqGv8kiifml
-	 yLA7l8Fl3UguxEqgTAbhHe6k1GakSXqMGY5FQ9ZyVqlS8LVqbDnHwiqz6bl9cWiY9E
-	 wqQgRo+ur+kWQ==
-Date: Sat, 14 Nov 2026 19:08:02 +0000
-From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-To: "David Hildenbrand (Arm)" <david@kernel.org>
-Cc: "Liam R. Howlett" <liam@infradead.org>, 
-	Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>, 
-	Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, 
-	Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Chris Wilson <chris@chris-wilson.co.uk>, Matthew Auld <matthew.auld@intel.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Rik van Riel <riel@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, 
-	Felix Kuehling <Felix.Kuehling@amd.com>, Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>, 
-	Chris Mason <mason@kernel.org>
-Subject: Re: [PATCH 5/5] mm: check permissions and bounds for vm_ops->access
-Message-ID: <aviwYZhpXFczMwRR@gremlin>
-References: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
- <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jRlVw1Mnbz3c9G
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 07:05:59 +1100 (AEDT)
+Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-8b271e573adso1161065b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 12:05:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chrisdown.name; s=google; t=1794686756; x=1795291556; darn=lists.ozlabs.org;
+        h=user-agent:message-id:content-disposition:content-type:mime-version
+         :references:in-reply-to:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=SncZUWGrBOxT9WurRufkDIe8hGFcWm37DANGybHY+fQ=;
+        b=kkQ5o71KsU48A+mqRI2s6G3Sv5o7MyNPr7JXdRcjVo5o4n5B1cv1zaCVvW0n4h04P5
+         MyA5LUVIMjkyx+LB2S5f1k6WkASNaoJoiT4sPXUqAM0f/HZCjHbduKzzh3JDAxiif1wB
+         zjbWZFpaoF51yCe4XZa3sl32BejD/hOHJMhg8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794686756; x=1795291556;
+        h=user-agent:message-id:content-disposition:content-type:mime-version
+         :references:in-reply-to:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SncZUWGrBOxT9WurRufkDIe8hGFcWm37DANGybHY+fQ=;
+        b=eWaMH+zaQ46eHOMTrabCe3ApQt4ctzXAAvRFQKvuuBWL9DaCs3MyJewpySFRztCM0E
+         mqA4x2HOOfYv/LX0Zx2ZckHEJv2MeFoDx5Dkta9ezLu+VU9mP0jdNijdp56Qyq64J0oo
+         rGe+boifrBDXjSOu0sm3iqF1PE+ToecsSEa3Pruj64y0xSoziCj8+epzZgMYFGuT8KTL
+         E452/LkVipOpEkjNz7CBEl57W6LbR7/EFBp2F5MH/OABxZRXDDvoihbW8EfMxrUM2xJk
+         +kdGdQb5eoyGZ+pJQWbDaq6hGxZcRWNhsaJK9ZeRKsum9s2uUuzcEBEDqOunkmRhtavK
+         2wXw==
+X-Forwarded-Encrypted: i=1; AL+hErE0tR7mkv8WJgdm6ZsVbgsgGuSy7wO8dYY1w6BRcBbkcM8uws3Foq7xrcZnVumF8jwoVk56UISbcKjWU70=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+adeULYdw4d6xwhV+6qTQUAfiaus5DwgFhRTbJ4Nb55OejJrVd
+	B1wfYpoCIBpN/hDaF56dIBmCT+mSmZ6cb7qLUVHbWFr7ZsHqS/v68jAJ/iTXYHTDcxY=
+X-Gm-Gg: AYBFou0o3sCVIbzUFV/05YU8cHXPDway7XwZttEBKS5qpYACaV8OeM2cCIP+rgPImVq
+	tIFhN2MwSZwpAJYT/knAXKv7GWRkPXHZLJh/hjmVRhfTes/PWxfPUes3cQqEqbWsvtCxXRp0lcI
+	PcdhjiCtQ7y1cgu92ZO/cbUuHNUfwJxW+3di8Gjvq9lV65Su4bXA6JDiT83O9dGgPJngugU84Fb
+	dRgveJtZLDsoICsuV1yF5xAJa7AzG8KxsLefHeOhT6EWuG0PO19bVNU4CXkl5h+CSdo/SFlXdeF
+	z6fseloKWWEJa2W++8Vl5hZ6JoPgV7RfjDMRnslzOSUU11/+QErygTxKbpS7I4yV2uhr8pMpPng
+	opH1WEusvBs7ZSYKSzijD2z55bXV+qlVqHfi/MQXrqGRZWedbtwzrUj7zuRLtF8PiZbmN3NpzIV
+	iDJikqm9ErTPRpn82CSGD0/4vXyYE4B3RI5sNbIGmAW2o7MRzxd2qfX5KNmuIJu7Pf8pMVVM/Ed
+	flsHUBC22DZyLV7jHS9acWKAV9DK0rfLwB4H8AqyEG/YstL18E6N27feSC7OCaOyM9hiE1pLa5q
+	OxlOFrJC2UnILXBGjR6jb1eKEXx6TnfBxZPRi39DvhEABW5JkMgD3B0Zf5nazS+xmDkyDarWNcV
+	ps9vZW0iLAl2RLniqgHRBJVm3Ca5YA4I7Ulvwm5zgmQtdkJkGTySKDzMRR6ECDIYDs5ZtCI2xWz
+	UJvF1SHolX9tqJRhqJI9MuUmYGrwHd6MMwUOZgCRIKrO1+jJGe0r9bq7ke
+X-Received: by 2002:a05:6a21:748b:b0:3e3:37ff:3795 with SMTP id adf61e73a8af0-3f7a4dbfbbfmr5517650637.7.1794686756009;
+        Sat, 14 Nov 2026 12:05:56 -0800 (PST)
+Received: from [172.22.0.2] ([64.16.22.130])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8bed12a8172sm2271197b3a.13.2026.11.14.12.05.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Nov 2026 12:05:54 -0800 (PST)
+Date: Sat, 14 Nov 2026 12:05:50 -0800
+From: Chris Down <chris@chrisdown.name>
+To: Christian Brauner <brauner@kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>,
+	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>,
+	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
+	linux-scsi@vger.kernel.org, target-devel@vger.kernel.org,
+	driver-core@lists.linux.dev, linux-mm@kvack.org, bpf@vger.kernel.org,
+	linux-security-module@vger.kernel.org, selinux@vger.kernel.org,
+	apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org,
+	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev,
+	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>,
+	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+	stable@vger.kernel.org, Alexander Mikhalitsyn <alex@amutable.com>,
+	Breno Leitao <leitao@debian.org>, Casey Schaufler <casey@schaufler-ca.com>,
+	Chuck Lever <cel@kernel.org>, Sashiko <sashiko-bot@kernel.org>
+Subject: Re: [PATCH RFC v2 00/42] fs: don't use pseudo filesystem files as
+	storage
+In-Reply-To: <20261114-work-loop-pseudo-v2-0-98639a2286fb@kernel.org>
+References: <20261114-work-loop-pseudo-v2-0-98639a2286fb@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,114 +110,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
-X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+Message-ID: <20261114120550.0c9e73aa12a3072c@chrisdown.name>
+User-Agent: Mutt/2.4.3 (cc9e3943) (2026-10-09)
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026 at 11:09:01PM +0100, David Hildenbrand (Arm) wrote:
-> GUP rejects VM_IO and VM_PFNMAP mappings early. __access_remote_vm() then
-> falls back to vm_ops->access without checking VMA permissions and without
-> limiting the request to the VMA size.
->
-> Consequently, /proc/<pid>/mem can bypass protections even without
-> FOLL_FORCE, or cross into another mapping without checking its
-> permissions.
->
-> Check VMA permissions before calling ->access and limit each request to
-> the current VMA. Implement similar access permission checks as GUP,
-> however:
->  (1) Reject writes to CoW mappings because the callbacks access backing
->      memory directly and cannot handle CoW.
->  (2) Allow forced writes to non-CoW mappings with VM_MAYWRITE.
->
-> This intentionally breaks forced writes through legacy amdgpu PROT_NONE,
-> MAP_PRIVATE debugger mappings. The workaround in commit fa5239f2af98
-> ("drm/amdgpu: workaround failed COW checks for Thunk VMAs") cleared
-> VM_MAYWRITE to avoid CoW, but debugger writes still succeeded by
-> exploiting the missing access-permission checks fixed here. Reads remain
-> supported. Userspace must use MAP_SHARED instead; ROCm 5.5.0, released
-> in May 2023, already does so.
->
-> Link: https://github.com/ROCm/ROCT-Thunk-Interface/commit/fea44fab6e84eda52fcf6b419b35600c18f4c022
-> Fixes: 272ddc8b3735 ("proc: don't use FOLL_FORCE for reading cmdline and environment")
-> Cc: stable@vger.kernel.org
-> Cc: Felix Kuehling <Felix.Kuehling@amd.com>
-> Cc: Christian König <christian.koenig@amd.com>
-> Cc: Simona Vetter <simona@ffwll.ch>
-> Reported-by: Chris Mason <mason@kernel.org>
-> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+Hi Christian,
 
-LGTM, yikes at this in general :)
+Patches 1-11, 13-16, 18-26, 28, 31, 32, 34-37 and 39-42 look good to me,
+so for those please feel free to add:
 
-Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+Reviewed-by: Chris Down <chris@chrisdown.name>
 
-> ---
->  mm/memory.c | 25 +++++++++++++++++++++++--
->  1 file changed, 23 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/memory.c b/mm/memory.c
-> index d4370c1b331c9..9872f289c1e49 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -7362,6 +7362,7 @@ EXPORT_SYMBOL_GPL(generic_access_phys);
->  static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
->  			      void *buf, int len, unsigned int gup_flags)
->  {
-> +	const bool force = gup_flags & FOLL_FORCE;
->  	void *old_buf = buf;
->  	int write = gup_flags & FOLL_WRITE;
->
-> @@ -7401,15 +7402,35 @@ static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
->  			if (gup_flags & FOLL_ANON)
->  				break;
->
-> +			if (write) {
-> +				if (!vma_test(vma, VMA_MAYWRITE_BIT))
-> +					break;
-> +				if (!vma_test(vma, VMA_WRITE_BIT) && !force)
-> +					break;
-> +				/*
-> +				 * In contrast to GUP, we historically allowed
-> +				 * FOLL_FORCE write access to non-CoW mappings.
-> +				 * However, we must always reject CoW mappings
-> +				 * as we cannot CoW here.
-> +				 */
-> +				if (vma_is_cow_mapping(vma))
-> +					break;
-> +			} else if (!vma_test(vma, VMA_READ_BIT)) {
-> +				if (!force || !vma_test(vma, VMA_MAYREAD_BIT))
-> +					break;
-> +			}
-> +
->  			/*
->  			 * Check if this is a VM_IO | VM_PFNMAP VMA, which
->  			 * we can access using slightly different code.
->  			 */
->  			bytes = 0;
->  #ifdef CONFIG_HAVE_IOREMAP_PROT
-> -			if (vma->vm_ops && vma->vm_ops->access)
-> +			if (vma->vm_ops && vma->vm_ops->access) {
-> +				bytes = min_t(unsigned long, len, vma->vm_end - addr);
->  				bytes = vma->vm_ops->access(vma, addr, buf,
-> -							    len, write);
-> +							    bytes, write);
-> +			}
->  #endif
->  			if (bytes <= 0)
->  				break;
->
-> --
-> 2.43.0
->
+I've also tested 5, 6, 34-37, 41 and 42. The selftests all pass with the
+series applied, and a uid 0 without capabilities can no longer change
+/sys/kernel/reboot/mode through a loop device. So for those, please also
+feel free to add:
 
---
-Cheers, Lorenzo
+Tested-by: Chris Down <chris@chrisdown.name>
+
+I've replied separately to 17 and 33.
+
+Thanks!
+
+Chris
 
