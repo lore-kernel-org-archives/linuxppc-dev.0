@@ -1,93 +1,92 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC746606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 06:39:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93F96606A323
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 07:02:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XY6g0QDN
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AHiuNst6
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jS1YQ4wwkz2xGr;
-	Sun, 15 Nov 2026 17:39:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794724746;
-	cv=none; b=kEnvFtKTSLGgVYf6E91L4qS3rLaiqZ6yqx6bRgLeBT5zWhkWagvHu+73tCXxqZVJNjFBCXJVgm7lYpxu2MSU9ThJWn4IblPn5qUk1mFLuh/46yiauLxwhAJ1PrDvYBiCN1RlJPZ3OjUIhSQFuFSL5oGY4+ggwnPSEMPYWK1ABtI1tPaMyyCCM8AmayDaM+3MI5RfxACNn19EG2/7889grTR9fjGYp6zhlxS0uonoQNDs1WaAj0AXQvrD0srvnVlDxDTFk8GntOdzyUe+K/O/faMMpZGhPDReR7gwERflAKHhnYbDZXqgoFhSQeTofP2zMNoCSTNfLpFqy06oR8qKUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jS24824WGz2xGr;
+	Sun, 15 Nov 2026 18:02:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794726136;
+	cv=none; b=b4bDTRsXv8RpY+25GBg5WaUpnIrB4vjcDBT/+uHXflES1r+BHRBOe9O5sRteCRShnIlbfcDw4gGo0vuqQ4SH7GQrhTo66V2s8d/WjiamvNiIu4wNETLjjCoSoW5h0eMzO9vc+FqxPJmEizjd5zkRxKkE/q1+iaL0RUj+EZoOur03298jFwKn9RoQuP54tYwjhlEbllGRYCklCIwPYtDUhpjLVD55GUieyYymJGPNmZVYz5riNaAlsmBYconA5ohN14gnmtepGPDWUqdIiqPjhjGrzvGdYxBulfbLKKmAdnALgZffouX/+OtBvhegsmIYQl0cBJaUc27rM6azVgKeeg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794724746; c=relaxed/relaxed;
-	bh=5uzNQjIqKu1Z5H5h4ULFcPsML/9M2qNB6yySUHBpd2Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=UjTtIN4z++vFSdOU9vjvUUbplhMWi5I5gSafxNEvAqWUbRiddKGiKVQ024A88Lp3VQGfQY0WDpf7TzaoMP3HuqdUrRjaEkj99+APcP3snIFYk/H/7h4LeQVqDMqqE0ciyJ9xu8qhPwQV5a45zfPtgfsggYwVgpp2tksNNr9V3iJhBdq2PHzFq1/t+UKPWM7qXwv7o8AGZ/2u+4nxLaXBCgeIUvQw6/gaom1BgFg6FTfFPakQLKd0EmYEKIPZ0On5tj2VxjuNSst2GEKj/rA3mStbl00Mc3Z4DUkLY3ooHUsfuENQLzcjUT9emjgOWVWFr1uFmihqJsYi3FHyYtuLfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XY6g0QDN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794726136; c=relaxed/relaxed;
+	bh=WlvaTcb4vTukTns5YClT9/RRVqSRloX/GzQ0iNm2R4A=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=Ox0lq+PVDGmzLkbiVLe7RpES3XMXafqf98CtkHARTb+57MWgD1+Q7orJ8RDFQ0kFzmK3rTRv7/BefJbKSdLoAtuccRK+UBzpCAox22rWGkYD2DaSB4sVmKVikt6DjTN7loQBPEXFjCC/GTzKUV7lQDyeYFXh/SmPD6SqxbeoVh+m2xnc2Yka3VXSD8+/NGq6poPNLKGuhRXNwNEH5vmbeUGCjVOmmSDbcLJkFOkxVEnZUpZzWYKIfWsh3ZvmIuL2zt2CYbFuVhfts77i8ln3oRUleAIS28weKynSjEEDiLeLZNbvFXU5+6skJkKB2RevSFiCn2McduE3szpta6+T9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AHiuNst6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XY6g0QDN;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AHiuNst6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jS1YP41PFz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 17:39:05 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id B208B43965;
-	Sun, 15 Nov 2026 06:39:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FF9C1F000C4;
-	Sun, 15 Nov 2026 06:38:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794724743;
-	bh=5uzNQjIqKu1Z5H5h4ULFcPsML/9M2qNB6yySUHBpd2Q=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=XY6g0QDNlp+U9PsTjMW6Z7U+4AKhATHLs5He0CZN49f2Nu0bcao4bAPuuwEsft6FI
-	 TWnoj+VGBoUPTmb0EJCJXCsTtwSE0k13bv5Te+OZ5Acn6pVLSE5i/fhLT5QGKgwaOk
-	 Ucb2W6afh0Q1yzMIuWl0IoyL1xjTDc8J5WHHCJWlw82oKPLfFptJE13O1Ok9X62IyP
-	 xkoneXTm1OtIXF7WSDiXJH8M/fRN/bG7+qbjc7kJUeud8mWA9cz/xm6XTt15y1BZge
-	 qGkeMJ/mOBJIxREW4t6uml5kStkcI3+UGIwjK5RYkeEIMSPndyRf3R1y4lpuaoL/kN
-	 M2jExDr2sEOLQ==
-Date: Sun, 15 Nov 2026 08:38:46 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Alexandre Ghiti <alexghiti@rivosinc.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	=?iso-8859-1?Q?Bj=F6rn_T=F6pel?= <bjorn@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Donald Dutile <ddutile@redhat.com>,
-	Eric Chanudet <echanude@redhat.com>,
-	Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Kent Overstreet <kent.overstreet@linux.dev>,
-	Liviu Dudau <liviu@dudau.co.uk>,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nadav Amit <nadav.amit@gmail.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>,
-	Rick Edgecombe <rick.p.edgecombe@intel.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Sam Ravnborg <sam@ravnborg.org>, Song Liu <song@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will@kernel.org>,
-	bpf@vger.kernel.org, linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
-	linux-mm@kvack.org, linux-modules@vger.kernel.org,
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
-	netdev@vger.kernel.org, sparclinux@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH RESEND v8 11/16] powerpc: extend execmem_params for
- kprobes allocations
-Message-ID: <avlTdlK9ErlqVRYl@kernel.org>
-References: <20240505160628.2323363-1-rppt@kernel.org>
- <20240505160628.2323363-12-rppt@kernel.org>
- <3f7af771-87a7-4ae7-9919-bc4c23bd31c9@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jS2470R6Rz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 18:02:14 +1100 (AEDT)
+Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-33bf40b0c8bso1370654eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 23:02:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794726131; x=1795330931; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=WlvaTcb4vTukTns5YClT9/RRVqSRloX/GzQ0iNm2R4A=;
+        b=AHiuNst6qDUkIt7s0FH6YbuoM/4+fsfUszqJFxUXTPIHkbSJQdxIbtnXDswNefm4UG
+         aqq711BkC+KGNxK17I/uQPdAe9pLtNMjrMuv7DweMiiTvqZvil3Rj2FVXu8xPPtzax9P
+         mAaX1g0beRT1Um+nl6H6xE92Uee9D6cLG4UYdH7nzDlYhvEXXQfyWroCD5mcvJD+D+KQ
+         KIporTIM+XEumGa5OzwCa8ieh+SXSOKp3YHFEue/VY+QgM7EQG97bo78PWdCvNIK5frf
+         Mn6n34bZc2ktPnCWke91OIxi+IjsFTKfI8fgPUDuXrlvTTM2NNvlA7c6ffmFwsfY3Gpm
+         XpHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794726131; x=1795330931;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=WlvaTcb4vTukTns5YClT9/RRVqSRloX/GzQ0iNm2R4A=;
+        b=pulhKv65wZjEwRElOd12YozP4l83gwT5vPLyVWKaQNNt88cijKHsLma2hO9gDB2NRX
+         gTxy1hqbCev4Ntj6Xg/+IedV8o/S16fKFeCZLD9OcSF26hior40oHs1a7gwEMeEB7zjh
+         MHEX9Rw5PWvlPFEIG/5xzkn8IBQ0dTWq4mlWwP5AucHYlLgRn+3AnRx0aCqENrYSO2bG
+         zKKmHDnyZfDuxkDMkxrUsXmsQP0K8HNSG1rhWOnWBeFigmjHcJ+C3k3E1erJQ5eyc5Bf
+         qskEZzUwsRTd8UixA58QdMAkJIDZYvnqU17RxR+pNBWR0COyjC+BZixHmR4g77PPFC25
+         Q/Ww==
+X-Forwarded-Encrypted: i=1; AL+hErFl1JwP16TB6+ricKuf7dKesm/TkfTemYLpZ3FmSSCNurB2iCe49pb/Qwe1WtjiOtd7+YwVtf8PD+lh8ak=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+sRHnPVqYEp4W1SVue5EdoEaZMSXClRsXheK61t/K7TDB2tq4T
+	f02LXu2LcsLqsFPCW5xzQ0JDpEVlqPIdUlHNcpGZ9BWAYBeGodblqXkB
+X-Gm-Gg: AYBFou1gZEeaTQZGwWSwwXCWbYuOu/hARafvVsRgzrmDX61VArXADE7QvQ2/0Gkn1B6
+	vhB8pp1mhDYgX+Hm2C1aCxnZZkMOjZAfSTjU4g+U7RRNCNeF3FRQQ6+3WWjKUABXBJ8XV3mPI05
+	hwA3txCIp/2fSfooQQMU7MKO1x9PYFQlOJLD/HW7oi8ys4v8qgBHaEC9p7BQIPthmiN4ikmqm4v
+	0iOi+n5PXSB5J1nQ8SpgvXV1LwT6OfGc7Tkp+CVHxDF+lWFbPaE2/RaagwR34/ROekL1PZxPQhU
+	ZjJW2DWyAPb/QJL/cqu9kRql5ogzaDJtMaCn+ab2zHdRqg/ADZDAOHghiCFx+9L45jyhlXwAzee
+	0yMQUUHlakayKEc0Yv54ZtBfNqFgVyVZbfTzxc+yq7ufB6WlWeCbxApCLWdVV6v40SksRz+VKts
+	NY/fh/YdIse+NHAgI9WgNhizJpM+icu1aNtH0Uf0P53u7vk/FOw4OfIA0GfCDT/gCiZjOPhx5PM
+	XoF9CVdLaDYrY54In4gIXzNwJ1By20P6oOmr2DYsck3YLULsj21LF6Ykim2VBZmBldxUGgdbrWs
+	VAcjhacUdGM+wKki81J1MymY6ZA=
+X-Received: by 2002:a05:693c:88c3:10b0:36e:4aaf:6c7b with SMTP id 5a478bee46e88-3796740c786mr6920484eec.39.1794726131042;
+        Sat, 14 Nov 2026 23:02:11 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-379563e6b6dsm40284667eec.21.2026.11.14.23.02.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 14 Nov 2026 23:02:09 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Alejandro Colomar <alx@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Alejandro Colomar <alx@kernel.org>, linux-hardening@vger.kernel.org,
+ alx+linux-hardening@kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michael Neuling
+ <mikey@neuling.org>, Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>, Linus Torvalds
+ <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v1] powerpc: Fix off-by-one bug
+In-Reply-To: <1f7d29cebba5823400ad0bc5d95610f05f55e2d0.1794686962.git.alx@kernel.org>
+Date: Sun, 15 Nov 2026 11:17:37 +0530
+Message-ID: <5wxy8x3a.ritesh.list@gmail.com>
+References: <1f7d29cebba5823400ad0bc5d95610f05f55e2d0.1794686962.git.alx@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,51 +99,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <3f7af771-87a7-4ae7-9919-bc4c23bd31c9@kernel.org>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Christophe,
+Alejandro Colomar <alx@kernel.org> writes:
 
-On Fri, Nov 13, 2026 at 03:36:01PM +0100, Christophe Leroy (CS GROUP) wrote:
-> Hi Mike,
-> 
-> Looks like I missed this change ...
-> 
-> Le 05/05/2024 à 18:06, Mike Rapoport a écrit :
-> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
-> > 
-> > powerpc overrides kprobes::alloc_insn_page() to remove writable
-> > permissions when STRICT_MODULE_RWX is on.
-> > 
-> > Add definition of EXECMEM_KRPOBES to execmem_params to allow using the
-> > generic kprobes::alloc_insn_page() with the desired permissions.
-> > 
-> > As powerpc uses breakpoint instructions to inject kprobes, it does not
-> > need to constrain kprobe allocations to the modules area and can use the
-> > entire vmalloc address space.
-> 
-> Using breakpoint means the segment must still be executable.
-> On book3s/32 VMALLOC segment is not executable, while module segment is.
-> 
-> See commit 6ca055322da8 ("powerpc/32s: Use dedicated segment for modules
-> with STRICT_KERNEL_RWX")
-> 
-> See report and fix at https://lore.kernel.org/all/ed03d290d440d579a81ae0b7de5243721291d903.1794543909.git.ritesh.list@gmail.com/
+> From the surrounding similar calls, the intention seems obvious: this
+> seems intended to check for a prefix.
+>
 
-I'll take a look, thanks!
- 
-> Christophe
+Could be, however the existing code is not functionally wrong either.
 
--- 
-Sincerely yours,
-Mike.
+I agree it would have been nicer if all three were consistent. However,
+x86 handles the same parameters with exact matches, so if anything "auto"
+is the one doing the right thing here :)
+
+But making "on"/"off" exact matches on powerpc now could change
+behaviour for someone passing e.g. "offline" today, so I'd rather leave
+those alone too.
+
+> However, I do not understand this code, so take my reading with a grain
+> of salt.
+>
+> Fixes: a048a07d7f453 ("powerpc/64s: Add support for a store forwarding barrier at kernel entry/exit")
+
+IMHO, I don't think this patch fixes anything functional. So, I don't
+think it will be correct to call this as: "Fix off-by-one bug" or 
+add fixes tag to it.
+And so, I would suggest, we leave leave today's code as is, based on the
+previous reasoning.
+
+> Signed-off-by: Alejandro Colomar <alx@kernel.org>
+> ---
+>
+> I found this while looking into replacing this code with calls to
+> strprefix().
+>
+
+For your conversion, I think, we should keep today's behaviour as is.
+Maybe streq() for "auto" and strprefix() for "on" and "off", which means
+there is is nothing to change or fix.
+
+-ritesh
+
 
