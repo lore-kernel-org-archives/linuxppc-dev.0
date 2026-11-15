@@ -1,40 +1,39 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CEB3C606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 17:59:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BEFD8606A329
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 18:07:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSJf26w54z2xcB;
-	Mon, 16 Nov 2026 04:59:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.95.204
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794765546;
-	cv=none; b=P6+lAtCL7BaI4aIOHFZYoL3Ptw+CpIaHMzPVFWscIQSP7A0yKqoCzGJlNN6MvwHHhYbxYOm8f34NY3Tt93Yi/b9BiPVmWgjKEUVLFlkvzh/OoXwzILZXvJ2uOCSghs3/pXGhJnCFjTvMPGAblsfNH2silNDgDLOzjD9dZlNTJbKEdWC5uvGraZpIeX/K2zDLDXzYyGklBTAMIQmzpd3BpBf6a4otfaE9GW5V/x9I70uhsMIlZzsf/kZduzdL4zOo/bcbPRfwynIcGi1jdd54gsE33vRdhQGfMsTaFx5GuwbtvtRD32OQX48Gh7XvYvjld1o2R37rcCGuy21dNxYgew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSJqN443fz2xLm;
+	Mon, 16 Nov 2026 05:07:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:3000::53df:4ee9:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794766032;
+	cv=none; b=dTQjshQKbXz3lZ1tvLLIHqfoPj0RBEtYlotVq1fy/ziE1m4df6/zDz2CnA2x193hTD7H0ClzSoK47DAoSVx2YaRTxP/cjiyRis9fvztqIcNqIwqvuUPWrrK+ATbwJlLvEvM4xCdqVAJwEOSVYGl2FCaBqESQEVDxIGha9IMnU34dN5qUEUInZ/r/snJOsxrvsbKTXCD9AvJQtyjQuWISYC0bSIZLlZEzfl/SAc1SzQUO6uIPeA8GaXHLelYlEWMfRJcepbR10YShLx4a95DbtD2aXbMjBTg+R743t1YHagVADrf1oKYWjsxjlInjKYofqcw+Nc7l02T115BfSnqyLA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794765546; c=relaxed/relaxed;
-	bh=pZAgF01SM5lIexqBmUoxE9oWzEW7iDQOMWgBWjnXcuw=;
+	t=1794766032; c=relaxed/relaxed;
+	bh=EQ6kRznTinREoIuzVBbxmzS9hOEhoTl38G8AURcRJc4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VsqvnRtwNWKkeMzqWhZpinB8gigUdrf4ZC58vvp1hp8HEvDv890xv/11tr4h/DOfu8i/11V2yXa+Crfn7R1AgZukicZs9KmzS+ZtHlphJkAGzPm1btPlMqpxlSBoau3Pp5tkYNhcXaTfa8BssWUt7wmJH2woJ7Bp0I0wqF0pBlmYOD2m3ICcIPEau577+LqbgOE1gOLPc4/KhpmG0gElP9yd63NtNK7Ou0/h2cKYJObDkiG2w8ZVR3HZY40EOXVKkABPtFueWDYYlXvUC99skMtwZkzcYaeLRJ0sX8pK34UtCkVH+IBKfS9frI8hf4+1oSk345BeYa3L46BlaydhVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.95.204; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=EVq45I+Nz6lJonxoWclHCa+CJfJ6zcwAs4WtLvlV+wODblarPyqR7hkOAE7FagByoJC71TIJ2p/lX3MCuDDoYPaMbZICpU/ZQUbMt0Nh/15HgwiwxfV/MwAq/lBTW7VAf1e8sMA8BqvOt/PzuXzfjbM1/OT3aQN4o/BgO2jiSOxHBoQtEfONYMDGyVJI20QZfl2+u9EzBnHShDqgaZBNC8RMa8UqoVxoPQjRvIJfgCvkwYpe9lMN+LZmK87Bo++6AcrdCl6W0zuAYMhZo50wef49my6TYPCS/aqKSPFc9/VKyEawG28kLOzJ+hhrZqfzzLKFalA+xva+dJ5rCHzsbA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=83.223.95.204; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 570 seconds by postgrey-1.37 at boromir; Mon, 16 Nov 2026 04:59:05 AEDT
-Received: from mailout1.hostsharing.net (mailout1.hostsharing.net [83.223.95.204])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ee9:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSJf15Xm8z2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 04:59:05 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSJqM0tS8z2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 05:07:10 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
 	 client-signature ECDSA (secp384r1) client-digest SHA384)
 	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout1.hostsharing.net (Postfix) with ESMTPS id 2BAD5F62;
-	Sun, 15 Nov 2026 18:49:23 +0100 (CET)
+	by mailout2.hostsharing.net (Postfix) with ESMTPS id 5B0793A2B;
+	Sun, 15 Nov 2026 19:07:06 +0100 (CET)
 Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 14ECF6024661; Sun, 15 Nov 2026 18:49:23 +0100 (CET)
-Date: Sun, 15 Nov 2026 18:49:23 +0100
+	id 33E276024661; Sun, 15 Nov 2026 19:07:06 +0100 (CET)
+Date: Sun, 15 Nov 2026 19:07:06 +0100
 From: Lukas Wunner <lukas@wunner.de>
 To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
 Cc: Bjorn Helgaas <helgaas@kernel.org>, Raag Jadav <raag.jadav@intel.com>,
@@ -47,11 +46,11 @@ Cc: Bjorn Helgaas <helgaas@kernel.org>, Raag Jadav <raag.jadav@intel.com>,
 	Srinivasa Adatrao <srinivasa.adatrao@intel.com>,
 	Terry Bowman <terry.bowman@amd.com>,
 	Keith Busch <kbusch@kernel.org>
-Subject: Re: [PATCH 1/7] PCI/DPC: Avoid access to non-existent AER capability
-Message-ID: <avnwo7TeDBimPwWG@wunner.de>
+Subject: Re: [PATCH 2/7] PCI/DPC: Reinstate support for AER-incapable ports
+Message-ID: <avn0yqCrX0uZl_a1@wunner.de>
 References: <cover.1790531238.git.lukas@wunner.de>
- <ae05fe2df3a3182594c4a9638daba1c72cf40358.1790531238.git.lukas@wunner.de>
- <74fe0d79-dc90-4c05-ba9c-9a0eec1ada48@linux.intel.com>
+ <2ce502e5caa57db01e0a7bbc781210b66b73bec8.1790531238.git.lukas@wunner.de>
+ <02a33171-b901-400b-921a-c40fe167b424@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,41 +66,76 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <74fe0d79-dc90-4c05-ba9c-9a0eec1ada48@linux.intel.com>
+In-Reply-To: <02a33171-b901-400b-921a-c40fe167b424@linux.intel.com>
 X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
 	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Sep 29, 2026 at 11:49:40AM -0700, Kuppuswamy Sathyanarayanan wrote:
+On Tue, Sep 29, 2026 at 12:04:32PM -0700, Kuppuswamy Sathyanarayanan wrote:
 > On 9/27/2026 11:02 AM, Lukas Wunner wrote:
 > > Downstream Port Containment does not mandate presence of an Advanced Error
 > > Reporting capability, so a Downstream Port may support DPC, but not AER
 > > (PCIe r7.1 sec 6.2.11.2).
+> > 
+> > Commit 708b20003624 ("PCI/AER: Remove HEST/FIRMWARE_FIRST parsing for AER
+> > ownership") seemingly inadvertently constrained DPC to AER-supporting
+> > Downstream Ports by inserting a call to pcie_aer_is_native() in
+> > dpc_probe(), which implicitly checks for presence of an AER capability.
+> > 
+> > Drop the call.
 [...]
-> > - dpc_get_aer_uncorrect_severity() uses it to discern whether a Fatal or
-> >   Non-Fatal Error triggered DPC.  Access the Device Status Register
-> >   instead, in accordance with PCIe r7.1 sec 6.2.5.
-> 
-> This changes behavior not only for AER-incapable ports, but also for
-> the AER-capable ones.  PCIe r7.1 sec 7.5.3.5 says for the Fatal/
-> Non-Fatal Error Detected bits:
-> 
->   "For Functions supporting Advanced Error Handling, errors are logged
->    in this register regardless of the settings of the Uncorrectable
->    Error Mask register."
-> 
-> The old code only considered unmasked errors, the new code also picks
-> up masked ones.  So a masked Fatal error (e.g. Surprise Down) alongside
-> the unmasked Non-Fatal error which triggered DPC is now reported as
-> Fatal.  Stale bits from earlier masked errors can have the same effect.
-> 
-> Since this is tagged for stable, how about keeping the AER-based logic
-> when dev->aer_cap is present and using DEVSTA only as a fallback?
+> I don't think 708b20003624 changed behavior here.  At the time,
+> get_port_device_capability() only instantiated the DPC service if
+> pcie_ports_dpc_native was set or the AER service was instantiated,
+> and the latter required dev->aer_cap and native AER control
 
-An excellent observation, I've changed it as you've suggested.
-Thanks for the thoughtful review!
+There are two separate issues preventing DPC on non-AER-capable ports:
+
+- Commit 4e5fad429bd1 ("PCI/DPC: Do not enable DPC if AER control
+  is not allowed by the BIOS") inserted a problematic check in
+  get_port_device_capability().  This was fixed by 97ca178c899d
+  ("PCI/DPC: Allow DPC on all Downstream Ports when OS controls AER"),
+  which is tagged for stable but missing a Fixes tag.
+
+- Commit 708b20003624 ("PCI/AER: Remove HEST/FIRMWARE_FIRST parsing
+  for AER ownership") inserted a problematic check in dpc_probe().
+  This is fixed by the present patch.
+
+You're right that 708b20003624 did not change behavior, but I still
+think that it is the correct commit to cite in the Fixes tag.
+
+If I would instead reference 97ca178c899d (as you suggest), it would
+be picked up by stable maintainers for all stable kernels containing
+97ca178c899d.  The combination of both patches would then reinstate
+DPC on non-AER-capable ports.  Great.  However that commit did not
+actually break anything, so it doesn't feel right to put it in a
+Fixes tag.
+
+So I tend to keep the Fixes tag as it is.  Let me know if you disagree.
+
+> Also, for stable kernels, is there any way to note that this patch needs
+> to be picked with patch 1. Otherwise DPC driver might access AER config
+> without aer_cap.
+
+The syntax specified in Documentation/process/stable-kernel-rules.rst
+looks like this:
+
+    Cc: <stable@vger.kernel.org> # 3.3.x: a1f84a3: sched: Check for idle
+    Cc: <stable@vger.kernel.org> # 3.3.x: 1b9508f: sched: Rate-limit newidle
+    Cc: <stable@vger.kernel.org> # 3.3.x: fd21073: sched: Fix affinity logic
+    Cc: <stable@vger.kernel.org> # 3.3.x
+
+However the SHA-1 hash of the first patch in the series isn't known
+until the patch is applied and the maintainer would then have to
+manually update the referenced SHA-1 in the second patch when
+applying it, which is tedious.  In practice, I've found that this
+doesn't work and the best one can do is keep an eye on Sasha's
+and Greg's e-mails when they apply patches and alert them whenever
+something is wrong or missing.
+
+Thanks,
 
 Lukas
 
