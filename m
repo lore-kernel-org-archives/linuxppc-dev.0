@@ -1,69 +1,46 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78374606A33A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 11:47:54 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C1A41606A887
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 12:34:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O5UCROmp
+	dkim=pass (1024-bit key) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256 header.s=default header.b=WTzVxPjO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jS8Pj1nDjz2xKv;
-	Sun, 15 Nov 2026 22:47:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794743273;
-	cv=none; b=YioTTue+6Ur1nNbaGq1xwnwEr/RryvBzHmf+4Lud62Q/jVEgIg2VoJt3dTrvgJ1dqwLk611NQw/JUOb+UVqbaMFTFdgHgx48y8CzShQRz+PPFGLkDqKBDNrxtYI9HBvkAWfs27/OCPXmGgqsC16x63J2F+0qqGQzgOQvFKXuw6v0f58+ro5wk1dBilM8XJ9jdoNp7HB2L48NKNbHo9eK20bdt9dMvo9aMS04iRP2QJCdvDBQ8MNovLf8LA3Drvaeav3yALpw6gDRlkO9fGF9q5U3MYOz3775be8IYMZuE5/J0PE98MXNPz2A+I3p4RpeEqU8d/BCBOv8N35vqnm6tw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jS9Rj1cwVz2xKv;
+	Sun, 15 Nov 2026 23:34:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.254.49.198
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794746081;
+	cv=none; b=l6GRA41kMAGthjXq0OE+VLSqpvo5R5P1SAu4wdpT+razAJwjS/z8AbsBhVrKv6unuN6yv5m3J7xToVbpckz45TdAw334Ozu4AFXwkf+aTIz+5NJh9nEFM9X7BCdzY7jz8BzumvH5k0GjM6A/3Wg5xkNYGGwq8VvHldalW3hQc6GP7Z32thA9iSb7UzPtkIBWTkP4/t0fJWXa5mXj5t2EQu3RaXBRNjoaIv6EMoN0iq6Hx8nDB5HC/RuQLGZt+mudF+bLDreVRxfsdEGRSKh/TjpLIGZOYTZQRPGv+6V8PNudmnjLwHcY4knAOfjWvNhATWNDVfsXcUYuaMO4fqvulA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794743273; c=relaxed/relaxed;
-	bh=dUUoDFkPJkBg6tiiX+gwUNqdlWB0vRGU4J1TlhHh7ZE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=T9oATcIq2YQtxTl0v8erIMb5U11pJ8eRn2JVEq4/8+D6N+rZiZM5kR7+ev1o1a7cZntxjvFvx76hMSVqtaJQf/jeO8d1DXBYyqyIYwFeqaQusvPRHPRI7aJYY4HC25yFX4jZ1NFPOoYyjWtKQoebfmt2ziNjW2JWJPRmFpe1XyKO1U6ZTi/Dj+CJA+TqZkBd1CskvE+gwBwF0HtI38UaLvncqLDeQHrL/oojMxfZsnnT4+pCKNqF0CxPp0TEdD6t4AG/sZmyOxnvo2TPvp7QsQ8Y3WuV7KungsKRGnhb0Yt2p1nycLl6MALG/wYKYq+QxA7ZOZhp+gWyKEU9ihDGWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O5UCROmp; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794746081; c=relaxed/relaxed;
+	bh=Q4/6Xcl3pbihX/qIA1idwhc1KCNY/vwDyWaXFbCkrtY=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=Dgo1aufpw8AuqZlHvM0bNP1+mU+jHEPn09fBwlbnXYemPMWBviVolzWPVMCf4EAwO9DGasMXt5MS54njzQpIJUnesukl8VAlvSf0cqzzM3L4A9YefI5B4UEO5oCFJYHNo8VZMBRJsrlp2Ncockr8kHHCGDaKv18J5IAEJTLJB/k1VOUeZRMwXt8X8/XYgH28X5mByM5742QL/7BoTIIhE7Pm44GNQdujr3kpGbJbEDmSZjQuiXb2hhkF9IlBmV1FVE+pYEQe76wxVmP/F27ojFzkfPhMP2OIFhm7VGJSSuvjZdMKYtsGHU4D/OvgSU61mE1TuZkQN3hPF7GcC7tE0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn; dkim=pass (1024-bit key; unprotected) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256 header.s=default header.b=WTzVxPjO; dkim-atps=neutral; spf=pass (client-ip=45.254.49.198; helo=mail-m49198.qiye.163.com; envelope-from=getshell@seu.edu.cn; receiver=lists.ozlabs.org) smtp.mailfrom=seu.edu.cn
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=seu.edu.cn
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=O5UCROmp;
+	dkim=pass (1024-bit key; unprotected) header.d=seu.edu.cn header.i=@seu.edu.cn header.a=rsa-sha256 header.s=default header.b=WTzVxPjO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jS8Ph2w9vz2xGr;
-	Sun, 15 Nov 2026 22:47:52 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id A73F44567B;
-	Sun, 15 Nov 2026 11:47:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0FF671F000C4;
-	Sun, 15 Nov 2026 11:47:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794743270;
-	bh=dUUoDFkPJkBg6tiiX+gwUNqdlWB0vRGU4J1TlhHh7ZE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=O5UCROmpYOxPof//EVMXlzhE8CwpBAuLxySuhjVJTwgdWIcUjDEHfxQDjag+uTRua
-	 Z+qDIjnj4mqHBNrUw8Ko1zjkZMcqAeFq8ldvZlzCVbByFB+ptCuml13g6R68XiAcOc
-	 tTmUPUcRTu4mDvyiHtXFi/q4pZoMhhtkVDTdv1WqLRxEzoDBelkcsk5jYXJt2EAUob
-	 xjg6qsjtw4gR2WGGuYhHVN3Y9VjEoACQTHM3FtneMm5yNVilA99bE1xWageT1rHDiS
-	 UNAqlNNFNjgatsQNOofsxEUu3m18tcJw6JldfrHIojxyBAVmlXl979klg5KOmmNJfI
-	 Ivyq26TJMKVYg==
-Date: Sun, 15 Nov 2026 12:47:41 +0100
-From: Christian Brauner <brauner@kernel.org>
-To: Amir Goldstein <amir73il@gmail.com>
-Cc: Chris Down <chris@chrisdown.name>, linux-fsdevel@vger.kernel.org, 
-	Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>, 
-	Josef Bacik <josef@toxicpanda.com>, Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org, 
-	target-devel@vger.kernel.org, driver-core@lists.linux.dev, linux-mm@kvack.org, 
-	bpf@vger.kernel.org, linux-security-module@vger.kernel.org, selinux@vger.kernel.org, 
-	apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, 
-	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, 
-	ocfs2-devel@lists.linux.dev, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-usb@vger.kernel.org, linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC v2 33/42] fs: add file_check_backing()
-Message-ID: <20261115-boxen-mundschutz-jacht-0ab871beca58@brauner>
-References: <20261114-work-loop-pseudo-v2-0-98639a2286fb@kernel.org>
- <20261114-work-loop-pseudo-v2-33-98639a2286fb@kernel.org>
- <20261114120557.4bc1eb6e57218cdc@chrisdown.name>
- <CAOQ4uxhGxpBtMZ5kfuzR1tQAewiecoX7UjXQRo91QjJHH9T_Yw@mail.gmail.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seu.edu.cn (client-ip=45.254.49.198; helo=mail-m49198.qiye.163.com; envelope-from=getshell@seu.edu.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2759 seconds by postgrey-1.37 at boromir; Sun, 15 Nov 2026 23:34:31 AEDT
+Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jS9RW3Tsdz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 23:34:27 +1100 (AEDT)
+Received: from [192.168.17.1] (unknown [124.79.98.159])
+	by smtp.qiye.163.com (Hmail) with ESMTP id 54b7e04e1;
+	Sun, 15 Nov 2026 19:47:55 +0800 (GMT+08:00)
+From: Hongyan Xu <getshell@seu.edu.cn>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Arnd Bergmann <arnd@arndb.de>
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Andrew Donnellan <andrew+kernel@donnellan.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+Subject: [PATCH v2] misc: ocxl: cancel XSL fault work before freeing SPA
+Date: Sun, 15 Nov 2026 19:47:53 +0800
+Message-ID: <179474327320.103840.10310873812308403660@seu.edu.cn>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,77 +54,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAOQ4uxhGxpBtMZ5kfuzR1tQAewiecoX7UjXQRo91QjJHH9T_Yw@mail.gmail.com>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+X-HM-Tid: 0aa1df0910fb03a1kunmbac61c98bf790
+X-HM-MType: 10
+X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCSkkYVh0aHh0YTR5IQh4YH1YeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlKSU9VTEJVQkNVSk5CWVdZFhoPEhUdFFlBWU9LSFVKS0lCQ0
+	JKVUpLS1VLWQY+
+DKIM-Signature: a=rsa-sha256;
+	b=WTzVxPjOukEntrKyGnNEP5kw+C4eOilmbsX9cYjzRUgcSDLriAxcTpo54l4uCdAbclkX5nLsW4+jhrFF4yI9dd+Ox0rAhserv1jFZsSmSt0kLrmAL7KrVfuVS0TA136t1ZsaeiV+ewlbKro9D8DB7hEFuBDiHIiw+GT1SnE+RQ0=; c=relaxed/relaxed; s=default; d=seu.edu.cn; v=1;
+	bh=Q4/6Xcl3pbihX/qIA1idwhc1KCNY/vwDyWaXFbCkrtY=;
+	h=date:mime-version:subject:message-id:from;
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, Nov 15, 2026 at 12:19:57AM +0100, Amir Goldstein wrote:
-> On Sat, Nov 14, 2026 at 9:06 PM Chris Down <chris@chrisdown.name> wrote:
-> >
-> > Hi Christian,
-> >
-> > Christian Brauner writes:
-> > >+      /* Look through stacking filesystems at the inode with the data. */
-> > >+      if (d_real_inode(file->f_path.dentry)->i_sb->s_iflags & SB_I_PSEUDO)
-> > >+              return -EINVAL;
-> >
-> > This looks good in general, but what the bots said about O_PATH files
-> > here is real. With FMODE_PATH this is reached for a file that was never
-> > opened, so on overlayfs nothing has been through ovl_open() to look up
-> > the lowerdata of a metacopy file yet. ovl_d_real() then does the lookup
-> > itself, and when that fails it hits the WARN(1) at its end and returns
-> > the overlayfs dentry, so the check passes as well.
-> >
-> > Only fuse passes FMODE_PATH, so it takes CAP_SYS_ADMIN to get there, but
-> > it's easy to trigger with that. From a quick test with a metacopy file
-> > whose redirect into a data-only layer points at nothing, registering an
-> > O_PATH fd of it with FUSE_DEV_IOC_BACKING_OPEN gives
-> >
-> >      ovl_d_real(/f, 0): real dentry not found
-> >      WARNING: fs/overlayfs/super.c:79 at ovl_d_real+0xc9/0x210
-> >      [...]
-> >       file_check_backing+0x308/0x5e0
-> >       fuse_backing_new+0x219/0x4a0
-> >       fuse_backing_open+0xe8/0x390
-> >       fuse_dev_ioctl+0x53a/0x7d0
-> >
-> > and the ioctl still succeeds. A normal open of that file fails with
-> > ENOENT, so nothing could have used it as a backing file anyway, but with
-> > panic_on_warn this is now a panic.
-> >
-> > Maybe ovl_d_real() should just stop warning when the lookup fails, now
-> > that it has a caller that isn't trace_uprobe?
-> 
-> Yeh I guess that this needs to be a Fixes for lazy data lookup.
+The XSL fault interrupt takes an mm reference and queues fault_work
+embedded in the SPA. free_irq() stops new interrupt handlers but does
+not drain an already queued worker, allowing free_spa() to release its
+container first.
 
-I have a fix for that.
+Cancel the work after freeing the interrupt. When cancellation removes a
+pending instance, also drop the mm reference that the worker would have
+released.
 
-> The correct fix would be to teach all the callers to deal with an error.
+Changes in v2: cancel the work after free_irq() and drop the mm
+reference when a pending instance was removed, and refresh the comment
+that explains the ordering.
 
-I've also implemented that. It wasn't that hard and it's also a bug. Not
-a bad one but still.
+Found by the author's in-house static analysis tool.
 
-> > The check would still pass
-> > for an O_PATH file whose lowerdata couldn't be looked up at that point,
-> > though.
-> 
-> One observation relevant to this patch set is that a datadir layer has no
-> business being a pseudo fs and that can and should be blocked explicitly
-> at overlayfs mount time.
+Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+Cc: stable@vger.kernel.org
+Link: https://lore.kernel.org/all/20260928134110.227-1-getshell@seu.edu.cn/
+Signed-off-by: Hongyan Xu <getshell@seu.edu.cn>
+Signed-off-by: Zehao Gao <gaozehao@iie.ac.cn>
+---
 
-I agree.
+Discovery: found by the author's in-house static analysis tool.
 
-> The other observation is that fuse_passthrough_open() should probably
-> check the backing_file that was opened for io in addition to checking
-> in fuse_backing_open(), which could have different FMODE and specifically
-> could be FMODE_PATH.
+ drivers/misc/ocxl/link.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Sounds good.
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index 7749dcd..a0220af 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -252,7 +252,11 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
+ 			spa->xsl_fault.dsisr = dsisr;
+ 			spa->xsl_fault.pe_data = *pe_data;
+ 			schedule = true;
+-			/* mm_users count released by bottom half */
++			/*
++			 * The bottom half drops the mm_users reference, or
++			 * release_xsl_irq() does when the work is still pending
++			 * and gets canceled during teardown.
++			 */
+ 	}
+ 	rcu_read_unlock();
+ 	if (schedule)
+@@ -335,6 +339,8 @@ static void release_xsl_irq(struct ocxl_link *link)
+ 
+ 	if (spa->virq) {
+ 		free_irq(spa->virq, link);
++		if (cancel_work_sync(&spa->xsl_fault.fault_work))
++			mmput(spa->xsl_fault.pe_data.mm);
+ 		irq_dispose_mapping(spa->virq);
+ 	}
+ 	kfree(spa->irq_name);
+-- 
+2.50.1.windows.1
 
