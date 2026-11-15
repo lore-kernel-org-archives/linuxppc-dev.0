@@ -2,91 +2,110 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93F96606A323
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 07:02:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21033606A330
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 07:13:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AHiuNst6
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GYz013lx
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jS24824WGz2xGr;
-	Sun, 15 Nov 2026 18:02:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794726136;
-	cv=none; b=b4bDTRsXv8RpY+25GBg5WaUpnIrB4vjcDBT/+uHXflES1r+BHRBOe9O5sRteCRShnIlbfcDw4gGo0vuqQ4SH7GQrhTo66V2s8d/WjiamvNiIu4wNETLjjCoSoW5h0eMzO9vc+FqxPJmEizjd5zkRxKkE/q1+iaL0RUj+EZoOur03298jFwKn9RoQuP54tYwjhlEbllGRYCklCIwPYtDUhpjLVD55GUieyYymJGPNmZVYz5riNaAlsmBYconA5ohN14gnmtepGPDWUqdIiqPjhjGrzvGdYxBulfbLKKmAdnALgZffouX/+OtBvhegsmIYQl0cBJaUc27rM6azVgKeeg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jS2KC37SPz2xGr;
+	Sun, 15 Nov 2026 18:13:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794726815;
+	cv=none; b=A5JJMC62DK5gh4GZyiWZ+qCzpP3cVh5NfgULZ8GAt/QTQfdbZk7/Opa6DaPvm0ar8tI45htlbfgTAN5Lb/DOvfyNQ0BcSRL1Mvx3STg/RMez9kIfc6iEjDjRYuh0LsMb6MfNsEa6G42/QtKTthKxmT1TbzVXuYbOGbEhr82Nbi7xjPPtvFHzQ+Fcxohwb9w0YWWAMlF1wKUSVBBdkMC/zTQbaKE1iWxJCZeuFhT1lolFYT6I25KI4QGYPAF2wlShpu5SQMShe0prfjKHZLNPPbeuaGJZGXeDLHBjIRPuuuyd1gFHIDQx2rSYvcUBLMCvnVU57r7ZC1dPnMspqMH2lA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794726136; c=relaxed/relaxed;
-	bh=WlvaTcb4vTukTns5YClT9/RRVqSRloX/GzQ0iNm2R4A=;
+	t=1794726815; c=relaxed/relaxed;
+	bh=i0sztYeDoa78GRxByi5DPGRDZ13zK/I8mczcB1W5Z+o=;
 	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=Ox0lq+PVDGmzLkbiVLe7RpES3XMXafqf98CtkHARTb+57MWgD1+Q7orJ8RDFQ0kFzmK3rTRv7/BefJbKSdLoAtuccRK+UBzpCAox22rWGkYD2DaSB4sVmKVikt6DjTN7loQBPEXFjCC/GTzKUV7lQDyeYFXh/SmPD6SqxbeoVh+m2xnc2Yka3VXSD8+/NGq6poPNLKGuhRXNwNEH5vmbeUGCjVOmmSDbcLJkFOkxVEnZUpZzWYKIfWsh3ZvmIuL2zt2CYbFuVhfts77i8ln3oRUleAIS28weKynSjEEDiLeLZNbvFXU5+6skJkKB2RevSFiCn2McduE3szpta6+T9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AHiuNst6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=bk2TvlP/lROJpSoS0nbUtzicnMECo90ICM1MhcxDCer6uBiS2v+E3+mx9HIgRLPFYo31Kv1foWjm9Uoact9T+PzMIdyVMocFnvN/v3zrGKLhD+oiI1EfmU10ae3KvqLHRTUFgv8KFfgLqMJEGaI/LA+YxMvfbSstavnLM+19wzG54uw7UEEmwcAh9Wpu2Wwo9uqDxPGcxXYB6aNIHDfuLFO63hf6JjqBa30R+p6DpW/A05jsgZBPDjkJorPG3qWjiLkS42ElySqQ0e+ef5q474ghSZKbUUXZW+XNlL4GEJjogDrvrWv35lMcEQ3fJX4uD5xuReJYYBD+TsWThHw7jg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GYz013lx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=AHiuNst6;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=GYz013lx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122a; helo=mail-dl1-x122a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122a.google.com (mail-dl1-x122a.google.com [IPv6:2607:f8b0:4864:20::122a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jS2470R6Rz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 18:02:14 +1100 (AEDT)
-Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-33bf40b0c8bso1370654eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 23:02:13 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jS2KB3t4Fz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 18:13:33 +1100 (AEDT)
+Received: by mail-dl1-x122a.google.com with SMTP id a92af1059eb24-1a2761c69fbso2761583c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Nov 2026 23:13:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794726131; x=1795330931; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794726811; x=1795331611; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=WlvaTcb4vTukTns5YClT9/RRVqSRloX/GzQ0iNm2R4A=;
-        b=AHiuNst6qDUkIt7s0FH6YbuoM/4+fsfUszqJFxUXTPIHkbSJQdxIbtnXDswNefm4UG
-         aqq711BkC+KGNxK17I/uQPdAe9pLtNMjrMuv7DweMiiTvqZvil3Rj2FVXu8xPPtzax9P
-         mAaX1g0beRT1Um+nl6H6xE92Uee9D6cLG4UYdH7nzDlYhvEXXQfyWroCD5mcvJD+D+KQ
-         KIporTIM+XEumGa5OzwCa8ieh+SXSOKp3YHFEue/VY+QgM7EQG97bo78PWdCvNIK5frf
-         Mn6n34bZc2ktPnCWke91OIxi+IjsFTKfI8fgPUDuXrlvTTM2NNvlA7c6ffmFwsfY3Gpm
-         XpHg==
+        bh=i0sztYeDoa78GRxByi5DPGRDZ13zK/I8mczcB1W5Z+o=;
+        b=GYz013lxTXpn7id/onFt97DbN95FMzBTITmoQq6B30KNyS6F+dzvWpX0m849sVWefg
+         ExP/SqZ4T1v/KsdB4UOR6sjGRuBfgXf3AkBsKHqHYUOZHNc7S/Yjq5fdKN1NFX6/OLaT
+         KXVvT9Ngkn8pvztJQSIP3PgptRQ20UCPkLPyFR+RRqyl5tRnfJAGbiS8lFS+R/DI/tMZ
+         Eby0xEWjI/DRq8JSAGiqjm6oJfOZMErivF4kyfOgt/tdif9Rddg1Fsxenl3q86PGHXAs
+         YFaeDCM/8jhRb5VgApklFEduXaWh5PhKsr/G4jbePfdiBhPp71fEXLbhrzQ/hap2hJBM
+         OiJw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794726131; x=1795330931;
+        d=1e100.net; s=20260707; t=1794726811; x=1795331611;
         h=content-transfer-encoding:content-type:mime-version:references
          :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=WlvaTcb4vTukTns5YClT9/RRVqSRloX/GzQ0iNm2R4A=;
-        b=pulhKv65wZjEwRElOd12YozP4l83gwT5vPLyVWKaQNNt88cijKHsLma2hO9gDB2NRX
-         gTxy1hqbCev4Ntj6Xg/+IedV8o/S16fKFeCZLD9OcSF26hior40oHs1a7gwEMeEB7zjh
-         MHEX9Rw5PWvlPFEIG/5xzkn8IBQ0dTWq4mlWwP5AucHYlLgRn+3AnRx0aCqENrYSO2bG
-         zKKmHDnyZfDuxkDMkxrUsXmsQP0K8HNSG1rhWOnWBeFigmjHcJ+C3k3E1erJQ5eyc5Bf
-         qskEZzUwsRTd8UixA58QdMAkJIDZYvnqU17RxR+pNBWR0COyjC+BZixHmR4g77PPFC25
-         Q/Ww==
-X-Forwarded-Encrypted: i=1; AL+hErFl1JwP16TB6+ricKuf7dKesm/TkfTemYLpZ3FmSSCNurB2iCe49pb/Qwe1WtjiOtd7+YwVtf8PD+lh8ak=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+sRHnPVqYEp4W1SVue5EdoEaZMSXClRsXheK61t/K7TDB2tq4T
-	f02LXu2LcsLqsFPCW5xzQ0JDpEVlqPIdUlHNcpGZ9BWAYBeGodblqXkB
-X-Gm-Gg: AYBFou1gZEeaTQZGwWSwwXCWbYuOu/hARafvVsRgzrmDX61VArXADE7QvQ2/0Gkn1B6
-	vhB8pp1mhDYgX+Hm2C1aCxnZZkMOjZAfSTjU4g+U7RRNCNeF3FRQQ6+3WWjKUABXBJ8XV3mPI05
-	hwA3txCIp/2fSfooQQMU7MKO1x9PYFQlOJLD/HW7oi8ys4v8qgBHaEC9p7BQIPthmiN4ikmqm4v
-	0iOi+n5PXSB5J1nQ8SpgvXV1LwT6OfGc7Tkp+CVHxDF+lWFbPaE2/RaagwR34/ROekL1PZxPQhU
-	ZjJW2DWyAPb/QJL/cqu9kRql5ogzaDJtMaCn+ab2zHdRqg/ADZDAOHghiCFx+9L45jyhlXwAzee
-	0yMQUUHlakayKEc0Yv54ZtBfNqFgVyVZbfTzxc+yq7ufB6WlWeCbxApCLWdVV6v40SksRz+VKts
-	NY/fh/YdIse+NHAgI9WgNhizJpM+icu1aNtH0Uf0P53u7vk/FOw4OfIA0GfCDT/gCiZjOPhx5PM
-	XoF9CVdLaDYrY54In4gIXzNwJ1By20P6oOmr2DYsck3YLULsj21LF6Ykim2VBZmBldxUGgdbrWs
-	VAcjhacUdGM+wKki81J1MymY6ZA=
-X-Received: by 2002:a05:693c:88c3:10b0:36e:4aaf:6c7b with SMTP id 5a478bee46e88-3796740c786mr6920484eec.39.1794726131042;
-        Sat, 14 Nov 2026 23:02:11 -0800 (PST)
+        bh=i0sztYeDoa78GRxByi5DPGRDZ13zK/I8mczcB1W5Z+o=;
+        b=ShH+5FSnH5gTufgD0rf/IecY9Mx482JkSehKGLLCcwdm15FuvRDEsNrCBat8SVCyi9
+         3Sn7o38XWUm7jdqK2PYRCIos/QMFmHiHZcNEQH/dpYfl1EAbPWVdkOjJ0f+flH5laCd6
+         3jY6m3PYQ4wz4YNe+bdxY9fcdkFrLH4EwW1owW9IPb+0mjq8WxF09PVD20gTdX5HXP9E
+         Jm1du1jIRBoYOcWKFYYDGFJD76WUVekuhRVPudB5v2M9d1L06q3HlNRFhULfNYMx72RX
+         1DN8JhvJ9b13NrY/TVi6GLztJtOS8Pv0H78V+OKi/4KrDXjKR7KLCJbHtrMolrPKtx0c
+         Wzeg==
+X-Forwarded-Encrypted: i=1; AL+hErGrdqDzQGe3hBmxYSUoQ+JZL9G0FnXpSuB8b8RGX7zE5dHCDz13umUHN2q3pXtSaRPKZRtplRa0g3yR0D0=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/2DWRFThH/rBHVcG9b1b1yTUcGk8tth6PyVsIykD9hQVq1bNNN
+	GYflTbD+v3BijRDodgbIoX2gHN53mBrOQnUhDEJyEalGeMgQfKXOlhDq
+X-Gm-Gg: AYBFou2r0oGSpSQ0E6oRhTc5JxtVQabq2iL2GG5GbD8Kmu5eN2AkeEfDvzidsOm7ln9
+	L68TW8XbvxfVPzGNIozhyGeEQ15+A2uh1x/uqdCJ6f0p1K2FloTt4Lt9iIL1rel8kZe40Z6o6xF
+	Dj/7ogZSeHccgdbwRMV5cyFq2H1BYIkMjsbYEBX9IRXIscX3JCy8V8RqRiQlBoJY+AneFIp0wqr
+	gh96dQeKKBTQoT7I/0Eho2bX369caHZ2QEfhLi3NUW6J1jSG/AroQ7Vy93hnebd7gowG+EGqPE/
+	ULHVuUKsZFxCO4QSbe1xMpmqeGiToN3F6lydcbDsUX450spdq8fo7G0b03WpQC2/YnNhtjDh5+/
+	z/vkbuMecO6buBRbZESGsgApm/9qF42Z3QWri40EymhwfaKjNsvLaKyyWQ5js7gXEoWHIGUSwgX
+	0DVed/Q8JXlLr5xuzD9ckAyc926Tav3gt+TUdjXhu74+pMup43ej+0YStqozDbrqlRpbzqYO/La
+	8lDGvTqUGIr8hjn9T3W0YGcfaPZdtEjXtu/Esowu3grvUwju6vxWNGNvMGMrDXwdABnFntpF3Xe
+	uJVFqgHFkektAf6IrROzd2N6ecQ=
+X-Received: by 2002:a05:7300:6148:b0:36a:7bb7:4609 with SMTP id 5a478bee46e88-37967dd7e1dmr11471490eec.34.1794726811302;
+        Sat, 14 Nov 2026 23:13:31 -0800 (PST)
 Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-379563e6b6dsm40284667eec.21.2026.11.14.23.02.05
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37956bad134sm27441185eec.27.2026.11.14.23.13.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2026 23:02:09 -0800 (PST)
+        Sat, 14 Nov 2026 23:13:30 -0800 (PST)
 From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Alejandro Colomar <alx@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Alejandro Colomar <alx@kernel.org>, linux-hardening@vger.kernel.org,
- alx+linux-hardening@kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>, Michael Neuling
- <mikey@neuling.org>, Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>, Linus Torvalds
- <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v1] powerpc: Fix off-by-one bug
-In-Reply-To: <1f7d29cebba5823400ad0bc5d95610f05f55e2d0.1794686962.git.alx@kernel.org>
-Date: Sun, 15 Nov 2026 11:17:37 +0530
-Message-ID: <5wxy8x3a.ritesh.list@gmail.com>
-References: <1f7d29cebba5823400ad0bc5d95610f05f55e2d0.1794686962.git.alx@kernel.org>
+To: Mike Rapoport <rppt@kernel.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Alexandre Ghiti <alexghiti@rivosinc.com>,
+ Andrew Morton <akpm@linux-foundation.org>, =?utf-8?B?QmrDtnJuIFTDtnBlbA==?=
+ <bjorn@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, "David S.
+ Miller" <davem@davemloft.net>, Dinh Nguyen <dinguyen@kernel.org>, Donald
+ Dutile <ddutile@redhat.com>, Eric Chanudet <echanude@redhat.com>, Heiko
+ Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>, Huacai Chen
+ <chenhuacai@kernel.org>, Kent Overstreet <kent.overstreet@linux.dev>,
+ Liviu Dudau <liviu@dudau.co.uk>, Luis Chamberlain <mcgrof@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Nadav Amit
+ <nadav.amit@gmail.com>, Palmer Dabbelt <palmer@dabbelt.com>, Peter
+ Zijlstra <peterz@infradead.org>, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?=
+ <philmd@linaro.org>, Rick Edgecombe <rick.p.edgecombe@intel.com>, Russell
+ King <linux@armlinux.org.uk>, Sam Ravnborg <sam@ravnborg.org>, Song Liu
+ <song@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Thomas Gleixner
+ <tglx@linutronix.de>, Will Deacon <will@kernel.org>, bpf@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-modules@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ loongarch@lists.linux.dev, netdev@vger.kernel.org,
+ sparclinux@vger.kernel.org, x86@kernel.org, Madhavan Srinivasan
+ <maddy@linux.ibm.com>
+Subject: Re: [PATCH RESEND v8 11/16] powerpc: extend execmem_params for kprobes allocations
+In-Reply-To: <avlTdlK9ErlqVRYl@kernel.org>
+Date: Sun, 15 Nov 2026 12:33:31 +0530
+Message-ID: <4idi8tks.ritesh.list@gmail.com>
+References: <20240505160628.2323363-1-rppt@kernel.org> <20240505160628.2323363-12-rppt@kernel.org> <3f7af771-87a7-4ae7-9919-bc4c23bd31c9@kernel.org> <avlTdlK9ErlqVRYl@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,53 +118,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Alejandro Colomar <alx@kernel.org> writes:
+Mike Rapoport <rppt@kernel.org> writes:
 
-> From the surrounding similar calls, the intention seems obvious: this
-> seems intended to check for a prefix.
+> Hi Christophe,
 >
+> On Fri, Nov 13, 2026 at 03:36:01PM +0100, Christophe Leroy (CS GROUP) wro=
+te:
+>> Hi Mike,
+>>=20
+>> Looks like I missed this change ...
+>>=20
 
-Could be, however the existing code is not functionally wrong either.
+I didn't initially get what Christophe meant here. Then I came across this
+reply of from him[1]. So looks like somehow between v3 to v8, something got
+changed?=20
 
-I agree it would have been nicer if all three were consistent. However,
-x86 handles the same parameters with exact matches, so if anything "auto"
-is the one doing the right thing here :)
+    On powerpc book3s/32, vmalloc space is not executable. Only modules=20
+    space is executable. X/NX cannot be set on a per page basis, it can onl=
+y=20
+    be set on a 256 Mbytes segment basis.
 
-But making "on"/"off" exact matches on powerpc now could change
-behaviour for someone passing e.g. "offline" today, so I'd rather leave
-those alone too.
+    See commit c49643319715 ("powerpc/32s: Only leave NX unset on segments=
+=20
+    used for modules") and 6ca055322da8 ("powerpc/32s: Use dedicated segmen=
+t=20
+    for modules with STRICT_KERNEL_RWX") and 7bee31ad8e2f ("powerpc/32s: Fi=
+x=20
+    is_module_segment() when MODULES_VADDR is defined").
 
-> However, I do not understand this code, so take my reading with a grain
-> of salt.
+    So if your intention is still to have an executable kprobes, then you=20
+    can't use vmalloc address space.
+
+[1]: https://lore.kernel.org/all/1cb41761-29d0-5d33-b7c1-0ca3acaa810d@csgro=
+up.eu/
+
+>> Le 05/05/2024 =C3=A0 18:06, Mike Rapoport a =C3=A9crit=C2=A0:
+>> > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+>> >=20
+>> > powerpc overrides kprobes::alloc_insn_page() to remove writable
+>> > permissions when STRICT_MODULE_RWX is on.
+>> >=20
+>> > Add definition of EXECMEM_KRPOBES to execmem_params to allow using the
+>> > generic kprobes::alloc_insn_page() with the desired permissions.
+>> >=20
+>> > As powerpc uses breakpoint instructions to inject kprobes, it does not
+>> > need to constrain kprobe allocations to the modules area and can use t=
+he
+>> > entire vmalloc address space.
+>>=20
+>> Using breakpoint means the segment must still be executable.
+>> On book3s/32 VMALLOC segment is not executable, while module segment is.
+>>=20
+>> See commit 6ca055322da8 ("powerpc/32s: Use dedicated segment for modules
+>> with STRICT_KERNEL_RWX")
+>>=20
+>> See report and fix at https://lore.kernel.org/all/ed03d290d440d579a81ae0=
+b7de5243721291d903.1794543909.git.ritesh.list@gmail.com/
 >
-> Fixes: a048a07d7f453 ("powerpc/64s: Add support for a store forwarding barrier at kernel entry/exit")
+> I'll take a look, thanks!
+>=20=20
 
-IMHO, I don't think this patch fixes anything functional. So, I don't
-think it will be correct to call this as: "Fix off-by-one bug" or 
-add fixes tag to it.
-And so, I would suggest, we leave leave today's code as is, based on the
-previous reasoning.
+Thanks Mike for taking a look. Sorry, I should have ccd'd you there, I
+guess I missed it. However, the changes are these one here [2][3]
 
-> Signed-off-by: Alejandro Colomar <alx@kernel.org>
-> ---
->
-> I found this while looking into replacing this code with calls to
-> strprefix().
->
-
-For your conversion, I think, we should keep today's behaviour as is.
-Maybe streq() for "auto" and strprefix() for "on" and "off", which means
-there is is nothing to change or fix.
+[2]: https://lore.kernel.org/linuxppc-dev/82c4973addebd82923c460cb44221f5b7=
+6146afe.1794572365.git.ritesh.list@gmail.com/
+[3]: https://lore.kernel.org/linuxppc-dev/f75f2cf97f44375fd2c8820e0caeab703=
+cdb371c.1794572365.git.ritesh.list@gmail.com/
 
 -ritesh
 
