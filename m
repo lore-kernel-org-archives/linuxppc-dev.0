@@ -1,49 +1,91 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E20F9606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 03:16:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 684E6606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 03:32:05 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=b6y5pjZT
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=swnCX/VS
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSY0k2zSpz2x9N;
-	Mon, 16 Nov 2026 14:16:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::c7"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794798966;
-	cv=none; b=a+shapllhbW8bCymUzxDeCogLjAn+uBVMFDBww/IJSGnwQ33C6uOru39sumf9aRZNcWJUrodjjzVv88e1D+cYdozBI02NkrQ6WB6ykGDkCZAEpbA9++53xcTZNtqXoJ8V8aIm5ymDQB8L0RPRxXPwh83d+gnOF+EyRaS9h0l6+BwvpUC9jro1542olQVwviyP36bIABguY88nn3vAHN6llWTO0g8XxyH0vSOcUct8Q7Lmc/T5YvCIVLoreO3EJ7p23ho5DIEqg4u7l6VUtR+35pKFqPD9U2AQyhRgs9GcIQbMZrrFgn5qOueJGbgM//aQz9AQf7plzk5a5lYO1+gBg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSYM73Bb0z2xnn;
+	Mon, 16 Nov 2026 14:32:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794799923;
+	cv=none; b=HOmsIZhtkjfszmuGua1czxvzj7jrTHeXYOGkM9tyTJ+uO7xtVCAJK7F1wUAygNdtfBOhraadKdlsYnQhn2jLhCxgYa0oXDB/2WHyysOn8p/wVubwhcDfxXNBUFyetHQLQVP5eGFp47ud5UfhAZjmTA/M00wVNwb1GgxSPBmn1K+BqRxx5uXEzKiHboLTWkGyX7ODoJWvopo0W4SgQxrnOxx/wblZdSpCFmWp2IPFttPWlPCP4qvKUcMAaiFIWOtlkrO7Kpq68EuQdqGqGUJbQuQVVOYYYIJQdGg0xtlfmZcw5hsUCdqVF3SuACfCtBTYPLO/TOrG2Jc+vfoK97zxwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794798966; c=relaxed/relaxed;
-	bh=61hA4pI6lWNHs1Ny06AZoS+2gE8bk9pfoV7wwfpwYLY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eVo0qcDGB/whwrZCz4zgHhUUS2bWvqYn3PAIXdfykHUvjEd9BwCsrODQsjFRd+vkRyBsuMUYssnM64QFTYNIz0l8lwXQ29yGwhkYmt1Uh+Z5mJpVArZ3tLFmPDnyCqUVSA85uYB9ngdRxx/s8yeXn/OuoPezlr4mwhsq1tZvwxPS3deNf0G6jVdjqRkcy+VctODkCg+P5QTjHgmPfKN1a6PhHesIUIp6otgbgIPYomQ5BCHkmrqA50Jjh7nNz2jXIg3mv2l7uGAaSa5TQ8b6EYbcBQIdHhauTKg9/cEBw8x/GKtqPAUMGZIflrMXkz5g8k/W14n9UefjMcxWHTJUGQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=b6y5pjZT; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::c7; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1794799923; c=relaxed/relaxed;
+	bh=QbnteX2l0Jb6TmLxEnzbnWrqpp3+eF3+v/z+RV2T9cc=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=P2x8yh0KR/PrqmJW+b1sd1SMK3yDx0EzKXhT7kFAV9MJAsaGAtai7AwHLpLpXkPGl9N5Evg9zL63ConWsCd5h4gotyqlnnST1Szhb7qrywBvUjtkIAOVBN0lmVXt5hRoxTU2x4CsUZPsSqSkdEpbQD3VFmGF52+2ofyi12nsZXre2DahYVhF+30F11eVdn4hvjJkTSGApzwvCBRf0mLpUe9vrsY0RUk0AFA1iXbLwnqHAfkkXQAbAp2Ib/kkdIAWJWFiFIsDv990yQnHOWOzK49MS8WE1zdMlAvE3ES3ogNkj+ADjNAc9ZzUpXMQ/ely3dq/dGbhBzFuek3c6I8hIw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=swnCX/VS; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=b6y5pjZT;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=swnCX/VS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::c7; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-199.mta0.migadu.com [IPv6:2001:41d0:1004:224b::c7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122f.google.com (mail-dl1-x122f.google.com [IPv6:2607:f8b0:4864:20::122f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSY0f5HBKz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 14:16:00 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=RUdXcvQAkasOinh1aHVDzx5Sbf8dYEfIHFE+pPtSAf8=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794798941; v=1; x=1795403741;
- b=b6y5pjZThx7DYDxGEYNfUyp+U3/xosaEMZmj2dCioSZXgrycZsMsMAUAuW/xB7bHrCC6ul7F
- 9ajzKA3pNWSWmGKecb6G6We6VuI02BRbHXYzbgsLhXKuTqXrA9aqLfU8wfztFqNfoahP2KCso1W
- Xp6Tjkb4pnM2yywUCJeoV9ao=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 4346fe518fa13606;
-	Mon, 16 Nov 2026 03:15:41 +0000
-X-Mizu-Trace-ID: 4346fe518fa13606
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <5d234178-7799-4603-82bf-40a70101f78a@linux.dev>
-Date: Mon, 16 Nov 2026 11:15:24 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSYM56gXKz2xly
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 14:32:01 +1100 (AEDT)
+Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-1b24f4b15c4so919187c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Nov 2026 19:32:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794799919; x=1795404719; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=QbnteX2l0Jb6TmLxEnzbnWrqpp3+eF3+v/z+RV2T9cc=;
+        b=swnCX/VShszr4QWjIjrwTVd/A0M3mIYA2N2OY6io37dbuTf/4TA+vobIwvI54g6I7a
+         GvUXcKpQDBQg/SiLc7ZCDLHHIdOtwvaJa6OC9xULJ2AVeHl3isBS4YtEtt9iKZZ8Uvji
+         9MnbogPRi8AmizvnlaF27uOghMCFox1dAf8+u17A0CtK5u6Meuq8d4OzNXpEo3Hr1Cly
+         ui7PmqtenqdRPIueXycj3dULX67irDwPOx/v49xRvAzHkrwn0F8DBphQEK9yR65TJPIl
+         DqlbXKuPgd3R+4MwUI8zOOhCk5phfIY3ctNSYNSeecZUS4u/BDBU4zoQfOygyW7Sj+hx
+         2BLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794799919; x=1795404719;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QbnteX2l0Jb6TmLxEnzbnWrqpp3+eF3+v/z+RV2T9cc=;
+        b=cA6UfpQGJzXmPA2X+Zy0iuXV/pUdzodVRmZZq1EgYR+6w16OJgHugJBwfYmxPwDmqR
+         ywe68LZiiSVR7cDz0FgwjchP/j/ICqbHgHA2FifU6LmglcjRBuN5awPhCgP0CFoiAATf
+         1MQ1rcqZKKSzv0NyAMPovz1wEPgX7gu/RVaNyQiwswngBD7eJQtJInffcYrydK0W17zA
+         NuXHZCrjHTJQakt3yNXPEumHGl8dZxc8HcCI88saTmplpIJr+fGIlUq/+uraS+ZVGk+4
+         Bcvb+/Be18bC256Dz1GeC/yV83+J4mgQS3vycy28WOmYZ0nGHhIYHDDPU6Qy8C4y1ZW/
+         DS2A==
+X-Forwarded-Encrypted: i=1; AL+hErHSPvPcHWQk1XpXM2CSRojss9UPCsUOPKVskeYmei6wvYJXA2jPGLJ2lo2gG7Ttlr5dd9mzMA2nz6e+J7g=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+KJY19+Oy/Oeh63GD+BtlEydOxKaynCrKm5I1CLlIx60jlhX76
+	9YhJXbauoJ/RBXtSKZnzRBaa42jUKRZcPtnQToZ6Q0fVDnbaq6GIU6qd
+X-Gm-Gg: AYBFou2ZOxTwaK8P0RuWHQwyBp82W7UxCk2hjwOHgKJ1uwFgSd1g5K4FqcjWwGbVZDu
+	e0ZiHFZ+2XKby5UYrgBHE+qibufEeSqdseMEwXtE9QNNh3AhcugZxaZtMLdRa0kflIpptkqZMEM
+	EskbQzCU6deRkPa39ADrjm3+ijtqXam1IJPgrMYWdbklGWqn9BoJcNNjPIQl2+TacNy1e5hTePr
+	AMNGe7UceVrRydrjKRALTJL/D9MHuXt02fM3OHXFATqp+sxAcWilDsHbsSTHVyUWdOS4pCM5iux
+	2PRX4cO7tfEcs4EfRkF6b6uKzr166AQqJsPDpZinVyHZgb3Bp/iy22cN64ZmEVLK3FeCAp8WA9g
+	M4lz8iTvSvPLjdoTamQ3uEip3iGwlDvDqQ8iEL3Z3t1ik8udnhqOlbeFuRJBs+/EulWTZAUF1Sf
+	fCImp1ClCo3q0R1HMfD9WZeMfFFragaUyRmDrr6FPihpoXNk/2C7aHB1z8kexjG++5h0qjyPIcd
+	GJR/t8IBC6VZ1858EnMJvjXEZ+6zWJt/dvti6DyhOJJOBXDIwiMbOK4fdy8ghwk46M3amDftUsb
+	e/SPOXWxW2l74ELYL+ORi0PlE4GBZ3DaHlN2oU0zO+nHIhq6
+X-Received: by 2002:a05:701b:4294:10b0:1b3:b3d5:566f with SMTP id a92af1059eb24-1b5030990dbmr8883780c88.11.1794799918907;
+        Sun, 15 Nov 2026 19:31:58 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b50319e381sm27456340c88.12.2026.11.15.19.31.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 15 Nov 2026 19:31:58 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Nathan Chancellor <nathan@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, llvm@lists.linux.dev, stable@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>
+Subject: Re: [PATCH] powerpc/xmon: Avoid unsequenced accesses to tsk in show_task()
+In-Reply-To: <20261115-xmon-wunsequenced-v1-1-42ae3fe45bf4@kernel.org>
+Date: Mon, 16 Nov 2026 08:54:13 +0530
+Message-ID: <1p8l8nmq.ritesh.list@gmail.com>
+References: <20261115-xmon-wunsequenced-v1-1-42ae3fe45bf4@kernel.org>
+X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,95 +98,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 4/9] mm/vmalloc: BUG_ON() on an unaligned range in
- vmap_pages_range_noflush_walk()
-To: Uladzislau Rezki <urezki@gmail.com>
-Cc: Dev Jain <dev.jain@arm.com>, Suren Baghdasaryan <surenb@google.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
- Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org,
- Sashiko <sashiko-bot@kernel.org>
-References: <20261110112546.261415-1-hao.ge@linux.dev>
- <20261110112546.261415-5-hao.ge@linux.dev> <avWtB-nWZUwLdQdP@milan>
-Content-Language: en-US
-From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <avWtB-nWZUwLdQdP@milan>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Ulad
+Nathan Chancellor <nathan@kernel.org> writes:
 
-On 2026/11/12 20:11, Uladzislau Rezki wrote:
-> On Tue, Nov 10, 2026 at 07:25:41PM +0800, Hao Ge wrote:
->> The pte loop of vmap_pages_pte_range() maps whole pages and stops
->> only when addr lands exactly on end.  An unaligned end lets addr
->> jump over it and the loop keeps mapping into whatever follows the
->> range.  An unaligned start maps the page below the range with its
->> first pte.  That corruption is impossible to debug afterwards, so
->> bug out on addr and end at the entry of
->> vmap_pages_range_noflush_walk().
->>
->> Reported-by: Sashiko <sashiko-bot@kernel.org>
->> Signed-off-by: Hao Ge <hao.ge@linux.dev>
->> ---
->>  mm/vmalloc.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> index 27f2674a5556..86fbb1d2b27a 100644
->> --- a/mm/vmalloc.c
->> +++ b/mm/vmalloc.c
->> @@ -698,6 +698,8 @@ static int vmap_pages_range_noflush_walk(unsigned long addr, unsigned long end,
->>  	pgtbl_mod_mask mask = 0;
->>  
->>  	BUG_ON(addr >= end);
->> +	BUG_ON(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end));
->> +
->>
-> But why do we add this? We used to live without it and as far i see
-> we have not gotten any report about any unaligned addresses un-maping.
-> 
-> The vmap allocator grantees that va->va_start/end have to be page
-> aligned.
+> After a recent improvement in clang to warn on unsequenced accesses to
+> volatile variables [1], an instance appears in show_task(), which can
+> break the build with CONFIG_PPC_WERROR=y / CONFIG_WERROR=y / W=e:
+>
+>   arch/powerpc/xmon/xmon.c:3262:3: error: unsequenced accesses to volatile qualified 'tsk' [-Werror,-Wunsequenced]
+>    3261 |         printf("%16px %16lx %16px %6d %6d %c %2d %s\n", tsk,
+>         |                                                         ~~~
+>    3262 |                 tsk->thread.ksp, tsk->thread.regs,
+>         |                 ^
+>
+> Per C11 5.1.2.3.2, accessing a volatile object is a side effect. Per C11
+> 6.5.2, unsequenced side effects on the same scalar object are undefined
+> behavior. Per C11 6.5.2.2.10/12, the evaluation of arguments in a
+> function call is indeterminately sequenced, meaning any side effects in
+> the arguments are unsequenced.
+>
+> tsk was made volatile in commit a2305e3de819 ("powerpc: mark local
+> variables around longjmp as volatile") to ensure its value in
+> show_tasks() was properly restored after returning from a potential
+> longjmp(). Aside from that, the value is not being modified through
+> other means, so rename the volatile parameter and add a local variable
+> named tsk to hold its value throughout show_task(), clearing up the
+> warning.
 
-You are right that no in-tree caller passes an unaligned range today.
-This came about after looking at
-commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not PAGE_SIZE aligned").
-That commit only guards the ioremap family. vmap_pte_range() is reached
-through vmap_page_range() only, so what it protects is ioremap_page_range(),
-pci_remap_iospace() and friends, which map physically contiguous ranges.
+Yes. Reading vol_tsk into tsk (local variable) in show_task() function,
+doesn't cause any functional change and also fixes the unsequenced
+volatile accesses as you described.
 
-vmap_pages_range_noflush_walk() has the same loop and serves the other half of the picture,
-the virtually contiguous mappings, where the physical pages behind the range do not have to
-be contiguous, and since functions like vmap_pages_range() take addr and end from the caller as
-they are, the page alignment is the caller's contract in the first place, so this is the same idea
-as a739e6b557af and the check just makes that contract visible.
+>
+> Cc: stable@vger.kernel.org
+> Fixes: a2305e3de819 ("powerpc: mark local variables around longjmp as volatile")
+> Closes: https://github.com/ClangBuiltLinux/linux/issues/2199
+> Link: https://github.com/llvm/llvm-project/commit/955715460eaf9188c241c74750637fc82dfcc423 [1]
+> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+> ---
+>  arch/powerpc/xmon/xmon.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
 
-That said, dropping this patch is also fine with me. Nobody can actually trigger it today, as I said at
-the beginning, so I will drop it from the next version.
+So, LGTM. Feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
-Thanks
-Best Regards
-Hao
-
-> 
-> --
-> Uladzislau Rezki
 
