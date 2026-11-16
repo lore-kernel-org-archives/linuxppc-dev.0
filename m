@@ -2,69 +2,108 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 730A1606A32F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 12:01:03 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A5589606A323
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 12:27:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=UHpVSS9c
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSmfP5fDLz3cG8;
-	Mon, 16 Nov 2026 23:01:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::446"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794830461;
-	cv=none; b=htruvlh3GIOGt1kWzPwzX51tMxBq5mef7riN7A0knaUsJpg0BbhUClQsJFuBa621J9Ipxz5HVMZEgdCB3kf0Lezckxpu4wfoGKdgthvBvIYX9EDZYxFMGy9zhjFsDAJ/LcD1kriffBXgFIg/KTAIAdh6pAzdVZ2sghAnAYN/FN6DmQEehlWl/vLmAkxI9LC6WkgQg68/9W1gv92UI94W1su+1unw0/zqei3Vua0nvqR34eEY2msjxQijE6AtYJCbmBqnqT8abQdy/C3q30KH6hALUa3HT33SAhOF6bcoboBiV1jYqWaarBkpBYWoxujZ/YF99RDOEflVbTSrzLHTfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSnDm09f4z2yps;
+	Mon, 16 Nov 2026 23:27:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794832039;
+	cv=none; b=L5YkN96dbn/RwkmloNWDGlTj71kvVg67gupgqAuCU8WyOmcqibzVZLfbavm3V/Au2mUJJPJo+9qt8rKWiBMA1Xm5YDVnwgDlpihpsdz/FQmj2TeXWEX4VT+JqVJ6QZuxeBvAyewrb1sMxz2rcmovfNSkpvx93a2lnFB/cv3GW+YcAvoGVPAcK3+hC5O1RXx+G6cRWp/vb6KJRaHjbnDKx0WpM3X7r/CMZa1i0FZ5w521NlaXLchNo+/B2+JzRA7lHhUDB4x4EHcfE3fPKSXVM0c4xZ59NTdLLOofFZyO1B606yoJi+W0iojtH/uRcEa3b9BpprTvpsl/XbgcPAgD9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794830461; c=relaxed/relaxed;
-	bh=kLAz6sn1EqmF7aJ7KDEBtraVgj4ybxLcfJJY1MY6K34=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=I1g1h0c7ek3bGEHpfEU25uBpcNCOuRyHZI4aN6TGrhAIRCg/sYXSkmz9Ujqg0vG0JSkfLQIZEf1VMydfAVJMgdzU+2OHqu18IJ5O9kK5Ior8EB46F8eWMsTbr+k4cstTR4ismSKhYtQF/MZcieE7qwxsWhcIqNOyRuDAgUpob93ceQEnNbDgDy6dDIAXVQjjkg3m+IrtfzR6yBGJwQZQXJhnS8Soz3fZzqk6U5gyiz+3Qwy7HzZJaYk2MxS2idnM+DeGr9Ew/L0TFI1w7qqcmY3B8E7RPgb6VSg4tSMKldHmuVKNgCpD/zoWp1yn094/2+M3yhNR0CbwhvH+5JXMXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=UHpVSS9c; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::446; helo=mail-wr1-x446.google.com; envelope-from=3d_d6agkkdkicnkegtajniqqing.eqonkpwzrre-fgxnkuvu.qbncdu.qti@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--aliceryhl.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1794832039; c=relaxed/relaxed;
+	bh=M/OF7APoumABD9WbwERDFCvwADBJ4fBfCeOD/oHIzwM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TxQ6OIrJck477jwGyQ5FRb3XxRXc4M3DCeQOxz+ff4k/gFaRQKbt9yArS6p7lJf82oQecjjA307WlQW37pC+VTwYxOJTsxIsDI04s+XzGC6Gx0ztReVeWD6r6mAokNDCM+9MtFQHeJhhXTD+GgEhZ4D4Aw3+LXNEEhhfcJpLYpzD80OBEnCzcFvptm64HJ+wadqkIpsplwoHHXL5IKPiKdr2gNn23SThOTDBw5+771vjDWNuLzq+K0BRiG8v/IQtDUlF3KURY6a+E59UR7HLup4eVr676KTGw5zAaOxXK/E9yEjK2mj51CpOpFnPtfH0mkK7oLV0tp1kCviDmHYRcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=UHpVSS9c;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=M72DO2Kc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--aliceryhl.bounces.google.com (client-ip=2a00:1450:4864:20::446; helo=mail-wr1-x446.google.com; envelope-from=3d_d6agkkdkicnkegtajniqqing.eqonkpwzrre-fgxnkuvu.qbncdu.qti@flex--aliceryhl.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x446.google.com (mail-wr1-x446.google.com [IPv6:2a00:1450:4864:20::446])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSmfN2Cw1z3cDk
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 23:00:59 +1100 (AEDT)
-Received: by mail-wr1-x446.google.com with SMTP id ffacd0b85a97d-48e0461e040so2973443f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 04:00:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1794830456; x=1795435256; darn=lists.ozlabs.org;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=kLAz6sn1EqmF7aJ7KDEBtraVgj4ybxLcfJJY1MY6K34=;
-        b=UHpVSS9cnlJh5s4tmJYgQA/CRXayM5CzW2tJvM1HfJnLjCE1UyRvu2tlMJPeEuPTg5
-         pLeonrS1tx9uF9k6VXMgp6fY+Y+d2wNQf3/XFHsrENYQbGgGMELq0mMsFU6pLvQ02aCo
-         JaJJnq4SMaAHSpclbeIrcaXz51BCbD2E6uktIPntN2mrhw8Du9eOndMM6ijMvH+PmfEG
-         PYt2NPDjNtp75VdkB1aSKQhFEh0967qXrhbv4+u5OmEWZT4Ib0zOZPMupyJPAX0RjasZ
-         ztlFHUr51rUIKEUg8HxWKKXjn5LhxT5FyQ96gPbiU866bgjvLwAmFJOKbPRDgaElLnJU
-         /VqA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSnDk6GY5z2ypY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 23:27:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794832034;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=M/OF7APoumABD9WbwERDFCvwADBJ4fBfCeOD/oHIzwM=;
+	b=M72DO2KcGxCq3SQ8gc204fLLtSijoDaKmAF5HtLH+MAettGLhzCpPxrQs0ZsB2eRxblaBo
+	q9MdXGpXbqn3vSmgcH80P+oNYtjeC2Mo5ervsn17kircXQhIfMsQbCZxfAgL10mSC8vb+5
+	5cTAg6eF0hLVIOH5POhWTvDphpecFDs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794832034;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=M/OF7APoumABD9WbwERDFCvwADBJ4fBfCeOD/oHIzwM=;
+	b=M72DO2KcGxCq3SQ8gc204fLLtSijoDaKmAF5HtLH+MAettGLhzCpPxrQs0ZsB2eRxblaBo
+	q9MdXGpXbqn3vSmgcH80P+oNYtjeC2Mo5ervsn17kircXQhIfMsQbCZxfAgL10mSC8vb+5
+	5cTAg6eF0hLVIOH5POhWTvDphpecFDs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794832034;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=M/OF7APoumABD9WbwERDFCvwADBJ4fBfCeOD/oHIzwM=;
+	b=M72DO2KcGxCq3SQ8gc204fLLtSijoDaKmAF5HtLH+MAettGLhzCpPxrQs0ZsB2eRxblaBo
+	q9MdXGpXbqn3vSmgcH80P+oNYtjeC2Mo5ervsn17kircXQhIfMsQbCZxfAgL10mSC8vb+5
+	5cTAg6eF0hLVIOH5POhWTvDphpecFDs=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-388-uxe-EJSMNoqM2fxjjft9qQ-1; Mon, 16 Nov 2026 07:27:12 -0500
+X-MC-Unique: uxe-EJSMNoqM2fxjjft9qQ-1
+X-Mimecast-MFC-AGG-ID: uxe-EJSMNoqM2fxjjft9qQ_1794832031
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-4ad3d35e899so23531375e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 04:27:12 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794830456; x=1795435256;
-        h=content-type:cc:to:from:subject:message-id:references:mime-version
-         :in-reply-to:date:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20260707; t=1794832031; x=1795436831;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=kLAz6sn1EqmF7aJ7KDEBtraVgj4ybxLcfJJY1MY6K34=;
-        b=pVBhZaDHOagOEMIN/IlcDCX9VPphVFdt+ETVPeCL/3OgBnNQvanp6CcgZXJXF3Fw7f
-         72Bso2Jn2gsigFRc+9ttPIdy3Es6XZ6q/rP2uVa/O825/nHkZbhd4fIothcWDU2liy+a
-         G26TuQRJTDEcOy/ztYOuukP0y1TWSA1c0X4LJ/hP9OPLvsNl0PJdEI1+VssCwfsA7Uko
-         5/qzKgZH1ZAKRaKlgYOfYPw0rNiPk462698Iwn1onl6+ZlIWvb1BfhLaI6BkljSmA9zE
-         Wrk6C7t0XUndwwJuc6WAysBDPA8baKkxOKKTOUOjagLCPyrMA3smyi3EEfg9xDfzx82C
-         ij7g==
-X-Forwarded-Encrypted: i=1; AL+hErFq/E3NWvu6IsdQ2rfcfrBISv3+UJZ2/qetTh8+KCDxjm8ExxwDFnokdo3IFOwcRCDnTOAsHnDmXzIT49w=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+Aiqm0N5A3Xj8gJNFyllfdUcv+Svyyf6xriVNg4NBlzJ0cji0W
-	2YF7kcSvU4eXEhXcFolnBfZVjW5+R3+atnPpd2IUa/9gxcuewqGv6NrkxK2MFcT2om5dkpYc6QN
-	ZRIpv8KOlk+nSdG91Ug==
-X-Received: from wrso13.prod.google.com ([2002:a5d:474d:0:b0:493:3d97:6e88])
- (user=aliceryhl job=prod-delivery.src-stubby-dispatcher) by
- 2002:adf:e007:0:20b0:48e:3697:708d with SMTP id ffacd0b85a97d-49c70ed8e41mr16698595f8f.12.1794830455230;
- Mon, 16 Nov 2026 04:00:55 -0800 (PST)
-Date: Mon, 16 Nov 2026 12:00:53 +0000
-In-Reply-To: <20261116-work-loop-pseudo-v3-12-8cbbea1cf34f@kernel.org>
+        bh=M/OF7APoumABD9WbwERDFCvwADBJ4fBfCeOD/oHIzwM=;
+        b=b6mupCWo9zx9nGRNHRa4LITQpt9fgr9OoSrI4VzckprMT57eXPWXU77p/n2Qk+oLbw
+         xGwGgH3K/UlRACxG4C64VEnvj+X3trm7sidkwUQ6nruK/+EgKhNCWArGSGWbAVfIE1ba
+         izNYbty/U4uLc5jwF7g2/H33N8a8BFX+R4GLEZqiFly5RvhIBifEser9H7fchgT4e/Tt
+         fXCVSLTHWCY73nkCB4cP1YVZhPNVHvHWte2p86mQOg7kqo5upHLYECYrtM6c9KkXZdyV
+         3SAI1BjY/wpJEJ9TTpf3N2rwfiANAir9SkDtWRnf5cCpBMnY1IKm50eFeTXh4iNG6/PT
+         0TpA==
+X-Forwarded-Encrypted: i=1; AL+hErHJYQ6yuKtcPDj/HDCe7RQptx7hhmeXb/DQsZWHJAUT6eD6m6KfUvOaAfCanjR5gxkl8DxqanH2ptsWdeQ=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/Wgs4TQLylexxH4GghS5hzolaUjwmClFBGuiv/FMyCT6Q2zB+1
+	7QcVOS6QpzL9mhBACH16DCFJmdCXF6Zla0/0oe2ErE6nZmQyOyowyhBRwnQg8uhC5F4dfNOpsMe
+	cSYNyyUOS2gpDntTKAj0V/WJAVyJqyqIS5DeQcd0zvp+g17thbNAXFFdfC0zGnXRzoNM=
+X-Gm-Gg: AYBFou3vVsKH7WLY6hPIg2mx7JP0E3U37cXuS3Pa6XFUMbtmPwjpT6ldWgQTcA92oMl
+	5rvMg8rw23yP1e/rvMkbpRVB//IAQFRsk2fo7GdMFWG/2igsmHi9xWXV8p9rBhWgup8eIwlTRs4
+	t73SzifYykvbTXsfswmhxcdRjywaJm8vmrHMsTgAxYNpNmDVfJ2+1nuliGNtI3n+NXwX3+5Qgqo
+	gGHkdGUOjHZPEEQpyqCwtucD5Xb4uR8x8sstW3DszPuHAPfRqd3Eo/txgN4O+Qtpq2Cy9B1BQw8
+	Y/00hsrOYHkc8ziQ+Ql8SWAXdxpj8VRgdsw+THpxPJTzMTcaJreCYyb9pOUMTQhHQ1K460QXGHv
+	+a6OKS/IRTn7ikYDBd1tmicjo+Zcd9n3RjJU9T+nP0TL8
+X-Received: by 2002:a05:600c:3496:b0:4bb:6de4:2f7c with SMTP id 5b1f17b1804b1-4bb6de43047mr75923915e9.20.1794832031464;
+        Mon, 16 Nov 2026 04:27:11 -0800 (PST)
+X-Received: by 2002:a05:600c:3496:b0:4bb:6de4:2f7c with SMTP id 5b1f17b1804b1-4bb6de43047mr75923195e9.20.1794832030971;
+        Mon, 16 Nov 2026 04:27:10 -0800 (PST)
+Received: from [192.168.0.9] ([47.64.115.75])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb5faf05f8sm169923545e9.10.2026.11.16.04.27.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 16 Nov 2026 04:27:10 -0800 (PST)
+Message-ID: <562b9015-6967-4858-8f17-a49978b30f2a@redhat.com>
+Date: Mon, 16 Nov 2026 13:27:08 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,41 +116,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-References: <20261116-work-loop-pseudo-v3-0-8cbbea1cf34f@kernel.org> <20261116-work-loop-pseudo-v3-12-8cbbea1cf34f@kernel.org>
-X-Mailer: git-send-email 2.56.0.611.g1030f0b940-goog
-Message-ID: <20261116120053.371591-1-aliceryhl@google.com>
-Subject: Re: [PATCH RFC v3 12/44] rust_binderfs: use fc_init_pseudo()
-From: Alice Ryhl <aliceryhl@google.com>
-To: Christian Brauner <brauner@kernel.org>
-Cc: Alice Ryhl <aliceryhl@google.com>, linux-fsdevel@vger.kernel.org, 
-	Jann Horn <jannh@google.com>, Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>, 
-	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-nvme@lists.infradead.org, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-mm@kvack.org, bpf@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, selinux@vger.kernel.org, 
-	apparmor@lists.ubuntu.com, linux-nfs@vger.kernel.org, netdev@vger.kernel.org, 
-	fuse-devel@lists.linux.dev, linux-efi@vger.kernel.org, 
-	xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev, 
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-usb@vger.kernel.org, Amir Goldstein <amir73il@gmail.com>, 
-	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-X-Spam-Status: No, score=-21.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] selftests/powerpc: Fix set-but-not-used errors with GCC
+ v16.2
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, Shuah Khan <shuah@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Segher Boessenkool <segher@kernel.crashing.org>
+References: <20261116103710.674746-1-thuth@redhat.com>
+ <b2abcfcd-2d89-44a3-ac03-7354c3be2436@kernel.org>
+From: Thomas Huth <thuth@redhat.com>
+Autocrypt: addr=thuth@redhat.com; keydata=
+ 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
+In-Reply-To: <b2abcfcd-2d89-44a3-ac03-7354c3be2436@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: _I65SjIgTyySu40_6Uzj-INQYfpLMZQYOwjMRCJ5Ks0_1794832031
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable
-	autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 16, 2026 at 12:04:45PM +0100, Christian Brauner wrote:
-> Initialize binderfs as a pseudo filesystem instead of raising SB_I_NOEXEC
-> by hand. This adds SB_I_PSEUDO. binderfs_fill_super() keeps clearing
-> SB_I_NODEV for the binder device nodes.
+Am 16.11.26 um 12:07 schrieb Christophe Leroy (CS GROUP):
 > 
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+> 
+> Le 16/11/2026 à 11:37, Thomas Huth a écrit :
+>> When compiling the powerpc selftests with GCC v16.2, the compilation
+>> fails with:
+>>
+>>   ../pmu/lib.c: In function ‘eat_cpu_child’:
+>>   ../pmu/lib.c:86:22: error: variable ‘i’ set but not used [- 
+>> Werror=unused-but-set-variable=]
+>>      86 |         volatile int i = 0;
+>>         |                      ^
+>>
+>> and:
+>>
+>>   ebb.c: In function ‘ebb_child’:
+>>   ebb.c:352:18: error: variable ‘val’ set but not used [-Werror=unused- 
+>> but-set-variable=]
+>>     352 |         uint64_t val;
+>>         |                  ^~~
+>>   cc1: all warnings being treated as errors
+>>
+>> Add some "asm volatile" statements here to make to mark the variables
+>> as used and to avoid that the compiler might optimize the code away.
+> 
+> This looks really uggly, a cleaner way is likely possible, see below
+> 
+>>
+>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+>> ---
+>>   tools/testing/selftests/powerpc/pmu/ebb/ebb.c | 1 +
+>>   tools/testing/selftests/powerpc/pmu/lib.c     | 5 ++++-
+>>   2 files changed, 5 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb.c b/tools/ 
+>> testing/selftests/powerpc/pmu/ebb/ebb.c
+>> index 21537d6eb6b7d..f4ef92bacd9ab 100644
+>> --- a/tools/testing/selftests/powerpc/pmu/ebb/ebb.c
+>> +++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb.c
+>> @@ -391,6 +391,7 @@ int ebb_child(union pipe read_pipe, union pipe 
+>> write_pipe)
+>>           val  = mfspr(SPRN_MMCRA);
+>>           val |= mfspr(SPRN_MMCR2);
+>>           val |= mfspr(SPRN_MMCR0);
+>> +        asm volatile("" :: "r"(val) : "memory");
+> 
+> If val is not used, why not just do:
+> 
+>          mfspr(SPRN_MMCRA);
+>          mfspr(SPRN_MMCR2);
+>          mfspr(SPRN_MMCR0);
+> 
+> mfspr() is already an 'asm volatile' so it will be executed even if the 
+> result is not used.
 
-Reviewed-by: Alice Ryhl <aliceryhl@google.com>
+Ok, agreed, that makes sense.
+
+>>       }
+>>       ebb_global_disable();
+>> diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/ 
+>> selftests/powerpc/pmu/lib.c
+>> index 3213579874084..32cafd40d2c56 100644
+>> --- a/tools/testing/selftests/powerpc/pmu/lib.c
+>> +++ b/tools/testing/selftests/powerpc/pmu/lib.c
+>> @@ -95,7 +95,10 @@ static int eat_cpu_child(union pipe read_pipe, union 
+>> pipe write_pipe)
+>>       wait_for_parent(read_pipe);
+>>       /* Soak up cpu forever */
+>> -    while (1) i++;
+>> +    while (1) {
+>> +        i++;
+>> +        asm volatile("" :: "r"(i) : "memory");
+>> +    }
+> 
+> If 'i' is not used, why keep it ?
+> 
+> Just do
+> 
+>      while (1)
+>          ;
+I assume the original intention was to make the CPU do something beside a 
+"branch to self" instruction ... ? Not sure whether it makes a difference 
+for these pmu tests, though?
+
+  Thomas
+
 
