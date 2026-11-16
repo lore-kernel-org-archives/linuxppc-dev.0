@@ -2,68 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CAA9606A330
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 17:49:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34ED2606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 18:26:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LWj9kUC8
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iwcLBwIV
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSwNR37qSz2y8p;
-	Tue, 17 Nov 2026 04:49:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794851367;
-	cv=none; b=Mgu0nkj38jpDWSLmvkwu5tjd6H06GvJUs/GjK9snkWTr35pNAyUVV7FYrHf/mJ/rcnVt9YpQdxy71fwD4efLYda+aykKqEDQkG/44LtibOEc4pgzIFZiuQAHuvEESyJxbKs2qdJzoYl3bx+QGBElNRqa8umjKJa+E5JOydYWzCPy9ufbzwwkeVmu8y3vA60/g3MK3DvDwXxxQRLkPBU1NUNGWft2C6uekcVVpT1kU5pblsKnaFe+mmaKQKB35qOkQVkCzI3LFXiz6C9JQP778+NJk1lI0G/PSo+MtUA7xJNvOXap9u9isX7bUbyQrNEt4tYS25mVUknRpOXDggz/bw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSxCQ2YVfz2xqL;
+	Tue, 17 Nov 2026 05:26:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794853602;
+	cv=none; b=d47abuWksYbxoIADxg4t3+5EPyI+Oq/gz7kQ1JwmtHFbz7FdRT7gEjaTiYKtYmR54SAuNJR0/F287l+TLD6UhHlY0V9LgH8dZKRlUTwuLpa/3Pz3vKGiUiTM6ckFI0p9KaR0rK7jfOyhqMai+S1oSQpAZJx3gSVxxqbcf4KVkIfQ2PEBJHgNEZl2zcRxDhW9QQwMlyB0loPJnJJ7yNgLsUn/RI9b5o3mSRmP7A0rqFp8Wpae59EQq1syqtrnAzFO7XIK5c0f5dONBQ+2nD7uTcIx+wE6ka8f5iHE9SBbFeOREbi1eMBO6s2aFyVDHxMSjF/vFfFRrGuEdw7xPdc1kA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794851367; c=relaxed/relaxed;
-	bh=ED8m1EUNyZbVy60KlCH1nfmXFCVOvYy5WXRoQrkl9dY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DJ/dTgOTTwo+HN3WxhAvWUEkdOWmkDplo2capDx4sVhzww+UJdZwx26COg6eTGxoK9YAYjZbD8aKpbtjsME/BHeMGzYMg58yRw2d/HN2NGKjXRmj0CisOda0dKFJu8UboHT2vzdh68V38QCRatjSwQgw54qAUodug5TNIBxucp3KmYMeijfeAu0RDiL7ipDIrddgjK8j1bKsQPDD+G8x7ieUnuacRb0DjiTNhxlUfBwk9Qf4IRVHaBt1cxafAkwWmk2IbQJdQXB3qaX4ANQ40jnqtOzDAvA+aOZW9fsKTi8Qis60EKiYbgnJ6O6TtpB74isXoV8BEwCUwMWK+TYSzA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LWj9kUC8; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1794853602; c=relaxed/relaxed;
+	bh=QDQfzZl7+S98CScsAZPFpY0/VTlWcWGpji92V9vmtd4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ksCFl/NOOMQfciGngmrq13TEySdvri1p/dTM5CPHvU63LaWRdyN+ycKUOAWOR2OWjHrEnnK4ZmddfkrQJiiqeVaIjNB2ko/juWPfcs4QOXnx83ljQnns8xgwJjlFyjNxh4CHG3rcV3lv+MqJI+jRSTUNU/9lzk4r5xMMomdaVOPcWoqzylUQrPUzIg5bUB449lDapqG5Uju/KnksjTx9sfS4cVPwObi93tQ/sZpCLN/VfbEhQYZwydw08+rLy5UnHrzzh57SLT0JBX6BRSF+TLZVabpIWTiZxnrOZYzVx/p7gNXDxoN9g2EgkiH1d4xoFDsCfYu/6neJJUv3cxUxJw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iwcLBwIV; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LWj9kUC8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iwcLBwIV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSwNQ4F1bz2y7p;
-	Tue, 17 Nov 2026 04:49:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSxCP39VZz2xdR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 05:26:41 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id A06146147C;
-	Mon, 16 Nov 2026 17:49:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6A261F02813;
-	Mon, 16 Nov 2026 17:49:16 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 13BF840345;
+	Mon, 16 Nov 2026 18:26:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 945191F000C4;
+	Mon, 16 Nov 2026 18:26:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794851363;
-	bh=ED8m1EUNyZbVy60KlCH1nfmXFCVOvYy5WXRoQrkl9dY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=LWj9kUC8kQFC5SfD1vjbud2HBFDNnZqFBwsM7D7EkixcrkbHslvvXUPplnT67OEDa
-	 Ojxvc/9bBfh+7M7IgMwLe0/MW3vEZ7MNK475jdjW9gzIKFiwKQYtp2o3epkEHr1OUY
-	 ut8wZMtQ6WwDI4R/4NjZmngdKNKdP+t6PoX5HnYwVJTKEbOQrvDnGzw7NTHVCoa2iV
-	 Az2pSjHFx32LhMnzCRrFLDjD1DXtR7qLBdQXkQEuVAl0z7iuGlB/eKvhfmNtzTqNut
-	 eiuM63/QtPtS1+8sCvNSNotSJGDSOZKb/xcO1WCvyJtafHJlrptV+MYpMU1CW9c9N/
-	 f6aB01Y3d7oMw==
-Date: Mon, 16 Nov 2026 18:49:14 +0100
-From: Christian Brauner <brauner@kernel.org>
-To: Amir Goldstein <amir73il@gmail.com>
-Cc: linux-fsdevel@vger.kernel.org, Jann Horn <jannh@google.com>, 
-	Chris Mason <mason@kernel.org>, Josef Bacik <josef@toxicpanda.com>, 
-	Christoph Hellwig <hch@lst.de>, linux-block@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-nvme@lists.infradead.org, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Jan Kara <jack@suse.cz>, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, 
-	driver-core@lists.linux.dev, linux-mm@kvack.org, bpf@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, selinux@vger.kernel.org, apparmor@lists.ubuntu.com, 
-	linux-nfs@vger.kernel.org, netdev@vger.kernel.org, fuse-devel@lists.linux.dev, 
-	linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, ocfs2-devel@lists.linux.dev, 
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org, 
-	linux-erofs@lists.ozlabs.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH RFC v3 33/44] ovl: refuse data-only layers on pseudo
- filesystems
-Message-ID: <20261116-kriterien-getoppt-kauern-5a0c1fba70cf@brauner>
-References: <20261116-work-loop-pseudo-v3-0-8cbbea1cf34f@kernel.org>
- <20261116-work-loop-pseudo-v3-33-8cbbea1cf34f@kernel.org>
- <CAOQ4uxgPerkkG4ie0SyHVXaBD9VZN2wYfQpEAEi4hytn=ara3A@mail.gmail.com>
+	s=k20260515; t=1794853599;
+	bh=QDQfzZl7+S98CScsAZPFpY0/VTlWcWGpji92V9vmtd4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=iwcLBwIVbzU3ieJETlB9dx16WqhRfHDZYg2h/IEOMb4RCPdTRWoohBpkfzpTI6GW+
+	 tzTBaXJnEWgunNfpsWt18LWM+UiTVGj4Rl+NuqSmXXJKdz5Ov4mQ3kaSHI2UouavIc
+	 FNc5NnQCy9w9qWaxxCQvLzeuEX2v+vDdooB2vPk1lrb2JArIQneSmbIb+unEkMVZcz
+	 AbfVnIH1TxPh5BRyb9mRklF5zhMOoSeSlYrWMs2rzN8I6UcZjnym5hOgyNEGmKvOc/
+	 Ul647N6gtzBKWanVB9xN+4jN0oAFVoM4ZsOeZLvb8jynpqzGOufyq9D6Rx5zXdEJ6Q
+	 jEYGxYcBd5vuQ==
+Message-ID: <200c4dca-63a4-487e-bd59-dc89c9018b0a@kernel.org>
+Date: Mon, 16 Nov 2026 19:26:27 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,81 +59,191 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 5/5] mm: check permissions and bounds for vm_ops->access
+To: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>,
+ Matthew Auld <matthew.auld@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ Felix Kuehling <Felix.Kuehling@amd.com>, Chris Mason <mason@kernel.org>
+References: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
+ <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
+ <980220a5-390e-40a7-bd5c-16a2225bd75b@amd.com>
+From: "David Hildenbrand (Arm)" <david@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=david@kernel.org; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <980220a5-390e-40a7-bd5c-16a2225bd75b@amd.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAOQ4uxgPerkkG4ie0SyHVXaBD9VZN2wYfQpEAEi4hytn=ara3A@mail.gmail.com>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-22.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 16, 2026 at 06:37:16PM +0100, Amir Goldstein wrote:
-> On Mon, Nov 16, 2026 at 12:10 PM Christian Brauner <brauner@kernel.org> wrote:
-> >
-> > The data of a metacopy file can live in a data-only layer. overlayfs
-> > doesn't look that data up when it looks up the file. It only remembers
-> > the absolute redirect and looks up the data lazily the first time
-> > someone needs it. So until then nothing can tell which filesystem holds
-> > the data of such a file.
-> >
-> > But a data-only layer has no business being a pseudo filesystem in the
-> > first place. All it does is hold the data of metacopy files and the
-> > regular files of a pseudo filesystem are kernel interfaces, not storage.
-> > So let's refuse data-only layers on superblocks with SB_I_PSEUDO at
-> > mount time.
-> >
-> > Data-only layers can be added via the "::" separator in "lowerdir=" and
-> > via "datadir+" by path or by file descriptor. All of them end up at the
-> > end of ctx->lower. So a single check in ovl_get_lowerstack() covers all
-> > of them.
-> >
-> > Note that regular lower layers on pseudo filesystems are left alone.
-> > Stacking overlayfs on top of sysfs keeps working.
-> >
-> > Suggested-by: Amir Goldstein <amir73il@gmail.com>
-> > Link: https://lore.kernel.org/all/CAOQ4uxhGxpBtMZ5kfuzR1tQAewiecoX7UjXQRo91QjJHH9T_Yw@mail.gmail.com
-> > Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
-> > ---
-> >  fs/overlayfs/super.c | 8 ++++++++
-> >  1 file changed, 8 insertions(+)
-> >
-> > diff --git a/fs/overlayfs/super.c b/fs/overlayfs/super.c
-> > index 39d4d57dec230..719c2569dfeaf 100644
-> > --- a/fs/overlayfs/super.c
-> > +++ b/fs/overlayfs/super.c
-> > @@ -1237,6 +1237,14 @@ static struct ovl_entry *ovl_get_lowerstack(struct super_block *sb,
-> >         for (i = 0; i < ctx->nr; i++) {
-> >                 l = &ctx->lower[i];
-> >
-> > +               /* Pseudo filesystems don't hold data for metacopy files. */
-> > +               if (i >= ctx->nr - ctx->nr_data &&
-> > +                   (l->path.dentry->d_sb->s_iflags & SB_I_PSEUDO)) {
-> > +                       pr_err("filesystem on %s not supported as data-only layer\n",
-> > +                              l->name);
-> > +                       return ERR_PTR(-EINVAL);
-> > +               }
-> > +
+On 11/16/26 16:51, Christian König wrote:
 > 
-> How about we make this just a tad more restrictive:
 > 
->                 /* Pseudo filesystems don't belong in composefs setup */
->                 if (ctx->nr_data &&
->                     (l->path.dentry->d_sb->s_iflags & SB_I_PSEUDO)) {
->                         pr_err("filesystem on %s not supported along
-> with data-only layers\n",
->                                l->name);
->                         return ERR_PTR(-EINVAL);
->                 }
+> On 11/12/26 23:09, David Hildenbrand (Arm) wrote:
+>> GUP rejects VM_IO and VM_PFNMAP mappings early. __access_remote_vm() then
+>> falls back to vm_ops->access without checking VMA permissions and without
+>> limiting the request to the VMA size.
+>>
+>> Consequently, /proc/<pid>/mem can bypass protections even without
+>> FOLL_FORCE, or cross into another mapping without checking its
+>> permissions.
+>>
+>> Check VMA permissions before calling ->access and limit each request to
+>> the current VMA. Implement similar access permission checks as GUP,
+>> however:
+>>  (1) Reject writes to CoW mappings because the callbacks access backing
+>>      memory directly and cannot handle CoW.
+>>  (2) Allow forced writes to non-CoW mappings with VM_MAYWRITE.
+>>
+>> This intentionally breaks forced writes through legacy amdgpu PROT_NONE,
+>> MAP_PRIVATE debugger mappings. The workaround in commit fa5239f2af98
+>> ("drm/amdgpu: workaround failed COW checks for Thunk VMAs") cleared
+>> VM_MAYWRITE to avoid CoW, but debugger writes still succeeded by
+>> exploiting the missing access-permission checks fixed here. Reads remain
+>> supported. Userspace must use MAP_SHARED instead; ROCm 5.5.0, released
+>> in May 2023, already does so.
+>>
+>> Link: https://github.com/ROCm/ROCT-Thunk-Interface/commit/fea44fab6e84eda52fcf6b419b35600c18f4c022
+>> Fixes: 272ddc8b3735 ("proc: don't use FOLL_FORCE for reading cmdline and environment")
+>> Cc: stable@vger.kernel.org
+>> Cc: Felix Kuehling <Felix.Kuehling@amd.com>
+>> Cc: Christian König <christian.koenig@amd.com>
+>> Cc: Simona Vetter <simona@ffwll.ch>
+>> Reported-by: Chris Mason <mason@kernel.org>
+>> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
+>> ---
+>>  mm/memory.c | 25 +++++++++++++++++++++++--
+>>  1 file changed, 23 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/mm/memory.c b/mm/memory.c
+>> index d4370c1b331c9..9872f289c1e49 100644
+>> --- a/mm/memory.c
+>> +++ b/mm/memory.c
+>> @@ -7362,6 +7362,7 @@ EXPORT_SYMBOL_GPL(generic_access_phys);
+>>  static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
+>>  			      void *buf, int len, unsigned int gup_flags)
+>>  {
+>> +	const bool force = gup_flags & FOLL_FORCE;
+>>  	void *old_buf = buf;
+>>  	int write = gup_flags & FOLL_WRITE;
+>>  
+>> @@ -7401,15 +7402,35 @@ static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
+>>  			if (gup_flags & FOLL_ANON)
+>>  				break;
+>>  
+>> +			if (write) {
 > 
-> I could send this as followup patch, but since this version is simpler
-> there is no real reason to have the intermediate "only ban datadir" step.
+>> +				if (!vma_test(vma, VMA_MAYWRITE_BIT))
+>> +					break;
+>> +				if (!vma_test(vma, VMA_WRITE_BIT) && !force)
+>> +					break;
 > 
-> Only the commit message needs a little more flexing to justify this.
 
-Just sent me the diff on top of the series and I can fold it with the
-commit message you want and slap your Co-developed-by and SoB on it,
-please?
+Hi,
+
+> I might be wrong but IIRC that was brought up before and was rejected.
+> 
+> We even had a bug report for AMDGPU from a security researcher claiming that you could circumvent security checks using vma->vm_ops->access() which turned out to be complete nonsense after spending tons of time investigating it.
+> 
+
+independent of all actual security issues, the current core-mm is completely
+fragile as is.
+
+This needs to be fixed independent of driver hacks that are in place.
+
+> The technical background is that there are applications which runtime generate shader code which is then protected by making the VMA read only. But the debugger is still allowed to write to it using vma->vm_ops->access().
+> 
+
+Yes, that's precisely what FOLL_FORCE is for, which is what debuggers (ptrace
+access) should be using.
+
+So if there are debugger interfaces that are not using FOLL_FORCE, we would have
+to see what we can do about that. (and not keep core-mm fragile)
+
+
+> That behavior is ok because drivers specific and drivers have checks in place if their backing store is read only or not.
+> 
+
+"trust me, drivers do the right thing"
+
+Core-mm needs to to something reasonable.
+> For an example see this code here: https://elixir.bootlin.com/linux/v7.3.1/source/drivers/gpu/drm/i915/gem/i915_gem_ttm.c#L1163
+> 
+> So if you do this here you might break intentional uAPI.
+
+Let's figure out what would actually be broken to then decide how we can keep it
+working without keeping core-mm a swiss cheese.
+
+Thanks for the review!
+
+-- 
+Cheers,
+
+David
 
