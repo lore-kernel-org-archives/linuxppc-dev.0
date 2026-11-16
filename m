@@ -1,71 +1,51 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C2129606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 18:52:10 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=HEm0RLgX
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0379606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 19:28:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSxmm6tZCz2y71;
-	Tue, 17 Nov 2026 05:52:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.27.42.2
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794855128;
-	cv=none; b=GlsnMX+W6Jmv8aF6b9aNUe56zuwWkwIFa30AZn7iadQVECIqcfiDrkf6XeiJsufjWgigZDADx1M0RLDJyZ8hwVtCq3eHELKMSQy3b45PpVgenK/p6vXpckulJYZQqIxbk4Yfo7I/7qAxn/mlrz4HEJAaRk/ddY/UDjlPwjcsE4vGSJgFP0W36gcbQMq/1c0RuHhFih+p6R/4/kqhdQFWsaGyG7TxW24Iz0eDlzdBX6GSHJa/KTatjdTVKlcFAANHtM0U1HagKJHeAJnaVTdzp670bBOKDiUjNwHE7wPY1YIap0X4FO8ReYrfUSCe1HaeG9yYRwOXya2P2LInKJDvoQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSyb205SSz2xcB;
+	Tue, 17 Nov 2026 06:28:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.175.24.41
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794857325;
+	cv=none; b=MpKxybYnKiM43eqmVqGDcWN43lq82S0jiGETF6g7RjqwsZIhmQMgNTYSjk1qDw9vEuOoPpJIztWo9lqgcQRVx3WTecAMFfZ95uxqewdlTiHEslwyAsgVabw2DlisJi77klF2b+1mG4Z2zF4TmwiuBHz5NzH2HDMYvsUpCtIZlSnB44XJs5NLfyQRs4kAH4TeXSkzanUv2QsDVLaQp/dPWBbaeTI/SpyRSK8KiUqQuEjAmXIdnAF+8OiWLx7Old2FcCuIaYeWL9p7BAaQFMy2UEqt7QQEAVVHOd5/lMEsJstCjpH1WPz4L5UBd/L8oPlu2cgYA/uIaEM3GBhTuP1hew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794855128; c=relaxed/relaxed;
-	bh=Sh2nmNQTVOWP3szEFLOBn84NAH4nPLsfx0J4lAR1HLA=;
+	t=1794857325; c=relaxed/relaxed;
+	bh=G2OFv8TROnxnOwOkrogXO7YHSz0S+Zpl86NxGZaLyck=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QT4SDudWVakWXx/VK1ZW3uEaPT7wvF/CEAuuXNOweEzLhkdNV60Uovh/wKS7dbljXxTfvpzzAKSKlLYnkAgb1plPQ9XUKJM1OaY30/u2C00PnCsps5Lpp9xRB+2c2ndh1r723hSPykdaKP5wOdRUrBpzd+IhR6ak+hHQa2gmWZ5y941+OPnL1UGBCoF5qNq7U8oF38FDX3XiLzNpSIwDWszUfWvwKxq5uSpm+MVDDesO2ygpBDoIjmO7PbkeNIWlCYgwL52EFtuK19ClvFkzPB9p+x/ab17gIMwV3sclEPwBNPhIW1N0iGCl4NMnuoeouArWNCFW938VWAa5Zxu60Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=HEm0RLgX; dkim-atps=neutral; spf=pass (client-ip=212.27.42.2; helo=smtp2-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=HEm0RLgX;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=212.27.42.2; helo=smtp2-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
-Received: from smtp2-g21.free.fr (smtp2-g21.free.fr [212.27.42.2])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSxml57XCz2xqL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 05:52:06 +1100 (AEDT)
-Received: from l3017729.home (unknown [IPv6:2a01:e0a:ac2:22b0:3d85:8d5d:9362:361])
-	(Authenticated sender: vjardin@free.fr)
-	by smtp2-g21.free.fr (Postfix) with ESMTPSA id 0D9C9200433;
-	Mon, 16 Nov 2026 19:51:31 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
-	s=smtp-20201208; t=1794855120;
-	bh=Cs4uDxAEdjU0yi/6Yx0YrRf3kzhxHuE7ljq+oh0YydI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HEm0RLgXzcQkeMQMm5ajqLQ9UEKOvOUoWOl5Pc5Q0lkeqQge4PXgMTfi5oQs3R821
-	 fs3+vi2x7Od996DyW9jGedzsoPGf57zVtZfhANZPXCrhJtPtql+njrXQTm33d7GDpe
-	 fwbdKUpT9sbWzvDCSZQmID7MYyXvgK8DmDc2P1NFUDtmOmjBHBYHAxTIsy9Hhtdfbd
-	 fHjljJW8FpE0OAInxyP93ShSWSTQ4Ot18Fp8YetBuzfM1+FPYTt5cd53i0GEugDumd
-	 5XEGVgr+4Ki/mAd45/57SNNYyMsQVCyrQHjuLTfWNabg5RGEGpYCVNTCpw7VDpc0Uw
-	 NymSo4NXmIbNw==
-Date: Mon, 16 Nov 2026 19:51:29 +0100
-From: Vincent Jardin <vjardin@free.fr>
-To: Vladimir Oltean <vladimir.oltean@nxp.com>,
-	Linus Walleij <linusw@kernel.org>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
-	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
+	 Content-Type:Content-Disposition:In-Reply-To; b=EyY9aj6H0fgHIcApGDF9v1IMe4dbahVx5/yF0Bh/IiXvoYptsg7cA/kv4FbzIViB9PDzIR8SHaOTMT4DUBHBMQxs9KnyRIBIFo0tLtPMJn4R7s5WhZTFJKV/gPE7TQQ6oQfSsBHeuQB6EODK3BNXuO5Dv6++1dRTNt1unUhJr3aGu41RpXHwR/D+uRiot65MdCT8AvQnoJ8M6qHZ5fR/N6b9bHlKjIIwEnFcIWPcSNO+lxKMIpY8XZemV84SdukhYi/FhqOldWCXC2Y4/egGFLxyTX9tJz3DcIwc1p3TqkKl6GjzXxiU2JepS6ra7oetDx3WQuV22TzG79TJW/mgCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de; spf=pass (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org) smtp.mailfrom=alpha.franken.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alpha.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1241 seconds by postgrey-1.37 at boromir; Tue, 17 Nov 2026 06:28:44 AEDT
+Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSyb01PLqz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 06:28:44 +1100 (AEDT)
+Received: from uucp by elvis.franken.de with local-rmail (Exim 3.36 #1)
+	id 1xT23R-00068K-00; Mon, 16 Nov 2026 20:07:49 +0100
+Received: by alpha.franken.de (Postfix, from userid 1000)
+	id E4AEFC01AA; Mon, 16 Nov 2026 20:07:39 +0100 (CET)
+Date: Mon, 16 Nov 2026 20:07:39 +0100
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
+	Robin Murphy <robin.murphy@arm.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	imx@lists.linux.dev, Ioana Ciornei <ioana.ciornei@nxp.com>
-Subject: Re: [PATCH v6 4/5] pinctrl: freescale: add the Layerscape RCW
- pad-mux driver
-Message-ID: <avtQsSmnMtzj4JZS@l3017729.home>
-References: <20261115-for-upstream-lx2160a-rcw-pinmux-v1-v6-0-fbdce4565a5c@free.fr>
- <20261115-for-upstream-lx2160a-rcw-pinmux-v1-v6-4-fbdce4565a5c@free.fr>
- <avs62BhLjlpouTwQ@lxl00025.wbi.nxp.com>
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>
+Subject: Re: [PATCH v2 3/7] MIPS: mm: handle highmem pages in
+ arch_dma_prep_coherent()
+Message-ID: <avtUe_ryNhYYGz4A@alpha.franken.de>
+References: <20261110094830.2081847-1-m.szyprowski@samsung.com>
+ <CGME20261110094849eucas1p2ece5eda5ed8c159ec05951bb8a3052be@eucas1p2.samsung.com>
+ <20261110094830.2081847-4-m.szyprowski@samsung.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,32 +59,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <avs62BhLjlpouTwQ@lxl00025.wbi.nxp.com>
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+In-Reply-To: <20261110094830.2081847-4-m.szyprowski@samsung.com>
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Linus,
-
-regarding Vladimir's question:
-
-> (which they're not - iic2 is a group consisting of SCL and SDA, whose
-> function cannot be selected independently, which is why you've grouped
-> them together).
+On Tue, Nov 10, 2026 at 10:48:23AM +0100, Marek Szyprowski wrote:
+> arch_dma_prep_coherent() performs the cache maintenance on the address
+> returned by page_address(). On 32-bit MIPS with CONFIG_HIGHMEM the kernel
+> uses HASHED_PAGE_VIRTUAL, so page_address() returns NULL for a highmem
+> page that is not kmapped, and dma_cache_wback_inv() then operates on
+> the virtual range starting at 0 instead of the buffer, leaving any dirty
+> cache lines of the buffer in place.
 > 
-> I suppose this is OK? Not really a pinctrl expert here (and it predates
-> your work - pinctrl-simple worked the same way).
+> Highmem pages do reach this function: dma_alloc_contiguous() can return
+> a highmem CMA page, which dma_direct_alloc() handles by forcing the remap
+> path and calling arch_dma_prep_coherent() on that page before creating
+> the uncached mapping. Since commit f5ff79fddf0e ("dma-mapping: remove
+> CONFIG_DMA_REMAP") this path is available on all MMU architectures,
+> including MIPS, which previously rejected highmem CMA pages.
+> 
+> Fix this by reusing dma_sync_phys(), which already handles highmem pages
+> by mapping them one page at a time with kmap_atomic(). For lowmem pages
+> it does a single dma_cache_wback_inv() over the whole range, so the
+> behaviour is unchanged there.
+> 
+> Fixes: f5ff79fddf0e ("dma-mapping: remove CONFIG_DMA_REMAP")
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  arch/mips/mm/dma-noncoherent.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-either way is ok for me too, I do not properly understand the guidelines
-that would fit best the kernel. What would you prefer ?
-  - muxes per pad ?
-  - 1 pin per field ?
+Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 
-thank you,
-  Vincent
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
 
