@@ -2,82 +2,70 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8136606A322
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 17:20:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F9C606A33F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 17:30:10 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=aX5WK4VM;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IwT+AooZ
+	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=gbLeb4W2
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSvl245bNz2y7r;
-	Tue, 17 Nov 2026 04:20:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794849630;
-	cv=none; b=P/H4I0Mxy/aFpPvi7460QQntrOQ8Q/52KNn2136Saj7aoo9NVZ6DHkVe19o5QSf0e1eAUPfGHArWA+3jkbamguEToEwOiLxli9TH1llSUyBq4WkBaAFRVsZaU3BBusHE5jQVhZxM9dxyDDOk99MHhzKWsus/jo1zuW4ghz38E6Otfco5Zl4r5hNSTvJ6/Unu6ZU9teo+fHGXDANNzk3tCCHmXIp7lUFD2YKeEz4hu/yV3eXJPOo6xskTmn/EVQX+vjNxWYm1Q0iDr2zFMXXqpWzELgfXecl0DvLTwKgPdlp8Adkeu9HcFUfDCtPQnutoQ2wSTdyxJXWqnSGO9Y1VXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSvy8517Wz2y7p;
+	Tue, 17 Nov 2026 04:30:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0c:1:1599::11"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794850208;
+	cv=none; b=eCu/mywrdlYUuzMN+/8MDsdBdu4WWy3kUB3KiFmMSaZTOnX51YCSkBVaQi4vxCiZefYBbSWuY5fROLSnoHTcodYpYxTquCN1yIzfW/HFdOD4MM0NxGTiTUIyRpMFe2VGJRO8xWGpuHPXDU1OjzubHpnsrDmJL9ZGiITqhY7SXZrKqGWG1a5stPRJ8t8i+MXvbfeHxJNsl04WjAGtgEULJIWnajzfHgJZlQk5fq3O871RYpt7lJhO8yQHX3ZczGGyo4cw6xY6STEIh4NFcGu+CK5wM0hYtuh4qjmLyhiwGbsQXiy1p4zx6NazGrx4Rb/HzSklx4rT4KLzSUeqEANu1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794849630; c=relaxed/relaxed;
-	bh=Uhn3Xh440rrzv0xOTkiny4cGS6bsXvzVeqcYJ4nwTDs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=Jb6VFkEeLBzkTBkCe8RlXpFRMTfqdl3pyBxkI8J/m/Qr1OqMpmtIUlBLI/22q/vrEcNdPJ+HAE6KcVsOwjUdvHBbqrK9rl+TKeUSofO+yLu9+CigokEEdF+WlTW3a9yqBvwuYVJ75Sm6srehtnM/hkLULe9ipNIgZNHZqzOZ220NF7NWkDAF1rV1J8wHpVHz8ERoS9eZqGifTR3+rTw+jdg+2x/Son2qnimN2tWb5Nn2bOKBPKwLtqvTRJmb/opoi9hwGcVvezb/tFj57ozqju0WO7fAZZF6CawqTLOyWgfDc9Tb9CnEgEvDmpXfr1YKQRYV7ieg3w/UrYTJ66dCcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=aX5WK4VM; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IwT+AooZ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1794850208; c=relaxed/relaxed;
+	bh=+TAV8zxCLaQRFWFko9N1+gmI6Hkj/Ua5ZfgjdQ0uN+c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=M2p9PwQQGeATdcBnP21djWwtMZ3j9XC8d9rMnMGg8c/V8TYw3Cb6Rd0fzCMXJ6ZqHgQjOsMJdngh7ZbSZpBeLJHI/5WqDEPO5DvCHGlqo/RZQZPnzKG/hF7hNY2MpaZNYMy2I9V6LBUsB/k9nHz27v1dnh/apIgcwpphXZr+07sJMjXsASmGwN3LSBBfF1iCUvBXDNwXdxcpUBi56Ns17GpY3wQp1jYs+Cm+dQxVhsaVUVTY91ZumIfxQLyGx/E+2e9xUiPzFurVQQZ3RVAGpI76APw0+YgYMxm+jQA/7S0+Lqycb4dasN8yfkgkJb1aXgRf1sIefX2knhWHwnEgTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=gbLeb4W2; dkim-atps=neutral; spf=pass (client-ip=2a01:e0c:1:1599::11; helo=smtp2-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=aX5WK4VM;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IwT+AooZ;
+	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=gbLeb4W2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=2a01:e0c:1:1599::11; helo=smtp2-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
+Received: from smtp2-g21.free.fr (smtp2-g21.free.fr [IPv6:2a01:e0c:1:1599::11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSvl12rh2z2y7p
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 04:20:29 +1100 (AEDT)
-From: John Ogness <john.ogness@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1794849622;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Uhn3Xh440rrzv0xOTkiny4cGS6bsXvzVeqcYJ4nwTDs=;
-	b=aX5WK4VMEnjF9i1VKVQSHFX2GLhbxsGh0rUUEpq16akWX/oza8TC2x4U2Wc5M2cea5s+pr
-	FG7n6wly3PaZ/Mq8S4XaUkpXwJXmNwINcQe529CM2y8TtfwdUsQI7umWEMC/Y6npD4Rv5b
-	NKWunLOmi55uB+seqegTvmwiHNVscAexBW+ovmpj5P+GxXl0MDs14cFZ1Vso7OS8RUyUxE
-	CMJFtuouBK/6+19icelMId62QdTq41y3v+LEABahmYc2lUj3TT9bSVBO5W49uxQurGRjp+
-	JzpHZoiHSeL3p9a67NtjbjE0DjZmidChXhXxBYZxCcPAa1JbWT3+OPcJ41ujFA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1794849622;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Uhn3Xh440rrzv0xOTkiny4cGS6bsXvzVeqcYJ4nwTDs=;
-	b=IwT+AooZ8H8ysTr1pAwAVYo/Aex9uA3/+R34PP1Hz0Mquv2Mb6PM8k4ReFej4Va7RWRgfC
-	3kUcg2AomgSL65DA==
-To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <senozhatsky@chromium.org>, Steven Rostedt
- <rostedt@goodmis.org>, Ryan Roberts <ryan.roberts@arm.com>, Breno Leitao
- <leitao@debian.org>, printk@lists.linux.dev, linux-kernel@vger.kernel.org,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, "Christophe
- Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)"
- <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Jason Wessel
- <jason.wessel@windriver.com>, Daniel Thompson <danielt@kernel.org>,
- Douglas Anderson <dianders@chromium.org>, Andrew Morton
- <akpm@linux-foundation.org>, Mukesh Kumar Chaurasiya
- <mchauras@linux.ibm.com>, Feng Tang <feng.tang@linux.alibaba.com>, Rio
- <rioo.tsukatsukii@gmail.com>, Bradley Morgan <brads@mainlining.org>, Pnina
- Feder <pnina.feder@mobileye.com>, Gal Pressman <gal@nvidia.com>, Petr
- Pavlu <petr.pavlu@suse.com>, Pavel Tikhomirov <ptikhomirov@virtuozzo.com>,
- Oleg Nesterov <oleg@redhat.com>, "Cen Zhang (Microsoft)"
- <blbllhy@gmail.com>, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, kgdb-bugreport@lists.sourceforge.net
-Subject: Re: [PATCH printk v2 1/6] printk: Introduce and specify flush reasons
-In-Reply-To: <avcnSjj2P9UfsBn7@pathway.suse.cz>
-References: <20261111181942.593695-1-john.ogness@linutronix.de>
- <20261111181942.593695-2-john.ogness@linutronix.de>
- <avcnSjj2P9UfsBn7@pathway.suse.cz>
-Date: Mon, 16 Nov 2026 18:26:21 +0106
-Message-ID: <87cxs4y9pm.fsf@jogness.linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSvy46zP3z2xqL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 04:30:04 +1100 (AEDT)
+Received: from l3017729.home (unknown [IPv6:2a01:e0a:ac2:22b0:3d85:8d5d:9362:361])
+	(Authenticated sender: vjardin@free.fr)
+	by smtp2-g21.free.fr (Postfix) with ESMTPSA id 86EA52003B4;
+	Mon, 16 Nov 2026 18:29:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
+	s=smtp-20201208; t=1794850198;
+	bh=gf1KXaGSHMTIuSeGKV+TB854dq3D1ziSlvG87KmVRac=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gbLeb4W2rC8PAAvj8pCV3t044hT8rRb/fjjcJF0QXEsHHx5Wvl6EJRID9+XFgvan0
+	 k/h/Zg2xuybp/Cr06X62gOXJkliBIwvDvO8DmPch0Y/x3jVshlJPaTlVT0ehLChUlh
+	 Wrg4ArJ0gToAJCMhHGbY0n6sTSAzsDCgCc0Bq+QnQsYQ9T38S6LTr4Ev9EmBCdWtad
+	 bWVAMmm25HKALgIbEKmkDUULK1ykDTAnRXj20z1oibWJ15IVVtLoa4tvBKhQK6PsmZ
+	 AwTQkNuUAIPpXBVhxUE6dxwkTPf10NcpeIu0RI7k4q+m0zWOdSVe5c42c3WPqdCjVt
+	 n1V2pqTzTqoQQ==
+Date: Mon, 16 Nov 2026 18:29:34 +0100
+From: Vincent Jardin <vjardin@free.fr>
+To: Frank Li <Frank.li@oss.nxp.com>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
+	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>,
+	Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: Re: [PATCH v6 3/5] soc: fsl: guts: add the RCW override of the pad
+ muxes
+Message-ID: <avs9fmJqYShOIPMK@l3017729.home>
+References: <20261115-for-upstream-lx2160a-rcw-pinmux-v1-v6-0-fbdce4565a5c@free.fr>
+ <20261115-for-upstream-lx2160a-rcw-pinmux-v1-v6-3-fbdce4565a5c@free.fr>
+ <avs4l1otw6ACW5P4@SMW015318>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,69 +79,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INVALID_DATE_TZ_ABSURD,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=no autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <avs4l1otw6ACW5P4@SMW015318>
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 2026-11-13, Petr Mladek <pmladek@suse.com> wrote:
-> This entire patchset adds a lot of complexity just to enable all
-> 4 new policy flags for netconsole in the last patch.
->
-> There already have few dimensions which affect console flushing:
->
->    + console_loglevel
->    + nbcon_prio
+Hi Frank, Vladimir, Christophe,
 
-"Dimensions" is the correct word. These are orthogonal:
+> > Suggested-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> > Signed-off-by: Vincent Jardin <vjardin@free.fr>
+> > ---
+> 
+> You missed my tag?
 
-  + console_loglevel: which messages to print
-  + nbcon_prio: which context is allowed access to hardware
-  + pr_flush_reason: reason for atomic flushing
-  + unsafe_flush_flags: policy when unsafe flushing is acceptable
+Frank,
 
-I do not see a single property above where a value in one implies a
-value in another.
+No, it was on purpose since I did many changes after Vladimir's comments.
+The goal is still idempontent for lx2160, but the design is now more NXP
+CPU generic.
 
-> This patchset adds 8 new terms in pr_flush_reason and
-> nbcon_unsafe_flush_flags just to explicitly set all
-> flush_flags in netconsole.
->
-> Let's start with pr_flush_reason. I am not sure if it is worth it:
->
->   + PR_FLUSH_RUNTIME is the default
->
->   + PR_FLUSH_RESTART can be detected by system_state > SYSTEM_RUNNING
+Thanks for re-ack-ing.
 
-This does not cover the panic-restart case.
+Next, let's make sure that Vlaidmir is ok with 4/5 (if the driver is
+generic enough).
 
->   + PR_FLUSH_HANG has only one caller currently distinguished by
-> 	the global panic_nbcon_allow_unsafe_takeover
+And, let's Christophe review/ack the 3/5 regarding pinctrl.
 
-In my series there is another user:
+I guess that 1/5 needs Rob on the devicetree, not sure ?
 
-arch/loongarch/kernel/reset.c:machine_halt()
+Then, since it was unclear for me if the patch 1..4 are through
+pinctrl and 5 thru imx (please, Linus Walleij) ?
 
->   +  PR_FLUSH_KDB can be detected by kdb_trap_printk and
->      kdb_printf_cpu, see vprintk() implementation.
-
-Ack. PR_FLUSH_RUNTIME could cover this case.
-
-> IMHO, it makes things worse because nbcon_atomic_flush_pending() has
-> to use PR_FLUSH_RUNTIME in vprintk_emit(). But I think that we
-> would like to flush it the same way as an explicit flush called
-> in the given context.
-
-You write it backwards. vprintk_emit() uses
-nbcon_atomic_flush_pending(). Calling printk() (a single record) is
-quite different than calling printk_trigger_flush() (flushing a
-backlog).
-
-Let us discuss this after I respond to your comments on patch 2/6. There
-you include many details and suggestions that require closer inspection.
-
-John
+I hope it'll go thru the proper reviewers,
+  Vincent
 
