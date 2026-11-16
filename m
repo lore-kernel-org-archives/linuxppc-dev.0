@@ -2,45 +2,45 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5B0F6606A33D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 07:14:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 813AB606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 07:14:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=XbIgeKT4
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CFTRgDEB
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSfJ72VtBz2yPR;
-	Mon, 16 Nov 2026 18:14:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.65
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794813287;
-	cv=none; b=nK12I78SbmCWwbfXH9HD1qoSEHjmh/dbPqIxy1NH4UWrKbR9TWUxP8WUTJ+IKW1OwnkUHJKwZ0efhbAuVpi9sslkX92Xf7GL9cbdlj+mvGYd3UxN4FQkAmXk8YGVFQtjTEe+Z1vnN6HeWEcPKuriT/qYk1KeM5ofvWO6GvmWJdb6b33zcwHTmIVO4Cj0sqlKf26R8TJjuMxK36QV6V+ay+wFgCJ4fcflpyGyfAFGb3zQmQ37X/sk0dTxFwBWBr7hljzNeJutmiXbFjQcPifSBBtNIJvY4PZ1QranoPs2ZbgwChRtOk+1LE3D3RNZVmjJx5KxSvSKfllKJFrgL0GwAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSfJF3vdGz2yQn;
+	Mon, 16 Nov 2026 18:14:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794813293;
+	cv=none; b=Uc4dz5liWoyc+qYAl6CRUz+wn4FeeXUNhIf6r+boknVZFIGFoA1U3EybMIpwJEbF6oMVkaXuBM8Ys0zdi0bpou1vTDiKsJ4hgP8YWfRSOs/MAFhGI4TK2EE9odXN32+LR4T3pZi+sJ8YyIQa5Gag6wljFpLSfL1qusNB/hOb8cNBlrdMJhMvfhICTTk++CbA4+WhyuEdMP401+OkVjAfcKVodweYnXVeTDHzvfzwzTKnYiv1kRc6bspdv2sFekfFYxKQRR9jUscUQZ6noI7hi3F/w04XkeLYmRnAxWyxbY7kaGsOS+lT2TMytLpPiThnagA5TbAOaSbTWmYVQJgBIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794813287; c=relaxed/relaxed;
-	bh=oDNNUKcQznYLFvs5X+9GzieDpnGR07oToeUGRcsD+jw=;
+	t=1794813293; c=relaxed/relaxed;
+	bh=S4xwi4aHh7ZD/bHp2DRcoCULX4dT5zb31C8Z9H6qmb0=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=W65U9hqCuDvnh7qrMEniF34RwzeLX5Heb5ogt2HvNZbxnMxSUHJLgdbw2S4JYugJhNvWRbtIYYZf/3QPQFqGdHrDkz5ibUqpY77IUxg+u8o/NolRVjCu1OsaXQiv+DcQ52IkxZiCMCaLDzbQ8s9ReIuMH69sMzyyOCW95zu0k0ymU6xPb/2Yx+6uxIAjefdUj7RXcnpjcSjEllS3LQl5wr5W1/zfQr7lCX8pal15do/7lbh+Rtz96snXi7w9u7ri6HsZ6kOYxuL5fbBOVgRdfZQ3MtFSA56lTz2w1InhTi8ULygbDb5QOYnUb2S6GpBtIxvlU1jTnzZBbV6JormDhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=XbIgeKT4; dkim-atps=neutral; spf=pass (client-ip=95.215.58.65; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 MIME-Version; b=b92o+Y5Yernj/wnRRYYYpm5bBekQZg3MglKISLZtRymiKHpo8x0vxAZ/3CHOKl1u+0Etx0CXV1qDXp9SUEeygomSe6Z49xvE2xN9D0kB3W0AbVGfvw5cAKumsYE7RYfGJnUhr2YgBtgfAw7uhVKi0dlqeIy1P91X1I2glm7eBtzvKnPcCVfIKqI32XK1Healls7x81JY1Cn5bYThxfex107P+fAG09xIxXgKBESQu75vnPC95sp5vxF/YZHdvDcNGj4vSqROXqTxViVI2/stcX9BON1vV4Yv57/0iPXq9ZHCE+Pcr21SZexAHpruHZaB+F8Ye4RbsJ1na6EvuTrbMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CFTRgDEB; dkim-atps=neutral; spf=pass (client-ip=95.215.58.81; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=XbIgeKT4;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CFTRgDEB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.65; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-65.mta1.migadu.com [95.215.58.65])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.81; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-81.mta1.migadu.com [95.215.58.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSfJ637NFz2y71
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 18:14:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSfJD4LmDz2y71
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 18:14:52 +1100 (AEDT)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=ox1OF4PmGlhBQ2M/eFtocGrA519OKUW6bkxfmgExDOw=;
+DKIM-Signature: a=rsa-sha256; bh=EVDQOgm4eiv05oSXsLTtEpFF+tsRKuMQEvt8DaJEU2k=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1794813268; v=1; x=1795418068;
- b=XbIgeKT4qsJbDHNO3O6KZTrnqZwO0ummpfSNBOuRvtNbiUoxtYGItkrx6cB0AKHeRzkwxaXs
- GXKp2dzSTRD6cBaMDaQecPXbalDHjtz+qysvD/Rgn/1IUoy4E5NWJl0BOSCLoXB66NWqFloqFOw
- sGrizAKGCZTvdXTck8SMsb1g=
+ t=1794813274; v=1; x=1795418074;
+ b=CFTRgDEBH3j6pmg1ej7njFlv3ud01xfdaOMBaTZS5DBJoWFHZXBdM8Ebo8YkQ7AyoQbXvHJk
+ mGFmVZznl5qN2rMEHNFvfRCTsc8E8IoOwvYn28vfB6raIhgTC2vZ47Mamjls2WYuTAi7GiB5cM7
+ bwG0TjPRZqKoCRang6O0DWVE=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id e7a04197984c81c5;
-	Mon, 16 Nov 2026 07:14:27 +0000
-X-Mizu-Trace-ID: e7a04197984c81c5
+Received: by smtp.migadu.com with ESMTPS id d81b1a6ac4fe3573;
+	Mon, 16 Nov 2026 07:14:34 +0000
+X-Mizu-Trace-ID: d81b1a6ac4fe3573
 X-Migadu-Flow: FLOW_OUT
 From: Hao Ge <hao.ge@linux.dev>
 To: Suren Baghdasaryan <surenb@google.com>,
@@ -64,9 +64,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	kasan-dev@googlegroups.com,
 	linux-mm@kvack.org,
 	Hao Ge <hao.ge@linux.dev>
-Subject: [PATCH v5 08/11] mm/vmalloc: drop the KMSAN metadata in vmap_pages_range_noflush() on failure
-Date: Mon, 16 Nov 2026 15:13:22 +0800
-Message-Id: <20261116071325.263682-9-hao.ge@linux.dev>
+Subject: [PATCH v5 09/11] mm/vmalloc: undo what vmap_pages_range_batched() mapped on failure
+Date: Mon, 16 Nov 2026 15:13:23 +0800
+Message-Id: <20261116071325.263682-10-hao.ge@linux.dev>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20261116071325.263682-1-hao.ge@linux.dev>
 References: <20261116071325.263682-1-hao.ge@linux.dev>
@@ -92,45 +92,81 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-vmap_pages_range_noflush() sets up the KMSAN metadata for the whole
-range before it starts mapping. If the mapping fails, the page
-tables undo themselves now, but the metadata stays behind, and the
-next attempt to map the same range hits the leftover shadow PTEs.
+vmap_pages_range_batched() maps the range batch by batch. When a
+batch fails, the batches before it are installed, and the failing
+one may have installed some of its pages. mapped_end follows the
+end of the last installed page, and the error path undoes
+[addr, mapped_end), never past the point where the walk stopped.
 
-Tear the metadata down on the error path, it was fully set up before
-the mapping failed. The teardown follows the page tables and skips
-cond_resched() when the caller's gfp mask cannot block.
+The KMSAN metadata is set up for the whole range up front, so it is
+torn down as a whole when the mapping fails, like in
+vmap_pages_range_noflush(). The only caller, vmap(), also calls
+vunmap() on its error path; the double teardown only walks over PTEs
+that are already cleared.
 
 Signed-off-by: Hao Ge <hao.ge@linux.dev>
 ---
- mm/vmalloc.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ mm/vmalloc.c | 22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
 
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 4f3c320a4849..28e65073624a 100644
+index 28e65073624a..aa80bc273ec0 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -801,8 +801,18 @@ int vmap_pages_range_noflush(unsigned long addr, unsigned long end,
+@@ -3748,13 +3748,14 @@ static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
+ 	const unsigned int nr_pages = (end - addr) >> PAGE_SHIFT;
+ 	unsigned int prev_shift = 0, batch_idx = 0, nr_mapped;
+ 	unsigned long batch_start = addr, batch_end = addr;
++	unsigned long mapped_end = addr;
+ 	int err;
  
- 	if (ret)
- 		return ret;
--	return __vmap_pages_range_noflush(addr, end, prot, pages, page_shift,
--					  gfp_mask);
-+
-+	ret = __vmap_pages_range_noflush(addr, end, prot, pages, page_shift,
-+					 gfp_mask);
-+	/*
-+	 * The page tables undo themselves on failure. Tear down the
-+	 * metadata that was fully set up before the mapping failed.
-+	 */
-+	if (ret)
-+		kmsan_vunmap_range_noflush(addr, end,
-+					   gfpflags_allow_blocking(gfp_mask));
-+
-+	return ret;
+ 	err = kmsan_vmap_pages_range_noflush(addr, end, prot, pages,
+ 					     PAGE_SHIFT, GFP_KERNEL);
+ 
+ 	if (err)
+-		goto out;
++		return err;
+ 
+ 	for (unsigned int i = 0; i < nr_pages; ) {
+ 		unsigned int shift = PAGE_SHIFT +
+@@ -3764,9 +3765,10 @@ static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
+ 			prev_shift = shift;
+ 
+ 		if (shift != prev_shift) {
+-			err = vmap_pages_range_noflush_walk(batch_start, batch_end,
+-					prot, pages + batch_idx, prev_shift,
+-					&nr_mapped);
++			err = vmap_pages_range_noflush_walk(batch_start,
++					batch_end, prot, pages + batch_idx,
++					prev_shift, &nr_mapped);
++			mapped_end = batch_start + (nr_mapped * PAGE_SIZE);
+ 			if (err)
+ 				goto out;
+ 			prev_shift = shift;
+@@ -3786,13 +3788,21 @@ static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
+ 	}
+ 
+ 	/* Remaining */
+-	if (batch_start < end)
++	if (batch_start < end) {
+ 		err = vmap_pages_range_noflush_walk(batch_start, end, prot,
+ 				pages + batch_idx, prev_shift, &nr_mapped);
++		mapped_end = batch_start + (nr_mapped * PAGE_SIZE);
++	}
+ 
+ out:
+-	if (!err)
++	if (err) {
++		/* Undo the part the batches installed before they failed. */
++		if (mapped_end > addr)
++			__vunmap_range_noflush(addr, mapped_end, true);
++		kmsan_vunmap_range_noflush(addr, end, true);
++	} else {
+ 		flush_cache_vmap(addr, end);
++	}
+ 	return err;
  }
  
- static int __vmap_pages_range(unsigned long addr, unsigned long end,
 -- 
 2.25.1
 
