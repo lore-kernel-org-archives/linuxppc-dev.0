@@ -1,105 +1,57 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0EEB8606A331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 11:31:30 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=y1Ncqxja;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=YE1dl6mj;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=y1Ncqxja;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=YE1dl6mj
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12913606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 11:59:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSm0J5hQYz2yfS;
-	Mon, 16 Nov 2026 22:31:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794828688;
-	cv=none; b=QwsXNJcm+SNanbAdt51k5M8yr2X+CN11j9QhkmrMpSLaNbk9jsA9K/sfOgrwBHXvFFIDTlvv3pUicM10gxW9LbzYrao/jobEdr9lKY+gixphLVKxl25duoRTTh7uS2F0AHLa1owXe0gJpNobv3yNO0w75bytsvGLy9ylDRByXReemu62hBUuNJGzp6lgx1PB+xZDBFMUm+1/1T9oq3jh0/Lgfw7qARy5ggdA067C85SFZRN0hLhNmIbiH8sItIXEsfKlLKln2wv0sP+kYEUAQtj5SIlqtTxeBCfYYNNsj+gD5f0oJdXrxNzcHMdnJ/talfIRPcE0hB+bEnV2KAcWdg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSmcF60DTz3bTR;
+	Mon, 16 Nov 2026 22:59:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:3000::53df:4ee9:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794830349;
+	cv=none; b=gHHncLhkkMn19BuwJJjAjz3E3K1LUWdFAqpOZFK0YRd2T+OwV8snnq8NwXWyJpeG3CM9T99oqoaZ3QZ90ZBIfRoRyeq6uWTVAa/CwyMBwtTDT0JhqonqO+/cGbB5ngTLUGvJ1M2LTWaVMRZuJtKNMQ/WXHzCw0/9xvTySpantkK1vGJWADt2l4uzre6ldQn3mnfRQQ8PYvcd4oqv96KdOtpuQ0ykH36AnZbLsPR7c/OUJW7i3DRtwyVUD+e2pu50I/61+1PFJzuGV/w8HDFI15uJgNzeLHF4iurmXSebady8g6cvi/LSordCtg5aMciQ/zeWn/jZha6+cm6cso9dWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794828688; c=relaxed/relaxed;
-	bh=z0NfAU13XjWmlAo1rlpRgFlZWwAks7dSH1PU/xp7JUU=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Kz7MYAJ5B9bzRYzJaH+GWH7jtvGxUh870zk4Y+NTmrQNWvtq+EzSPcgupd2YhQnJpTksVNQ0HoPbjKfWdchZtQAru89L7mVlCGPeqSwk8N21HsS8EMHnhfZzCfr4ao/sfY0g6JAXbIVRJY9o1UZ8uhz5KCxxV6MCE+PZiPupXQR5Si0/GrPKIvw7W3E8teZLFewp/z85XQMKh1UtlEp8Ka5SvBt8v7kaQ6bdNGj2cu+JWaZNBBgZ7b4YK6AS5IdU3kJtvURH0hw8Q59hw1fkLyqymFjtZdyz27l4juz9+cxoGLtGqHti7BXilztQanqlhOTdfP47NtyTzCzZDMBLeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=y1Ncqxja; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=YE1dl6mj; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=y1Ncqxja; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=YE1dl6mj; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=y1Ncqxja;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=YE1dl6mj;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=y1Ncqxja;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=YE1dl6mj;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
+	t=1794830349; c=relaxed/relaxed;
+	bh=NHGeGqCVFN2Tv1lma1Bg8GLYblLTY4Dtm4iduW7dQss=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=oVZij5NnzRSf6Qrwt2+WOEZRLTkHPW++EGPZKUxHZVJVZDQc+Zy8tZAxQvBlvZXuDLKkJFklCKCsUpeUnFZRxXa7Ql7vgUsJElQDVcNobCedREEFc5I6nawzkbQjbSF7IQaZzRQll6eTLC9H3o4po9yr635pb/LXgp0ICvMSOwy2AgVqxedy6S221RYBGSK2lPqkS9nt+LRbzYajPXQNgOjfgaFL/wijKrEGXXC1f89mGFfdBk9Q2l34YCVQTevHIs3f6h9h9mVe19rrCTh0CXnQmSqATvMZ7fwteiVHFzTvv9+UW7E+i6snh5g4WSAaJdk3AaxCyksRBG0ZsJzPOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ee9:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSm0H3T6Rz2yDc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 22:31:27 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSmcD0kq4z30Yb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 22:59:05 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 8848A1FD65;
-	Mon, 16 Nov 2026 11:31:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794828683; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=z0NfAU13XjWmlAo1rlpRgFlZWwAks7dSH1PU/xp7JUU=;
-	b=y1NcqxjaiHBrCPuLMKR4v85WWVRxX9Hj/yKxKY4vTb3l+mgDjvgzQ5rTiSwuRqkIsS7J7H
-	leBhRUxkUaCYKyUg+gGuomkTBPbuF66mifJHtD5CE5U5n0hack7kSgF+qTxHyMJBEeoTdh
-	7xVyXSuyDkZuVKQtFQThiD0KAqhwa+8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794828683;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=z0NfAU13XjWmlAo1rlpRgFlZWwAks7dSH1PU/xp7JUU=;
-	b=YE1dl6mjJa/IZnQUJpX4DFP1YnMgU7OintJKsYFXvL9zsGKyZhnzHZd4RHiPppckc1jk//
-	xlc1dFt0B3PMh3CQ==
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=y1Ncqxja;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=YE1dl6mj
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1794828683; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=z0NfAU13XjWmlAo1rlpRgFlZWwAks7dSH1PU/xp7JUU=;
-	b=y1NcqxjaiHBrCPuLMKR4v85WWVRxX9Hj/yKxKY4vTb3l+mgDjvgzQ5rTiSwuRqkIsS7J7H
-	leBhRUxkUaCYKyUg+gGuomkTBPbuF66mifJHtD5CE5U5n0hack7kSgF+qTxHyMJBEeoTdh
-	7xVyXSuyDkZuVKQtFQThiD0KAqhwa+8=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1794828683;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=z0NfAU13XjWmlAo1rlpRgFlZWwAks7dSH1PU/xp7JUU=;
-	b=YE1dl6mjJa/IZnQUJpX4DFP1YnMgU7OintJKsYFXvL9zsGKyZhnzHZd4RHiPppckc1jk//
-	xlc1dFt0B3PMh3CQ==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 3ACD813408;
-	Mon, 16 Nov 2026 11:31:23 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id wOvrBovp+mo/KgAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Mon, 16 Nov 2026 11:31:23 +0000
-Date: Mon, 16 Nov 2026 12:31:22 +0100
-Message-ID: <87cxs5ypv9.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Aibing Chen <chenaibing@cmss.chinamobile.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ALSA: aoa: size the codec reference property name buffer
-In-Reply-To: <20261113103006.705-1-chenaibing@cmss.chinamobile.com>
-References: <20261113103006.705-1-chenaibing@cmss.chinamobile.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/30.2 Mule/6.0
+	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
+	 client-signature ECDSA (secp384r1) client-digest SHA384)
+	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
+	by mailout2.hostsharing.net (Postfix) with ESMTPS id BE474283E;
+	Mon, 16 Nov 2026 12:58:59 +0100 (CET)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id A33D66031F0E; Mon, 16 Nov 2026 12:58:59 +0100 (CET)
+Date: Mon, 16 Nov 2026 12:58:59 +0100
+From: Lukas Wunner <lukas@wunner.de>
+To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Raag Jadav <raag.jadav@intel.com>,
+	Riana Tauro <riana.tauro@intel.com>,
+	Yury Murashka <yurypm@arista.com>,
+	Matthew W Carlis <mattc@purestorage.com>, linux-pci@vger.kernel.org,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	Aravind Iddamsetty <aravind.iddamsetty@intel.com>,
+	Srinivasa Adatrao <srinivasa.adatrao@intel.com>,
+	Terry Bowman <terry.bowman@amd.com>,
+	Keith Busch <kbusch@kernel.org>
+Subject: Re: [PATCH 5/7] PCI/AER: Move AER capability check out of
+ pcie_aer_is_native()
+Message-ID: <avrwA4wokDuOACxx@wunner.de>
+References: <cover.1790531238.git.lukas@wunner.de>
+ <6a21637111397810d75679d1ca597766f3bf5605.1790531238.git.lukas@wunner.de>
+ <7d21f908-ea38-4b8c-9646-0aaaa520206a@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -112,74 +64,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Rspamd-Queue-Id: 8848A1FD65
-X-Spam-Level: 
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
-X-Spamd-Result: default: False [-12.51 / 50.00];
-	SUSE_INTERNAL_BYPASS(-9.00)[];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim]
-X-Spam-Score: -12.51
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7d21f908-ea38-4b8c-9646-0aaaa520206a@linux.intel.com>
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, 13 Nov 2026 11:30:06 +0100,
-Aibing Chen wrote:
+On Tue, Sep 29, 2026 at 12:47:26PM -0700, Kuppuswamy Sathyanarayanan wrote:
+> On 9/27/2026 11:02 AM, Lukas Wunner wrote:
+> > When firmware grants control of Advanced Error Reporting to the operating
+> > system, that not only encompasses the AER capability, but also error
+> > enable/status bits in the Device Control and Device Status registers
+> > (PCI Firmware r3.3 table 4-6 bit 3).
+> > 
+> > PCIe devices without AER capability still support baseline capability
+> > error reporting through these enable/status bits (PCIe r7.1 sec 6.2.1),
+> > but the bits must not be modified unless AER control was granted.
+> > 
+> > pcie_aer_is_native() is unsuitable to check for control of AER-incapable
+> > devices because it implicitly checks for presence of an AER capability.
+> > 
+> > Move that check to its callers (where needed) to allow using the function
+> > for the imminent baseline capability error reporting.
 > 
-> check_codec() builds the device tree property name
-> "platform-<codec>-codec-ref" in a 32 byte buffer with snprintf().
-> A codec name may be up to MAX_CODEC_NAME_LEN - 1 (31) characters and
-> the surrounding text adds 19 characters, so the full name can be 50
-> characters plus the terminator.  Codec names longer than 12 characters
-> are silently truncated, of_get_property() then looks up a property name
-> that does not exist, and check_codec() fails the codec with "required
-> property ... not present".
-> 
-> All codecs in the tree use shorter names today, but the buffer should
-> match the documented maximum.  Size it from MAX_CODEC_NAME_LEN, which
-> is already available through "../aoa.h".
-> 
-> Compiling with W=1 before this change reports:
-> 
->   sound/aoa/fabrics/layout.c:780:36: warning: '%s' directive output may be truncated writing up to 31 bytes into a region of size 23 [-Wformat-truncation=]
-> 
-> Signed-off-by: Aibing Chen <chenaibing@cmss.chinamobile.com>
+> Agreed that ownership and AER presence are separate questions, but
+> changing the semantics while keeping the name may trip up callers that
+> assume "native" implies "present".  Would a separate ownership-only
+> helper (e.g. pcie_err_is_native()) be cleaner?  It could also replace
+> cxl_error_is_native().
 
-Is the string really truncated unexpectedly?
+We usually use spec terms in the code to make it easier to connect the
+code to the spec.  PCI Firmware r3.3 table 4-6 bit 3 uses the term
+"PCI Express Advanced Error Reporting control", so pcie_aer_is_native()
+seems apt.  I agree that it is a little non-obvious that it also
+encompasses baseline error reporting control, but that's the way it is.
 
-Otherwise it's just an incorrect compiler warning, and extending the
-size doesn't make sense.
+Thanks,
 
-
-thanks,
-
-Takashi
+Lukas
 
