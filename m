@@ -2,51 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23E5A606A331
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Nov 2026 21:18:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E20F9606A31F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 03:16:07 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EwsrI/yS
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=b6y5pjZT
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSP422bTMz2xL4;
-	Mon, 16 Nov 2026 08:18:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794777506;
-	cv=none; b=iXeYZZaMCxwz1jPKy0bPBCU1CewI+59sBsrndGXBwsGfuuRXBKsFHGAu+gVG4H0p/BhwB2TSZk7ipom1R3D7AL+zsLZeDqvMnEX/GrbaxNXBJKdG7tm7b8siGDe2B5ryrZuMEroZGtrC0/0JjiqiCBnXNqI7E3XPGQpn/Si4D4V+p5AP+ppMXOoEvm/t0TyGASUF+umo5CoDbLumY4YzJVYS7vGORlHoaX5kjMdYGP0tUW3yL+XyEnvRosyVT1dlRRR8gv5ANE13GiI4nS7+fgYW2s//3/dwrErYo7SLZqf38xZUqNCcBkxVgUJae4JeENQwy2ZtPZd0dsqyEIFsLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSY0k2zSpz2x9N;
+	Mon, 16 Nov 2026 14:16:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::c7"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794798966;
+	cv=none; b=a+shapllhbW8bCymUzxDeCogLjAn+uBVMFDBww/IJSGnwQ33C6uOru39sumf9aRZNcWJUrodjjzVv88e1D+cYdozBI02NkrQ6WB6ykGDkCZAEpbA9++53xcTZNtqXoJ8V8aIm5ymDQB8L0RPRxXPwh83d+gnOF+EyRaS9h0l6+BwvpUC9jro1542olQVwviyP36bIABguY88nn3vAHN6llWTO0g8XxyH0vSOcUct8Q7Lmc/T5YvCIVLoreO3EJ7p23ho5DIEqg4u7l6VUtR+35pKFqPD9U2AQyhRgs9GcIQbMZrrFgn5qOueJGbgM//aQz9AQf7plzk5a5lYO1+gBg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794777506; c=relaxed/relaxed;
-	bh=4NmVekp5AF3TQlvKfhhoRjPEWciyBwoXsOkkxZlyMuo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=I/f1QvFTOOBV+iP8J9TI8hV+jOxXcIoaanPrHHoAwj1W03JckXeTsnwgduxF7w5cMnOw2JQu1MpgA9L7kG0U16W2s6rLEFB80wA5OCRw0j5DvVdkZTqafBctiJfIhdaBbyE9kNSkcS5zSe4HVWwxfk6Vlj2S6g8IpWDZUrS/HLtojAXNPZFBfn5tUo0kgJxsQQUXMt3UpUNSPgPfc23lCXiSggr7nZaKTrYBb971u25kQV+plFlP5MQ8J/8bzyFqzYfKX7f8uB13TK8sn+RKdApICPIdhQfDcAh6Nt31167I85NrzBGaPiOHLwKKPxd5BzCz4BQ3VgPbFdGDejwObw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EwsrI/yS; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794798966; c=relaxed/relaxed;
+	bh=61hA4pI6lWNHs1Ny06AZoS+2gE8bk9pfoV7wwfpwYLY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eVo0qcDGB/whwrZCz4zgHhUUS2bWvqYn3PAIXdfykHUvjEd9BwCsrODQsjFRd+vkRyBsuMUYssnM64QFTYNIz0l8lwXQ29yGwhkYmt1Uh+Z5mJpVArZ3tLFmPDnyCqUVSA85uYB9ngdRxx/s8yeXn/OuoPezlr4mwhsq1tZvwxPS3deNf0G6jVdjqRkcy+VctODkCg+P5QTjHgmPfKN1a6PhHesIUIp6otgbgIPYomQ5BCHkmrqA50Jjh7nNz2jXIg3mv2l7uGAaSa5TQ8b6EYbcBQIdHhauTKg9/cEBw8x/GKtqPAUMGZIflrMXkz5g8k/W14n9UefjMcxWHTJUGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=b6y5pjZT; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::c7; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EwsrI/yS;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=b6y5pjZT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::c7; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-199.mta0.migadu.com [IPv6:2001:41d0:1004:224b::c7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSP41240wz2xL1
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 08:18:25 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 45D7C403D7;
-	Sun, 15 Nov 2026 21:18:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E02E61F000C4;
-	Sun, 15 Nov 2026 21:18:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794777503;
-	bh=4NmVekp5AF3TQlvKfhhoRjPEWciyBwoXsOkkxZlyMuo=;
-	h=From:Date:Subject:To:Cc;
-	b=EwsrI/ySyvB20G0OXm5ps0iHqCR5WTS32bYIMIkp6kAmcrqApUPqMEqq+cvOy00uX
-	 ho4vyv2AUSFdsaQKdjVayMoQTcfrB2xGxXN0Vp4peDzCY5TJYQI/eBXKlFblLqQmt0
-	 KckZyexpMFRvAR69YKm3wSJvWv1t2w6N3uZv6OppxZOw4UpobFwa2tv7WeOXTgLIyA
-	 Cxo02L3wPE8NOgJ/ynLbsnCI+iNFz9fa/IC8fnU2wrGrux6Foj5P1tJ/d4POnE7C/k
-	 7uhcJ9BKJJZA9zrKIor1VA+oNivY260M9LERoMcVdvJGdzk1Ad/pat33zeEoN7bUvg
-	 pmMteI/xmOSxg==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Sun, 15 Nov 2026 14:18:07 -0700
-Subject: [PATCH] powerpc/xmon: Avoid unsequenced accesses to tsk in
- show_task()
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSY0f5HBKz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 14:16:00 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=RUdXcvQAkasOinh1aHVDzx5Sbf8dYEfIHFE+pPtSAf8=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794798941; v=1; x=1795403741;
+ b=b6y5pjZThx7DYDxGEYNfUyp+U3/xosaEMZmj2dCioSZXgrycZsMsMAUAuW/xB7bHrCC6ul7F
+ 9ajzKA3pNWSWmGKecb6G6We6VuI02BRbHXYzbgsLhXKuTqXrA9aqLfU8wfztFqNfoahP2KCso1W
+ Xp6Tjkb4pnM2yywUCJeoV9ao=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 4346fe518fa13606;
+	Mon, 16 Nov 2026 03:15:41 +0000
+X-Mizu-Trace-ID: 4346fe518fa13606
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <5d234178-7799-4603-82bf-40a70101f78a@linux.dev>
+Date: Mon, 16 Nov 2026 11:15:24 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,96 +57,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 4/9] mm/vmalloc: BUG_ON() on an unaligned range in
+ vmap_pages_range_noflush_walk()
+To: Uladzislau Rezki <urezki@gmail.com>
+Cc: Dev Jain <dev.jain@arm.com>, Suren Baghdasaryan <surenb@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
+ Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org,
+ Sashiko <sashiko-bot@kernel.org>
+References: <20261110112546.261415-1-hao.ge@linux.dev>
+ <20261110112546.261415-5-hao.ge@linux.dev> <avWtB-nWZUwLdQdP@milan>
+Content-Language: en-US
+From: Hao Ge <hao.ge@linux.dev>
+In-Reply-To: <avWtB-nWZUwLdQdP@milan>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261115-xmon-wunsequenced-v1-1-42ae3fe45bf4@kernel.org>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/yXMQQrCMBBG4auUWRvoRBrBq4iLmP7VEZxqptFC6
- d0bdfkt3lvIkAVGx2ahjLeYjFrBu4bSLeoVTvpq8q0PzNy5+TGq+xQ1vAo0oXfs24iYhkPYB6r
- dM2OQ+fc8nf+2crkjTd8RresGh06aTXUAAAA=
-X-Change-ID: 20261115-xmon-wunsequenced-120aeacf7636
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, 
- Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
- Shrikanth Hegde <sshegde@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, 
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- llvm@lists.linux.dev, stable@vger.kernel.org, 
- Nathan Chancellor <nathan@kernel.org>
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2438; i=nathan@kernel.org;
- h=from:subject:message-id; bh=n3wmVZOyMNsX0uk3IiniOVaUBJnF2oOZEtO24z2uNpg=;
- b=kA0DAAoWHWsmkXHAGpYByyZiAGr6IZihRZbffcT0Cn4l0kQ9p2gOZzFH1xiWaOwkQ4z9Dio1B
- Ih1BAAWCgAdFiEEe+MlxzExnM0B2MqSHWsmkXHAGpYFAmr6IZgACgkQHWsmkXHAGpZYQAEA+JcF
- h7PyeMAe3s4nhbTb5HJ8VLD36RDIdTWqIVyIciABAI7Ee9Nul+Wz3OwRJenTiDaR5Ht50X9ChFl
- /YY2LYwQI
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
-X-Spam-Status: No, score=-23.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-After a recent improvement in clang to warn on unsequenced accesses to
-volatile variables [1], an instance appears in show_task(), which can
-break the build with CONFIG_PPC_WERROR=y / CONFIG_WERROR=y / W=e:
+Hi Ulad
 
-  arch/powerpc/xmon/xmon.c:3262:3: error: unsequenced accesses to volatile qualified 'tsk' [-Werror,-Wunsequenced]
-   3261 |         printf("%16px %16lx %16px %6d %6d %c %2d %s\n", tsk,
-        |                                                         ~~~
-   3262 |                 tsk->thread.ksp, tsk->thread.regs,
-        |                 ^
+On 2026/11/12 20:11, Uladzislau Rezki wrote:
+> On Tue, Nov 10, 2026 at 07:25:41PM +0800, Hao Ge wrote:
+>> The pte loop of vmap_pages_pte_range() maps whole pages and stops
+>> only when addr lands exactly on end.  An unaligned end lets addr
+>> jump over it and the loop keeps mapping into whatever follows the
+>> range.  An unaligned start maps the page below the range with its
+>> first pte.  That corruption is impossible to debug afterwards, so
+>> bug out on addr and end at the entry of
+>> vmap_pages_range_noflush_walk().
+>>
+>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>> ---
+>>  mm/vmalloc.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>> index 27f2674a5556..86fbb1d2b27a 100644
+>> --- a/mm/vmalloc.c
+>> +++ b/mm/vmalloc.c
+>> @@ -698,6 +698,8 @@ static int vmap_pages_range_noflush_walk(unsigned long addr, unsigned long end,
+>>  	pgtbl_mod_mask mask = 0;
+>>  
+>>  	BUG_ON(addr >= end);
+>> +	BUG_ON(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end));
+>> +
+>>
+> But why do we add this? We used to live without it and as far i see
+> we have not gotten any report about any unaligned addresses un-maping.
+> 
+> The vmap allocator grantees that va->va_start/end have to be page
+> aligned.
 
-Per C11 5.1.2.3.2, accessing a volatile object is a side effect. Per C11
-6.5.2, unsequenced side effects on the same scalar object are undefined
-behavior. Per C11 6.5.2.2.10/12, the evaluation of arguments in a
-function call is indeterminately sequenced, meaning any side effects in
-the arguments are unsequenced.
+You are right that no in-tree caller passes an unaligned range today.
+This came about after looking at
+commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not PAGE_SIZE aligned").
+That commit only guards the ioremap family. vmap_pte_range() is reached
+through vmap_page_range() only, so what it protects is ioremap_page_range(),
+pci_remap_iospace() and friends, which map physically contiguous ranges.
 
-tsk was made volatile in commit a2305e3de819 ("powerpc: mark local
-variables around longjmp as volatile") to ensure its value in
-show_tasks() was properly restored after returning from a potential
-longjmp(). Aside from that, the value is not being modified through
-other means, so rename the volatile parameter and add a local variable
-named tsk to hold its value throughout show_task(), clearing up the
-warning.
+vmap_pages_range_noflush_walk() has the same loop and serves the other half of the picture,
+the virtually contiguous mappings, where the physical pages behind the range do not have to
+be contiguous, and since functions like vmap_pages_range() take addr and end from the caller as
+they are, the page alignment is the caller's contract in the first place, so this is the same idea
+as a739e6b557af and the check just makes that contract visible.
 
-Cc: stable@vger.kernel.org
-Fixes: a2305e3de819 ("powerpc: mark local variables around longjmp as volatile")
-Closes: https://github.com/ClangBuiltLinux/linux/issues/2199
-Link: https://github.com/llvm/llvm-project/commit/955715460eaf9188c241c74750637fc82dfcc423 [1]
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
----
- arch/powerpc/xmon/xmon.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+That said, dropping this patch is also fine with me. Nobody can actually trigger it today, as I said at
+the beginning, so I will drop it from the next version.
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index cb3a3244ae6f..90a8d7a8f42d 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3240,8 +3240,9 @@ memzcan(void)
- 		printf("%.8lx\n", a - mskip);
- }
- 
--static void show_task(struct task_struct *volatile tsk)
-+static void show_task(struct task_struct *volatile vol_tsk)
- {
-+	struct task_struct *tsk = vol_tsk;
- 	unsigned int p_state = READ_ONCE(tsk->__state);
- 	char state;
- 
+Thanks
+Best Regards
+Hao
 
----
-base-commit: 7475ea8b58616b33c04afb976cf0fbaad9dd63fb
-base-tree: git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
-change-id: 20261115-xmon-wunsequenced-120aeacf7636
-
-Best regards,
---  
-Cheers,
-Nathan
-
+> 
+> --
+> Uladzislau Rezki
 
