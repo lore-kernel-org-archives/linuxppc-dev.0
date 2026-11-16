@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 418B3606A323
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 12:49:06 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC738606A331
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 12:49:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iSdNGUDn
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J1iRwSzP
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSnjn5zgJz2yr0;
-	Mon, 16 Nov 2026 23:49:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794833341;
-	cv=none; b=gcEjYEY6rujn0+EO+f4MVL5u+DdglqQ6pVnGubT2BJ+L185g0RvvdSyyz6wzr+ZX6vD1x8AlDQaA8kWQSShRR14phGqYK5TqAIr94xV1jX67wn5afyVgvtjCoYTkESULfhx+W3Q/5/b1lufTElYvlzh3IX+LoWTndQcEgp7f2AVeG4URRanuu/qw/UF2Gg2ReT1U0uzcWM9KLbBmbVkNeP42P2oLM13SK8PLwKTXsFFhqduMJJEuFJRmGvPvGoIgasXd2oaKxD0iIDFjMgSgRnrokx2OQixKcGJj6vhqTAd+NZq2MgnGalmIjsZVeK3svsL4X/xQATTm+I2dgqFuZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSnjw0XD8z30DY;
+	Mon, 16 Nov 2026 23:49:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794833348;
+	cv=none; b=G8/A0keEoEEEmQVD7G4s00SYKknrN2k0aDlkszcfpgJkKdqyVWZzgWBbFS2s/m5wb0j9YlA1+qFLTTc78FY6YvFF/11G+0NF2KbS5Y/05WtrSUiW7zee56taG05FvvbE48qr2ywv7S+5MkWQBIK5jqYntiFxBE3Ahlmnlg8XRWSg58rgbG/2sT45L4ZCHZ8prjKyJenD9VEVfjwCUgul/QKC1GTT0eyNv4gU8+X9pHtZmGyP6QSoewODS3MNbcrVQptCgDHDG4dKtMJfsepXoziPTDLyG0ZPdMRBT42Ym/sUBbHlkEVvxfINeKkQoxDsIf6lzI7IyDQCliGVIY6DpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794833341; c=relaxed/relaxed;
-	bh=4F6U5hwvw8gwNmHBNKQhCDls4ausjqIT8kXPov+zDoA=;
+	t=1794833348; c=relaxed/relaxed;
+	bh=T+kkEjnaw2ySVd4lLiujiWW53ZRBsmmAWW3cy3wlJjw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Lw9raByIdtfBOu1Wu0xkXg8keHZD/LIxJ9HOUEE5DWmozUnHQcU3hxMmxNZmytf4nZbAfGFHjc3lrmsC5qCjzTpvYaqN+DnFPZlKyxMoijOYyjVm5IkEGd2+QjCEsvhGL6P+0XOF3M1abTU3SJ7OGicE+s2BxqWy4dJRIizVV6vkg/HKYZ22+Q6X9NFAMJYZTrQ77HB7oMs7R5+bHfnwPxkrPO39rgjyClxFk5iwLLccgZZ66N+QQN0kUvHppHdZ9V8pgA/rsL5CqN88ZnJhjHCUVfjy5NJ5kcJ1feDsC5wLXpTLu0p0I1MKtuZm+vNn9ATAu1szgfTfBp4a1YLvIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iSdNGUDn; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=XQNpQbBj/Md7scpqQA0nCWYYMM2pr3UnPZEpXqAev8x9WQ3HsNicbIdXQbneYbZUGDjCLDY9zXp5uIZ6SKluuTd1SifzZTz2voe0ffXNhqbqFXRIaM+iX7M7JFb9qB+j4rWpXxE9aF+Gezb/L+L9YhALEJRLDQ+IFH/7J0VdXMeV4RJQBRcgzHjO1MrCZRkkmuhiG/sl6R6+jYxknEUNQ2OO66OCDhIs0moCj9RBeCUmmpWw2Y7ky6DhkszdC3VMAG+efe/UhfrjIhGJ8/bZEgc0h0mObR8Frqm88kHps9xoA8P79eq1GpDs6xJySQDJ88BGv5gVPhUaA4pVebtr7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J1iRwSzP; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=iSdNGUDn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=J1iRwSzP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSnjn2G3Yz2yY0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 23:49:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSnjv2G2yz2yY0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 23:49:07 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C85C8437C5;
+	by sea.source.kernel.org (Postfix) with ESMTP id C9E7F43421;
+	Mon, 16 Nov 2026 12:49:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29FCF1F000C4;
 	Mon, 16 Nov 2026 12:48:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9A251F000C4;
-	Mon, 16 Nov 2026 12:48:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794833339;
-	bh=4F6U5hwvw8gwNmHBNKQhCDls4ausjqIT8kXPov+zDoA=;
+	s=k20260515; t=1794833345;
+	bh=T+kkEjnaw2ySVd4lLiujiWW53ZRBsmmAWW3cy3wlJjw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=iSdNGUDnUPPi4pJnAYBKNnCGTaI+y4qb3uN/K5lIkcESpOPrpKPgqoRvuRlqXEFp/
-	 D22TIAOQoLnM4fj+lgCWae9ef+MQKYOaeqrQgq0dhWWtnjfAThJNwLHjtsfOcC5RbD
-	 Np0pFfdb5cSXXXZAUynvQxQrYr1pxZBp6UXANT9o7ZTogMmpoIoohw9lcwxG03mhpX
-	 Oy2/oEtzbGj0awkxpXQl7L8affCM3OatgSUKikQvjQ8lVdfzBbeLPTvGwJaiSqc/fS
-	 78SKOIgyWd1tcz2HtBmGbx4T2VjGTdAtXLoFfYLGAeU5FNyhXMeNcrhwM2xy6db58r
-	 GhZKMPeccyxAg==
+	b=J1iRwSzPkXkJExltWHVg0O8oGOL+tawW+ZmYEGgM1jmGAKgXx8sy7HnmkDQVv80Ss
+	 yg4kn+EGjPt1JGKZYyWmr96BKjuswmbOXfgaSRJVySsDYEtOeJ/ovVXA3/PGYaEEQg
+	 e3V7fokGmh+Jawesd3SW+NFvr+/7WMp05FEXbQ8wK0id5O9GLzTl/BNPOe8HMP9wyx
+	 SXMkzQFD+Nl7UMGApCdcv5Ze+xW2cYq4ISMrZw9YTpwVIzOyl4tI/WGNsQAg4Yn1Op
+	 xm4CxP/9WVSS9d5AIaFwkOz7gzndFMorMFu1XaBI6AixyyII7UmWDW9Dxmurqq67j6
+	 wYW15Z/uOQhDA==
 From: Arnd Bergmann <arnd@kernel.org>
 To: linux-mm@kvack.org
 Cc: Arnd Bergmann <arnd@arndb.de>,
@@ -72,12 +72,10 @@ Cc: Arnd Bergmann <arnd@arndb.de>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-fsdevel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	x86@kernel.org,
-	sashiko-bot@kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH v3 03/10] ARM: pxa: support arbitrary PAGE_OFFSET
-Date: Mon, 16 Nov 2026 13:48:25 +0100
-Message-ID: <20261116124832.662455-4-arnd@kernel.org>
+	x86@kernel.org
+Subject: [PATCH v3 04/10] powerpc: kvm: allow flexible PAGE_OFFSET
+Date: Mon, 16 Nov 2026 13:48:26 +0100
+Message-ID: <20261116124832.662455-5-arnd@kernel.org>
 X-Mailer: git-send-email 2.53.0
 In-Reply-To: <20261116124832.662455-1-arnd@kernel.org>
 References: <20261116124832.662455-1-arnd@kernel.org>
@@ -98,41 +96,68 @@ Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-The pxa3xx_cpu_pm_suspend() implementation hardcodes the default
-PAGE_OFFSET value for CONFIG_VMSPLIT_3G. This has always been broken
-for other configurations but becomes much worse now that the default
-is changing.
+As described by the Sashiko bot, the KVM code on powerpc has multiple
+hardcoded PAGE_OFFSET values. In order to change the default, make these
+compute the correct register values from configuration symbols.
 
-Fix this to use the correct compile-time constant instead.
-
-Reported-by: sashiko-bot@kernel.org
-Fixes: c4d1fb627ff3 ("[ARM] pxa: add preliminary suspend/resume code for pxa3xx")
-Cc: stable@vger.kernel.org
-Link: https://lore.kernel.org/all/sashiko-outbox-212719@kernel.org/
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/mach-pxa/pxa3xx.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_32_sr.S     | 4 ++--
+ arch/powerpc/kvm/booke_interrupts.S | 4 ++--
+ arch/powerpc/kvm/e500_mmu_host.c    | 3 ++-
+ 3 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
-index 06c578ea658e..253770075a8b 100644
---- a/arch/arm/mach-pxa/pxa3xx.c
-+++ b/arch/arm/mach-pxa/pxa3xx.c
-@@ -103,7 +103,7 @@ static void pxa3xx_cpu_standby(unsigned int pwrmode)
-  */
- static void pxa3xx_cpu_pm_suspend(void)
- {
--	volatile unsigned long *p = (volatile void *)0xc0000000;
-+	volatile unsigned long *p = (volatile void *)PAGE_OFFSET;
- 	unsigned long saved_data = *p;
- #ifndef CONFIG_IWMMXT
- 	u64 acc0;
+diff --git a/arch/powerpc/kvm/book3s_32_sr.S b/arch/powerpc/kvm/book3s_32_sr.S
+index 6cfcd20d4668..0d8a7857f2bd 100644
+--- a/arch/powerpc/kvm/book3s_32_sr.S
++++ b/arch/powerpc/kvm/book3s_32_sr.S
+@@ -113,8 +113,8 @@
+ 
+         li      r0, 4
+         mtctr   r0
+-	LOAD_REG_IMMEDIATE(r3, 0x20000000 | (0x111 * 0xc))
+-        lis     r4, 0xc000
++	LOAD_REG_IMMEDIATE(r3, 0x20000000 | (0x111 * (PAGE_OFFSET >> 28)))
++        lis     r4, (PAGE_OFFSET >> 16)
+ 3:      mtsrin  r3, r4
+         addi    r3, r3, 0x111     /* increment VSID */
+         addis   r4, r4, 0x1000    /* address of next segment */
+diff --git a/arch/powerpc/kvm/booke_interrupts.S b/arch/powerpc/kvm/booke_interrupts.S
+index 205545d820a1..ede394f3f63f 100644
+--- a/arch/powerpc/kvm/booke_interrupts.S
++++ b/arch/powerpc/kvm/booke_interrupts.S
+@@ -230,8 +230,8 @@ _GLOBAL(kvmppc_resume_host)
+ #endif
+ 
+ 	/* Restore host IVPR before re-enabling interrupts. We cheat and know
+-	 * that Linux IVPR is always 0xc0000000. */
+-	lis	r3, 0xc000
++	 * that Linux IVPR is always PAGE_OFFSET. */
++	lis	r3, PAGE_OFFSET >> 16
+ 	mtspr	SPRN_IVPR, r3
+ 
+ 	/* Switch to kernel stack and jump to handler. */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index fa6128119874..9edad9bed589 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -115,7 +115,8 @@ static u32 get_host_mas0(unsigned long eaddr)
+ 	mtspr(SPRN_MAS6, 0);
+ 	mas4 = mfspr(SPRN_MAS4);
+ 	mtspr(SPRN_MAS4, mas4 & ~MAS4_TLBSEL_MASK);
+-	asm volatile("tlbsx 0, %0" : : "b" (eaddr & ~CONFIG_PAGE_OFFSET));
++	asm volatile("tlbsx 0, %0" :
++		: "b" (eaddr & (rounddown_pow_of_two(PAGE_OFFSET)-1)));
+ 	mas0 = mfspr(SPRN_MAS0);
+ 	mtspr(SPRN_MAS4, mas4);
+ 	local_irq_restore(flags);
 -- 
 2.53.0
 
