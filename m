@@ -1,57 +1,50 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 12913606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 11:59:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9B435606A890
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 12:00:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hnZy2toz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSmcF60DTz3bTR;
-	Mon, 16 Nov 2026 22:59:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:3000::53df:4ee9:0"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794830349;
-	cv=none; b=gHHncLhkkMn19BuwJJjAjz3E3K1LUWdFAqpOZFK0YRd2T+OwV8snnq8NwXWyJpeG3CM9T99oqoaZ3QZ90ZBIfRoRyeq6uWTVAa/CwyMBwtTDT0JhqonqO+/cGbB5ngTLUGvJ1M2LTWaVMRZuJtKNMQ/WXHzCw0/9xvTySpantkK1vGJWADt2l4uzre6ldQn3mnfRQQ8PYvcd4oqv96KdOtpuQ0ykH36AnZbLsPR7c/OUJW7i3DRtwyVUD+e2pu50I/61+1PFJzuGV/w8HDFI15uJgNzeLHF4iurmXSebady8g6cvi/LSordCtg5aMciQ/zeWn/jZha6+cm6cso9dWg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSmdc2YRtz3c00;
+	Mon, 16 Nov 2026 23:00:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794830420;
+	cv=none; b=YLFkPVcP3Jxwn1c8SnXUwXL0VyQRPNF0sa0YGVEr0aDvP4df2LjwyeQaTULnDQGpZvxk0FDrjRIIdZiyE0nqbjVIUeCIOvyy9QPJKGWZXPXktBYlF2LY5NSsG7lPmxV/xQnyLzqC2G6GkkCo1O7OJTdH4i3TFs+NqrQgc/zCXiFJpiZ0PFT5l/xDiDUy28dgpoiqVlBWvfzRITfYQaW5ue+9luAsDMeO4/40CNEiCqcxHChw+Epup3oh4c/FYnKFUC08++n6wBTvU0QWTptLsVSahXwq0ad0jSt23rpmmfAsAH5UZX2Y8ITkm/kfbDyBR8YldEcqpfHeWZOXN+fGcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794830349; c=relaxed/relaxed;
-	bh=NHGeGqCVFN2Tv1lma1Bg8GLYblLTY4Dtm4iduW7dQss=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oVZij5NnzRSf6Qrwt2+WOEZRLTkHPW++EGPZKUxHZVJVZDQc+Zy8tZAxQvBlvZXuDLKkJFklCKCsUpeUnFZRxXa7Ql7vgUsJElQDVcNobCedREEFc5I6nawzkbQjbSF7IQaZzRQll6eTLC9H3o4po9yr635pb/LXgp0ICvMSOwy2AgVqxedy6S221RYBGSK2lPqkS9nt+LRbzYajPXQNgOjfgaFL/wijKrEGXXC1f89mGFfdBk9Q2l34YCVQTevHIs3f6h9h9mVe19rrCTh0CXnQmSqATvMZ7fwteiVHFzTvv9+UW7E+i6snh5g4WSAaJdk3AaxCyksRBG0ZsJzPOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ee9:0; helo=mailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout2.hostsharing.net (mailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ee9:0])
+	t=1794830420; c=relaxed/relaxed;
+	bh=gm216H5g8yPIS0hPFinwHy6mVVrhGulY+53WmPc6rN0=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=d4HVWUKv05QGNbyZxKRdcAEmC/vs7FzYEFNvTnkDvikvbS0lk1nYp4mv7goiyuvmUbXsy04cxdaWFeEiA8C8gWk05AvAS6zwOjIcSeMxhalsXRv2W8TBD+9cRkXpX3nBfoZtxbFLfSDh+dtd/378P+gJlx1iz+jmtv3+z8MN9aK2HinqiHnYK1HHjCeB15/S0W2EfsuvMjPltBTx7m3nrX2s72WCfDkhZGau0yI1piCMJYstHK7AOFrRIwi8/sZnEA4U8y+bCcSJ/o03m4hBMae6dXyaK7uhvhvo1psgp5cfFSm6wVITzb9d4CvU88d8ZiHIy/bnEk4ZL+hz92GERw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hnZy2toz; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hnZy2toz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSmcD0kq4z30Yb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 22:59:05 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout2.hostsharing.net (Postfix) with ESMTPS id BE474283E;
-	Mon, 16 Nov 2026 12:58:59 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id A33D66031F0E; Mon, 16 Nov 2026 12:58:59 +0100 (CET)
-Date: Mon, 16 Nov 2026 12:58:59 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Raag Jadav <raag.jadav@intel.com>,
-	Riana Tauro <riana.tauro@intel.com>,
-	Yury Murashka <yurypm@arista.com>,
-	Matthew W Carlis <mattc@purestorage.com>, linux-pci@vger.kernel.org,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-	Aravind Iddamsetty <aravind.iddamsetty@intel.com>,
-	Srinivasa Adatrao <srinivasa.adatrao@intel.com>,
-	Terry Bowman <terry.bowman@amd.com>,
-	Keith Busch <kbusch@kernel.org>
-Subject: Re: [PATCH 5/7] PCI/AER: Move AER capability check out of
- pcie_aer_is_native()
-Message-ID: <avrwA4wokDuOACxx@wunner.de>
-References: <cover.1790531238.git.lukas@wunner.de>
- <6a21637111397810d75679d1ca597766f3bf5605.1790531238.git.lukas@wunner.de>
- <7d21f908-ea38-4b8c-9646-0aaaa520206a@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSmdb17pRz3byF;
+	Mon, 16 Nov 2026 23:00:19 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 86E6662928;
+	Mon, 16 Nov 2026 12:00:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A04FD1F000C4;
+	Mon, 16 Nov 2026 12:00:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794830416;
+	bh=gm216H5g8yPIS0hPFinwHy6mVVrhGulY+53WmPc6rN0=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date;
+	b=hnZy2tozWrqXpWLl+o5+qP9GJB7maIdtKambAdlwVeTUYSiv1MRn2/JyDHmnbWh9z
+	 9WDgZMPWzEFJyZJLu9/wsHqC4IslySPV7y2m6l1l6Pr8NgVibCFxmyKogUiorVMDDs
+	 oSUXCyKp79VfkW+5dB+6SUIEC6UIXRKMD5lFDe0TpDOweWXRS/8hWTozfLGQIQW1P3
+	 PpqAtsruCxsT/ZGQgn4L2ujm+ycdGpwnf6KZ9ATazwCNfMJ3LvW1RLCzk2tHDAf+iS
+	 l45B1JKOto718M05wX+oTkpRye0x56eTuMcf1pJlfnKjWSS9tECKCjPVeZoo9oaT6o
+	 l+RQ5GFUaEe7w==
+Content-Type: multipart/mixed; boundary="===============5220694122544816000=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,45 +58,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7d21f908-ea38-4b8c-9646-0aaaa520206a@linux.intel.com>
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+Message-Id: <cb28f09c85a473a23f14c9bd6ef135950197c9fbf966c1f7055d791977d29286@mail.kernel.org>
+In-Reply-To: <20261116-work-loop-pseudo-v3-38-8cbbea1cf34f@kernel.org>
+References: <20261116-work-loop-pseudo-v3-38-8cbbea1cf34f@kernel.org>
+Subject: Re: [PATCH RFC v3 38/44] nvmet: refuse files on pseudo filesystems as namespace backing files
+From: bot+bpf-ci@kernel.org
+To: brauner@kernel.org,linux-fsdevel@vger.kernel.org
+Cc: jannh@google.com,mason@kernel.org,josef@toxicpanda.com,hch@lst.de,linux-block@vger.kernel.org,linux-kernel@vger.kernel.org,linux-nvme@lists.infradead.org,viro@zeniv.linux.org.uk,jack@suse.cz,linux-scsi@vger.kernel.org,target-devel@vger.kernel.org,driver-core@lists.linux.dev,linux-mm@kvack.org,bpf@vger.kernel.org,linux-security-module@vger.kernel.org,selinux@vger.kernel.org,apparmor@lists.ubuntu.com,linux-nfs@vger.kernel.org,netdev@vger.kernel.org,fuse-devel@lists.linux.dev,linux-efi@vger.kernel.org,xen-devel@lists.xenproject.org,ocfs2-devel@lists.linux.dev,linux-s390@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-usb@vger.kernel.org,amir73il@gmail.com,linux-erofs@lists.ozlabs.org,linux-kselftest@vger.kernel.org,brauner@kernel.org,chris@chrisdown.name,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,mason@kernel.org,ihor.solodrai@linux.dev
+Date: Mon, 16 Nov 2026 12:00:14 +0000 (UTC)
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Sep 29, 2026 at 12:47:26PM -0700, Kuppuswamy Sathyanarayanan wrote:
-> On 9/27/2026 11:02 AM, Lukas Wunner wrote:
-> > When firmware grants control of Advanced Error Reporting to the operating
-> > system, that not only encompasses the AER capability, but also error
-> > enable/status bits in the Device Control and Device Status registers
-> > (PCI Firmware r3.3 table 4-6 bit 3).
-> > 
-> > PCIe devices without AER capability still support baseline capability
-> > error reporting through these enable/status bits (PCIe r7.1 sec 6.2.1),
-> > but the bits must not be modified unless AER control was granted.
-> > 
-> > pcie_aer_is_native() is unsuitable to check for control of AER-incapable
-> > devices because it implicitly checks for presence of an AER capability.
-> > 
-> > Move that check to its callers (where needed) to allow using the function
-> > for the imminent baseline capability error reporting.
-> 
-> Agreed that ownership and AER presence are separate questions, but
-> changing the semantics while keeping the name may trip up callers that
-> assume "native" implies "present".  Would a separate ownership-only
-> helper (e.g. pcie_err_is_native()) be cleaner?  It could also replace
-> cxl_error_is_native().
+--===============5220694122544816000==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-We usually use spec terms in the code to make it easier to connect the
-code to the spec.  PCI Firmware r3.3 table 4-6 bit 3 uses the term
-"PCI Express Advanced Error Reporting control", so pcie_aer_is_native()
-seems apt.  I agree that it is a little non-obvious that it also
-encompasses baseline error reporting control, but that's the way it is.
+> nvmet: refuse files on pseudo filesystems as namespace backing files
 
-Thanks,
+TL;DR: The series may not build: file_check_backing() in fs/read_write.c calls
+d_real_data_inode(), which seems undefined anywhere in the tree, so a
+prerequisite patch may be missing.
 
-Lukas
+> diff --git a/drivers/nvme/target/io-cmd-file.c b/drivers/nvme/target/io-cmd-file.c
+> --- a/drivers/nvme/target/io-cmd-file.c
+> +++ b/drivers/nvme/target/io-cmd-file.c
+> @@ -47,10 +47,9 @@ int nvmet_file_ns_enable(struct nvmet_ns *ns)
+>  		return ret;
+>  	}
+>  
+> -	if (!ns->file->f_op->read_iter || !ns->file->f_op->write_iter) {
+> -		ret = -EINVAL;
+> +	ret = file_check_backing(ns->file, FMODE_READ | FMODE_WRITE, S_IFBLK);
+> +	if (ret)
+>  		goto err;
+> -	}
+
+Can this be built?  nvmet_file_ns_enable() now depends on
+file_check_backing() from f66083ed0be9, which does:
+
+fs/read_write.c:file_check_backing() {
+    ...
+	/* Look through stacking filesystems at the inode with the data. */
+	real_inode = d_real_data_inode(file->f_path.dentry);
+	if (IS_ERR(real_inode))
+    ...
+}
+
+d_real_data_inode() is not defined or declared anywhere in the tree, and
+no commit up to the end of the series adds it.  Only d_real_inode() exists
+in include/linux/dcache.h, so fs/read_write.c looks like it fails with an
+implicit function declaration.
+
+If d_real_inode() was intended, it does d_inode(d_real(...)) without any
+ERR_PTR handling, so the IS_ERR() check would never trigger the error path
+the f66083ed0be9 commit message describes.
+
+Is a prerequisite patch adding d_real_data_inode() missing from the series?
+
+
+---
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
+
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/43858134663
+--===============5220694122544816000==--
 
