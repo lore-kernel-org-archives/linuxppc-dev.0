@@ -1,97 +1,109 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DE73A606A323
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 08:01:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C81BB606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 08:22:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=DOrcz4TW
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSgLJ4k4gz2y7r;
-	Mon, 16 Nov 2026 19:01:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794816104;
-	cv=none; b=Jr6fk3R1hOIuWRh1FbK7B18WB0ihg0W1zPR3nOt8KWt1MIJyOb5zf3rNNoZxXOzo/tdQFKSAvbHZ2LTnvs6UuKIVqYTF2d08EVRpnsgv2oh3gyoFnYIe3HI8/TNOVatdn3cI6Eg/qxfmPq/8r7ehgfbYLeiJXLQfKQlLuRhKua5M52K/9AFTnuZNj5rq8+tnxXL8Xn0s3DBMZVMWyTUp5DwFCiRz4jLmtLpGi37G1CicSh26qMJlIsObl0npCHfOW6aWcY1MNJ8ZEbm7nGPPB6BNZ7ZVO0HhYAxqHfdBAWtqBCT2NqhehVveqePvXfpBtwYyCJHeDr507eflbNwUtA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSgpM1fgcz2y71;
+	Mon, 16 Nov 2026 19:22:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794817355;
+	cv=none; b=GU6xDQ+6U1qq7mhLuAHl2e+VefF3Zm22l4OsNDoY8/469m8O8zz8TE9hQSgkaz9K5oZT7UEQuHA28WavhuISeVr0A8c9RmFfCjq+X9d4oKP5achu8UnKAkrIXD1wUEREThrSgCyk5ilRp8OsRljmgYiXOr1u0QbptkzAjplCaIiGNb8y04WKa4AGUTiGzVOdPlfk6tt5i7dFqrwLCvhW+ngN1DIvhcUZ6WL4rxoBLKyGTF5zByJCpF71OnnQsnbRL28TAsX521/rmdg474HOrHpF2uUg8zvDC1FubS4mSkOWTLGOeIB4y7Nn+oEoOcQGRnTe+DtIm6MwGHb2tBa0eQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794816104; c=relaxed/relaxed;
-	bh=YsacxGE14wOKz6Pg8TZXlOHyLRTqOTqtvBl+xKa/O2U=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=AMOuUnyojt2qs2SXkxsgfSS/HyHLNigrkZF8yVXOjgDIVtIn1y3KJksQmWUqKqgXrQ8jpA6qyhIzZVCDeDaXzBSp8/cxkBWLXLiHOfLNyz8/HjI5ecJCvhA7B/Pt0dL6f+40n6VCVuBcfkqLSwzeqX7JzcEpVAdscUZiU2PviYYkEqbK7ILnia1gJs8pqvdu48w9H1XtNKDuWZwbM6UWu/m5RE9zknjedgd53ABgNnm/yCsJInp0Fue2XPo6vgbLnyCT9JXVGmmDCseFBZKofpsCaYzhfngFdtBbg7MdDUccex0cLK8qjy8BqpWRlI9kGBe2AMZvmH2vwhuYB8OxGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=amutable.com; dkim=pass (2048-bit key; unprotected) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=DOrcz4TW; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=alex@amutable.com; receiver=lists.ozlabs.org) smtp.mailfrom=amutable.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=amutable.com
+	t=1794817355; c=relaxed/relaxed;
+	bh=SkbR11E3BohH41XWDxNdS79CwwmA1GSYQfGnzJeNU7M=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
+	 In-Reply-To:Content-Type; b=ESSOSt5wfUnolLrw5ajjG1mQw2Bsjrn9KhxnrpgNG8AH694Z64w3vp/nF0ipZho+b8PSEoh14AUhGzpSjbd7M7EIcm6IUtJZDTkbT/LtVs0Y8kmFgO3hvcoLPcD2RPjcvyhgxIulk0MZB/AaJ1Z7JmIF9ny+4DaFgfWzYZEUjLVxJ0fJ+yD3GF3kDQg/4CG8vP7frUWIrip/c8LSNyPMSuZjmMEOf8HoADqyZsE8rJ1jblOEQGCsb4ByqkEIclOofB3Po5U5pciDRO8Bxrju0yDBaT1YhJWYMKudh7W154qcb3VwDMFMmFLpdA9rNJlXDqq24EJ5KjL3KPnp3NzPag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=amutable-com.20260707.gappssmtp.com header.i=@amutable-com.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=DOrcz4TW;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YLTipTCZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amutable.com (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=alex@amutable.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSgLH4TPqz2y71
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 19:01:43 +1100 (AEDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-c4322d310e7so582267266b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 00:01:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=amutable-com.20260707.gappssmtp.com; s=20260707; t=1794816100; x=1795420900; darn=lists.ozlabs.org;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=YsacxGE14wOKz6Pg8TZXlOHyLRTqOTqtvBl+xKa/O2U=;
-        b=DOrcz4TW0+hIzm89ho1bqBw06j9mmg4K0VM4RnnSt1iq5Z2ZP1swEj86Zu/nE/PJf6
-         29uBlWHxmcKasIUtdW3mwR+qNkVvASFOMl/wXC7/BLt2Al2bQlOo1wyAhy+y7sOrFb0v
-         hxn+0S6dIl0MVvZFVW7YR0fayi7W42ShkhiSQCJzho1suMnTcb73we02T7TQva2b2Plj
-         PdxCrz79vs/EYnAo5jSCn+cGDSdtfn0CEsqmyXbv07mT4j3MrScrpd4UAJh26bMZ3mdx
-         IAYyb8NZ0cY9eBRjZPE5xyrpjBuFAstCBYHlwfS/u4bHs4o4ovKjI0bOUv/OowaUThcF
-         KYQQ==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSgpK6zLlz2y2f
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 19:22:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794817348;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SkbR11E3BohH41XWDxNdS79CwwmA1GSYQfGnzJeNU7M=;
+	b=YLTipTCZ5BxWzJteFSBSR8Fpwiel7CfB5tdYm8b2FHEMWKvj+dLXw2esQzAlt9Pz1jbgI7
+	sKuvNvH0MXTFqsngXLv9XZjjvJJaHmJZQWagIjh6Oqfa+XMWz+jUMxuyYDEV1Jm7NHxLJj
+	JiWRbYWC3VCk5u7ilKhhytfl99eaEWc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794817348;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SkbR11E3BohH41XWDxNdS79CwwmA1GSYQfGnzJeNU7M=;
+	b=YLTipTCZ5BxWzJteFSBSR8Fpwiel7CfB5tdYm8b2FHEMWKvj+dLXw2esQzAlt9Pz1jbgI7
+	sKuvNvH0MXTFqsngXLv9XZjjvJJaHmJZQWagIjh6Oqfa+XMWz+jUMxuyYDEV1Jm7NHxLJj
+	JiWRbYWC3VCk5u7ilKhhytfl99eaEWc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1794817348;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=SkbR11E3BohH41XWDxNdS79CwwmA1GSYQfGnzJeNU7M=;
+	b=YLTipTCZ5BxWzJteFSBSR8Fpwiel7CfB5tdYm8b2FHEMWKvj+dLXw2esQzAlt9Pz1jbgI7
+	sKuvNvH0MXTFqsngXLv9XZjjvJJaHmJZQWagIjh6Oqfa+XMWz+jUMxuyYDEV1Jm7NHxLJj
+	JiWRbYWC3VCk5u7ilKhhytfl99eaEWc=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-197-bpRnQR9JNq6ZXydeFibDwA-1; Mon, 16 Nov 2026 03:22:25 -0500
+X-MC-Unique: bpRnQR9JNq6ZXydeFibDwA-1
+X-Mimecast-MFC-AGG-ID: bpRnQR9JNq6ZXydeFibDwA_1794817344
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-4bb64c99bb8so12773025e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 00:22:25 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794816100; x=1795420900;
-        h=mime-version:user-agent:content-transfer-encoding:content-type
-         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=YsacxGE14wOKz6Pg8TZXlOHyLRTqOTqtvBl+xKa/O2U=;
-        b=L71P9vKvuU1AYrC0Ib5Mc2ik4JH6+XbMoiJj76+MGdCVNirH1Qowmbcl7r6BIy2skv
-         iSwshpXGkBwThlvW2rfFrEYm+PKwRu8PGVNoO5qTE5r4fOFgpSC6G93ecxMFpFdk8QGW
-         yTQXRKK3uBlM9x/3LgZpJR0gixybUsqsio9Q4UPM5cOltdislgkGhgMFP58/LtcAvWE3
-         EPDDGGe7dhnQeb8TUWlYRK9QPn9wOYMjmj5tS+fKJXaEAjfqkq5HhwI6vBNVa6BcIX4T
-         jx6IdNS+CuJvkSU5Rxmr/oUUOXOcBm0wWJWHFmUu69LUjEhmw1lYyGHl/hnJfDPtkTwT
-         jqew==
-X-Forwarded-Encrypted: i=1; AL+hErHkInJIr9zHgjo4wu4USI2eTICJILRGUyfiKctlaZgeE7uQpS2rnCGW5mLl6Ak9kTR5JYsv8JO0WVWLrCg=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+F+0q87QzcbE9I/KTzAVg6xSq9tMMyLn03TfnK7K6WzoZ1oaVG
-	7QY5eGsirz/KbOqDLEVQBgWpUk70u1xwkZUNIjLadMQGKhmD8AA6xVPfYzLQRBIgHtM5
-X-Gm-Gg: AYBFou3GPiPH65An5RrYSyEobqQH3D1hp+/4bU/Ff5n+qOITWpBccYyVMN5kIai3Y7j
-	FQyd2eGH9L16Ge39OWO1jKSrBgl4Cn8LjA7T3ZpLqHGplSsFaE3IpcufM9ZkIOMriHebQC9ADUU
-	eKuz2E5kUEcsot4qThtKG1sDlpIGUPnwtnWQO9FWwNFHg+1Z/Xr4+12KtC207aWy2/E2Mnhlao1
-	uMr0H2Rn0MHLN6w43AnQGh5N06FeMTG++lksZiemS9qhtIT2+/So7zG40uFKoPUVl57U1ZmcPol
-	/kzu9p4sc6zfdu1T6bWZVD1jUIrxK851PlbvPu0GBODVEXAfvk4gjzRRe3lWAK9DN9yQlaNMIn2
-	ABPwM7V6DPT9H76NsgoCU2KwH1H0aDU7g6QOF2fIyjJ35OCbCI+fS8pLm7MEYIxEoN26ctFG7Tn
-	n/iCoF6g5YSxTGTiO7MEr/H9udzClOWdchem5eCbMyjWwNbH1U8f1KPX0B/SybFOmYRKoUuHwYx
-	uMR/G1mjUOwCJGJ2ALtMx6j0e448QB5M5rBvFP8f9Dn0SL/T0HNnAns9+C/gDA+aHSe4frNLn3G
-	dRzZ08VFCcSN2rOuDfi3zV9ukpg0v5XeXXMUCGAcfUyTfcsixQ/MJcOWZEAIzp4=
-X-Received: by 2002:a17:907:1c90:b0:c2e:63ba:1f90 with SMTP id a640c23a62f3a-c50963bc4f0mr777600066b.48.1794816099924;
-        Mon, 16 Nov 2026 00:01:39 -0800 (PST)
-Received: from [10.0.0.233] (tmo-086-54.customers.d1-online.com. [80.187.86.54])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c5095b7b2c9sm385795866b.73.2026.11.16.00.01.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2026 00:01:39 -0800 (PST)
-Message-ID: <dfdd6f4437cbf8f55458b908ec5347f3189bce80.camel@amutable.com>
-Subject: Re: [PATCH RFC 4/4] crash_dump: use copy_oldmem_to_iter() everywhere
-From: Alexander Mikhalitsyn <alex@amutable.com>
-To: Christian Brauner <brauner@kernel.org>, linux-fsdevel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Breno Leitao
-	 <leitao@debian.org>, Chris Mason <mason@kernel.org>, Thomas Gleixner
-	 <tglx@kernel.org>, x86@kernel.org, kexec@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
-	linux-mips@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, David Hildenbrand <david@kernel.org>
-Date: Mon, 16 Nov 2026 09:01:37 +0100
-In-Reply-To: <20261112-work-procfs-oldmem-v1-4-ecdcafd99265@kernel.org>
-References: <20261112-work-procfs-oldmem-v1-0-ecdcafd99265@kernel.org>
-	 <20261112-work-procfs-oldmem-v1-4-ecdcafd99265@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+        d=1e100.net; s=20260707; t=1794817344; x=1795422144;
+        h=content-transfer-encoding:content-type:in-reply-to:autocrypt
+         :content-language:references:to:from:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=SkbR11E3BohH41XWDxNdS79CwwmA1GSYQfGnzJeNU7M=;
+        b=mQDEiLIpwx3xoqf/jmIUxK6CFaYjtXCWnDo5c2q7Sxumkvo+wa1jefHy822yuH3QPi
+         l5xrA4lgY4V79m9mBoznZiGfPl61H1JaJFbgpr0T0pxdaVb6LZQFq1k2gXMMyCv6CY4C
+         cKOZ/HrWby7z1oOMv0GYC6sC5xTZDcbjg/Isw7dnSgrGEPjbWIvMVHzq0N2AMOH2WLvL
+         zFAkE0miVrltz6h63U5wzej0f6O6YXTpdIzR5QB/C/+5ShEkJjj7aJWasixgERc/Hkge
+         30ATY+r6dtECF0z3+BVmncfElvlkl08jsiKyBQU/JP7OzkRR5k0bVXh80FBUp6xOMlaq
+         l3zg==
+X-Forwarded-Encrypted: i=1; AL+hErHCTroSoOScHCnOEvbX3aHLcxVWbw58YA4qrJtzbGFbixhwvFUPf9pjv9ewxde+K4zdB1ofTzuSbStAtn8=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+mO9w/nFzjEWPA+2//HIXeFh6QZVRULNCkLZRtlb8efFhej4TG
+	fgFt3gHehRu2GeqAMJowUS3t9k1MTIzZlcPa/0GMlKFSufRDEHgyLyDCo2OxTyUpFm0sMi6nBJt
+	DrkFk/vXtQ7nrKpBPXZq9znNQij7vObiXiIFbheTniUXRiAhsxiIjF4t/2juOPYGi0OY=
+X-Gm-Gg: AYBFou3BJPN4B3nDAMiqfByztDg9ZjdWGxediPi3DHWEY8B7iUk2RugWkXcIrmB6fL+
+	G2JtBtoR/3guM4By/2rB6jJAYsfykNiXXVKGVrD4h2hV9p/5t2eBgj9AwVZFsxplxwGbr7PvX33
+	m6feFDMEOCKmzAyySOYpKuyqEEUOPoyDr/lr5+cL849iAWZvEggfF+c4rDY911BHTift4j59bGP
+	BFb76pYwVgj9r7T9/jirdX40taFtxUv9t8w7a03BCzWCCFCdWXDFB5u6AlhTzSS2jC6zMIgPXFt
+	8CRfv1uZSdj3aORX8rkqw9jVXQEUS/Q8yXXT2kv+sJc5xTFZ8wUjW7nmOCkn0nq89HwsBdPsrA4
+	y09FyhM/9AL9M8twEU2X45JFEBXonxxz0U98j60yG4DGG
+X-Received: by 2002:a05:600c:4e0d:b0:4bb:69b2:d3df with SMTP id 5b1f17b1804b1-4bb69b2d82fmr80275615e9.25.1794817344415;
+        Mon, 16 Nov 2026 00:22:24 -0800 (PST)
+X-Received: by 2002:a05:600c:4e0d:b0:4bb:69b2:d3df with SMTP id 5b1f17b1804b1-4bb69b2d82fmr80275195e9.25.1794817344000;
+        Mon, 16 Nov 2026 00:22:24 -0800 (PST)
+Received: from [192.168.0.9] ([47.64.115.75])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb52bab8bbsm276579265e9.13.2026.11.16.00.22.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 16 Nov 2026 00:22:23 -0800 (PST)
+Message-ID: <942375ef-cab9-4746-ab18-184b2761a8d1@redhat.com>
+Date: Mon, 16 Nov 2026 09:22:21 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,150 +117,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: Link with -z notext
+From: Thomas Huth <thuth@redhat.com>
+To: Laurent Vivier <lvivier@redhat.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
+References: <20261110154415.46220-1-amachhiw@linux.ibm.com>
+ <1346902a-67ba-49e5-9dfc-fc3990c3329d@redhat.com>
+ <20261111145459.6b15a2c5-eb-amachhiw@linux.ibm.com>
+ <4bcbdea1-b2a2-4f09-881c-c6d116b59127@redhat.com>
+Autocrypt: addr=thuth@redhat.com; keydata=
+ xsFNBFH7eUwBEACzyOXKU+5Pcs6wNpKzrlJwzRl3VGZt95VCdb+FgoU9g11m7FWcOafrVRwU
+ yYkTm9+7zBUc0sW5AuPGR/dp3pSLX/yFWsA/UB4nJsHqgDvDU7BImSeiTrnpMOTXb7Arw2a2
+ 4CflIyFqjCpfDM4MuTmzTjXq4Uov1giGE9X6viNo1pxyEpd7PanlKNnf4PqEQp06X4IgUacW
+ tSGj6Gcns1bCuHV8OPWLkf4hkRnu8hdL6i60Yxz4E6TqlrpxsfYwLXgEeswPHOA6Mn4Cso9O
+ 0lewVYfFfsmokfAVMKWzOl1Sr0KGI5T9CpmRfAiSHpthhHWnECcJFwl72NTi6kUcUzG4se81
+ O6n9d/kTj7pzTmBdfwuOZ0YUSqcqs0W+l1NcASSYZQaDoD3/SLk+nqVeCBB4OnYOGhgmIHNW
+ 0CwMRO/GK+20alxzk//V9GmIM2ACElbfF8+Uug3pqiHkVnKqM7W9/S1NH2qmxB6zMiJUHlTH
+ gnVeZX0dgH27mzstcF786uPcdEqS0KJuxh2kk5IvUSL3Qn3ZgmgdxBMyCPciD/1cb7/Ahazr
+ 3ThHQXSHXkH/aDXdfLsKVuwDzHLVSkdSnZdt5HHh75/NFHxwaTlydgfHmFFwodK8y/TjyiGZ
+ zg2Kje38xnz8zKn9iesFBCcONXS7txENTzX0z80WKBhK+XSFJwARAQABzR5UaG9tYXMgSHV0
+ aCA8dGh1dGhAcmVkaGF0LmNvbT7CwXgEEwECACIFAlVgX6oCGwMGCwkIBwMCBhUIAgkKCwQW
+ AgMBAh4BAheAAAoJEC7Z13T+cC21EbIP/ii9cvT2HHGbFRl8HqGT6+7Wkb+XLMqJBMAIGiQK
+ QIP3xk1HPTsLfVG0ao4hy/oYkGNOP8+ubLnZen6Yq3zAFiMhQ44lvgigDYJo3Ve59gfe99KX
+ EbtB+X95ODARkq0McR6OAsPNJ7gpEUzfkQUUJTXRDQXfG/FX303Gvk+YU0spm2tsIKPl6AmV
+ 1CegDljzjycyfJbk418MQmMu2T82kjrkEofUO2a24ed3VGC0/Uz//XCR2ZTo+vBoBUQl41BD
+ eFFtoCSrzo3yPFS+w5fkH9NT8ChdpSlbNS32NhYQhJtr9zjWyFRf0Zk+T/1P7ECn6gTEkp5k
+ ofFIA4MFBc/fXbaDRtBmPB0N9pqTFApIUI4vuFPPO0JDrII9dLwZ6lO9EKiwuVlvr1wwzsgq
+ zJTPBU3qHaUO4d/8G+gD7AL/6T4zi8Jo/GmjBsnYaTzbm94lf0CjXjsOX3seMhaE6WAZOQQG
+ tZHAO1kAPWpaxne+wtgMKthyPLNwelLf+xzGvrIKvLX6QuLoWMnWldu22z2ICVnLQChlR9d6
+ WW8QFEpo/FK7omuS8KvvopFcOOdlbFMM8Y/8vBgVMSsK6fsYUhruny/PahprPbYGiNIhKqz7
+ UvgyZVl4pBFjTaz/SbimTk210vIlkDyy1WuS8Zsn0htv4+jQPgo9rqFE4mipJjy/iboDzsFN
+ BFH7eUwBEAC2nzfUeeI8dv0C4qrfCPze6NkryUflEut9WwHhfXCLjtvCjnoGqFelH/PE9NF4
+ 4VPSCdvD1SSmFVzu6T9qWdcwMSaC+e7G/z0/AhBfqTeosAF5XvKQlAb9ZPkdDr7YN0a1XDfa
+ +NgA+JZB4ROyBZFFAwNHT+HCnyzy0v9Sh3BgJJwfpXHH2l3LfncvV8rgFv0bvdr70U+On2XH
+ 5bApOyW1WpIG5KPJlDdzcQTyptOJ1dnEHfwnABEfzI3dNf63rlxsGouX/NFRRRNqkdClQR3K
+ gCwciaXfZ7ir7fF0u1N2UuLsWA8Ei1JrNypk+MRxhbvdQC4tyZCZ8mVDk+QOK6pyK2f4rMf/
+ WmqxNTtAVmNuZIwnJdjRMMSs4W4w6N/bRvpqtykSqx7VXcgqtv6eqoDZrNuhGbekQA0sAnCJ
+ VPArerAZGArm63o39me/bRUQeQVSxEBmg66yshF9HkcUPGVeC4B0TPwz+HFcVhheo6hoJjLq
+ knFOPLRj+0h+ZL+D0GenyqD3CyuyeTT5dGcNU9qT74bdSr20k/CklvI7S9yoQje8BeQAHtdV
+ cvO8XCLrpGuw9SgOS7OP5oI26a0548M4KldAY+kqX6XVphEw3/6U1KTf7WxW5zYLTtadjISB
+ X9xsRWSU+Yqs3C7oN5TIPSoj9tXMoxZkCIHWvnqGwZ7JhwARAQABwsFfBBgBAgAJBQJR+3lM
+ AhsMAAoJEC7Z13T+cC21hPAQAIsBL9MdGpdEpvXs9CYrBkd6tS9mbaSWj6XBDfA1AEdQkBOn
+ ZH1Qt7HJesk+qNSnLv6+jP4VwqK5AFMrKJ6IjE7jqgzGxtcZnvSjeDGPF1h2CKZQPpTw890k
+ fy18AvgFHkVk2Oylyexw3aOBsXg6ukN44vIFqPoc+YSU0+0QIdYJp/XFsgWxnFIMYwDpxSHS
+ 5fdDxUjsk3UBHZx+IhFjs2siVZi5wnHIqM7eK9abr2cK2weInTBwXwqVWjsXZ4tq5+jQrwDK
+ cvxIcwXdUTLGxc4/Z/VRH1PZSvfQxdxMGmNTGaXVNfdFZjm4fz0mz+OUi6AHC4CZpwnsliGV
+ ODqwX8Y1zic9viSTbKS01ZNp175POyWViUk9qisPZB7ypfSIVSEULrL347qY/hm9ahhqmn17
+ Ng255syASv3ehvX7iwWDfzXbA0/TVaqwa1YIkec+/8miicV0zMP9siRcYQkyTqSzaTFBBmqD
+ oiT+z+/E59qj/EKfyce3sbC9XLjXv3mHMrq1tKX4G7IJGnS989E/fg6crv6NHae9Ckm7+lSs
+ IQu4bBP2GxiRQ+NV3iV/KU3ebMRzqIC//DCOxzQNFNJAKldPe/bKZMCxEqtVoRkuJtNdp/5a
+ yXFZ6TfE1hGKrDBYAm4vrnZ4CXFSBDllL59cFFOJCkn4Xboj/aVxxJxF30bn
+In-Reply-To: <4bcbdea1-b2a2-4f09-881c-c6d116b59127@redhat.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: KJfMGGC8086zVMa-XcDw4cRbYEQgUHVW-ozJPTD4q5g_1794817344
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, 2026-11-12 at 17:37 +0100, Christian Brauner wrote:
-> Make the remaining copy_oldmem_page() implementations copy the page
-> of
-> the crashed kernel with copy_oldmem_to_iter() like x86_64 and powerpc
-> do. None of these architectures has a machine check safe copy today,
-> so
-> for them this is copy_to_iter() under another name. But the copy of a
-> page of the old kernel is in one place now, and an architecture that
-> gains ARCH_HAS_COPY_MC later gets the recovery without touching its
-> crash dump code.
->=20
-> s390 stays as it is. It copies the old kernel's memory through its
-> real
-> address mode window in memcpy_real_iter(), and an uncorrected storage
-> error is fatal on s390 anyway (cf. s390_handle_damage()).
->=20
-> No functional changes.
->=20
-> Signed-off-by: Christian Brauner (Amutable) <brauner@kernel.org>
+Am 13.11.26 um 13:03 schrieb Thomas Huth:
+> Am 11.11.26 um 11:18 schrieb Amit Machhiwal:
+>> Hi Thomas,
+>>
+>> On 2026/11/11 08:54 AM, Thomas Huth wrote:
+>>> Am 10.11.26 um 16:44 schrieb Amit Machhiwal:
+>>>> Building the powerpc tests with GNU ld 2.46.1 fails when linking the
+>>>> test binaries:
+>>>>
+>>>>     /usr/bin/ld.bfd: error: read-only segment has dynamic relocations
+>>>   Hi!
+>>>
+>>> This does not happen for me (using GNU ld version 2.46.1-1.fc44 from Fedora
+>>> 44) ... which compiler and distro are you using?
+>>
+>> Thanks for checking!
+>>
+>> I'm also using the same GNU ld version on Fedora 44 PPC64LE host (more 
+>> details
+>> are below).  Are you cross compiling on an x86 host by any chance where 
+>> you are
+>> not seeing this problem?
+> 
+> Yes, I was cross-compiling, so that's likely the reason why I did not see 
+> the issue.
+> 
+> Anyway, could you please check the following patch to see whether it fixes 
+> the issue for you, too:
+> 
+>    https://lore.kernel.org/kvm/20261113120101.145183-1-thuth@redhat.com/
+> 
+> ... that compiles the powerpc code with "-fpie" in the CFLAGS, so I think it 
+> should cure the issue, too, and it's likely the better way instead of 
+> suppressing the warnings with "-z notext".
+I was finally able to get access to a ppc64 machine, and my patch is 
+apparently causing other trouble there:
 
-Reviewed-by: Alexander Mikhalitsyn <alex@amutable.com>
+  /usr/bin/ld.bfd: powerpc/cstart64.o: warning: relocation against 
+`stackptr' in read-only section `.init'
 
-> ---
-> =C2=A0arch/arm/kernel/crash_dump.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | =
-2 +-
-> =C2=A0arch/arm64/kernel/crash_dump.c=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
-> =C2=A0arch/loongarch/kernel/crash_dump.c | 2 +-
-> =C2=A0arch/mips/kernel/crash_dump.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
-> =C2=A0arch/riscv/kernel/crash_dump.c=C2=A0=C2=A0=C2=A0=C2=A0 | 2 +-
-> =C2=A0arch/sh/kernel/crash_dump.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 | 2 +-
-> =C2=A0arch/x86/kernel/crash_dump_32.c=C2=A0=C2=A0=C2=A0 | 2 +-
-> =C2=A07 files changed, 7 insertions(+), 7 deletions(-)
->=20
-> diff --git a/arch/arm/kernel/crash_dump.c
-> b/arch/arm/kernel/crash_dump.c
-> index 938bd932df9a0..0f2628872b00c 100644
-> --- a/arch/arm/kernel/crash_dump.c
-> +++ b/arch/arm/kernel/crash_dump.c
-> @@ -28,7 +28,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn,
-> =C2=A0	if (!vaddr)
-> =C2=A0		return -ENOMEM;
-> =C2=A0
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0
-> =C2=A0	iounmap(vaddr);
-> =C2=A0	return csize;
-> diff --git a/arch/arm64/kernel/crash_dump.c
-> b/arch/arm64/kernel/crash_dump.c
-> index 670e4ce818223..c774b3aba107d 100644
-> --- a/arch/arm64/kernel/crash_dump.c
-> +++ b/arch/arm64/kernel/crash_dump.c
-> @@ -24,7 +24,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn,
-> =C2=A0	if (!vaddr)
-> =C2=A0		return -ENOMEM;
-> =C2=A0
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0
-> =C2=A0	memunmap(vaddr);
-> =C2=A0
-> diff --git a/arch/loongarch/kernel/crash_dump.c
-> b/arch/loongarch/kernel/crash_dump.c
-> index e559307c10929..03a136b8be8da 100644
-> --- a/arch/loongarch/kernel/crash_dump.c
-> +++ b/arch/loongarch/kernel/crash_dump.c
-> @@ -15,7 +15,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn,
-> =C2=A0	if (!vaddr)
-> =C2=A0		return -ENOMEM;
-> =C2=A0
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0
-> =C2=A0	memunmap(vaddr);
-> =C2=A0
-> diff --git a/arch/mips/kernel/crash_dump.c
-> b/arch/mips/kernel/crash_dump.c
-> index 6e50f49024094..078c0d1e8df46 100644
-> --- a/arch/mips/kernel/crash_dump.c
-> +++ b/arch/mips/kernel/crash_dump.c
-> @@ -12,7 +12,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn,
-> =C2=A0		return 0;
-> =C2=A0
-> =C2=A0	vaddr =3D kmap_local_pfn(pfn);
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0	kunmap_local(vaddr);
-> =C2=A0
-> =C2=A0	return csize;
-> diff --git a/arch/riscv/kernel/crash_dump.c
-> b/arch/riscv/kernel/crash_dump.c
-> index ea2158cee97b3..0820e3db12603 100644
-> --- a/arch/riscv/kernel/crash_dump.c
-> +++ b/arch/riscv/kernel/crash_dump.c
-> @@ -21,7 +21,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn,
-> =C2=A0	if (!vaddr)
-> =C2=A0		return -ENOMEM;
-> =C2=A0
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0
-> =C2=A0	memunmap(vaddr);
-> =C2=A0	return csize;
-> diff --git a/arch/sh/kernel/crash_dump.c
-> b/arch/sh/kernel/crash_dump.c
-> index 85c0e58f1a59f..2a5988b6e9d7a 100644
-> --- a/arch/sh/kernel/crash_dump.c
-> +++ b/arch/sh/kernel/crash_dump.c
-> @@ -23,7 +23,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn,
-> =C2=A0	if (!vaddr)
-> =C2=A0		return -ENOMEM;
-> =C2=A0
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0	iounmap(vaddr);
-> =C2=A0
-> =C2=A0	return csize;
-> diff --git a/arch/x86/kernel/crash_dump_32.c
-> b/arch/x86/kernel/crash_dump_32.c
-> index 5f4ae5476e193..cb202d4e1f703 100644
-> --- a/arch/x86/kernel/crash_dump_32.c
-> +++ b/arch/x86/kernel/crash_dump_32.c
-> @@ -40,7 +40,7 @@ ssize_t copy_oldmem_page(struct iov_iter *iter,
-> unsigned long pfn, size_t csize,
-> =C2=A0		return -EFAULT;
-> =C2=A0
-> =C2=A0	vaddr =3D kmap_local_pfn(pfn);
-> -	csize =3D copy_to_iter(vaddr + offset, csize, iter);
-> +	csize =3D copy_oldmem_to_iter(vaddr + offset, csize, iter);
-> =C2=A0	kunmap_local(vaddr);
-> =C2=A0
-> =C2=A0	return csize;
+So I went ahead and pushed your patch with "-z notext" instead to have at 
+least a workaround 'til we figured out whether we can and want to push the 
+"-pie" flag to the cpu-specific folders or not.
+
+  Thomas
+
 
