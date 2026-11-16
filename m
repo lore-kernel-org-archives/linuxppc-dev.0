@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9D9ED606A880
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 13:39:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1305A606A329
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 15:11:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lPgY3ZKm
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SarOkVuN
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSpqh1PF5z2xf8;
-	Tue, 17 Nov 2026 00:39:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794836352;
-	cv=none; b=HRANTKufPGb9MYF58ZOExCX4eq30FpOQ+/QLCzjDEvyMkJKy7hddt08zZKAl8ENuy4xrVdvJFCtfTSZGYEkkJ3gmH4EKwbsJNBQTa5ZC50FbOTsf38Z97tJPKriJMVteduc9DZqxX2Z19IsmgDcd5q/JSoI50IVYSuuhn1X/1cfU98PDMrRTCubm50q9AXrJW3XtuZEDM6rZxO9VHQJCH15eEL3OXRPnGmwBI9C51hVoGC4A1OxEZ4onFRb03egO8A2kuLAn0lsLXUSxYksGhC/uM8udYxsicp/mBvX/b3X4efdiFsn5YWrAysWwj2VK8PxMAJjxhL8JomxtpK43Mw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSrsy1w5xz2xL5;
+	Tue, 17 Nov 2026 02:11:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794841878;
+	cv=none; b=FAgQehcSv4cfM4QoFKY1nfZdOJFGQ6zhMDq/ZOqHwTwwJxgQ8VV74tolfGP2+ClN+7G0yyxMzNOergWWA7UfMQKh44MU9/GFZ58ExTT965cMt6J1z9XA4Xvv0aC9kjaSfKGT7E15lgXzErhnC3dEGSLsxSduu7h6VNzmM+Y5JTpxGad/n5dxsfSAViy0pujBExYPjUvBX09q2v4Bywm3U1QtVAwUOGbUYGwjAv3VVHwGoDpVl198kBnyqSqzpAe0iP6eFZrvqi3/yTXccX6Lm7uh563gJeZrFv6eEDJB3iYQW7wksWcV4505ZsUHBTmQHPNa/PInLJG/xMKFjlMtJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794836352; c=relaxed/relaxed;
-	bh=v+u8WOi6enSXf9p1uj17AxTmnZ64Z9UB12nhM5b0wBk=;
+	t=1794841878; c=relaxed/relaxed;
+	bh=yeSQw09nh5WkQ4Cv/8/FyeP3ITQK3gVl1qr9H4aI4aw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JNJO9chRNrUp0MsWNINscrwy/IRxPFB9dIxJLTbZWXCvaBseqsTwlTR/ILONMKf6339hnU5oxziNodcDrhwLl8hKWqx5FZeP1wPYHdbr7zgUpn0i49WmsQ3gU2ntlOoxKVB9rUy3ArMNB3T1/gJUXRx6VvdtaCbefScemieuQI7p2l0PBWtl0ESB7Omh/qRUFL/wvWqSqzvQsmUtIJSMKROiix14VyMG4pzloejQfDYWEk/ROO2Nc2XcAl5DFyf1g6aBHnyWwIApW5XZ4d7H3tPXAEkObo5Fn/E7doqrqyuBV+khcMs5xgV4oE3Fwy/qwIGM3eDfTwqYaSaCJS9lRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lPgY3ZKm; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=TNd1MoeJdYcLTr+6qTl8ytGEe+pimSxluzv6UAO60S0JwxcfvSAsYRnVQ0zFgNu5ViNI9E4nG74ksR0JOutD1HRJbmn9tEnpHCZYaCh+0BhccdVasBjodjDkjMyy9kYsgGTWDeybsykAxCKfEr9nPcbGhOw8hfG2YQE/hAWDHyOchFty612dKCMH4roQvx0uPt3jWnccOf8hUZBiNFLKda/bC0HSgOD5L2jgtyng6ul4B88NLQv1Y6X7b8V8NyNRn9u5+DYfmTahROwDERrD4jVZuf6sJwDA25GwwdGpqsoN5nMnzZ3M4sDJ46TGiX3rdZPNBCH5l4rCyXHsegPAVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SarOkVuN; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=lPgY3ZKm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SarOkVuN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSpqg19ZRz2xSZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 00:39:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSrsx0vqRz2xL3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 02:11:17 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id AE8A961D1F;
-	Mon, 16 Nov 2026 13:39:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 809881F000C9;
-	Mon, 16 Nov 2026 13:39:02 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7F43362D46;
+	Mon, 16 Nov 2026 15:11:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E2091F000CC;
+	Mon, 16 Nov 2026 15:11:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794836348;
-	bh=v+u8WOi6enSXf9p1uj17AxTmnZ64Z9UB12nhM5b0wBk=;
+	s=k20260515; t=1794841874;
+	bh=yeSQw09nh5WkQ4Cv/8/FyeP3ITQK3gVl1qr9H4aI4aw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=lPgY3ZKmD+AWK6OsqmvR2cCzK6j6u/WxfP3iaSyX9l+sr/3pxKSwrPdAxFUmB9xHS
-	 Te4LG33kqlHxat/w0CkHdvZDbte0OMXN6muIL0x7x/arXg19Oq+TkrYgugukT86AIP
-	 fBQDoHj+srBScbYERGJVtYGkySVWbQmNxiPyppwSnff8r1Gg1X48YTJ0M5spgri9sZ
-	 cgtJFF25gMSdEn28dVFmDAaN0XSm5PAYY5CqRCitHfF55dnu7PV8zepEY0Q/zX8K79
-	 MrjkPdaIuSw/y1vNQhJjd47gBkODFnoQwepsvQQyFNRel7sOC5ngZ+n7SoMLX7mQHl
-	 QgBPPOdHcj0UQ==
-Message-ID: <afebfaf5-f3ee-4234-875d-e5ebf1ee64fd@kernel.org>
-Date: Mon, 16 Nov 2026 14:38:58 +0100
+	b=SarOkVuN7lUuwBl5Um4lsvqYe1tKNgYq5+bX1yNKc+VcWTZnNISYxMnm1KTX4TF8D
+	 F5GHCB7sT/z4+tRPdSnaA4JpFG5HOL1x5hm3xsuc0dmrGfEi3BREzaG0IxxMHjTc7t
+	 bQ4Yj4Vqlz9M7P8yuNSq2U2LS8ia9AXZifY2HPJqvXO/Flb0dLQz3wSALZxhOpecXc
+	 qpLxB6koapgkJvyxULMAJaBAYvEMX/ECI7zi7un2ArzH0VRrRXgx76WshUzLFGqZo7
+	 Nd1425xAcwMHwKWsLKvIGaNIcrIBkA3fvDemoJIqd+vTVjd+rKVy0mfzvc+b9bncWT
+	 mjS0NznvsrptA==
+Message-ID: <f7834f3e-6c43-4b58-806d-fe4c07a93457@kernel.org>
+Date: Mon, 16 Nov 2026 16:11:07 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,126 +60,173 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 04/10] powerpc: kvm: allow flexible PAGE_OFFSET
-To: Arnd Bergmann <arnd@kernel.org>, linux-mm@kvack.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Andreas Larsson <andreas@gaisler.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David Hildenbrand (Arm)" <david@kernel.org>, "H. Peter Anvin"
- <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
- Jason Gunthorpe <jgg@nvidia.com>, Linus Walleij <linusw@kernel.org>,
- "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
- Lucas Stach <l.stach@pengutronix.de>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Malin Jonsson <malin.jonsson@est.tech>, Matthew Wilcox
- <willy@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Michal Simek <monstr@monstr.eu>, Mike Rapoport <rppt@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Nishanth Menon <nm@ti.com>,
- Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-References: <20261116124832.662455-1-arnd@kernel.org>
- <20261116124832.662455-5-arnd@kernel.org>
+Subject: Re: [PATCHv2 2/3] powerpc/execmem: Allocate kprobes insn pages from
+ the modules area on book3s/32
+To: Mike Rapoport <rppt@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>
+References: <cover.1794572365.git.ritesh.list@gmail.com>
+ <82c4973addebd82923c460cb44221f5b76146afe.1794572365.git.ritesh.list@gmail.com>
+ <avltdwzlh07VZSFC@kernel.org>
 Content-Language: fr-FR
 From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20261116124832.662455-5-arnd@kernel.org>
+In-Reply-To: <avltdwzlh07VZSFC@kernel.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Arnd,
+Hi Mike,
 
-Le 16/11/2026 à 13:48, Arnd Bergmann a écrit :
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> As described by the Sashiko bot, the KVM code on powerpc has multiple
-> hardcoded PAGE_OFFSET values. In order to change the default, make these
-> compute the correct register values from configuration symbols.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->   arch/powerpc/kvm/book3s_32_sr.S     | 4 ++--
->   arch/powerpc/kvm/booke_interrupts.S | 4 ++--
->   arch/powerpc/kvm/e500_mmu_host.c    | 3 ++-
->   3 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_32_sr.S b/arch/powerpc/kvm/book3s_32_sr.S
-> index 6cfcd20d4668..0d8a7857f2bd 100644
-> --- a/arch/powerpc/kvm/book3s_32_sr.S
-> +++ b/arch/powerpc/kvm/book3s_32_sr.S
-> @@ -113,8 +113,8 @@
+Le 15/11/2026 à 09:29, Mike Rapoport a écrit :
+> On Fri, Nov 13, 2026 at 06:01:37PM +0530, Ritesh Harjani (IBM) wrote:
+>> On book3s/32, a kprobe on an instruction that can't be emulated and has
+>> to be single stepped out of line, crashes the kernel. For e.g. with the
+>> following cmds...
+>>      ~> echo 9 > /proc/sys/kernel/printk
+>>      ~> mount -t debugfs debugfs /sys/kernel/debug
+>>      ~> echo 'p:wx filldir64+0xb8' > /sys/kernel/debug/tracing/kprobe_events
+>>      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/wx/enable
+>>      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
+>>
+>> ...we can see the following crash:
+>>      kernel tried to execute exec-protected page (f101a008) - exploit attempt? (uid: 0)
+>>      BUG: Unable to handle kernel instruction fetch
+>>      Faulting instruction address: 0xc02b919c
+>>      Vector: 400 (Instruction Access) at [f19a9d60]
+>>          pc: c02b919c: filldir64+0xb8/0x2dc
+>>          lr: c02b9148: filldir64+0x64/0x2dc
+>>          sp: f19a9e20
+>>         msr: 10029032
+>>        current = 0xc112e900
+>>          pid   = 102, comm = ls
+>>      enter ? for help
+>>      [f19a9e20] c1a8d420 (unreliable)
+>>      [f19a9e50] c02e4074 dcache_readdir+0x208/0x2a8
+>>      [f19a9e90] c02b8c5c iterate_dir+0x88/0x1fc
+>>      [f19a9ec0] c02b96e0 sys_getdents64+0x88/0x198
+>>      [f19a9f10] c0014400 system_call_exception+0xf8/0x20c
+>>      [f19a9f30] c00191ac ret_from_syscall+0x0/0x2c
+>>      ---- Exception: c00 (System Call) at a7596164
+>>      SP (af802310) is in userspace
+>>
+>> This happens because on book3s/32 the exec permission is per segment
+>> (256MB), not per page. The page tables have no hardware exec bit, only
+>> the segment registers have a no-execute (N) bit. mmu_mark_initmem_nx()
+>> sets N on all the kernel segments except the ones of the modules area.
+>> So nothing in the vmalloc area can be executed, even when the page is
+>> mapped with PAGE_KERNEL_ROX or PAGE_KERNEL_EXEC, because _PAGE_EXEC is
+>> a software only bit there and the segment's N bit is what the MMU
+>> enforces.
+>>
+>> Before commit 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes
+>> allocations"), the kprobes insn pages came from module_alloc(). That
+>> commit moved them to the whole of the vmalloc space, on the grounds
+>> that kprobes use a breakpoint and don't need to be near the kernel
+>> text. That is fine on platforms where the exec permission is per page,
+>> as PAGE_KERNEL_ROX is then enough to make a vmalloc page executable.
+>> It is not on book3s/32, where the modules area is not only close to
+>> the kernel text but is also the only page-mapped area whose segment is
+>> left executable. So the insn pages must keep coming from there.
+>>
+>> Hence, use the modules area for EXECMEM_KPROBES on book3s/32.
 >   
->           li      r0, 4
->           mtctr   r0
-> -	LOAD_REG_IMMEDIATE(r3, 0x20000000 | (0x111 * 0xc))
-> -        lis     r4, 0xc000
-> +	LOAD_REG_IMMEDIATE(r3, 0x20000000 | (0x111 * (PAGE_OFFSET >> 28)))
-> +        lis     r4, (PAGE_OFFSET >> 16)
+> Right, I missed that on book3s/32 does vmalloc is not executable and its
+> protection can't be changed.
+> 
+> Could it be that 8xx also need a special treatment for kprobes?
 
-This is not enough I think. You need to load ctr with the number of 
-segments you want to populate. Here above it is hardcoded to 4.
+Yes indeed, not for the same reasons but because 8xx ITLB-miss handler 
+doesn't expect any instruction TLB miss on kernel addresses other than 
+the ones from the module area:
 
->   3:      mtsrin  r3, r4
->           addi    r3, r3, 0x111     /* increment VSID */
->           addis   r4, r4, 0x1000    /* address of next segment */
-> diff --git a/arch/powerpc/kvm/booke_interrupts.S b/arch/powerpc/kvm/booke_interrupts.S
-> index 205545d820a1..ede394f3f63f 100644
-> --- a/arch/powerpc/kvm/booke_interrupts.S
-> +++ b/arch/powerpc/kvm/booke_interrupts.S
-> @@ -230,8 +230,8 @@ _GLOBAL(kvmppc_resume_host)
->   #endif
->   
->   	/* Restore host IVPR before re-enabling interrupts. We cheat and know
-> -	 * that Linux IVPR is always 0xc0000000. */
-> -	lis	r3, 0xc000
-> +	 * that Linux IVPR is always PAGE_OFFSET. */
-> +	lis	r3, PAGE_OFFSET >> 16
+Commit 4afb0be7ccda ("powerpc/8xx: Avoid testing for kernel space in 
+ITLB Miss.")
+Commit 16a71c045186 ("powerpc/8xx: Preallocate execmem page tables")
+Commit 33c527522f39 ("powerpc/8xx: Inconditionally use task PGDIR in 
+ITLB misses")
 
-Maybe use PAGE_OFFSET@h instead of PAGE_OFFSET >> 16.
+So at the end as MODULES_VADDR/MODULES_END only exist on book3s/32 and 
+8xx I think when they exist they should be used as follows:
 
->   	mtspr	SPRN_IVPR, r3
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index b617b69452cd..856f4609c488 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -428,8 +428,13 @@ struct execmem_info __init *execmem_arch_setup(void)
+  				.fallback_end	= fallback_end,
+  			},
+  			[EXECMEM_KPROBES] = {
++#ifdef MODULES_VADDR
++				.start	= MODULES_VADDR,
++				.end	= MODULES_END,
++#else
+  				.start	= VMALLOC_START,
+  				.end	= VMALLOC_END,
++#endif
+  				.pgprot	= kprobes_prot,
+  				.alignment = 1,
+  			},
 
-That's probably valid but wouldn't it be more correct to use 
-interrupt_base@h as in head_44x.S and head_85xx.S :
 
-	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
-	mtspr	SPRN_IVPR,r4
+> 
+>> Fixes: 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes allocations")
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> 
+> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> 
+>> ---
+>>   arch/powerpc/mm/mem.c | 10 ++++++++--
+>>   1 file changed, 8 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>> index 77b63b52d8f2..ae1bc7359353 100644
+>> --- a/arch/powerpc/mm/mem.c
+>> +++ b/arch/powerpc/mm/mem.c
+>> @@ -391,6 +391,7 @@ struct execmem_info __init *execmem_arch_setup(void)
+>>   	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>>   	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+>>   	unsigned long fallback_start = 0, fallback_end = 0;
+>> +	unsigned long kprobes_start = VMALLOC_START, kprobes_end = VMALLOC_END;
+>>   	unsigned long start, end;
+>>
+>>   	/*
+>> @@ -410,6 +411,11 @@ struct execmem_info __init *execmem_arch_setup(void)
+>>   	}
+>>
+>>   	end = MODULES_END;
+>> +
+>> +	if (IS_ENABLED(CONFIG_PPC_BOOK3S_32)) {
+>> +		kprobes_start = MODULES_VADDR;
+>> +		kprobes_end = MODULES_END;
+>> +	}
+>>   #else
+>>   	start = VMALLOC_START;
+>>   	end = VMALLOC_END;
+>> @@ -428,8 +434,8 @@ struct execmem_info __init *execmem_arch_setup(void)
+>>   				.fallback_end	= fallback_end,
+>>   			},
+>>   			[EXECMEM_KPROBES] = {
+>> -				.start	= VMALLOC_START,
+>> -				.end	= VMALLOC_END,
+>> +				.start	= kprobes_start,
+>> +				.end	= kprobes_end,
+>>   				.pgprot	= kprobes_prot,
+>>   				.alignment = 1,
+>>   			},
+>> --
+>> 2.39.5
+>>
+>>
+> 
 
->   
->   	/* Switch to kernel stack and jump to handler. */
-> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-> index fa6128119874..9edad9bed589 100644
-> --- a/arch/powerpc/kvm/e500_mmu_host.c
-> +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -115,7 +115,8 @@ static u32 get_host_mas0(unsigned long eaddr)
->   	mtspr(SPRN_MAS6, 0);
->   	mas4 = mfspr(SPRN_MAS4);
->   	mtspr(SPRN_MAS4, mas4 & ~MAS4_TLBSEL_MASK);
-> -	asm volatile("tlbsx 0, %0" : : "b" (eaddr & ~CONFIG_PAGE_OFFSET));
-> +	asm volatile("tlbsx 0, %0" :
-> +		: "b" (eaddr & (rounddown_pow_of_two(PAGE_OFFSET)-1)));
-
-I think this is not valid.
-
-With PAGE_OFFSET equal to 0xc0000000,
-
-Before:
-
-eaddr & 0x3fffffff
-
-Now:
-
-eaddr & (0x80000000 - 1) = eaddr & 0x7fffffff
-
->   	mas0 = mfspr(SPRN_MAS0);
->   	mtspr(SPRN_MAS4, mas4);
->   	local_irq_restore(flags);
-
-Christophe
 
