@@ -2,93 +2,66 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25DE7606A32F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 15:52:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC1E5606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 15:57:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=Y8Uf0lj7
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AcwgdkEc
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSsnZ5mygz2xPb;
-	Tue, 17 Nov 2026 02:52:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10d::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794844354;
-	cv=pass; b=SQ9/AahTzW3OG952t/ZEm5GqnmGxRM+d1LD3ny+Tps8aSyZINNsdL+5VKAMch2QN9FvlKgAxIyl6lUgyToGnknU+YCpLP/6uIwQr7IhyG7z4BXbZEXB98Bg98gvADwaoZqp4TPtzhsHd0FZPzWjcCjnDnvai9QFrS+Hg6ohcfrIrFCZjbV3LReCsNY8vdrY/Fnn9Lg9CGFtIPfcxPpJF11jT1ExQBcvFuYrvyW/7gR/BUsS/bAhnxy++payBIDbpXziLJ6dEt30VyaZzFpTAK+QYEL1kqdWJCM9IWoh2WwazHTaQvybzgdEaRXuemVJZRY88rfYuUuGeS5f/SuApZA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794844354; c=relaxed/relaxed;
-	bh=ij58lxQsKr14Pm1xSdZM8rMDG5yp2ABGVy2VzjtZGDI=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=AUn6PlY5mc5aP2xw+RzGsVHEa0vOA6sXwubO0xDdpnhiJvZkulXshoKLZRkuBNmNFaiHOKoz2TQ02xIah5/4q6QBHONbM2RSeNZZrRuD3QAcJrKifM6/4KLxEnv2TGVm9J9YgmSG3gvyNTUEV6JgIpieMdD87Ee2QDgZX2mixBfCLHVvGMlOIzQtaRgvwBWC1wVKQTYOkarvSNpEtFKr1S7ypSqks0tamlDxWCOz+lxRbCRXBNwJ2C13L1wCIXH6Dg131dD8fY7SnKl/pC7ejTtaw7BoKla1KfSaoufuJw70Q/gJnrQgsWlzKdoM0JWSWOAZDiaG9AD8kMGsoO3wfg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=Y8Uf0lj7; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10d::3; helo=sn4pr0501cu005.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSsvV45XYz2xPb;
+	Tue, 17 Nov 2026 02:57:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794844662;
+	cv=none; b=DIp10qLOOLSIjcVV/RfgIL22euIHK3bTXyvrxqRMWk9UNjoycwXm4aQmQtRldc+rf48FODCyA1I3C8A5F86I+wOuKc6y1luEEyjGIwNkhHwwQsQRGbVd6nAFaNOWHHynyMWvw8BTdH2+TClcjI7isovtvHbciS1P0Lfm5rNfjlr/Pa+8Cf8cQcJ4CXNcj0UhVIJrHHHR8is/Tj98yY5t3wydBo4IFjLKlEImi0uFlsBec8ZP5U9z7wERfQ1xwyhHPbzjbuCLmvrAVuZ3RV794ixh4VNy5XgYvQbZzBR4K7ncWKyqsz7zH/TRXzX/qi44HywmQDzdw/h9Qw5K7oiyPw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794844662; c=relaxed/relaxed;
+	bh=StvCoEr29cLHQZIiowY2SNny6e2PtWTpkfdhK1UE2dA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JM2AG+ULrelG1mcuRLeoaOmjG/xpg8/TcWD6wJPjm1Q/xIU8CBo9/1CmgelfqzdPm8DteUJAVs2eKcysknMPkJZOr5TcLtWftrmhzE4mioyR689x2LmOQrSFFlKwITDXbOeQ9l2qpnSl9EWTW5lsuOwyFci1u/oIwrS1SXBd1V5u+oOrBfkpvoxleP9CPtSXHt8eSIWsotURT1mGNkyUvkE3a5S0RMr34m4d4oYrgq1rJJfshhReMsuGNF4BdS7kOVJb0ephV1/CxXYKa+x2ekHlSsOTI2ThezGd3TA2VLRiV17hsu/nVlqKcmn36fac9C5KxFtIUE4n6ZJbdBuYLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AcwgdkEc; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=Y8Uf0lj7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=AcwgdkEc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c10d::3; helo=sn4pr0501cu005.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org)
-Received: from SN4PR0501CU005.outbound.protection.outlook.com (mail-southcentralusazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10d::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSsnY1vxHz2xLm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 02:52:32 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=PEKak6TyMl6Tvwg1ShcSvowmIxp/fCf/7VZm3c8qseFZ87zzI5KNz/tamVE6+6+SXBPh2aQAFvyr4OrukHEi0NqevLzZXNoFu/4tHY/rDMiWTZLsCXVg+4dJQ1jdcM1Q86Gr1q7u3Y+lLUy/hUkDo3GrfXYkloyLwEzIdClCv82hw8L8rtlg3Knh2qDS12PVv1DksPpBJzR8aI0nXHsMUoTexywIyB1fJqed4EuQx9CAtsYkZSK0z7KmtXhcEtFT+skQnkR8AuXII42BL9Eg9Vo3U7e5Qe9bGdzBxR7Qnmx9vEuhgWJuLg9e2kFZ6nJO+MTwS5R2cFRKbOI/5NGYIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ij58lxQsKr14Pm1xSdZM8rMDG5yp2ABGVy2VzjtZGDI=;
- b=OZxJQWEIxb1pNNNlaHLnrxRLQwhEadOpih00U9ISBIn4W6cK/+/W7vbwzAq+J3uafWi/sJFEWWEmzzOxAbw5eLkHA+eLrxaa3UXdttM815ZLUiytwcZCifJBRGonlbdZal+VaKOop1t9Gh5fgo8tokhn/eBlEdFrkkT2422rZ/vEew4Ix3ivmtKIsDKs+WU/Pf71vXYYHtLkAzru1YETd2xLuYOaVE5g1Pp9H2SuZygoNxydzojgqvVcNvbgaAI0NlCjKpAf+Bm5PnSGoxg/slWWGMJ94ze+FDFkf1XXs/TbA/RanD9r+d8Nu4cNbPlNLrURPQCa+WaZ8Ee9jgx1yg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ij58lxQsKr14Pm1xSdZM8rMDG5yp2ABGVy2VzjtZGDI=;
- b=Y8Uf0lj79YhSwDj/YqRhwjUeDhJ1tpnvC9ypZlN95snB6vwTvRjplSAr3zMQG4s9ofeEYLOpnewuO2ZEzAqodz5BzDVSubhYJUZJ9GltabuoO1ukzxRr94pvTXXMDLrfrB1W8qZswuR3Z9jU24Sk0b7OPnh4LBr/Hxu6AR3LhgM=
-Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by SN7PR12MB7787.namprd12.prod.outlook.com (2603:10b6:806:347::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.592.13; Mon, 16 Nov
- 2026 15:52:02 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::ce69:cfae:774d:a65c]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::ce69:cfae:774d:a65c%3]) with mapi id 15.21.0615.013; Mon, 16 Nov 2026
- 15:52:01 +0000
-Message-ID: <980220a5-390e-40a7-bd5c-16a2225bd75b@amd.com>
-Date: Mon, 16 Nov 2026 16:51:50 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5/5] mm: check permissions and bounds for vm_ops->access
-To: "David Hildenbrand (Arm)" <david@kernel.org>,
- Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
- Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>,
- Matthew Auld <matthew.auld@intel.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>, Rik van Riel <riel@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
- Felix Kuehling <Felix.Kuehling@amd.com>, Chris Mason <mason@kernel.org>
-References: <20261112-access_shite-v1-0-988a5c470db2@kernel.org>
- <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
-Content-Language: en-US
-From: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-In-Reply-To: <20261112-access_shite-v1-5-988a5c470db2@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: BN0PR02CA0013.namprd02.prod.outlook.com
- (2603:10b6:408:e4::18) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSsvT0dZXz2xLm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 02:57:40 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 0B272413D2;
+	Mon, 16 Nov 2026 15:57:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 943BA1F000CA;
+	Mon, 16 Nov 2026 15:57:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794844658;
+	bh=StvCoEr29cLHQZIiowY2SNny6e2PtWTpkfdhK1UE2dA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=AcwgdkEcNKmC4TvycTTrQ06o5FwbouO5y/5UACUL/nVvF7Wk47ujEptRMKj3hmytU
+	 lbqgPolwzYTHPSQRaCSUfOjRNlkl3YEwOlmzL1LHX1k8X9+ZPLIFw8GSTcNwYxam84
+	 +Ztiq4OYGr81sSNPRZnOb7pcW3R+2vBhmLTOqZ1k1HKPcIf8TCh8UVZLghvy9IKpeL
+	 CjUpwkquDDcaOGN7yMo42tIfu1bhZuhFy2ije0rZdKRR4eL6jQcORYGBTe7WuKv4EF
+	 jXAe7rF7SLd3UYEskqNp5FMTAhXXfcnm9ASGl4kGFkUcghwP5S6iqrHz7cgzc6lWbA
+	 FeJUhvpyoeXaA==
+Date: Mon, 16 Nov 2026 17:57:32 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Hari Bathini <hbathini@linux.ibm.com>
+Subject: Re: [PATCHv2 2/3] powerpc/execmem: Allocate kprobes insn pages from
+ the modules area on book3s/32
+Message-ID: <avsn7Kn4a8wbB2QH@kernel.org>
+References: <cover.1794572365.git.ritesh.list@gmail.com>
+ <82c4973addebd82923c460cb44221f5b76146afe.1794572365.git.ritesh.list@gmail.com>
+ <avltdwzlh07VZSFC@kernel.org>
+ <f7834f3e-6c43-4b58-806d-fe4c07a93457@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,185 +75,168 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|SN7PR12MB7787:EE_
-X-MS-Office365-Filtering-Correlation-Id: d7e7071f-ce8d-42d9-a252-08df43f98dc2
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|7416014|376014|23010399003|921020|261102123227099003|56012099006|5023799004|11063799006|261009223027099003|261021135927099003|261028144727099003|261022105027099003|261021123027099003|261021121427099003|4143699003|261026121527099003|261102130727099003|261026140227099003|10067099003|22082099003|18002099003|3023799007;
-X-Microsoft-Antispam-Message-Info:
-	3snhvh5FIjUsD2Zs6dx31G/cGmuF/ydKp6cyZL9Q21wT47PH6Hg3p2Bu+I94QZJD0D6Ye8USEV+3aO9UVL+5NSD2ih820YcHi3//6GeiKkKlSV7UKa5GaqXUJ29uaC23oTU7cjqEfi2uF93P7Uqyaktn3XIfXl/69VKDhaZiabZxfrdnoXsN5mbf8xLTKPJAgMczxmoyTT6e9iOUIXd4/36KIF5rTXOPhcig9rPMm1rZlqMhM2S4e4einoFgNy0fsZuIsI/aKvVjV0OCmv3RZuK/7UYsxvrWfZHNwDyYMKhwBt6fERKosj3RRwkG/ehaRYgOf6R8ijAZizMGNmqyIEktN8oeNsUb+LdL/v1lxmhZKXV++i0dODx4yDksGM5x1lIOjTNmTdsfRETexIyNN8v4joXrm05j0ByYGw62RwbZJ4OibALr/pfC4w2b8uveWb9P7GJ8y7mLO6aGUJTZz5uMrXsS9KB2sQcy681z9mgnjn5zd1N0iM3i/1s9/NDeRQGc44Mx+/jfd1iR5Be54OlqIzADsrOW7oPVAc0jw8UuRXBROJGJv1iTmK2H+VKPJZ4xSxLJzem3Tui/x9nOt1WN9mJEz87JxZGF+rwy4aKknG7RgSe7w/VPob1HcJSTHa2WGH9zJw4zzrRKxiH/Id9/25JO5IPnvZEo3RV5ojA=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(23010399003)(921020)(261102123227099003)(56012099006)(5023799004)(11063799006)(261009223027099003)(261021135927099003)(261028144727099003)(261022105027099003)(261021123027099003)(261021121427099003)(4143699003)(261026121527099003)(261102130727099003)(261026140227099003)(10067099003)(22082099003)(18002099003)(3023799007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?NkhwSmRFTWZVYmlWYU5CK3l2QVhLTjJjUi9jY1pEN05vOE1xdHptQSs0R0Y1?=
- =?utf-8?B?dWV1ejExQjF0SEpIeGRTSzdiRUkzMzRYajg4endhdytRRFp5RXVCTTRiTFMr?=
- =?utf-8?B?VVk1SWtwNGNaS2p6TnNjc2tadWJTTUwzSFp0elZvSkh5eFplOFhxS1RwTEpx?=
- =?utf-8?B?akxqZDIvV0RoSGtaR2s4MSs4OWpCbGhEeVRGZUJCR1VqODZBWHdQbnZlcjQv?=
- =?utf-8?B?QW0vSFlsK0hWNERDdlF2SG55N1NkTTQ0RjMzTVZ0VEpabWF6WUVMdWwwNVNF?=
- =?utf-8?B?MVBjdzZhbzhSaUVDY3RHSmR5cVAyYjZCN2lZZWlqNzk5WUNhMjZGbGJMZDJm?=
- =?utf-8?B?bitJRWpXUytSTm81MHpNTWRtcXptOStkbm45WTNMWk9nZ011MEJFRWJmT1pM?=
- =?utf-8?B?bDk4MFA0VEtoWCszMVYxUU5BdVhDMjJvWm9CMFN3aDBwcUFJWUFJVzVMeUZO?=
- =?utf-8?B?SnEweVRrMFdRclV2NGJOK3RpRTZhZTRTY29MaTdHckdPZDhVWWlSMnNGdjBx?=
- =?utf-8?B?clRQaEFub3FkOFdxVUhTY1R1eDkzV2VqV25IVkl5bmF3djZJZWcra0tFNS9Y?=
- =?utf-8?B?T0ZCNk0wWjZ5dFhQSkhCTXNSQkZoWFYvOXpDbzQwaU1PVW5GOXhFc1dVdDJR?=
- =?utf-8?B?ei8zRUVmV3RIMkk0NG5FS0EwdVlvSUJvSGxmT2RHeFQ0Szc2WGEwdCsrZnhG?=
- =?utf-8?B?Sitjb1BKN0R1TzIzNEh6L2E0Qjd2WlRmQ2R6OHpSclZtNGJrL213MEl3azJm?=
- =?utf-8?B?aWpkVUhVdGFUVDByRkp5TWFHT2FmNFh2dnM1dGlueUFJRFA3U0ltbU9mbkgy?=
- =?utf-8?B?Q2xOczRkbUlSWUFzVk5aWWJaYllFNStLajFFcVV2RFlpRWc0TlRoeHJxbHVF?=
- =?utf-8?B?d2VCZ1BOQjhNdmZ1Vnd1SGxMTFdoQVhZNW5hT1hRemhYRWtUYjdvWDd5cFE0?=
- =?utf-8?B?UFVMaWlsaWMzbVU0NGFza21TWmpZMWVtRnoxYnNJaGUraEtFSC9MYmRiR1p6?=
- =?utf-8?B?TDhCeUltUU9mTHVBWUcxVWhYb3d3R2RWRDBxdzFNMTN5NFpFRDhic1hXM1NM?=
- =?utf-8?B?bWEvTitNV2h0TUJkQTJ3UElXck5xNnY0V0MwYlZXcWFXNVgyc2p3T3RNUXZ4?=
- =?utf-8?B?L3dxalp4S3gxTVZEZ0I2cVR0VTkvdGJIazd2WXBLZ0cwUU1WNTdxTmZKWjJz?=
- =?utf-8?B?bTFHWDV1RG1SYkM3akpyN1FjSDUrZHBSclYxSEw4bktNNmg5YWhJWmVuN1Fv?=
- =?utf-8?B?dW5ZNHU0a09vNWkzbktKcUxzalNBR1c5VVRiZGprOXdqenFBdEs0Z3NQS1Rr?=
- =?utf-8?B?L2hjTVZEM3dyQ2l0SE5YQUFJYkk5cXZYRXdudmVYKyt0dnVqeEp4RDVxUlky?=
- =?utf-8?B?YTdvTWxjd3pMNkpnRzA0WFNjeCtsUThhLytyTytxY3NsdzlacGxOT2lneloy?=
- =?utf-8?B?aWNrdGRIZmNJcXdVOVcvbWJRZjc0bysxbkNKamhiMDFXKy9ILy9TaHduVnpG?=
- =?utf-8?B?dTNoTWJDcis3WmFUYkRaOU1DMXNKS1BRb2wyZytTRnBOWmc2UWxVbjUvd0Yx?=
- =?utf-8?B?QkU5WHVnWi9JQ2FyYTZveWo4cVBNdCtCejNCaE0yVnY2WGc5SUE3OVdSQzJw?=
- =?utf-8?B?WGdOaVVoZVFIeFFLOHBtSWwyRk9nNlJTWEp3aTBjckhqY0U3SCtzTDQ2M3FO?=
- =?utf-8?B?NDFmZ2FpcjJQZlVIYVZjd2FUZ1RQdXp6cit3ZzBLSjd5TEttTDlsanVmbWIy?=
- =?utf-8?B?SjVaK0NlYWFLTVppYkF0SlBHMEhzQVRZTTJHTEtXZ3l1ZjNvcjYxWVErSlZa?=
- =?utf-8?B?VGJHQURtVmF3TUJNR1MvekFoV0VmOWU0Tjdpa0gwRGpsVGdJUVNlSWJyNC91?=
- =?utf-8?B?NXpicS9pc08yNGVZaVQ4WEZvVHcvUFdxY2F4VFhzNzFuYkNJcWtpVUZ5Q1J6?=
- =?utf-8?B?eWlTY0JnL3VXSDQwdXk2YUlMd0lHTStPc0VpOFVKNytFa3hxZzJuWC94eVdm?=
- =?utf-8?B?Mm5OOWlQdm9sVFdabXZnRXpmUGh0ZFhEUER1cUhCQVVjckhwcEprOUVjQjFj?=
- =?utf-8?B?SSs5b1V6d0pZQlZqSGh0cEVFUWNUYmprSU5pR2k5RVN3Qyt4NFY1R3IraldD?=
- =?utf-8?B?Z3ZEVFRpTEFJQWRaVFFJQXlZMFV2eHZObnBOOHdEWm1BdVlBMUtHVmZDTG11?=
- =?utf-8?B?NWpmQ3U4VS96U2pGaGJuTEwxcXBHdWRTRTMrS0hwUlVnNWl5Q2FLQ3h6NEcx?=
- =?utf-8?B?OURFMXEyMVNWQTBsTGNWSU5mOENoaTNNOWZIRXhRa0hQNWl2NzI5RHlIbHJO?=
- =?utf-8?Q?C2LaC6UVyr+7P3f9m9?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d7e7071f-ce8d-42d9-a252-08df43f98dc2
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Nov 2026 15:52:01.6662
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: waA/3lS9d9VVasydbCt2S+29Igo+X04osKTot6VuJqgpOPT7mmMt7dRtqR5T0nib
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR12MB7787
-X-Spam-Status: No, score=-22.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f7834f3e-6c43-4b58-806d-fe4c07a93457@kernel.org>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-
-
-On 11/12/26 23:09, David Hildenbrand (Arm) wrote:
-> GUP rejects VM_IO and VM_PFNMAP mappings early. __access_remote_vm() then
-> falls back to vm_ops->access without checking VMA permissions and without
-> limiting the request to the VMA size.
+On Mon, Nov 16, 2026 at 04:11:07PM +0100, Christophe Leroy (CS GROUP) wrote:
+> Hi Mike,
 > 
-> Consequently, /proc/<pid>/mem can bypass protections even without
-> FOLL_FORCE, or cross into another mapping without checking its
-> permissions.
+> Le 15/11/2026 à 09:29, Mike Rapoport a écrit :
+> > On Fri, Nov 13, 2026 at 06:01:37PM +0530, Ritesh Harjani (IBM) wrote:
+> > > On book3s/32, a kprobe on an instruction that can't be emulated and has
+> > > to be single stepped out of line, crashes the kernel. For e.g. with the
+> > > following cmds...
+> > >      ~> echo 9 > /proc/sys/kernel/printk
+> > >      ~> mount -t debugfs debugfs /sys/kernel/debug
+> > >      ~> echo 'p:wx filldir64+0xb8' > /sys/kernel/debug/tracing/kprobe_events
+> > >      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/wx/enable
+> > >      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
+> > > 
+> > > ...we can see the following crash:
+> > >      kernel tried to execute exec-protected page (f101a008) - exploit attempt? (uid: 0)
+> > >      BUG: Unable to handle kernel instruction fetch
+> > >      Faulting instruction address: 0xc02b919c
+> > >      Vector: 400 (Instruction Access) at [f19a9d60]
+> > >          pc: c02b919c: filldir64+0xb8/0x2dc
+> > >          lr: c02b9148: filldir64+0x64/0x2dc
+> > >          sp: f19a9e20
+> > >         msr: 10029032
+> > >        current = 0xc112e900
+> > >          pid   = 102, comm = ls
+> > >      enter ? for help
+> > >      [f19a9e20] c1a8d420 (unreliable)
+> > >      [f19a9e50] c02e4074 dcache_readdir+0x208/0x2a8
+> > >      [f19a9e90] c02b8c5c iterate_dir+0x88/0x1fc
+> > >      [f19a9ec0] c02b96e0 sys_getdents64+0x88/0x198
+> > >      [f19a9f10] c0014400 system_call_exception+0xf8/0x20c
+> > >      [f19a9f30] c00191ac ret_from_syscall+0x0/0x2c
+> > >      ---- Exception: c00 (System Call) at a7596164
+> > >      SP (af802310) is in userspace
+> > > 
+> > > This happens because on book3s/32 the exec permission is per segment
+> > > (256MB), not per page. The page tables have no hardware exec bit, only
+> > > the segment registers have a no-execute (N) bit. mmu_mark_initmem_nx()
+> > > sets N on all the kernel segments except the ones of the modules area.
+> > > So nothing in the vmalloc area can be executed, even when the page is
+> > > mapped with PAGE_KERNEL_ROX or PAGE_KERNEL_EXEC, because _PAGE_EXEC is
+> > > a software only bit there and the segment's N bit is what the MMU
+> > > enforces.
+> > > 
+> > > Before commit 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes
+> > > allocations"), the kprobes insn pages came from module_alloc(). That
+> > > commit moved them to the whole of the vmalloc space, on the grounds
+> > > that kprobes use a breakpoint and don't need to be near the kernel
+> > > text. That is fine on platforms where the exec permission is per page,
+> > > as PAGE_KERNEL_ROX is then enough to make a vmalloc page executable.
+> > > It is not on book3s/32, where the modules area is not only close to
+> > > the kernel text but is also the only page-mapped area whose segment is
+> > > left executable. So the insn pages must keep coming from there.
+> > > 
+> > > Hence, use the modules area for EXECMEM_KPROBES on book3s/32.
+> > Right, I missed that on book3s/32 does vmalloc is not executable and its
+> > protection can't be changed.
+> > 
+> > Could it be that 8xx also need a special treatment for kprobes?
 > 
-> Check VMA permissions before calling ->access and limit each request to
-> the current VMA. Implement similar access permission checks as GUP,
-> however:
->  (1) Reject writes to CoW mappings because the callbacks access backing
->      memory directly and cannot handle CoW.
->  (2) Allow forced writes to non-CoW mappings with VM_MAYWRITE.
+> Yes indeed, not for the same reasons but because 8xx ITLB-miss handler
+> doesn't expect any instruction TLB miss on kernel addresses other than the
+> ones from the module area:
 > 
-> This intentionally breaks forced writes through legacy amdgpu PROT_NONE,
-> MAP_PRIVATE debugger mappings. The workaround in commit fa5239f2af98
-> ("drm/amdgpu: workaround failed COW checks for Thunk VMAs") cleared
-> VM_MAYWRITE to avoid CoW, but debugger writes still succeeded by
-> exploiting the missing access-permission checks fixed here. Reads remain
-> supported. Userspace must use MAP_SHARED instead; ROCm 5.5.0, released
-> in May 2023, already does so.
+> Commit 4afb0be7ccda ("powerpc/8xx: Avoid testing for kernel space in ITLB
+> Miss.")
+> Commit 16a71c045186 ("powerpc/8xx: Preallocate execmem page tables")
+> Commit 33c527522f39 ("powerpc/8xx: Inconditionally use task PGDIR in ITLB
+> misses")
 > 
-> Link: https://github.com/ROCm/ROCT-Thunk-Interface/commit/fea44fab6e84eda52fcf6b419b35600c18f4c022
-> Fixes: 272ddc8b3735 ("proc: don't use FOLL_FORCE for reading cmdline and environment")
-> Cc: stable@vger.kernel.org
-> Cc: Felix Kuehling <Felix.Kuehling@amd.com>
-> Cc: Christian KÃ¶nig <christian.koenig@amd.com>
-> Cc: Simona Vetter <simona@ffwll.ch>
-> Reported-by: Chris Mason <mason@kernel.org>
-> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
-> ---
->  mm/memory.c | 25 +++++++++++++++++++++++--
->  1 file changed, 23 insertions(+), 2 deletions(-)
+> So at the end as MODULES_VADDR/MODULES_END only exist on book3s/32 and 8xx I
+> think when they exist they should be used as follows:
 > 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index d4370c1b331c9..9872f289c1e49 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -7362,6 +7362,7 @@ EXPORT_SYMBOL_GPL(generic_access_phys);
->  static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
->  			      void *buf, int len, unsigned int gup_flags)
->  {
-> +	const bool force = gup_flags & FOLL_FORCE;
->  	void *old_buf = buf;
->  	int write = gup_flags & FOLL_WRITE;
->  
-> @@ -7401,15 +7402,35 @@ static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
->  			if (gup_flags & FOLL_ANON)
->  				break;
->  
-> +			if (write) {
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index b617b69452cd..856f4609c488 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -428,8 +428,13 @@ struct execmem_info __init *execmem_arch_setup(void)
+>  				.fallback_end	= fallback_end,
+>  			},
+>  			[EXECMEM_KPROBES] = {
+> +#ifdef MODULES_VADDR
+> +				.start	= MODULES_VADDR,
+> +				.end	= MODULES_END,
+> +#else
+>  				.start	= VMALLOC_START,
+>  				.end	= VMALLOC_END,
+> +#endif
 
-> +				if (!vma_test(vma, VMA_MAYWRITE_BIT))
-> +					break;
-> +				if (!vma_test(vma, VMA_WRITE_BIT) && !force)
-> +					break;
+We already have #ifdef MODULES_VADDR a few lines above, I think the
+assignment of kprobes_start and kprobes_end could go there instead of if
+(IS_ENABLED(CONFIG_PPC_BOOK3S_32)).
 
-I might be wrong but IIRC that was brought up before and was rejected.
-
-We even had a bug report for AMDGPU from a security researcher claiming that you could circumvent security checks using vma->vm_ops->access() which turned out to be complete nonsense after spending tons of time investigating it.
-
-The technical background is that there are applications which runtime generate shader code which is then protected by making the VMA read only. But the debugger is still allowed to write to it using vma->vm_ops->access().
-
-That behavior is ok because drivers specific and drivers have checks in place if their backing store is read only or not.
-
-For an example see this code here: https://elixir.bootlin.com/linux/v7.3.1/source/drivers/gpu/drm/i915/gem/i915_gem_ttm.c#L1163
-
-So if you do this here you might break intentional uAPI.
-
-> +				/*
-> +				 * In contrast to GUP, we historically allowed
-> +				 * FOLL_FORCE write access to non-CoW mappings.
-> +				 * However, we must always reject CoW mappings
-> +				 * as we cannot CoW here.
-> +				 */
-> +				if (vma_is_cow_mapping(vma))
-> +					break;
-> +			} else if (!vma_test(vma, VMA_READ_BIT)) {
-> +				if (!force || !vma_test(vma, VMA_MAYREAD_BIT))
-> +					break;
-> +			}
-> +
->  			/*
->  			 * Check if this is a VM_IO | VM_PFNMAP VMA, which
->  			 * we can access using slightly different code.
->  			 */
->  			bytes = 0;
->  #ifdef CONFIG_HAVE_IOREMAP_PROT
-> -			if (vma->vm_ops && vma->vm_ops->access)
-> +			if (vma->vm_ops && vma->vm_ops->access) {
-> +				bytes = min_t(unsigned long, len, vma->vm_end - addr);
-
-Well that check looks totally reasonable to me.
-
-Regards,
-Christian.
-
->  				bytes = vma->vm_ops->access(vma, addr, buf,
-> -							    len, write);
-> +							    bytes, write);
-> +			}
->  #endif
->  			if (bytes <= 0)
->  				break;
+>  				.pgprot	= kprobes_prot,
+>  				.alignment = 1,
+>  			},
+> 
+> 
+> > 
+> > > Fixes: 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes allocations")
+> > > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> > 
+> > Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> > 
+> > > ---
+> > >   arch/powerpc/mm/mem.c | 10 ++++++++--
+> > >   1 file changed, 8 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> > > index 77b63b52d8f2..ae1bc7359353 100644
+> > > --- a/arch/powerpc/mm/mem.c
+> > > +++ b/arch/powerpc/mm/mem.c
+> > > @@ -391,6 +391,7 @@ struct execmem_info __init *execmem_arch_setup(void)
+> > >   	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+> > >   	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+> > >   	unsigned long fallback_start = 0, fallback_end = 0;
+> > > +	unsigned long kprobes_start = VMALLOC_START, kprobes_end = VMALLOC_END;
+> > >   	unsigned long start, end;
+> > > 
+> > >   	/*
+> > > @@ -410,6 +411,11 @@ struct execmem_info __init *execmem_arch_setup(void)
+> > >   	}
+> > > 
+> > >   	end = MODULES_END;
+> > > +
+> > > +	if (IS_ENABLED(CONFIG_PPC_BOOK3S_32)) {
+> > > +		kprobes_start = MODULES_VADDR;
+> > > +		kprobes_end = MODULES_END;
+> > > +	}
+> > >   #else
+> > >   	start = VMALLOC_START;
+> > >   	end = VMALLOC_END;
+> > > @@ -428,8 +434,8 @@ struct execmem_info __init *execmem_arch_setup(void)
+> > >   				.fallback_end	= fallback_end,
+> > >   			},
+> > >   			[EXECMEM_KPROBES] = {
+> > > -				.start	= VMALLOC_START,
+> > > -				.end	= VMALLOC_END,
+> > > +				.start	= kprobes_start,
+> > > +				.end	= kprobes_end,
+> > >   				.pgprot	= kprobes_prot,
+> > >   				.alignment = 1,
+> > >   			},
+> > > --
+> > > 2.39.5
+> > > 
+> > > 
+> > 
 > 
 
+-- 
+Sincerely yours,
+Mike.
 
