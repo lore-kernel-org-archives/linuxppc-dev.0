@@ -1,72 +1,72 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FA9B606A323
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 07:09:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BC52B606A330
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Nov 2026 07:13:56 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Of4lsz3c
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSf9n62bgz2xnn;
-	Mon, 16 Nov 2026 18:09:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4190:8020::34"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794812957;
-	cv=none; b=SYi+IrzxE9wSYDpkCmIX6sllJ1iMlkdn8+puX8gmpUs3Joz4pIXr9WKXhoV/zWVHjY21piC8F36eygnz+Tk+9ma8jdHL5j0vQYYva776NSjuOyQMWwVnaESIT5YZ5Qhqe8BLgts+X9q6M6dW0Vh6nDCWz/Qd7Zrca0+KugiTdn4NsI52QGa2g0QX34U1j1E7WpfeRv/pAWqu3/QxI+aIXw7K5f2UHpzBRXSErIHBg8dM6ooWMQZUTdlo+A404rGPWODTb6ujRwsY6wK9Kr5YqX591eHSUd8bJV5L7F0ogyCiJazvy6xRKYaLiNuGyIV6wxzo19emtDQB1qPYezX/MA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jSfH73TBqz2y2f;
+	Mon, 16 Nov 2026 18:13:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::4a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794813235;
+	cv=none; b=d1E9mxbcU6dah30F1WVvqV1cMPCVraIDFQ94TSFPElo/R1pcLZ0X63tO2FX2UfkXIOCD9Tqev+2kluOyeoFNji4/QI2dtD0UxaqKqh4sJB7qIV4ei9HWk9AZ/XRBNoS+TK0X3PmhL51q4qiZJVqSUZ580awt72doEZwEKIkjMO4Side4fWsczQHBnpcctxZrEkJsaeFnKAaY4tlmJr3fV9rqjkXhGwbC957nCLPtWHR9C6fn36fBhQf/5fABKy5jzs2RmaNE23rqWb5AQV3XxYExP8h6kEgsX/ITiJT2vRZiG/blAsHJCO+CfknxASOoiAp/Dmilgy0kLETtLJwl5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794812957; c=relaxed/relaxed;
-	bh=1mHmG9IJHtIMld4ZeRanDjKIMZUQxx8f0ptnWkrCv+U=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=HHixnk1Fv/NrKdmVvtmQs40TGYnU0TYYnEbfVFrqHfwY005cNrfP5PdM6hqckfGO+exWQkeQe9laBs3ODDw5QIpb4t0eqQc1CFJpf3MJ7Pk0VJW0H3KFxnjVe/ErLYw2mZGUOVwUjr5RfXh1z7Xfw/jhYFsm+cMQAvk3DwOsiVd0KwT0j8zzPk9nmK+GdbgvhLxmZaTSlmHJfH+ZRchwDzoZ1CzxLUXnPTwU4Iv1Ao6gnqqOJzktgC1qRS5WqAFGtaClJAY+kW3HmvGsfkmaFFMR3En0i5tx6AFIImVTdQiKztvgUU6b7jtRmZL9hsPQkm7MJ2YU0DqHHY8Z6G2Jfg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk; spf=none (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org) smtp.mailfrom=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jSf9m3tpQz2xjv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 18:09:16 +1100 (AEDT)
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 39D8A92009C; Mon, 16 Nov 2026 08:09:04 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 376CC92009B;
-	Mon, 16 Nov 2026 07:09:04 +0000 (GMT)
-Date: Mon, 16 Nov 2026 07:09:04 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@orcam.me.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: David Laight <david.laight.linux@gmail.com>, 
-    Christian Brauner <brauner@kernel.org>, 
-    Geert Uytterhoeven <geert@linux-m68k.org>, linux-fsdevel@vger.kernel.org, 
-    Jann Horn <jannh@google.com>, Josef Bacik <josef@toxicpanda.com>, 
-    Chris Mason <mason@kernel.org>, Jeff Layton <jlayton@kernel.org>, 
-    NeilBrown <neil@brown.name>, Eric Dumazet <edumazet@kernel.org>, 
-    Thomas Gleixner <tglx@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
-    Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@lst.de>, 
-    Greg Kroah-Hartman <gregkh@suse.de>, 
-    Joel Granados <joel.granados@kernel.org>, Kees Cook <kees@kernel.org>, 
-    Jan Kara <jack@suse.cz>, Jan Kara <jack@suse.com>, 
-    linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, 
-    linux-acpi@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-    linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org, 
-    linux-um@lists.infradead.org, linux-wireless@vger.kernel.org, 
-    linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, 
-    ntfs3@lists.linux.dev, platform-driver-x86@vger.kernel.org, 
-    coreteam@netfilter.org, kexec@lists.infradead.org, 
-    linux-pci@vger.kernel.org, linux-sound@vger.kernel.org, 
-    netfilter-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, 
-    ibm-acpi-devel@lists.sourceforge.net, jfs-discussion@lists.sourceforge.net, 
-    linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-    linux-cifs@vger.kernel.org, linux-fbdev@vger.kernel.org, 
-    linux-hwmon@vger.kernel.org, linux-mm@kvack.org, linux-sh@vger.kernel.org, 
-    linux-usb@vger.kernel.org, samba-technical@lists.samba.org, 
-    sparclinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-    linux-doc@vger.kernel.org, linux-serial@vger.kernel.org, 
-    linux-atm-general@lists.sourceforge.net, Takashi Iwai <tiwai@suse.de>, 
-    linux-input@vger.kernel.org, linux-raid@vger.kernel.org, 
-    linux-ext4@vger.kernel.org, linux-modules@vger.kernel.org, 
-    linux-debuggers@vger.kernel.org, Chuck Lever <cel@kernel.org>
-Subject: Re: [PATCH RESEND v2 14/23] proc: let procfs copy in writes before
- pinning the entry
-In-Reply-To: <CAHk-=whsA3tKcUCBJDj_vmJ11rVGT9rivgnKjGRgMO21CPmCxg@mail.gmail.com>
-Message-ID: <alpine.DEB.2.21.2611160657470.17804@angie.orcam.me.uk>
-References: <20261104-work-procfs-core-v2-14-76ace653a773@kernel.org> <CAMuHMdVfakapgBK6TBhO1iWX8qzvLDk8jzRS=t2MVa5G=MCUeg@mail.gmail.com> <20261107-akteur-gemieden-eckdaten-21304d085e35@brauner> <20261108185953.28054fb3@pumpkin>
- <alpine.DEB.2.21.2611090504170.17804@angie.orcam.me.uk> <20261109214558.0d9d5228@pumpkin> <CAHk-=whsA3tKcUCBJDj_vmJ11rVGT9rivgnKjGRgMO21CPmCxg@mail.gmail.com>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+	t=1794813235; c=relaxed/relaxed;
+	bh=OkgfjJfKGIx3ULtuBKyWwXSAvJnNVfF7lRvSAV7abaM=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=C5nCXv+vl46zpJzYv8Orq3brKkjb+kbEtsjQJj53hgJGxeF95wDI440dNKkCjLLzJYWP80zPTzMhc7TRik4i5lamBwe2BPtkrx+R3bb821swvqJ5QLk+tczQs1YHdgRorfjxRfBK5qwpZh/wTYk3bBGKNFc+8L5cDZJVDs0g3bsikYLqA7IwJSHhs17VLp2I1Escf02D/SLs5yWbgTLr99hhrBAdn7LoW0FL9Xm5qQ9iFYsEc54GglOOBb72dQnut4XvOxHR74G8MMXnjFvoqXc1QkTWvIDKWvzv5DoRgA8zS/1H7qTwGVmIMCaiYp6v0Kq24acaRnjDDXCBKwARaA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Of4lsz3c; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::4a; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Of4lsz3c;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::4a; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta0.migadu.com (out-74.mta0.migadu.com [IPv6:2001:41d0:1004:224b::4a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jSfH42vnnz2xnn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Nov 2026 18:13:50 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=m/Ac+mzRFeJIEx6vjbGzkyHImn4ediK/dODwPh9sWhI=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1794813212; v=1; x=1795418012;
+ b=Of4lsz3cWS4D1+2RzZ0YuO2qq8m9vzH9D4ohHHkX1LUolYMmrGPtNmcDVOW3nyylod4IMiyI
+ PbLC48TuoyBZYroXhjPdCb1y8qQ0SEc0mEPaWtwk/mgKDGHXkctwTMqGsGoKStIaPsfCfbLnLfg
+ tNu4JyqvgfNjbpk0aL2n5VwY=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id afbccf1c33743f40;
+	Mon, 16 Nov 2026 07:13:32 +0000
+X-Mizu-Trace-ID: afbccf1c33743f40
+X-Migadu-Flow: FLOW_OUT
+From: Hao Ge <hao.ge@linux.dev>
+To: Suren Baghdasaryan <surenb@google.com>,
+	Uladzislau Rezki <urezki@gmail.com>,
+	Dev Jain <dev.jain@arm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Dennis Zhou <dennis@kernel.org>,
+	Tejun Heo <tj@kernel.org>,
+	Christoph Lameter <cl@gentwo.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	kasan-dev@googlegroups.com,
+	linux-mm@kvack.org,
+	Hao Ge <hao.ge@linux.dev>
+Subject: [PATCH v5 00/11] mm/vmalloc: fix up vmap error handling
+Date: Mon, 16 Nov 2026 15:13:14 +0800
+Message-Id: <20261116071325.263682-1-hao.ge@linux.dev>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,28 +80,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, 9 Nov 2026, Linus Torvalds wrote:
+__vmap_pages_range_noflush() and friends can install some PTEs before
+failing and leave them mapped, and the kernel callers do not agree on
+who cleans them up. pcpu_map_pages() and kmsan_ioremap_page_range()
+roll back what they mapped before the failure, while
+vm_module_tags_populate() and the __GFP_NOFAIL retry loop in
+__vmalloc_area_node() rely on the mapping functions cleaning up and
+do not call anything like vunmap_range() themselves. When the same
+range is mapped again, the attempt hits the leftovers and fails with
+a warning in vmap_pages_pte_range(). A leftover huge pmd is worse.
+During the retry, vmap_try_huge_pmd() calls pmd_free_pte_page() on
+it, and the x86 implementation cannot tell a leaf entry from a page
+table and frees the mapped page.
 
-> > Just that the cast would have to be:
-> >         u8 *foo = (u8 *)bar;
-> > where 'bar' is 'char *', and I don't think you need a cast there when
-> > char is unsigned.
-> 
-> .. and just to clarify: 'char' is always unsigned in the kernel on all
-> architectures since commit 3bc753c06dd0 ("kbuild: treat char as always
-> unsigned") back four years ago...
+After discussing with Suren and Ulad [1], we move the rollback into
+the mapping functions. A failed vmap leaves nothing mapped, and the
+callers no longer clean up after it.
 
- Thanks, yes, that's the piece of the context I was missing.  I've since
-actually come across this commit while investigating which Linux ports 
-have plain `char' signed in the psABI (MIPS for sure).
+Patch 1 gives __vunmap_range_noflush() a can_resched argument, the
+failure paths can be reached with a non-blocking gfp mask and the
+undo must not schedule there. Patch 2 is the KMSAN part, the shadow
+and the origin of a range are mapped by two separate calls, so the
+rollback there has to cover both. Patches 3 and 4 reject an unaligned
+range at the entries of vmap_page_range() and __vunmap_range_noflush().
+Patch 5 only flushes the cache once the mapping succeeded. Patches 6
+to 9 add the rollback to the mapping functions, one entry per patch,
+vmap_page_range(), __vmap_pages_range_noflush(), the KMSAN metadata
+and the batched vmap() path. Patches 10 and 11 drop the powerpc and
+percpu cleanups that are not needed anymore.
 
-  Maciej
+Changes since v4:
+- new patch 1, the unmap paths can run under a non-blocking gfp mask
+  and must skip cond_resched(); it carries a Fixes: tag so it travels
+  to stable together with patch 2
+- drop v4 patch 2, the KMSAN-disabled vunmap skip. !kmsan_enabled
+  does not mean no metadata was installed, KMSAN_WARN_ON() can clear
+  the flag at runtime, on Suren's review
+- v4 patch 3 now warns and returns -EINVAL at vmap_page_range(),
+  instead of BUG_ON()ing inside vmap_range_noflush()
+- drop v4 patch 4, the walk check. No in-tree caller passes an
+  unaligned range to vmap_pages_range_noflush_walk(), the vmap
+  allocator guarantees the alignment for vmalloc()/vmap()/
+  vm_map_ram()
+- v4 patch 5 warns and bails out instead of BUG_ON(), following
+  Ulad's review of v4
+- v4 patch 7 is split into patches 6 to 9, one mapping entry per
+  patch. The batched vmap() path is covered now too, on Suren's
+  request
+
+[1] https://lore.kernel.org/all/20260915070001.113559-3-hao.ge@linux.dev/
+
+v4 link: https://lore.kernel.org/all/20261110112546.261415-1-hao.ge@linux.dev/
+v3 link: https://lore.kernel.org/all/20261026080329.140244-1-hao.ge@linux.dev/
+v2 link: https://lore.kernel.org/all/20261019054531.87652-1-hao.ge@linux.dev/
+v1 link: https://lore.kernel.org/all/20261009063619.112313-1-hao.ge@linux.dev/
+
+Hao Ge (11):
+  mm/vmalloc: skip cond_resched() in the vmap unmap paths when atomic
+  mm/kmsan: undo the shadow mapping when the origin mapping fails
+  mm/vmalloc: reject an unaligned range in vmap_page_range()
+  mm/vmalloc: reject an unaligned range in __vunmap_range_noflush()
+  mm/vmalloc: only flush the cache after the vmap succeeded
+  mm/vmalloc: undo what vmap_page_range() mapped on failure
+  mm/vmalloc: undo what __vmap_pages_range_noflush() mapped on failure
+  mm/vmalloc: drop the KMSAN metadata in vmap_pages_range_noflush() on
+    failure
+  mm/vmalloc: undo what vmap_pages_range_batched() mapped on failure
+  powerpc: drop redundant unmaps of failed vmap mappings
+  mm/percpu: stop unmapping the CPU that failed to map
+
+ arch/powerpc/kernel/isa-bridge.c |   5 +-
+ arch/powerpc/kernel/pci_64.c     |   4 +-
+ include/linux/kmsan.h            |   8 +-
+ mm/kmsan/hooks.c                 |  18 ++--
+ mm/kmsan/shadow.c                |   9 +-
+ mm/percpu-vm.c                   |   5 +-
+ mm/vmalloc.c                     | 154 +++++++++++++++++++++++--------
+ mm/vmalloc.h                     |   6 +-
+ 8 files changed, 151 insertions(+), 58 deletions(-)
+
+-- 
+2.25.1
+
 
