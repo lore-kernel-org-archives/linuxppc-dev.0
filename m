@@ -2,82 +2,85 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8F1C2606A323
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 13:17:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3770F606A880
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 13:28:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EDXlCB/v
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=D+tbP/xp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTQHZ4byKz2yTH;
-	Wed, 18 Nov 2026 00:16:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794921418;
-	cv=none; b=Tj+Iuuona4lQc2IeFJXtmRAN/OE+lMX0iaGm7tKydrlDCZeUFQZQmaJCAcTjcKw/MUXWCpdJgWXmduXzOQoZ/PM2wWpwAnzorxmZrYF5espJZcSPn8j5TWwZ7dX9e9w89ZCrofxRAy1dqewxFPbHyoBaNPn8jUE5t903Xa+ib4dn2QFJzoQFjmIxW2lblfeEX1dtdDXJyS9u2HGO0CrpS4jR5XpzAKsIpBH/jsNXiOG1kw7fB4NKa7asIa8jLmOFwN3j9WR6oQbNxvmmu7XbtokwRGiVf5kxnpEOSux1I3nxihmnBLUUGWSxM6Ld2p6VYgQ8qPjBOHzZE5Nt1juYQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTQXc2X61z2xnZ;
+	Wed, 18 Nov 2026 00:28:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794922096;
+	cv=none; b=i/IG/oUquS0UsSKQLSWeWROuRaZQ0e6cffyou/xRseiU1L6xm685guQWHQQ1I9/1nK7XDjv6Au1FaEAE7UBfQlCQsYcCkhVgmPU9XfW1lny2/r2aEEW05NtcgrwMX8QPXyGC8cwqiEmKe3JM7VbeqlOHGPlqiCuLBTDHgWA/IlLsSId61eXHQO1rpb/NyPf+EjxJ2ximTQIz/FwHIHcRm2XsrB5RWa6BShe2c1xNqoGz0YmK4s4xKUa2v2VuxNG9DWIp4ZdCntFkWdD/5UjY7vJzUT1VG/fFUCN/dlCGA2IigQQXPMP9pkxF0SAjlhF9J16WtZpSo4jUNqzKSdoOCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794921418; c=relaxed/relaxed;
-	bh=GQMWrtw3uOcaW7xMHmc+IIvKr/pLDmUiEvProqVRDWY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JIeXvoLmVG5e3aOfKyrFs/qQkDYT0fQpIJEXfmz5Z/EYFBqC+kOUM5NOAEHtkamqp8Q0jawPH6zG1/urcs0uVbhT0JueXvTEA2oEfOYj5tylvr3V+QcUfa9v2WHDu5JWpDX93lr/wVansvjz9ER7GXQZDxuDueIrJsrOGrhDC3IMU1IkmLcfiFhRP0cXI0CWA9JbsrgO3K0HyEr8YuybGDNujfp/SOwUEl+0wIcOqevaDwgM6fsoEYCJWaItqgvDK6xQPfcXalZYTj4K86QSMnxxsvHuYoFVaLlVLc8sbEIRd47fYwbOf+ieUb0VAl9aFP25mvqrx3TdMI9lkE+uxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EDXlCB/v; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794922096; c=relaxed/relaxed;
+	bh=HmHcMuLKVgfh8wwUH/FjH41O+keWBBkDEmkWD7YDblc=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=Ile0xWBlx753IoloxUKxVTMXYKaoazfuJurI1wcvOHB+NQhsubVlXTM3X9HPGyAbi6QqJouUHrpznwjYBrZPmkHkVgbJFVvIy6TLw1/rwaKHoykty+Jy0pXrS9Lj11mB+XMGbTfWVktLihSoiMkmWVplxCMFLtL3z+OcHtVzHP/jywRJVGgpqun6uSDkDrMws8U6KQzzLSnebXbppn+41ry79KAN6Jf66nRwRsNn9Ts4/BPSEeQ89PjTh+swTuFnnU+HRSeu8e1Gmw1jITUyZX0X4wqchEIybiCsisYcEZHzzs6TpaxJLAEOfrYCE698fiB+XqmMzm5XyLaVEIOXXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=D+tbP/xp; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EDXlCB/v;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=D+tbP/xp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132d.google.com (mail-dy1-x132d.google.com [IPv6:2607:f8b0:4864:20::132d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTQHY4rTgz2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 00:16:57 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHBwAGF2290022;
-	Tue, 17 Nov 2026 13:16:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=GQMWrtw3uOcaW7xMH
-	mc+IIvKr/pLDmUiEvProqVRDWY=; b=EDXlCB/vWSqnSr4S3TmpEYzsZiC9gnGtN
-	Cx9HF5kXrbm9WeKTyb6yON0QAnYBzd8Srzks6L5skStC8WedXls3cWspmbNK1O5A
-	1WZcxmyjhuqva6e0Yyrh5P00621DFBoZPgoRrGySVUGDITv6SB4YlIuK9RIF/nFa
-	YiNyg2Wg3N00p4Yc3AKamxh2ukBddNNMn6nEY9muCFpYJTEslFUuFbHZYhJ0Xrc1
-	g6Kqjk5nZS7nfuEUaeLN7MbqJZI+eaUCcyfm83PsbgV45sN3sm5+Rok4qhbjVk7O
-	jX3Tsf9yDA0pNhcbceoVo0nDoBonzVrgTZlOC5EjOMNlZJ0SNE2qQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hxfc53d7q-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 13:16:46 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHCJmAL3918134;
-	Tue, 17 Nov 2026 13:16:45 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hy2bvdyq3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 13:16:45 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AHDGbH051708348
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 17 Nov 2026 13:16:38 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D2D9F2004B;
-	Tue, 17 Nov 2026 13:16:37 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 21EC72004F;
-	Tue, 17 Nov 2026 13:16:33 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.217.181])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 17 Nov 2026 13:16:32 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de
-Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
-        msuchanek@suse.de, ritesh.list@gmail.com, harshpb@linux.ibm.com,
-        gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com,
-        nnmlinux@linux.ibm.com, mkchauras@gmail.com
-Subject: [PATCH v4 3/3] KVM: PPC: Hard disable interrupts before guest entry
-Date: Tue, 17 Nov 2026 18:46:12 +0530
-Message-ID: <20261117131612.707038-4-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261117131612.707038-1-sshegde@linux.ibm.com>
-References: <20261117131612.707038-1-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTQXZ6RRqz2xlY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 00:28:14 +1100 (AEDT)
+Received: by mail-dy1-x132d.google.com with SMTP id 5a478bee46e88-33fb4680717so11730026eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 05:28:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794922092; x=1795526892; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=HmHcMuLKVgfh8wwUH/FjH41O+keWBBkDEmkWD7YDblc=;
+        b=D+tbP/xpyznCbDpWQK5z7ifyuukjEZh/Tv6CoWeJMy8dYAPUN0LAwitPjJubOuH9bm
+         eTKPrgcDBSWLR2cbL3cLR6kXem1xYjCbfqhAH7SBI7qMNpwx5JBF3roCvZu9K2q5RtD3
+         GEXaBE3M+TA0qvbM4zhkqms6Fm1s5C+QShcxdwkGBpJLvtlibS1qlGgIKhVHi47FFfLp
+         xtp7QFxFpD7elSKCmziwhSCvOY6UkZMKaMQ0BJCtX/gs5lNDzvLppMeBdNAaDWKmb6B1
+         UPiGlsDP03nUTeBBIHB9tbp9AP30xwJDE69b3pk2LF2GnQNZcLpBc04CYDUvM+Jf3bN2
+         g26g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794922092; x=1795526892;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=HmHcMuLKVgfh8wwUH/FjH41O+keWBBkDEmkWD7YDblc=;
+        b=sLsFUKXSpdSE4tN1f5yQBIxPF35v2epco2bKa4JL7mYbLSjj8r4+NcoYCYZyMsLozJ
+         aYvy6k/xACZQYhfMRRYCAYcbu35MIu/n9YZZJi8+hvH1KRbIF2B0o4ymiDEFvI/ryYBx
+         g+M6OKv5OLKndpRRVZWUGO16Ntov/FI6eqb7uAG9h0CagWXUP5InQX4NtluwpPRfJeEz
+         PoTKHwZP7h46v388IX2LgGPf6dSbm+zRCNwZbYMlOQxGlKAaZRNwbOD6e0pMqhiF7bQg
+         mKXKZPifP++VdV/5RdMpEaG4sPPNXYOXI+3SWxYxovPWT/ZRfhVvDGUgYGj/DJB8xnSG
+         i1mQ==
+X-Gm-Message-State: APuU4Z9wNA6768zDLUrUKgv4jbvKZkhiysJm3Rdk6c5Kb0Qs0kSYYW47
+	uJjtxNwyg/+dk7fQk6TXUFaCzUsvpwpeiznKEpC+iSaFP6HLVzr7aqU0
+X-Gm-Gg: AZFdTZfxUBHIZAKUUj/0SLn/nEJ2XuQnupL+cYFqoI/m1jPBwyeo0i4xPkdYBrMIZW1
+	uM4xlnPqODiwZSjgTI348I0aRsNGzz9yTQhi7FL45wIaZtPL21l9aeTRHAFMt9IKRdFpbRlkRvQ
+	tAlH+WQO6fy3go/BRdzCnmc12ltBwOG1E3lPnMnf+B9wLXTMSYFSz1E/L27gliZScNnY+BsfphT
+	YqjJrdDhOhQUtsf/ouz5IXCtUhvLscDtlquqWFDDs6ysFihKv06C3s5EJZJ4C7lBlzX2Znd/lux
+	qLJSrSbydUR34KreeK8F1Wh5y2Lm77AxK0zIbsyAX5l0B3jI4+AFqtx5rbiI18Slg9EueYGk6DV
+	nyORF3eARUNodfvhKdC9Xyn9buMKPaXbI6je08rO3Evqa8/LeSpjToUTfhW2N2v6CXKqQ1M8mvq
+	T+VvCNSRRqMo2SL7WNo7UXRHJeLdbHY2ldQBY/tn1RkXq6j/h8hWt3/TTGYZLr1WsPMLZ3v+G6n
+	KHCDrrLe2FqNup5DgtwOhOvLtHi81uEXi6kX9LLdoNBsiwu8XfVEWPDIhhKAs0nE/NY0InKnQwm
+	qAl2I+ef41ng/wx3pl6viwgiGBA=
+X-Received: by 2002:a05:7301:d185:b0:370:1652:5ff4 with SMTP id 5a478bee46e88-37966387cb3mr12902348eec.6.1794922091687;
+        Tue, 17 Nov 2026 05:28:11 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-37956bb0c40sm46077098eec.28.2026.11.17.05.28.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Nov 2026 05:28:10 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Mike Rapoport <rppt@kernel.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
+Subject: Re: [PATCHv2 2/3] powerpc/execmem: Allocate kprobes insn pages from the modules area on book3s/32
+In-Reply-To: <avsn7Kn4a8wbB2QH@kernel.org>
+Date: Tue, 17 Nov 2026 18:03:37 +0530
+Message-ID: <zev77i3i.ritesh.list@gmail.com>
+References: <cover.1794572365.git.ritesh.list@gmail.com> <82c4973addebd82923c460cb44221f5b76146afe.1794572365.git.ritesh.list@gmail.com> <avltdwzlh07VZSFC@kernel.org> <f7834f3e-6c43-4b58-806d-fe4c07a93457@kernel.org> <avsn7Kn4a8wbB2QH@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,136 +93,235 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDA1MSBTYWx0ZWRfX3djQtrP3be7U
- DclnT4oBJdFM8XYMaE8ckLXbCilVmjZltUwjjsit8QbCxXNfOVjj90kG2j2cIQG4r7UvLMmfdkv
- CQAJBmTXFgJjQgFiFQie0Sjr3viJJ/o=
-X-Authority-Analysis: v=2.4 cv=Fu6QbGrq c=1 sm=1 tr=0 ts=6afc53be cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
- a=SkEQ8EbvhdlHpgZ8pF0A:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDA1MSBTYWx0ZWRfX0Jdzwqxuwggi
- 4GJBRrC3rRhnAivX3nqrZHI/sSgztQvZbwd9Xfn0h/XlaRzWYvvBrLum38/bvD4D4QYprVPFGDZ
- 3PU97xxRc71yqnt0P3/C7UmXwEpp9l06edQaReyDazXG47wf4+gg9x6lT/N4qyMApLxIoLMqCtT
- KLTKyh1XaoCmIGzpQDd05gjGjhWD9SNqsRh2gLiGkcTF0gJhqLPCMgYbJVexHKLCkfYlEeGVab/
- OFC2zpT/YM5cXXyxo4MNs8IYdu35JEkDb63gIcNQxdLQQT2N0js6nfYiUvPTjNe5pS8sq/2PdYw
- 3gHhkJz1Qj8GlhJL+J2yEWpd2mcpLt+APZNZqj5cyIl5GhPvke1ZtRHklyVVFdWdAVuddvlhtzY
- BYUe3fWZjIsM1jEYVOvf6lmT+FCkJ/YmfkrWRTETtImfZyHn5JjIoSmJPN1fB1i8fStbdjHK/aH
- jk9WgJqM/wS8/xW3+xw==
-X-Proofpoint-GUID: CmRTWixKgxeJ8PtTpJRsXN7WQckI-dzI
-X-Proofpoint-ORIG-GUID: nH3wojI4PGTzPYURodqK6hUp2SQ4UQNS
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-17_02,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 lowpriorityscore=0 adultscore=0 bulkscore=0
- impostorscore=0 spamscore=0 suspectscore=0 phishscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611170051
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-After applying preempt disable patch, i.e PATCH 2/3, Christian reported
-a subsequent warning stopping his board to boot properly.
+Mike Rapoport <rppt@kernel.org> writes:
 
-WARNING: at .kvmppc_fix_ee_before_entry+0x10/0x28, CPU#0: qemu-system-ppc/4667
-CPU: 0 UID: 1000 PID: 4667 Comm: qemu-system-ppc Tainted: G        W           7.3.0-rc4-2-powerpc64-smp #1 PREEMPT
-Tainted: [W]=WARN
-Hardware name: varisys,CYRUS5040 e5500 0x80240012 CoreNet Generic
-NIP [c00000000005dc3c] .kvmppc_fix_ee_before_entry+0x10/0x28
-LR [c00000000005f298] .kvmppc_handle_exit+0x5b4/0x5e8
-Call Trace:
-[c000000086587780] [c00000000005ee10] .kvmppc_handle_exit+0x12c/0x5e8 (unreliable)
-[c000000086587830] [c000000000062068] .kvmppc_resume_host+0xb8/0x10c
+> On Mon, Nov 16, 2026 at 04:11:07PM +0100, Christophe Leroy (CS GROUP) wrote:
+>> Hi Mike,
+>> 
+>> Le 15/11/2026 à 09:29, Mike Rapoport a écrit :
+>> > On Fri, Nov 13, 2026 at 06:01:37PM +0530, Ritesh Harjani (IBM) wrote:
+>> > > On book3s/32, a kprobe on an instruction that can't be emulated and has
+>> > > to be single stepped out of line, crashes the kernel. For e.g. with the
+>> > > following cmds...
+>> > >      ~> echo 9 > /proc/sys/kernel/printk
+>> > >      ~> mount -t debugfs debugfs /sys/kernel/debug
+>> > >      ~> echo 'p:wx filldir64+0xb8' > /sys/kernel/debug/tracing/kprobe_events
+>> > >      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/wx/enable
+>> > >      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
+>> > > 
+>> > > ...we can see the following crash:
+>> > >      kernel tried to execute exec-protected page (f101a008) - exploit attempt? (uid: 0)
+>> > >      BUG: Unable to handle kernel instruction fetch
+>> > >      Faulting instruction address: 0xc02b919c
+>> > >      Vector: 400 (Instruction Access) at [f19a9d60]
+>> > >          pc: c02b919c: filldir64+0xb8/0x2dc
+>> > >          lr: c02b9148: filldir64+0x64/0x2dc
+>> > >          sp: f19a9e20
+>> > >         msr: 10029032
+>> > >        current = 0xc112e900
+>> > >          pid   = 102, comm = ls
+>> > >      enter ? for help
+>> > >      [f19a9e20] c1a8d420 (unreliable)
+>> > >      [f19a9e50] c02e4074 dcache_readdir+0x208/0x2a8
+>> > >      [f19a9e90] c02b8c5c iterate_dir+0x88/0x1fc
+>> > >      [f19a9ec0] c02b96e0 sys_getdents64+0x88/0x198
+>> > >      [f19a9f10] c0014400 system_call_exception+0xf8/0x20c
+>> > >      [f19a9f30] c00191ac ret_from_syscall+0x0/0x2c
+>> > >      ---- Exception: c00 (System Call) at a7596164
+>> > >      SP (af802310) is in userspace
+>> > > 
+>> > > This happens because on book3s/32 the exec permission is per segment
+>> > > (256MB), not per page. The page tables have no hardware exec bit, only
+>> > > the segment registers have a no-execute (N) bit. mmu_mark_initmem_nx()
+>> > > sets N on all the kernel segments except the ones of the modules area.
+>> > > So nothing in the vmalloc area can be executed, even when the page is
+>> > > mapped with PAGE_KERNEL_ROX or PAGE_KERNEL_EXEC, because _PAGE_EXEC is
+>> > > a software only bit there and the segment's N bit is what the MMU
+>> > > enforces.
+>> > > 
+>> > > Before commit 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes
+>> > > allocations"), the kprobes insn pages came from module_alloc(). That
+>> > > commit moved them to the whole of the vmalloc space, on the grounds
+>> > > that kprobes use a breakpoint and don't need to be near the kernel
+>> > > text. That is fine on platforms where the exec permission is per page,
+>> > > as PAGE_KERNEL_ROX is then enough to make a vmalloc page executable.
+>> > > It is not on book3s/32, where the modules area is not only close to
+>> > > the kernel text but is also the only page-mapped area whose segment is
+>> > > left executable. So the insn pages must keep coming from there.
+>> > > 
+>> > > Hence, use the modules area for EXECMEM_KPROBES on book3s/32.
+>> > Right, I missed that on book3s/32 does vmalloc is not executable and its
+>> > protection can't be changed.
+>> > 
+>> > Could it be that 8xx also need a special treatment for kprobes?
+>> 
+>> Yes indeed, not for the same reasons but because 8xx ITLB-miss handler
+>> doesn't expect any instruction TLB miss on kernel addresses other than the
+>> ones from the module area:
+>> 
+>> Commit 4afb0be7ccda ("powerpc/8xx: Avoid testing for kernel space in ITLB
+>> Miss.")
+>> Commit 16a71c045186 ("powerpc/8xx: Preallocate execmem page tables")
+>> Commit 33c527522f39 ("powerpc/8xx: Inconditionally use task PGDIR in ITLB
+>> misses")
+>> 
 
-It triggers below warning...
+Right. I looked at the above series which added all of this support [1].
+So looks like 603 might also have this related problem (other than the
+per segment N bit issue), since it's iTLB miss handler only walks the
+task's PGDIR, unlike it's dTLB handler which falls back to reloading the
+missing kernel PGD entry from swapper_pg_dir. So what I meant to say is
+that, similar to 8xx, a new PGD entry created in the kernel's vmalloc
+area for an insn page does not get copied over after the task is
+created (/PGDIR allocated), on 603 as well.
+But since MODLUES_VADDR is defined for both BOOK3S/32 and 8xx, so I guess it
+gets covered by the same change anyways.
 
-static inline void kvmppc_fix_ee_before_entry(void)
-{
-        trace_hardirqs_on();
+[1]: https://lore.kernel.org/linuxppc-dev/cover.1724173828.git.christophe.leroy@csgroup.eu/
+
+>> So at the end as MODULES_VADDR/MODULES_END only exist on book3s/32 and 8xx I
+>> think when they exist they should be used as follows:
+>> 
+>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>> index b617b69452cd..856f4609c488 100644
+>> --- a/arch/powerpc/mm/mem.c
+>> +++ b/arch/powerpc/mm/mem.c
+>> @@ -428,8 +428,13 @@ struct execmem_info __init *execmem_arch_setup(void)
+>>  				.fallback_end	= fallback_end,
+>>  			},
+>>  			[EXECMEM_KPROBES] = {
+>> +#ifdef MODULES_VADDR
+>> +				.start	= MODULES_VADDR,
+>> +				.end	= MODULES_END,
+>> +#else
+>>  				.start	= VMALLOC_START,
+>>  				.end	= VMALLOC_END,
+>> +#endif
+>
+> We already have #ifdef MODULES_VADDR a few lines above, I think the
+> assignment of kprobes_start and kprobes_end could go there instead of if
+> (IS_ENABLED(CONFIG_PPC_BOOK3S_32)).
+>
+
+Right. So let me use the following diff then? 
+
+Please let me know if this diff looks good to you? If yes, then I can
+send a v3.
+
+Also - it will be good to know if patch-1 and patch-3 looks ok too,
+before I spin a next revision?
+
+Thanks Christophe & Mike, for reviewing and pointing this out!
+
+
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 77b63b52d8f2..547120a30bee 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -391,6 +391,7 @@ struct execmem_info __init *execmem_arch_setup(void)
+        pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+        pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+        unsigned long fallback_start = 0, fallback_end = 0;
++       unsigned long kprobes_start = VMALLOC_START, kprobes_end = VMALLOC_END;
+        unsigned long start, end;
 
         /*
-         * To avoid races, the caller must have gone directly from having
-         * interrupts fully-enabled to hard-disabled.
-         */
-        WARN_ON(local_paca->irq_happened != PACA_IRQ_HARD_DIS);
+@@ -410,6 +411,9 @@ struct execmem_info __init *execmem_arch_setup(void)
+        }
 
-This happens since kvmppc_prepare_to_enter does first local_irq_disable
-followed by hard_irq_disable. This leaves a small window where interrupt
-may occur and it could set the irq pending bit in PACA.
+        end = MODULES_END;
++
++       kprobes_start = MODULES_VADDR;
++       kprobes_end = MODULES_END;
+ #else
+        start = VMALLOC_START;
+        end = VMALLOC_END;
+@@ -428,8 +432,8 @@ struct execmem_info __init *execmem_arch_setup(void)
+                                .fallback_end   = fallback_end,
+                        },
+                        [EXECMEM_KPROBES] = {
+-                               .start  = VMALLOC_START,
+-                               .end    = VMALLOC_END,
++                               .start  = kprobes_start,
++                               .end    = kprobes_end,
+                                .pgprot = kprobes_prot,
+                                .alignment = 1,
+                        },
 
-That local_irq_disable was necessary for PPC32 to track the lockdep
-state etc. On PPC64 hard_irq_disable is good enough. There is no need to
-do both. With now hard_irq_disable, doing local_irq_disable for PPC32,
-just calling that is enough.
 
-Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Fixes: 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Closes: https://lore.kernel.org/all/b8f82519-9ae5-c247-e020-e79c627e57df@xenosoft.de/
-Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Reviewed-by: Narayana Murty N <nnmlinux@linux.ibm.com>
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- arch/powerpc/kvm/booke.c   | 1 -
- arch/powerpc/kvm/powerpc.c | 8 --------
- 2 files changed, 9 deletions(-)
 
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index aed7b476b7eb..2593f7ae6c09 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -722,7 +722,6 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
- 	if (vcpu->arch.shared->msr & MSR_WE) {
- 		local_irq_enable();
- 		kvm_vcpu_halt(vcpu);
--		local_irq_disable();
- 		hard_irq_disable();
- 
- 		kvmppc_set_exit_type(vcpu, EMULATED_MTMSRWE_EXITS);
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 9194cf492d1c..f4db7dea57b3 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -81,12 +81,6 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 	int r;
- 
- 	WARN_ON(irqs_disabled());
--	/*
--	 * local_irq_disable() first: on 32-bit, hard_irq_disable() alone is a
--	 * raw MSR[EE] clear that bypasses the lockdep/irq-tracing state, and
--	 * the xfer_to_guest_mode helpers assert IRQs are seen as disabled.
--	 */
--	local_irq_disable();
- 	hard_irq_disable();
- 
- 	while (true) {
-@@ -101,7 +95,6 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 			 */
- 			local_irq_enable();
- 			r = kvm_xfer_to_guest_mode_handle_work(vcpu);
--			local_irq_disable();
- 			hard_irq_disable();
- 			if (r) {
- 				/*
-@@ -134,7 +127,6 @@ int kvmppc_prepare_to_enter(struct kvm_vcpu *vcpu)
- 			local_irq_enable();
- 			trace_kvm_check_requests(vcpu);
- 			r = kvmppc_core_check_requests(vcpu);
--			local_irq_disable();
- 			hard_irq_disable();
- 			if (r > 0)
- 				continue;
--- 
-2.54.0
+-ritesh
 
+
+>>  				.pgprot	= kprobes_prot,
+>>  				.alignment = 1,
+>>  			},
+>> 
+>> 
+>> > 
+>> > > Fixes: 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes allocations")
+>> > > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> > 
+>> > Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+>> > 
+>> > > ---
+>> > >   arch/powerpc/mm/mem.c | 10 ++++++++--
+>> > >   1 file changed, 8 insertions(+), 2 deletions(-)
+>> > > 
+>> > > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>> > > index 77b63b52d8f2..ae1bc7359353 100644
+>> > > --- a/arch/powerpc/mm/mem.c
+>> > > +++ b/arch/powerpc/mm/mem.c
+>> > > @@ -391,6 +391,7 @@ struct execmem_info __init *execmem_arch_setup(void)
+>> > >   	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>> > >   	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+>> > >   	unsigned long fallback_start = 0, fallback_end = 0;
+>> > > +	unsigned long kprobes_start = VMALLOC_START, kprobes_end = VMALLOC_END;
+>> > >   	unsigned long start, end;
+>> > > 
+>> > >   	/*
+>> > > @@ -410,6 +411,11 @@ struct execmem_info __init *execmem_arch_setup(void)
+>> > >   	}
+>> > > 
+>> > >   	end = MODULES_END;
+>> > > +
+>> > > +	if (IS_ENABLED(CONFIG_PPC_BOOK3S_32)) {
+>> > > +		kprobes_start = MODULES_VADDR;
+>> > > +		kprobes_end = MODULES_END;
+>> > > +	}
+>> > >   #else
+>> > >   	start = VMALLOC_START;
+>> > >   	end = VMALLOC_END;
+>> > > @@ -428,8 +434,8 @@ struct execmem_info __init *execmem_arch_setup(void)
+>> > >   				.fallback_end	= fallback_end,
+>> > >   			},
+>> > >   			[EXECMEM_KPROBES] = {
+>> > > -				.start	= VMALLOC_START,
+>> > > -				.end	= VMALLOC_END,
+>> > > +				.start	= kprobes_start,
+>> > > +				.end	= kprobes_end,
+>> > >   				.pgprot	= kprobes_prot,
+>> > >   				.alignment = 1,
+>> > >   			},
+>> > > --
+>> > > 2.39.5
+>> > > 
+>> > > 
+>> > 
+>> 
+>
+> -- 
+> Sincerely yours,
+> Mike.
 
