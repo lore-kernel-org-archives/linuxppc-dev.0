@@ -2,95 +2,83 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B27CA606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 20:26:08 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0BD5606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 21:02:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=djuXOdnr
+	dkim=pass (2048-bit key, unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=JuTIQyz5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTbpk52bwz2xl0;
-	Wed, 18 Nov 2026 07:26:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::835" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794947166;
-	cv=pass; b=CA8e9ugZRDxkDSd+zwnqyMuhUdlgq+jddZ9odamkQX829fivbhOsF+dfbm9YGp4Fc1B4IGSIpA8d62SGCvXu5Fhlw2akQo9NsLuIDY49XiOLTS8jxSTM5EZYT7TqptsHxTRJzioz5QgrDssyoEW305u1Tme0u2Lgdal7WNCJ18pjIaObn7wb+gPnsbO17TRb+3cZtJ7t1w8uG/DhOf1FKG35CNXkSCKnHkL9JXC1btyYkyvANjDcHYtYp+NAH3xvvQWDjzqhaqJtkdOfT7llHNXpyag1wdAtNYmydN1RiuX2QlW5NQfbG/tRWbWN/oXTy0eJS+wKP+/vRqI4EkwxNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTcck3ptJz2xNC;
+	Wed, 18 Nov 2026 08:02:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c200::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794949350;
+	cv=pass; b=Czb0x5Q1B5PmmWbiQ2WE57m5au9+8Iuxml6QxKZuORH4We5o4cHqrN9JbMSUm/EITQznUfFaYLtxOKZMNgWIuRvjAaEmu+R1C8+hVDV5zN3QdfQcuGW5qdg87O4E2VFCIfCUAOKb4+hKj0zXdLNQjtlbFSLiub/VaQTcNY0DqE0hgDQ6ENL/yG5EK1kxMdywIe0Or2qK2CbLmS1IAYW7Ntp/A+Jl7Ac52JdYltA+xb7/D/+J/lE5358uDCwyY0cnF3NJsh3uM4+MXP0vHLbIHz3nFb/zIEmpbHX52ypARBntToAmRs4dle/fvo2mipzD2ECgstHYHqx2Hm2rCfUrAQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794947166; c=relaxed/relaxed;
-	bh=ZCWHnnwEVxO1omjU149A2BWvg6ai6vFpainl1qSCuX0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TDxGbp3rqieiV4utI0dc4jNRu9Js1o5fw5hflOX2owwR/Uw2LovVCKD3nREkD9B1RbrYd+pXh//AOiuthLsb1VT13WGvFpVenUiogSbUd3l1M/v/LOvKHTDKrcC1hOjEhXXlqVD5wPZ70ddjR2pA00y6bREZwB4UUnNFCXE1W13zWUV1FYbBhP/DtWQtZ4sXcVxNc1ceLo7smDsXWAZ7CTD/kVNhyS79TlKSBkMzDDmFCP59OKZeLQa3b149wm8Y7DPXyCXOeQSq1UQ3OLoGwj8tUX/mWPi1ewp1iZipno7dGnfGKLZ/Fu+G2FVAHy4dx2GipunB/MQueR8f0q2pOw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=djuXOdnr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1794949350; c=relaxed/relaxed;
+	bh=PLNi9oq0QeGtGGDAHeG+GKXV/DgerA0rBDv8AS22WoE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=WOjrjqitmmmWvrBynzYeqHrKDjkqgF7Sno1j1GWizMVKs8y40nKFhTPFjZoD/Aek1I/42+pJa3Se8oRqSM4wv3/GXj0C7y+ZeYP4y5L8lAC0t/Q/MImYAdWyepEBAiDlC9SfcTs+5NppAEVepriWRMBaXpK57I800BaltmL2a5mdx/ocvkCxIBmG3rTTtfGqlhouQXMD7XatdtlktfnX6o/VNZHq64YcsO4ucapE9u+HxSAXlzlx3bvQGBQf4RoNNJmzxpiSxPH2IMRwmU6ABSsP7f/sgACYKOMVscCDONy1iv2DXuXcVkOz9vmi51ysLBlrNcwntMdYfm76cFnHsQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=JuTIQyz5; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=djuXOdnr;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=JuTIQyz5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c200::3; helo=du2pr03cu002.outbound.protection.outlook.com; envelope-from=vladimir.oltean@nxp.com; receiver=lists.ozlabs.org)
+Received: from DU2PR03CU002.outbound.protection.outlook.com (mail-northeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c200::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTbpj1cPyz2xcB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 07:26:04 +1100 (AEDT)
-Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-55be673e029so921cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 12:26:04 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794947161; cv=none;
-        d=google.com; s=arc-20260327;
-        b=K7Kd2ZpyZp/T74d6Sg8mzPPsnvGGxL68tfLvD2IuJ9tD7lM0rDhEYgET0UbsVK0tpj
-         LrCBNOhJtY5qG9o9hb0QjZLu4ZzndC1m06bdRAtCzn6pD12GR87Py8qHR8QGM8lXW/OJ
-         sMRTFW5vxRk8Jf/2g422EUEA53TI/TgrDkxkg8DNtXETNq9odgZr+jfS1I/wr2+R/318
-         KBqXzrPfF/wrGojLyOjj13paxMW4clbHE7qBuY+vujgkFxL7APEPaNNJ7dxgVa6eLM4b
-         hWsplH+RWxGNJiFMsTfY2lwfWEen/dp/H0j9QlXasegA4xiejY3q3XwpA+reEgajDWCI
-         Conw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=ZCWHnnwEVxO1omjU149A2BWvg6ai6vFpainl1qSCuX0=;
-        fh=1BE1OKj6oczuSQpKnzlI6oD6H662/Y9aJaTtgcCZdmQ=;
-        b=RjUNkqOXDZgYUsV1xjZUnTu1BO2c0AyDnejKZRjKX9BgYT3qKGMNJ28H6iFuL5FFrS
-         KraGTyyUJcPYClMX1dNUf48Zv37D/fzs9WgVGCfYnnQDnH7CkNBpRbKSQc4kMRt3H2qA
-         3luo4za33Jvw0lcqLZvEyRyJGhZWvzm6CX++cl3rsLjQtZlfQju0zNvGqUk3GtOyJhMK
-         /DAmNqdQjZYRguXr4U8fM2W5eH8FMvJub/XMEZ6pbyyLT09FzuOk7XmULBQXfCb6tCsU
-         ufT1SeC0mBOIoTlZUSRcN6CtfHgEQDtHAapg/fpWrWnjXlyfzfgBFtMHr+bIXYRurK+P
-         6sHA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1794947161; x=1795551961; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=ZCWHnnwEVxO1omjU149A2BWvg6ai6vFpainl1qSCuX0=;
-        b=djuXOdnrQaqBY/DYoSEjNHNvjFYWO9yJvkLfFL9WZuhMath7la9VabDHFq3GF70KSY
-         oHYMpuknFIu0I6Do31y0xeKoK0Jh3OPiRZz0xdpzaxJRAys4YBl+YF62AZ4NDqF81XE4
-         zu2qSlDlxuMintVBJE2didERsVkMPyTG2iIm3MaRmzdW1mmvXnXc2fqWTG46rXePFNSl
-         112LU5zspCy2Jq9CmabtWIAuyVgls3HmAq079zYBrAMbKeEHp+g+tJ5wWJk0EOCLGyd+
-         UYkHW8wDQPmPiIdNQkWbdC0CN/kkdQnv7psc9zSCZziV+3fOAyHIGrTcteuyCqxSwEm9
-         hjVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794947161; x=1795551961;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=ZCWHnnwEVxO1omjU149A2BWvg6ai6vFpainl1qSCuX0=;
-        b=zhEY3YxjaCvzP2mOrZdsOo3qU0fmh2vghMjs30GDbSLBjVaQ7dsi0fsmGUbMX1kTt/
-         JVFgdYVIDr2rLmmg+EKy1LeVbCyEygwl2PpttoL10Rk5iqD2PSsklDP/ZmOH8gHqQ+rb
-         FKz4E5EDin4ZvVEyfRx74NZEe6h3mLZXkHUuw23xcwgaBg2Cj0cuaabUpF5ut1fjltKm
-         ZirviygnA5dBTocQTAw19u81WfKVKTh3Bc6dHjUjz9PNCDguhtZlVoyWjimccWSRT3Xp
-         Ug7FZbgLrfjwPqDJQYzzG3jSeCMxDqUrJIX23vhhRpi/q5f1LSbyoj/joDYzAkNcDvTC
-         +w/A==
-X-Forwarded-Encrypted: i=1; AL+hErGKU3LcODEhze0bpGx/Q1enHpim6MKCO7c7s3MB0y6iqp48YibZj32GcM9xbnErH1mbYBz0Dc3dhwU4h/Y=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8Rx0BO2fbVFQV5gwMGaaBFgTHZpPjK5OCmAUfZ0G7PReuNK6u/
-	IPmh4HjjlRhX9rWLuvRo/VS69GhUyoxY9EN7JXx9xUlVeIriDnWW2UHDj5c5TPSGXibAwVQeiQm
-	D6bvSZ6zdQAHZfBLPPOQdXODP8HorEZy7+wNcuPU9
-X-Gm-Gg: AYBFou2no15ZBpoHoDXVLeqIRctHRHwVGJeXT653ELIGM+FZo6YFsuxklvSPZkQ+pzh
-	MkO7YNq0S+AyM+G/nf2fpLShhKV+4Rff6/4RgoyNBHp+gMYHE+zPQfKj5gkfBm7S//zafz3FTP1
-	ZZuOhnGH2/JvM80uyF3WvTcHKJkCYmHe/8ypg0KZbOJp52C1p4QxmQ4urnVF3ws7Tt4QMZ+mvwx
-	EbufpcuhhEsyscOpuhSiMhQ7D93uSforTgadplQ7tSImyhMItOzcvR25i4jBBpCjQR7wnXHwnnW
-	b8On/kcDJQjcCSjnc1TKZUleY0IKzJls0lXPmgFgI8ofrQGtkrUYIntdYse9Z61vjB0MlqDHJ/W
-	MEgmQSzve8fY6UAXnXPSTQo+I5f+gR8pho/h3ORDBJAQ7BVvEb4S/6lwnjGGaGPgcQuvrixZKFF
-	fPr19+2Sa+NhU=
-X-Received: by 2002:a05:622a:4c11:b0:536:6ae9:f55f with SMTP id
- d75a77b69052e-55d5c25ac0cmr168991cf.7.1794947160746; Tue, 17 Nov 2026
- 12:26:00 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTcch4tqSz2xLG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 08:02:27 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=gYJqYdVA2y1adQ4AlaR7qDsVDVkEpsITPx5DQRbr8TynCjs37PShQ7kakqhumQEb7xL7yzxKaGkRY2iVs1iV5O0PEZ9tdG+tGNoR/8CjlolyDPM+BWHiZAn1TcoMsx35Va4P5fX+uL1UAlGASrRUNd3WAhymimb4sKJLV4xxRGmoHvU9oxGXDcecABnbECCGiZhBwlRQ8O3ot1woM10M1L+J1KF86+b5u/rnEBTp8VQKGbgRklmKnMwTxI3lSn7Kyh49CXtMMq+Jz141YEw+ESrXRUGCuv/m0CSlAxeefWHkVEIWJbWVmp4J5FSYgiJhCQCXA1XBNUzLfujkrUW+ww==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=PLNi9oq0QeGtGGDAHeG+GKXV/DgerA0rBDv8AS22WoE=;
+ b=CcxuGMGEJDZwvrHs3nrlnmlNXZcQ4eDf01pxsEX3LqLkSCLNPzapmbdpw7XUg+qh/2o30JcM7xDaWNXwD6n4T8ZKLd8PV4LKNZ55h1MFBv81rPJt55ZkmrmBRFPAt5pjQBLYXroTCjapn8SbqgXhUmRBAMcJKrZ9SveRk2lkYJOLzFpGITPu98wFAf+5XaaqB5sbvVG/VNp6r+T1mXmBgUv4XS9uoMoygxuIn+X+FkYLrRSMwrSMyRk5HYlZDjx5G8sQsbA46xPCt4r1MdGhY4KujI+dt1sJp0u2b1dDmJVlHHUvM3FTzdlCneGE8Hlpdf1yiBeKTT3GSOdUPDDXbA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PLNi9oq0QeGtGGDAHeG+GKXV/DgerA0rBDv8AS22WoE=;
+ b=JuTIQyz5sMNxKIQBrRL09RDpl22QJUL0Wm6gO6S/NtX9lWFP8gVyYF7CETWpL1Pe1bb9rhzKqTyShIEs5fPyOczYWvXoL/UcaUsOFcJyQ7NbYSLo8vHrsfp5ZZi/8F0zYvNH6zxHcRhMp7/hogdCTT3PEAQBnCwwLRXJJl0T59keN8XlcZrkr31Kqnr/9LWSOXyFsoTtL984tXR7G4NyiAYK3qBCfrxXH3/q88NDzG4AHqVKnfAlzVW0sW7IvUDNJ3Xxt8R39kcl8UWOG+zUvR3ad2uWWeC6bAmIPvHaPx16DQEYUoXinC8TbD4glvKwUaDTOzoX/yp7aCCog/iLHQ==
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com (2603:10a6:208:17d::10)
+ by GV2PR04MB707735.eurprd04.prod.outlook.com (2603:10a6:150:385::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Tue, 17 Nov
+ 2026 21:02:11 +0000
+Received: from AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023]) by AM0PR04MB6900.eurprd04.prod.outlook.com
+ ([fe80::7fda:8431:ca1b:b023%4]) with mapi id 15.21.0615.013; Tue, 17 Nov 2026
+ 21:02:11 +0000
+Date: Tue, 17 Nov 2026 23:02:07 +0200
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: Vincent Jardin <vjardin@free.fr>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, 
+	Fabio Estevam <festevam@gmail.com>, Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, NXP S32 Linux Team <s32@nxp.com>, 
+	Linus Walleij <linusw@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: Re: [PATCH v6 4/5] pinctrl: freescale: add the Layerscape RCW
+ pad-mux driver
+Message-ID: <avykU0WMTq24_xkR@lxl00025.wbi.nxp.com>
+References: <20261115-for-upstream-lx2160a-rcw-pinmux-v1-v6-0-fbdce4565a5c@free.fr>
+ <20261115-for-upstream-lx2160a-rcw-pinmux-v1-v6-4-fbdce4565a5c@free.fr>
+ <avtsY-7-I7_pdyD0@lxl00025.wbi.nxp.com>
+ <avyEUKJBiDwxpLt7@L23803.iliad.fr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <avyEUKJBiDwxpLt7@L23803.iliad.fr>
+X-ClientProxiedBy: AM8P189CA0030.EURP189.PROD.OUTLOOK.COM
+ (2603:10a6:20b:218::35) To AM0PR04MB6900.eurprd04.prod.outlook.com
+ (2603:10a6:208:17d::10)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,84 +92,140 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261108223913.3624571-1-irogers@google.com> <20261108223913.3624571-3-irogers@google.com>
-In-Reply-To: <20261108223913.3624571-3-irogers@google.com>
-From: Ian Rogers <irogers@google.com>
-Date: Tue, 17 Nov 2026 12:25:49 -0800
-X-Gm-Features: Aa3M54rgKc4_PudcaM6yszp5Mdw4isGgsPgTnvL2ClaE7ml053-JZnxk-RQJF-U
-Message-ID: <CAP-5=fUQvqpny1CrYVUqg9SQo6VpOuUqfOK403BxK_vWCDU30w@mail.gmail.com>
-Subject: Re: [PATCH v3 2/9] powerpc/secvar: Add missing kobject release
- callback to secvar_ktype
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, Nayna Jain <nayna@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Srish Srinivasan <ssrish@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>, 
-	Danilo Krummrich <dakr@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, driver-core@lists.linux.dev, 
-	LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB6900:EE_|GV2PR04MB707735:EE_
+X-MS-Office365-Filtering-Correlation-Id: 76cf72af-2832-47ed-d0da-08df44ee0c36
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|10070799003|19092799006|366016|1800799024|7416014|376014|18002099003|22082099003|6133799003|261009223027099003|4143699003|5023799004|11063799006|56012099006|261028144727099003|261102123227099003|261022105027099003|261026140227099003|261026121527099003|261022075727099003|261021123027099003|261021121427099003|10067099003|41080700001;
+X-Microsoft-Antispam-Message-Info:
+	YuvPCkwf0ePw5N7pefW3VCHeMbhAh63RDCFbXam4Y89uj4BZ1ecuj0CtXHAkP9SAPpaL5qSZXBrHcsoPLfhDyWDMS4Sl4S9xGEENB2l6R6IYaEUKYp2WUw1hMs3t+T99HM3gMpPL2RXH7jKQnCXkVRjKEzVg6jlilMj8FgmgFUoq96P/5HGaVrpYqGOranW1ovPOM5R2jwirMx2GFLBSDPrZlFc0Az7+dC3PHmapqBkGBaZDKfoiKtPCA4BtskI07OWNIjZPYXNAwEuDogHwmEbzRYJTN9MBsCdlYOvaeBHoPLdyNOmlrEXurSSFLZpO9tOM1IjUMhVb9nuSU92JvMzFpqjEQxSq+JS+5lUo8Etg2HUXvskow8Hm6OCU5btQzMg7RYoRzAT7wAgEz/MRQS+mCo4FTkGz6zyE4sWR6Tk1og6J87aBJRSlPgFSMTwu7rMrdypedqnTIi7lomhK1nWoMcP7OHr5mnuYXOnhItvvTp5gdOziAgdo+8NsCBzWWDjHZQqKFvMzCRv/JamVKNVqZj7m/eyidh3DGxTzcWMnnAKEHyFzX4zRdlNaSLLgh+0K9rKjoSqZmrmatnTwz9eJmKwE0cNPy1NkZMdBV8ciHhf+kjBmuaaFyV6rd/Qoq4HXbgMFrK3jvk3qVJf9t1yA3WfhsMjMX5IWaf1FmQ8vM7Y4sorn/O9ea6BqncuV1vcsWzF1Zdd2oJuoWSBdyw==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6900.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(10070799003)(19092799006)(366016)(1800799024)(7416014)(376014)(18002099003)(22082099003)(6133799003)(261009223027099003)(4143699003)(5023799004)(11063799006)(56012099006)(261028144727099003)(261102123227099003)(261022105027099003)(261026140227099003)(261026121527099003)(261022075727099003)(261021123027099003)(261021121427099003)(10067099003)(41080700001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?h0Qr+9YgehzjjTkmx1LRarIpuk5tINEye91pFs72h+BrxReteVu7gK+Tfw8N?=
+ =?us-ascii?Q?IsSrNTIdbAOls62duZwbtPj1OxjTLn4ZoBXSqLJn1++4EfueG2vSUiLqIyG5?=
+ =?us-ascii?Q?NwLKNjQTHd6iELeadlRnlhnPe7PyuCxbAeagU3wh/m9nUPGGh7WVOrxz6YVM?=
+ =?us-ascii?Q?JHu17y+lp44PUk/8VbqkNH+irTXByha3BSkIHpGP/yD/q+vDJzNriBylUDgX?=
+ =?us-ascii?Q?nSMy4GN5hGgMrCKOAO1LgussB7LQFuD2amRHurRiZttXPPoXW4xbshpNpKrp?=
+ =?us-ascii?Q?N+qoDw+hLwc8zBL1WYk0w+UYDDQN+eVmwRxjPZ8jyLCx26GfWEGLP/M9tsBX?=
+ =?us-ascii?Q?a5aWFdaS6kx0E5TKU8XuzvIEMxtHsQAhFnuA+msAC0j3FpDlkWXKBG2EIaHu?=
+ =?us-ascii?Q?rmYvSG7XnHfHbOm0lP8juEvQJOnq6Eorry4acz4qWIa60SwyJlTd/DEtWram?=
+ =?us-ascii?Q?uRpsjKSZboxyQ4T63p6N+93GiHOg/G/CkHW6OMIg1VQ8nk+OTrRE8NOj0Wtn?=
+ =?us-ascii?Q?7aK88AT6I8m7uNXIf/bliGvNCc/9BiqW7D6MOECf2szjdqJoNiNw468ipKRh?=
+ =?us-ascii?Q?XbgOo0lvPOYxX1KN5ubDRmjc1hN9ZF4+a3S3miyvZxvT22qQ1O58vaPOJ7cR?=
+ =?us-ascii?Q?rpkDoUBraloiWwAzjzb37+v0D1L0mDYKmL+MAhqmR13Jk7pokjWz6GZ8YtVL?=
+ =?us-ascii?Q?+KAEgOeaDCaMSpRHJMYmAWFqlJkvtATY2bomIvgUbhkc10/hLKJcbJioXwg1?=
+ =?us-ascii?Q?fZvJY0H4HbiPL5omgdGrbqnRCilxaaet84M19JhsyP0ms4sx9TY9MyWElWQt?=
+ =?us-ascii?Q?Who8LjI2wX4TP9RiAcZOZMYB0adi2vQ9FfN4tj/QCKZtOOiZfo/FyGAvLpW8?=
+ =?us-ascii?Q?6OdKOikD5JuT6rigOs4yclRYTR7ZQfivMx5UmMa/pBHbQBz0kyg6ZRcaHSMW?=
+ =?us-ascii?Q?JF72YEV5amQzvf9SvV6o9YqgW1ilaGOe2kZR/ELwuGkGeUu9Q5Bb9xguLNUD?=
+ =?us-ascii?Q?NuHRIgvWy87aHcmGYa2hoBzQjzFh2QZO58bawXrNUE5H8TKONkabvcBUo2KM?=
+ =?us-ascii?Q?V8Lpm+5mfLGXJNsVLoUdkwkKvPZCDV1XVUL/SBFndnlAIY6FIbsUFSub8DjW?=
+ =?us-ascii?Q?/dO+cQIWlIHFSZolNAbJRW7f8KY0c643wffY14i7RdkKRsVKdSp0DAS3/rAf?=
+ =?us-ascii?Q?veL8qhYL34BmtdeeaR3uUjyBo4lr92oP5WyEOyjN/V1IkoEMtWfagfyihryR?=
+ =?us-ascii?Q?6Y11Tvp7JysiqndgWHlK+opyqG28Qp/N4HUbc3FV6WaoM6y36tiPfD2cPZH8?=
+ =?us-ascii?Q?XUlrurN95BPwKd3M3rPz0tZqHU8OOVddKfMAST/5oTPGywJY7NJR3xtijEAf?=
+ =?us-ascii?Q?Z3Lxa3Q5w1aC9mINl5eaZzkY+uwxZHJ96eIKXNsBtBUpfzDo9Q4d4oEjCf91?=
+ =?us-ascii?Q?D1QJGzv0qBzd9OCAaqPG7cTozcrfl442kl3Kerny+WNenDBRf4oTw3kaTgHf?=
+ =?us-ascii?Q?l+R2Ag4yLWaj4cAKSfPdMWVMD6yiNVt7DbPc7eG/pKZAfI+U6dqSUBN6nDM2?=
+ =?us-ascii?Q?3DkJN2aoMjeIRg5CTh9D0ttxu3RoNJHjRCAcCh8bMQt2kH8xCCirSR7hrBAA?=
+ =?us-ascii?Q?jgD79BGOr9bH+04SFmHB/NpZCYHcLlgyPdI8GjS0+AFqkFTGhJkN/u+7d26l?=
+ =?us-ascii?Q?6lNsaOuCZWeDp1DSUaGcBb/XO2Wf6GxEAREg6+0Q4AXoQvLDuI4UKOSxdRSH?=
+ =?us-ascii?Q?hA4DMAvVmaj6YMaks2VdW+rjz9M1fmKpGpae3ygVMUZ7Fuwe0oTUUSU9EyMs?=
+X-MS-Exchange-AntiSpam-MessageData-1: T9axJn1UbVFtDA==
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 76cf72af-2832-47ed-d0da-08df44ee0c36
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6900.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Nov 2026 21:02:11.0267
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hGI0DvaKAAL6kSIdsV/d7CNiKkiSalpr/of5hGuURTMiKtbw5S3q+bY9cJ5jwTBcBvnHbNqj/Sah0rxRXDviRw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV2PR04MB707735
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Sun, Nov 8, 2026 at 2:39=E2=80=AFPM Ian Rogers <irogers@google.com> wrot=
-e:
->
-> In add_var(), a struct kobject is dynamically allocated with
-> kzalloc_obj() and initialized with secvar_ktype. If kobject_add() or
-> sysfs_create_file() fails, kobject_put(kobj) is called to clean up.
-> However, secvar_ktype does not define a .release callback, which results
-> in a memory leak of kobj (and a pr_debug warning in kobject_cleanup()
-> when CONFIG_DEBUG_KOBJECT_RELEASE is enabled).
->
-> Provide a secvar_release() callback that calls kfree(kobj).
->
-> Fixes: bd5d9c743d38 ("powerpc: expose secure variables to userspace via s=
-ysfs")
-> Signed-off-by: Ian Rogers <irogers@google.com>
+On Tue, Nov 17, 2026 at 05:44:00PM +0100, Vincent Jardin wrote:
+> Hi Vladimir,
+> 
+> > The "i2c" and "gpio" functions of lx2160a_sdhc2_data74_funcs[] here
+> > hides some real unpleasantness. These 4 pins either get all assigned to
+> > I2C7_SCL, I2C7_SDA, I2C8_SCL, I2C8_SDA, or they get all assigned to GPIO.
+> > But they cannot be assigned in pairs of two (or individually, i.o.w. not
+> > in the granularity we need), which makes independent I2C bus recovery
+> > practically impossible (i2c6 as I2C while i2c7 is as GPIO).
+> 
+> yep, the doc is clear about it: SDHC2_DAT74_PMUX is a single field for
+> the 4 pads, 0b001 gives GPIO_2[18:15] and 0b010 gives IIC7 and IIC8
+> together (RM rev 1, 4.9.8.9). IIC7 and IIC8 are not available on any
+> other pad.
+> 
+> Checking from other angles, the A-010650 workaround uses one write for both
+> buses: 0x700100130 = RegA OR 0x031. That mask looks wrong to me though: bits 5:4
+> belong to SDHC2_BASE_PMUX, and OR-ing 0x001 onto 0b010 gives the reserved
+> 0b011. Could someone at NXP have a look ?
+> 
+> > The way the code is currently written, the pin_request() call will fail here:
+> 
+> Yes, in fact, it is not new with this series: both nodes have shared the
+> same setting since
+>   8a1365c7bbc1 ("arm64: dts: lx2160a: add pinmux and i2c gpio to support bus recovery")
+> from Carlos Song (NXP) where the two pinctrl-single states covered the same
+> bits, so the second controller would have failed the same way. Wihtin the
+> kernel, there is no board that enables i2c6 or i2c7, so nobody did hit it!
+> 
+> > Due to the fundamental issue of this limitation, I don't think it makes
+> > sense to have the pinctrl states described in fsl-lx216x.dtsi for i2c6
+> > and i2c7. Perhaps you could remove them in another change (either as a
+> > follow-up, or another patch in v7 if you need to resend).
+> 
+> Done for v7 as an additional patch: the DTS drops pinctrl-names, pinctrl-0/1
+> and scl/sda-gpios from i2c6 and i2c7, and the two states nothing else uses.
+> A board that needs one of these buses can add its own states, or set the
+> field once with a hog on the pad-mux node.
 
-Gentle ping on this patch (moving PowerPC maintainers to To: in case
-this got buried in Cc:).
+I'm not entirely happy with my own suggestion either, I'll comment more
+on v7.
 
-Danilo offered to take the full 9-patch kobj_type::release __must_init
-series through the driver-core tree with subsystem ACKs, and this is
-one of the last two patches awaiting an Acked-by. Does this look okay
-to go via driver-core?
+> 
+> I tested on my board for regressions, since there those 4 pads carry
+> the eMMC DAT[7:4]: the other I2C buses still set up their GPIO recovery,
+> and the eMMC still runs in 8-bit HS400.
+> 
+> I also went through the other fields. 7 more settings mix two
+> controllers the same way:
+>  - flextimer on iic2, irq3-0, irq7-4, evt4-3 and evt2-0 (FTM1 and FTM2 channels)
+>  - sdhc-spi on sdhc1-base (SDHC1 with SPI3_PCS0) and usb on usb-ext (USB1 and USB2)
+> No dts claims any of them.
+> 
+> About your previous comment on clk-out: v7 names encoding 0 "clk-out".
+> On my board, with debugfs, it shows now:
+> 
+>   pin 20 (evt2-0) 0:? evt
+>   pin 21 (clk-out) 0:? clk-out
+>   pin 22 (asleep) 0:? asleep
+> 
+> and the U-Boot port of this driver shows "clk-out : clk-out" in
+> "pinmux status".
+> My take: the reserved marking comes from RM rev 1: its revision history
+> says "Updated 0b000 as reserved" and the CLK_OUT configuration section was
+> removed, while table 19 still lists 000 (CLK_OUT).
+> 
+> There is a similar gap on EC1: the signal tables list CLK_OUT2 on
+> EC1_TXD0/GPIO4_DAT03, but EC1_PMUX only has 0b00 RGMII and 0b01 GPIO,
+> 0b10 and 0b11 being reserved. Would you know which value selects CLK_OUT2 ?
 
-Thanks,
-Ian
-
-> ---
->  arch/powerpc/kernel/secvar-sysfs.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/sec=
-var-sysfs.c
-> index 395399bbab2c..f3f6ac25ea78 100644
-> --- a/arch/powerpc/kernel/secvar-sysfs.c
-> +++ b/arch/powerpc/kernel/secvar-sysfs.c
-> @@ -126,7 +126,13 @@ static const struct attribute_group secvar_attr_grou=
-p =3D {
->  };
->  __ATTRIBUTE_GROUPS(secvar_attr);
->
-> +static void secvar_release(struct kobject *kobj)
-> +{
-> +       kfree(kobj);
-> +}
-> +
->  static const struct kobj_type secvar_ktype =3D {
-> +       .release        =3D secvar_release,
->         .sysfs_ops      =3D &kobj_sysfs_ops,
->         .default_groups =3D secvar_attr_groups,
->  };
-> --
-> 2.56.0.455.g6c5a503b38-goog
->
+These are good questions. I've opened a ticket internally and I'm hoping
+to get some answers regarding the correctness of the documented A-010650
+workaround procedure and the CLK_OUT/CLK_OUT2 signals, which are in a weird
+superposition of documented and not documented at the same time.
 
