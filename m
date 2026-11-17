@@ -1,95 +1,62 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B9303606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 18:46:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9A0DB606A896
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 18:57:46 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZAQJX5mT
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ISSwAncL
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTYbV4ql0z2xl0;
-	Wed, 18 Nov 2026 05:46:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794941174;
-	cv=none; b=gXXsEmD9ORAHnQY9JE3TecptlL5e2INL4Ek97T5uJoK9QKdl1dSKtvpyoJ5nyzftUVZxMVMOiIDTbvpHOZ8V+35c9+PCB8I4CqOBKAz8Vt1DaXrqDRTolEQxSNihwRMUZbvezpfqUIJyNd8Ipvu28j3YZK3YNwudGvM7HP6XNKKB4MuEYEJiAGV+CnGHS3yRJR/EiZQrlqKRTshWojjU75+BKe9Ut0dJNaNqzG29CcUgW/f8pVULd6MBgNFqzzM2ehl2YkVPwLNijh+K1u98/crDzLAvmvJDFmeKJ6rQVkWrkOTPtov673B3iH7Pqy8uSn4BVa9ni5Mx511Q1InuTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTYrm5k2jz2xcB;
+	Wed, 18 Nov 2026 05:57:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794941864;
+	cv=none; b=BkQtP6w5YsHbhP8MtLCO6RSRzJZd4DMMb3UIujvdN9SI0fLjgoTDtnGw4ITi2CD4849veRi0FM9zhMHCEcrUotLlk8RUbuos5c3BI9vV7+zaH0TWL3QpCFwF6XCTepwRwgjZ2IR7sZMpuLfrkC1V+qB2qG6BXQ4a5mmcsmtPw1T9Q+tWkCSEUlyYpplJNl7V/iYLwW4kvc/YrA/5N5HUue/ne5F8co2Qj2kZNzoCltKysWHuwLQcTfU/6gboRofQyY7Bre3EVtC2Cu/bGVv0hFpSxVKybPyB5mNikzosnEpvXK0AzCXm4ddc6aXeEHfALTObfo/nyNoeYJ1WHPoj/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794941174; c=relaxed/relaxed;
-	bh=FHdwDVfXzscoOylIF8ldsaUt1NeZHtX4dD7nyQbaahI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cGrnQ9wOA5NRCCDzo6Gla8TZiswINn++dlFufAj1tP7uFaruc5XVHVPquZ3HkdFBdns/gtXPEySPEalI4dDoSk71cJxm1raCzZZ0xlwild8aAtw6AeoxCd8cyoOdaj7OKQ3rApFPfnBMOQ3XFPJmwRr9NchmE1opn0+vn8s1oMDackERts4jLF9jXg3SjoqJXFUKbmkP3OLqvUP40fYYugTUJQjtynUNBsbIesfjUvOR3ygC1wQFPNyQcZgwhq4W6n03xCaxfPvMCkHBOnk0KQqPPzQWmOJW6z/5+SBBZZGGGFpcbfGzK4STt+u6hBv+Jvfbm8u/q2mTuidtqDhP8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZAQJX5mT; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794941864; c=relaxed/relaxed;
+	bh=HdkDes0ncCU4WGhgyR7YXxDGwX38qel+esSZ7Ve7TMg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cJZA6aQoeK5CtOikeE9b+ZMNyaZgRs1oiTLR4hzaIrGTzD08o/r8eFyGdtm8BjK69WxFrfJpNALu8/jcMx1zR4ixqsKeboyurmUiAMUp4n4a5jUDdTCyV3rCp94ZvqEBJHF/YbIAsbaWFUyofqKl7rMeroARjUqxYvXix/HGD1hv0rgN6NsSxTGGw3iYWtS2opmuxL6IhuVYtvT4OqFvJJkmaLFyUNgzAIGa0SeikpEyaReyOQ3DHfq+bqEEdEyuuQLDYbovouWF1VIUcD7nG7+SFPJ6wZjr7QVszVcpy78r+poY5aR4y4c9lWH2pqVDbckDWolNPE8Ly0OEwBZHpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ISSwAncL; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZAQJX5mT;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ISSwAncL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTYbT1wnrz2xcB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 05:46:12 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFQcKL2711551;
-	Tue, 17 Nov 2026 18:45:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=FHdwDVfXzscoOylIF8ldsaUt1NeZHt
-	X4dD7nyQbaahI=; b=ZAQJX5mT0SeQUjM5RXERTdWRagcON8a5YCySxMH3U6+d5G
-	oPaHnSREcXqvI71QrM54X7Y1XWIsAyvcc2oHVZ0/NtSCq+Wu0fDov8ytwfRuqtuW
-	/h+TM4GWtjU7cC5nOvxMrx9WhDYjblYB6+mQq9OkiY+9UWJcqq3Hxx7Zzbfb+Dqi
-	BnhYZRLOWxVMUJgAj69he9oDpxMXJfR5GtXjuA1k41gdAqZhlJp8EzDWmNUv7BCC
-	wEVaF4r87t3PIl+soEwxayHaojWtkbN00xtIeJTEkr59WslFl9AEEMWDQyJOf94K
-	y5QiVxwXYLuwgDJorIDyC0+zJK8bv+MjpkWbetOQ==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hxd2m4e06-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 18:45:39 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFYvNs657683;
-	Tue, 17 Nov 2026 18:45:38 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j00nseu6b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 18:45:38 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AHIjY8t46203212
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 17 Nov 2026 18:45:34 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 72B7C20040;
-	Tue, 17 Nov 2026 18:45:34 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8A8582004D;
-	Tue, 17 Nov 2026 18:45:07 +0000 (GMT)
-Received: from Amits-MacBook-Pro-2.local (unknown [9.124.216.103])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 17 Nov 2026 18:45:07 +0000 (GMT)
-Date: Wed, 18 Nov 2026 00:15:05 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        linux-trace-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Amit Machhiwal <amachhiw@linux.ibm.com>,
-        Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
-        Vincent Donnefort <vdonnefort@google.com>,
-        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Harsh Prateek Bora <harshpb@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        kvm-ppc@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v4] ring-buffer: Do not check si_mem_available() before
- deferred init completes
-Message-ID: <20261118000807.39005da0-76-amachhiw@linux.ibm.com>
-Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, linux-trace-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>, 
-	Vincent Donnefort <vdonnefort@google.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Harsh Prateek Bora <harshpb@linux.ibm.com>, linux-kernel@vger.kernel.org, kvm@vger.kernel.org, 
-	kvm-ppc@vger.kernel.org, stable@vger.kernel.org
-References: <20261023145459.47516-1-amachhiw@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTYrj5lSvz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 05:57:40 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1794941862; x=1826477862;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=v1NsJvl2MeAn+U0ELjw0P121EwhLfFQaHMoHS8YBAvw=;
+  b=ISSwAncLkGjmC6zt5mSf5rKXDNGo4zbzMqiM+2HANic0GhLSk0g2x7xj
+   uRBz0YELwDT+uZptGptaB5u3EJlq7gWH/P9tIs1eXOXeT5BaoqCWuSHHL
+   3PTmtWzBDWpjpeWmcr+qCPl3Dy3jyVXovmp9QoGeP9+fZk6T/3zTcj44v
+   3prZdC6xeWBtyH/NaWn3Jq/1aPfm6MlerFmnP2CHf15k/dhE/aljcHFxo
+   /L+XSfVMg2x/xZuNlFIoHyyS7uTqcxjx5yDMb0NoCIhTaEfcGfT85cZCh
+   ConDCCEsAxCSXdDpMerQXc4K+vR5U0IdyQVbzwDdRpLtnbKTRV5E1pSxp
+   A==;
+X-CSE-ConnectionGUID: 270RARzkSD++pZkA/HWCnA==
+X-CSE-MsgGUID: Gv9tZY28QmGEB3x7wwToxg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11969"; a="3753812"
+X-IronPort-AV: E=Sophos;i="6.27,218,1787036400"; 
+   d="scan'208";a="3753812"
+Received: from fmviesa011.fm.intel.com ([10.60.135.151])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Nov 2026 10:57:34 -0800
+X-CSE-ConnectionGUID: DPWAMEErR3Kxtj4lkE/CAw==
+X-CSE-MsgGUID: y3FAroW/Sx6yGrYcfClEAA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,218,1787036400"; 
+   d="scan'208";a="11733291"
+Received: from skuppusw-desk1.jf.intel.com (HELO [10.24.80.125]) ([10.24.80.125])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Nov 2026 10:57:34 -0800
+Message-ID: <28da8229-99f9-47c7-b2d6-d301ae34253f@linux.intel.com>
+Date: Tue, 17 Nov 2026 10:57:33 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,50 +70,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261023145459.47516-1-amachhiw@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=B6UsQ+tM c=1 sm=1 tr=0 ts=6afca0d3 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=htImR4CqiR0i9lyO-ecA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: K1E5GmLPINmBwwlA2p7SpifAqqGD8UI7
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDA3MyBTYWx0ZWRfXwPof/uXCy+PC
- AdkDFl9YDyk9JUH6DylNYDJQoKX0wFtI7jUYRFJUkTFtUV+iKJeFzbU1iGej82ov4po7z7B8qYX
- 5jDPYrxvddt5a6rBnaeGSlA9QVIxHvY=
-X-Proofpoint-ORIG-GUID: rCM-q8CD7jRdi7OSLfvP8KZpbji0QtOk
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDA3MyBTYWx0ZWRfX8psedBHRYYYA
- k6FfCdvOUeV2B4pA7aD1oeN9MiWmDHMwqiKkrWGWRGZMXqr7Ssqe/m9gCessFM4NAFaT0As5li0
- wX25OEqs2UjQFWIjBsE5H3mhtAIWl6o1+hP/rGef3trDyew2HxSJm6JtzD0nCUgnoMsHic+ggYV
- WVU3G89EV+UEW+RZRCVC6+Hz0oh2PTucZRJRWPWYSrykBFzPfOd7TCXVCRd3m5R9U1gYOUoVaA4
- DaB8rJgYjbgGKkQuXgq6MyWq5Sk4Y8GpUKGLBcu0X8m6jH6HhVDjjjvBrqE+V0YpgD14GCb4MA2
- ImZoS2P1ge1/HXqxh1j/4ty3wWq2BMM0ZJTnBT/dgYXMX6o1hqKbZQElCKGNB0deSGAKWpy4D3T
- ftqKUojKUm8Xr/FYqH5EuD7wTz9V6OINs5ocYXkmBPE4Pz5FhEZM+Wmpa1FokvdYw2dIkUMjhp9
- 7rwRZQjv6P4vu5KJ65g==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-17_03,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 clxscore=1015 spamscore=0 phishscore=0 adultscore=0
- priorityscore=1501 bulkscore=0 suspectscore=0 impostorscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611170073
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 19/19] PCI/ERR: Avoid NULL bridge pointer
+To: Lukas Wunner <lukas@wunner.de>, Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
+ James Morse <james.morse@arm.com>, Mark Brown <broonie@kernel.org>,
+ Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+ Tony Luck <tony.luck@intel.com>, Hanjun Guo <guohanjun@huawei.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Shuai Xue <xueshuai@linux.alibaba.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Maciej Wieczor-Retman <maciej.wieczor-retman@intel.com>,
+ Pawel Chmielewski <pawel.chmielewski@intel.com>,
+ Yazen Ghannam <yazen.ghannam@amd.com>, Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
+ Avadhut Naik <avadhut.naik@amd.com>, Radu Rendec <radu@rendec.net>,
+ Jonathan Cameron <jic23@kernel.org>, Dave Jiang <dave.jiang@intel.com>,
+ Kai-Heng Feng <kaihengf@nvidia.com>,
+ "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>,
+ Breno Leitao <leitao@debian.org>, Terry Bowman <terry.bowman@amd.com>,
+ linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ acpica-devel@lists.linux.dev
+References: <20261117111444.4185512-1-pierre.gondois@arm.com>
+ <20261117111444.4185512-20-pierre.gondois@arm.com>
+ <avw_daENKPcY7_04@wunner.de>
+Content-Language: en-US
+From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <avw_daENKPcY7_04@wunner.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Steven,
 
-Gentle ping on this patch.  This has Vincent's R-b and fixes a boot-time
-ring-buffer allocation failure on DEFERRED_STRUCT_PAGE_INIT kernels.  Is there
-anything else needed from my side?  I'm happy to trim the commit message or send
-a v5 if that would help.
 
-Thanks,
-Amit
+On 11/17/26 03:50, Lukas Wunner wrote:
+> On Tue, Nov 17, 2026 at 12:10:29PM +0100, Pierre Gondois wrote:
+>> Return PCI_ERS_RESULT_DISCONNECT when no upstream bridge is available,
+>> avoiding a NULL pointer dereference in pci_walk_bridge().
+> 
+> How can that happen?  If it can happen (which I doubt), why isn't this
+> patch tagged for stable?
+
+One way I can see is a device without a PCIe capability on a root bus.
+pci_pcie_type() returns 0, which is PCI_EXP_TYPE_ENDPOINT, and
+pci_upstream_bridge() returns NULL. Native AER never gets there. Only
+firmware-first can, through aer_recover_work_func(), and only if
+firmware reports a PCIe error section for such a device. If that is
+the case, skipping recovery for !pci_is_pcie(pdev) in
+aer_recover_work_func() seems a better fit than a check in
+pcie_do_recovery().
+
+> 
+> Why is it at the end of this series?  Does the series somehow make it
+> possible that there's no upstream bridge?  Which patch does that?
+> If the preceding patches are not the cause of a potential NULL
+> pointer deref, why isn't this patch submitted separately from the series?
+> 
+> Thanks,
+> 
+> Lukas
+
+-- 
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
+
 
