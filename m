@@ -2,83 +2,83 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 727FE606A333
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:44:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E97CB606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:44:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Yy0Ry2b7
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hg5MvL5N
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTXCn5pLVz2ylj;
-	Wed, 18 Nov 2026 04:44:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937445;
-	cv=none; b=Ofbm12aT+3yvD+xPGxs4Kx4zMyOXZTbqjhPPOj3Mva8FZJwaD6GXbAiRp9B/HuL5+2BqtIv5S3i6PV+Dj5UcFA2C5IGatpiPJKorhILFnYC/z1BCk5S0MTKfZzKD94Q1OKI338+8LKVjT6Fx/PBoYcwdGTTViQzRaJlN7b9TvksEKXhB5jCAcSEdfNRYpqrWFM0ZPGJG4itNwC7z6z5i1B4GBHJg8CtGPk0DXPmNIFZ6/fEzOiYYFcRWC9HvHp2krLqP1hrxlRHAhAwKQJU79pMZ/CSBVQfYecM95qN1jMj2GmBVRKbTMCvtqEeXcbzMsq4KjXpevRLtAOmW6jZJdw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTXCq15Wsz2yfS;
+	Wed, 18 Nov 2026 04:44:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937447;
+	cv=none; b=oO589yiSRiMR+e8kgQmAU4osZQ/U3/Ate4NWRJO5hd2JKLPNUH2MYFAUX5M1yZ+IQF35F2Z9Vy075EdRkAAhWKwrWfKvZho568ufxCI436Vb93sY/loMQpc3h54wVc8LPnpaa8VBzphm+X1CvJ6rXmolwK1XvsdGLjtbbuMkFU5hbhBOcfdctnnrIPwqCyZ7qJ0lX33CdBstkxn6j1h4NcVetzLc5aYF0VnW6SilFG9/uP7xKDr+9eVT07DCoW7udb2S18WNbymHZvsJVOadCW9IteQrQTnG2kQ+W6i8iGqG1eiIt2wtImrHLhifhUo2QWEU+O6Jo7Da9Y3dx0Ec6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794937445; c=relaxed/relaxed;
-	bh=dXq+KxKE6avnI0gNIGnGOuZ6eBs1eeAKd8k4EoiQ16w=;
+	t=1794937447; c=relaxed/relaxed;
+	bh=cAmMaaOh4mmljO0k7/aal9UucWgDGFN6FfL/f489KJ0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=EJyxG9ce2U3PwZsH+v82N/6j8Vi5oHcHoiG9KYRWuMJhP+/94Zil0SpQLqE+sDHu1187ySYWhrZkv7JUwrXbU5BaUTY3T0p+cuSGnkzHrIIM3CLVui0iqfcfqguvm/9JDocHI5/PYSVV6i2V/3RLDUcmKgK3nnPNSEy0+aN/HvS2QKgYlNN+IuPKbILv8F/QbOU556bgul28bKhuQP/zovOPlmvbhRSIBayQXvBfWUepGUY1DfoARKICVRVofgNsuZvNu+sftrt/aFCz761nHYU+YgtpUjPY7RzPCDeFkxAM3oQqz6ShUfgp2JnYpM1tQGL2c7qaqXNRnb8DL7q06A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Yy0Ry2b7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=hQRE5TG8dYOqDo/bmL7SOlEZxLP4MwVIPukhWZDslt7AhTHLl25enGkg5R0zV0mv7BT2faXAlMWhlhDB44k9kNrWeJurATVNtb/q/5dZZBP9NlmiTGFiUcgfDyeab/2SqFqBDOxW5NxsolXuMi2FxyN3fxCxqQIOsMkWep2PRalwk+o3YP98bk9pY4gqMF++IjDKUcZ5hciaA+JIpwl3l08ItCIn3e8fzQXMoF1J5RYjqilcAsjQ3bbHgtYJJCMgu/D1Gvpf5Ntl6jlPpqYT+LM1RN1AsWpR8x6j9SeGbWky0CgmfK4sRHQQB2RveHLS5L/YtXM7bq8VFUQg7XRgHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hg5MvL5N; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112a; helo=mail-yw1-x112a.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Yy0Ry2b7;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=hg5MvL5N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12e.google.com (mail-yx1-xb12e.google.com [IPv6:2607:f8b0:4864:20::b12e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112a; helo=mail-yw1-x112a.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com [IPv6:2607:f8b0:4864:20::112a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTXCn0vLhz2yfS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:44:05 +1100 (AEDT)
-Received: by mail-yx1-xb12e.google.com with SMTP id 956f58d0204a3-67db6d4054eso2949857d50.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:44:04 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTXCp3Vpvz2yr7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:44:06 +1100 (AEDT)
+Received: by mail-yw1-x112a.google.com with SMTP id 00721157ae682-8b4d86f5328so18173287b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:44:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794937443; x=1795542243; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794937444; x=1795542244; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=dXq+KxKE6avnI0gNIGnGOuZ6eBs1eeAKd8k4EoiQ16w=;
-        b=Yy0Ry2b7FL1tl0+pfAQ1KzuLCSuor61FQFP8Tcf/SXH8VYZLAIHMw2Yk+7FheumZXD
-         RVb23N9Z/SVz+dYVmKWmcPrBTVrObpD66lmiMneYX7J59pKhg5WYJWWtfmScgkM+tNJb
-         QsjZ6dgevMi3WVkMZo94F1XzEIGI1nM+wkYKj1y/xGzgUJq9chcIjRiCFXoXcIbz4WRN
-         oAdaeJp8jMp/Cgak6Y1WGmYM9H/a+6TUJIrPd0BGnX1GxTLnrcje9znOsKQAUWxp9O/w
-         u8fTCZCknjWDHghA8fI5GzVuxbsLwH8PYy3GTSvz0Dr41TJfwl4KGfbK1DStpnO8Wg4y
-         4XVg==
+        bh=cAmMaaOh4mmljO0k7/aal9UucWgDGFN6FfL/f489KJ0=;
+        b=hg5MvL5NIUKjaL/3PwiDeg+mwpsxclwrBs+jSIOVj8deR5AIcskgKFZoLAeA29Gw1C
+         yeWlQdZLSvmtNuBBpfqvnYPJh1n/O15llxrbeA4gUsSWw4TPUZcZyiKYLVnMt/BhsfNE
+         Hl6ZTOR019wYL4xq13P+KQSUdt+IYdv7J5RSOMRX+wXMB0yqUr7gPSwuGd5XeBKkQEl1
+         0q79jbQDrg4vOoKRuxfor3hKPMPcWQYd1P9Ek8tMd+SZIziK3V2mo1dWY+WzIGcuI4Po
+         0QmWxY+SkG9lKIQfvlRm0yokxhaU5t1xCRWmy2YQ3CwZaJmPFkIZWQTz38LV0QEoTdP7
+         KvPQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794937443; x=1795542243;
+        d=1e100.net; s=20260707; t=1794937444; x=1795542244;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=dXq+KxKE6avnI0gNIGnGOuZ6eBs1eeAKd8k4EoiQ16w=;
-        b=gE5SaMFjlDP30BzW9bF2BKlBEQKW3zjh7gNgEVTsiUBgItgAIPN7N0hJo4IDJFKHAY
-         ergG4mEVYKX3X0RF+CF+zqx6dBqr4sBh5hEDb6C7qFj3w1EZ50uMoZIsutakKXxi2y1f
-         +wDSRpMN5vi6TjJIdPsq8IPau3NBnEvvTw/oH26iLV9/neIfmO+BfAEd77ZhIKxA66eX
-         Rh8YB/mmp5RpNEJ4gegkMUH7DawV5WetrDJVeo/K0ZbMLThd/aJ4Du8UpELkF/QbViqu
-         PqYWSLzmsrpFxa1j2iskXR8YXWSD2T+TlxRoh81CQaaPr1RqF89/BpILqTn1xppvnivG
-         3eCA==
-X-Gm-Message-State: APuU4Z/n0fjxduYI1H03CbCHdlHvZ580l55eyyraCTnM8+bB07LhbhKa
-	sKwO4+KSh1cLL2zRjNpianK3C15UkQ6uwy/5LRJ4HmZH1FW3/zrDIuSm
-X-Gm-Gg: AZFdTZeLU7Yqhmxrea/HX0y13pOaqz4orL7COE8vu0bR/snwmn3iKo5xN0ag1yZ3VUd
-	gBR93iOqCZqfULVrPb+Ty8wcK+/ZoIAnjGPO/Vn1+UMzuRnRiIriQeTHtnLv66RbwgvukZVWNZC
-	lbut9lRl2BbTzE0VFZKSUB4VbCmSy6AZ2ymMU0PXhugCWLWM/Kritrgi/RGO1W0IxTK+Q/rV/GJ
-	Llj+Emth0tnyrhCvU3EKg/OJym7RmtJtp/O4ckbhQ/Q26qhwB0rAbY1KV2V1nfQ0mJKDI5TTJP3
-	ERk6vvMl5F1Y9n7Wq99qtAlUiHmozwV0KZ6f1HKUti4NE5rKd/hVeDZXQ2BBSaJVVCaYPa3xnx+
-	u/jS9QEGj6dX1Vmk0ABgkGWVFL0855ytdej35e5ggUAFPjdO95+OP+LO2OEmyJKlXkhKpvq57cs
-	Nk9XB0c4ot/1FHFFRazMlDMknxkJvfGYHUcJB5EIbI49rkbHYij61r1KI9HUGRtFyESVt25qEw9
-	U0CEbEIC3dGKEZ9hDscrIGpFPez54Nr33+tdA3EM4YqB7tMG1EEEQUSHAB0tA+C1YaJXHjQ2Pro
-	q0BwTGJYHBR5n/SZ0gMDPUcH2kiPWxAAHGeu7Z0ghsQWZzP8SigysT8fatofG6JQDIewYcmhcgc
-	3BHQeAOuKiG1A1eEnaVqCAW5PO4mXsO6MGi67r2W6oZI96QuCOG/GaybgdC5Y9UUIW8VgjMBT5k
-	SLCHyF1Duky6U+MleQkA==
-X-Received: by 2002:a05:690e:4399:b0:67b:e531:90b3 with SMTP id 956f58d0204a3-67dd3fa46d6mr79067d50.33.1794937442644;
-        Tue, 17 Nov 2026 09:44:02 -0800 (PST)
+        bh=cAmMaaOh4mmljO0k7/aal9UucWgDGFN6FfL/f489KJ0=;
+        b=LIGVJTg3uaToEoEX+jMnW7Q9JxarjT/M+G92QCkXZLsXAvrg6v1hAk2hZRiFCA1eBT
+         L4XVvKdBnSR3AzH0vDDxPWsa8ZopvE6BzQ8LpVLsVdmvOHrhs4NPPQcMBAKO8YqoI/Q5
+         7zZi2pDAEMoYPS1KPI+7NythFyzylL9d7jcash0YeGafT1jb2tQ1Qt6efsSC/btAIM6E
+         OIjGXsRpU0TsMnNbZz0NDP4yeipTkgTUG21OCfGdjzfD2AaWQnjyLKN/OJHyuIQrf4eI
+         vqbaDyt03811QqHYXR80yRsxmjryYEkx7fKBk49WfrVZCnMqahAjG91m3q4N3yRcMRq7
+         65hw==
+X-Gm-Message-State: APuU4Z8uDzfw8HmezZfzW172oXzFoqZvpFnr+KPO4/paBLkYC/R0pK1+
+	S5LDlu79ID/9jX3jq0jW4onVIQaAxEKIU14WRo+IYK4oHVNEzLXtP7hs
+X-Gm-Gg: AZFdTZd4rDIO98OPwB6p/0g9BfyWstnhMvFM4V6p61hfvoVUkNjngVQQk/ieZucc7Id
+	42iHlHsNpuCCiggtgAPSKg98rCx2PXqF7DVPrJuO4jeMfNWV7FjC9PTZ3NWTuDgYjGmgwPpQHX8
+	+vTiQM5GecZD8q8/7KynBK0f6SF14I+sryZPEIEzCrF85vG0nm5Tw/KVJcmExw4qOMnptp0aJHI
+	efx4WAO8KXrkOalnPTKeUTeQaXa/VPfVy+rocPD07GOigd5osOmalzUP+V3DOIkIl4BvhqD6Spr
+	XPQTh/JYGrXjqD5sQUVRZiJbJwAJKlo8/wFFVcqezEtVA9SIlxKbAwWBqIaMa51FUCW3EOXtpG9
+	2ahXcj7kqbFNLCeflMzjq/a2jpjCBLJnwp9cI4htN+O44Ki71KkTHCMcY8RakIMoEqknrf2n+6q
+	qziQ39OxmWX9/TcuZtW4IAJ6fS8rCc6hEWKJSj8PEYnC1b0iWoIAXlf4oYj2sV8gKQXeFQPQVp3
+	eI/DLmCGk0kK2KY3hoXp8CJkCDRTzIRIYBYOQPJ4b0v9B5drrtM8wI2qlS5MMEvIT6XxUvZX+Fu
+	3zyU1qDkSdecr6KqMn1L13S72aZ9LlW8R1kwCBdLeyiKgl+lPoULHleWHEQwerGbiznkDmZjGU1
+	ispFjwDuGJDvuwzM+blCaOp1ZM2UOEyvSLCX8P75Q19pmr03m1Myi88dri+C6Bq0Wp06F+WhbKK
+	TFjpYPRbvAOS03Y8MZNA==
+X-Received: by 2002:a05:690c:931a:10b0:8b0:cc41:a124 with SMTP id 00721157ae682-8b4aa2c5d8bmr58717197b3.49.1794937444057;
+        Tue, 17 Nov 2026 09:44:04 -0800 (PST)
 Received: from localhost (107-220-129-194.lightspeed.chrlnc.sbcglobal.net. [107.220.129.194])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdf1d0desm2366887b3.1.2026.11.17.09.44.00
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdd9f2fasm2666937b3.0.2026.11.17.09.44.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 09:44:00 -0800 (PST)
+        Tue, 17 Nov 2026 09:44:03 -0800 (PST)
 From: Matt Turner <mattst88@gmail.com>
-Date: Tue, 17 Nov 2026 12:43:55 -0500
-Subject: [PATCH v2 4/8] powerpc/perf: mpc7450: Fill in the L1 data cache
- events
+Date: Tue, 17 Nov 2026 12:43:56 -0500
+Subject: [PATCH v2 5/8] powerpc/perf: mpc7450: Add the PMC6 L3 events to
+ the alternatives table
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,7 +94,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261117-ppc32-perf-v2-4-2072e9b90009@gmail.com>
+Message-Id: <20261117-ppc32-perf-v2-5-2072e9b90009@gmail.com>
 References: <20261117-ppc32-perf-v2-0-2072e9b90009@gmail.com>
 In-Reply-To: <20261117-ppc32-perf-v2-0-2072e9b90009@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -105,14 +105,14 @@ To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  Matt Turner <mattst88@gmail.com>, Tanushree Shah <tshah@linux.ibm.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1775; i=mattst88@gmail.com;
- h=from:subject:message-id; bh=+x3dIo87AbGKQ1Th29uJ8/+OYXWAn+kLXmjzlUcDcrc=;
- b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+TIqY+J83YuOq/SnP1dNEd05hzo7r76/Ky5JOz8gqC
- jbYdHlSx0cWBjEuhpliiixx6xVZZrXtWOpzWvoXzBxWJpAh0iINDEDAwsCXm5hXaqRjpGeqbahn
- CGToGMVD5PQYNDKLi0tTi3TTCooc8vJLEksy8/OK9fILUvMK0gv00jLTSjIy8ouKU4FG6OWllpi
- 6OroZGRqYWDpamDlZOJqaODs7GTq5OTo6uzoZWZqbGDhbOpq4WpozcHEKwFxzQJWRYYKljGTKlA
- L1DK+Y5punrnxYKPrx8mwP/ydRf7ccPClU94bhf5S86rLrnloLDPje/Jts/mHruiTTAjGNyW4/L
- Ce0Sh8MZQMA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1942; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=4ehustDNUkGWLKyFDxeF6Q5SPo7UK1WNROW4Ki9ot+Y=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+TIqw+ylpkPTjxpsz8hfXOU80yYiel7xdxNf+19yqx
+ rSNucXSHR9ZGMS4GGaKKbLErVdkmdW2Y6nPaelfMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
+ IZChYxQPkdNj0MgsLi5NLdJNKyhyyMsvSSzJzM8r1ssvSM0rSC/QS8tMK8nIyC8qTgUaoZeXWmL
+ q6uhmZGhgYuloYeZk4Whq4uzsZOjk5ujo7OpkZGluYuBs6WjiamnOwMUpAHNNujgjw/ozgv8mP4
+ 2J3/Rs59sTfDerzEW54zf27vrKt2elgnq9/mZGhumFi6JllZiCV/vbmGs9LYp8t2h/t5vZ/vCYc
+ 3NjlPmzmQE=
 X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
  fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -123,47 +123,54 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The L1D row of the cache event table has load and store misses but no
-accesses, and nothing for prefetches, so L1-dcache-loads,
-L1-dcache-stores and L1-dcache-prefetch-misses are not supported.
+PMC6 repeats five L3 events at a second select value that the
+alternatives table doesn't list:
 
-The MPC7450 has no L1 data cache access event, so approximate the
-accesses with PMC2 select 26 (load instructions completed) and select
-20 (store instructions completed, PMC1 or PMC2).  These also count
-cache-inhibited accesses.  PMC2 select 38 counts dcbt, dcbtst and dst
-line fetches that miss in the L1 data cache.
+  0x61f  L3 hits, also 0x503 and 0x603
+  0x620  L3 misses, also 0x514 and 0x61e
+  0x621  L3 instruction misses, also 0x505 and 0x605
+  0x622  L3 data misses, also 0x507 and 0x607
+  0x625  L3 touch hits, also 0x50e and 0x60e
 
-On a 7448, a loop with one store in every 32 instructions counted
-645840841 instructions and 19773839 L1-dcache-stores, about one store
-per 33 instructions.
+Each is the same event as the PMC5 code, so add them to its row.  The
+scheduler can then move them to PMC5 when PMC6 is taken.
 
-Loads and load misses are both PMC2-only events, so perf multiplexes
-L1-dcache-loads and L1-dcache-load-misses when both are requested, and
-refuses them in one group.
+Not tested on hardware with an L3; the 7448 has none.
 
 Reviewed-by: Tanushree Shah <tshah@linux.ibm.com>
 Signed-off-by: Matt Turner <mattst88@gmail.com>
 ---
- arch/powerpc/perf/mpc7450-pmu.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/perf/mpc7450-pmu.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/perf/mpc7450-pmu.c b/arch/powerpc/perf/mpc7450-pmu.c
-index 9890c87c58ef..27337a03ebde 100644
+index 27337a03ebde..b2fe977cea16 100644
 --- a/arch/powerpc/perf/mpc7450-pmu.c
 +++ b/arch/powerpc/perf/mpc7450-pmu.c
-@@ -362,9 +362,9 @@ static int mpc7450_generic_events[] = {
-  */
- static u64 mpc7450_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
- 	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
--		[C(OP_READ)] = {	0,		0x225	},
--		[C(OP_WRITE)] = {	0,		0x227	},
--		[C(OP_PREFETCH)] = {	0,		0	},
-+		[C(OP_READ)] = {	0x21a,		0x225	},
-+		[C(OP_WRITE)] = {	0x014,		0x227	},
-+		[C(OP_PREFETCH)] = {	0,		0x226	},
- 	},
- 	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
- 		[C(OP_READ)] = {	0x129,		0x115	},
+@@ -185,18 +185,18 @@ static int mpc7450_get_constraint(u64 event, unsigned long *maskp,
+ static const unsigned int event_alternatives[][MAX_ALT] = {
+ 	{ 0x217, 0x317 },		/* PM_L1_DCACHE_MISS */
+ 	{ 0x502, 0x602 },		/* PM_L2_HIT */
+-	{ 0x503, 0x603 },		/* PM_L3_HIT */
++	{ 0x503, 0x603, 0x61f },	/* PM_L3_HIT */
+ 	{ 0x504, 0x604 },		/* PM_L2_ICACHE_MISS */
+-	{ 0x505, 0x605 },		/* PM_L3_ICACHE_MISS */
++	{ 0x505, 0x605, 0x621 },	/* PM_L3_ICACHE_MISS */
+ 	{ 0x506, 0x606 },		/* PM_L2_DCACHE_MISS */
+-	{ 0x507, 0x607 },		/* PM_L3_DCACHE_MISS */
++	{ 0x507, 0x607, 0x622 },	/* PM_L3_DCACHE_MISS */
+ 	{ 0x50a, 0x623 },		/* PM_LD_HIT_L3 */
+ 	{ 0x50b, 0x624 },		/* PM_ST_HIT_L3 */
+ 	{ 0x50d, 0x60d },		/* PM_L2_TOUCH_HIT */
+-	{ 0x50e, 0x60e },		/* PM_L3_TOUCH_HIT */
++	{ 0x50e, 0x60e, 0x625 },	/* PM_L3_TOUCH_HIT */
+ 	{ 0x512, 0x612 },		/* PM_INT_LOCAL */
+ 	{ 0x513, 0x61d },		/* PM_L2_MISS */
+-	{ 0x514, 0x61e },		/* PM_L3_MISS */
++	{ 0x514, 0x61e, 0x620 },	/* PM_L3_MISS */
+ };
+ 
+ /*
 
 -- 
 2.56.1
