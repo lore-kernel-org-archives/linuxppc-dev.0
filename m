@@ -2,104 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42612606A32A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 15:42:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 109D9606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 15:44:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=QEZlqEdW;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=xjk0STV/
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q2Jl2sdW
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTTWC6tlgz2xnZ;
-	Wed, 18 Nov 2026 02:42:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.152
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794930135;
-	cv=none; b=m1IWccjLLEmYgiL25USCT1lig1KbBQYSScuSSbIbAgEaptacqierWCrzd1hkBTlCsCasIwstjc7fpYiqUk2uGEqy5b1MHSeVsL74SIadkPUW7S4KfIPhrjFJN3e8J1zz/dwD3vE93YU0bFMR7LHwXgX8cDWd8JKcDCEWvhyOg0moOSXAvPcETxnPO9NdRRkaWKkzPtZDBXdrQgHKJRFehyGwri5BSLO3rU24hywsGTUnrod3LwPMUkY29f195kxIQFNCopxNl7yHc2ZOFr9k1yBBfHkyJRhvWforyp/Rbss4gioPXOzAtgL3UL36PboRnHDokpz+jbsUyK8PSL7lqA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTTYB5n2pz2xnZ;
+	Wed, 18 Nov 2026 02:43:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794930238;
+	cv=none; b=hHcpKIGIVZ+Gv4coqFqgPqdxv0z3Z4+aQ7Z+La73zpxwCK4GywXdKsAXZNv2H3fRVVLD3e20pTkNeFVactOBZ4F1opBfX3cgcy/ksexdJkhyMZtHPpEofTp3CuvtSlW9EBpY6CJ4rb83qYep1rTU71xZFGCS40Mz2zUdMiWctxI+wMSeuFGrwntxyZ+ZmpC6nC4eDfirpjWxlLBs5nccpoWms6T9bnxAUb1EKe4iPrCNLHNFCN0PpF17h3dyv0EpEK21gKzevRz588ODZfboT2OwAUVYeeL+u35LhEMibddTnX1A2DtcZbRRNQHjZQdbPvDuME8IEU/i2ygpP4c+FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794930135; c=relaxed/relaxed;
-	bh=Ll1OJgMTfmbPO7d5RPNU8rQH+se51A5k26zqVWnejZw=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=UJLSX8ZpePNgmeNE4cxbMU38MiNWcZVsMbkgHbCcDwR6wC0poH4fmBy1lyFU3jX38zd57BJUvSzPHgHgNn1k4vFKKTOsXdyfYO5c8eTYDMM+llafXBuEkgHQ3ouw9sEeucCS5zmFI5Qr+3KHq6lpwzS19ouME6KpxqhCjYlObsSEzSQod5FIKp5vwxrIn4TsMO/PTcteN07mpuzTs44yOjZEIYf89yi8+/JQvphZ7e0VsL1W3TAh2wAVKW36Vzl/JGsOul+67/1jA2kNiDhC3ShSSDSD7ziqMF1H5YF6CSpP6mL92L9xBg7wEIQ1c7wzElmixopVzhVWmqhtk6ZOkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=QEZlqEdW; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=xjk0STV/; dkim-atps=neutral; spf=pass (client-ip=103.168.172.152; helo=fhigh-a1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1794930238; c=relaxed/relaxed;
+	bh=rmlNl+cN1v4ObBPuPGFVK0GCt9dkXWFacMXpgZLubfc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=GnnlUXwuldWVzXz1988RfSL5z0XNm1sn2yg67rKbx5TWc6SsU+BjAeb6b7BKzWNbdTlQkfoGXoRJUB0bky4aQll3PG5hKmz2F4ZGVlG/oxW2q24FB7ZMypsO5B3llPw++yExYrpwKLSLBmgMmqRvNpkgglZ2qpl1tZ4Vn76mfk+ZcMZYIKwlsh760ca5GN2gw9V0L/2gaPcMj8JtkedqzWEkpjBN+zH89O5EJAmcvwSGnxO+4E6DtOH+l+PhKsQJBZ+exdqwFEzVwEQOwpfSw0wBw5KzugMvs04Me/SM1PMAqLgg+EpSKMDL19Dd7jfg0K4cSO6XlB/UdJDhhRhXBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q2Jl2sdW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=QEZlqEdW;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=xjk0STV/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q2Jl2sdW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.152; helo=fhigh-a1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fhigh-a1-smtp.messagingengine.com (fhigh-a1-smtp.messagingengine.com [103.168.172.152])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTTW82Bbbz2xmk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 02:42:11 +1100 (AEDT)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id A41CF140017D
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 10:42:08 -0500 (EST)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Tue, 17 Nov 2026 10:42:08 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1794930118;
-	 x=1795016518; bh=Ll1OJgMTfmbPO7d5RPNU8rQH+se51A5k26zqVWnejZw=; b=
-	QEZlqEdWmLc2QEeS/BvIC2QetEO8ShYZ8QZ0rgehqZi2X19nuUaFAx+esxJHgLnt
-	HVTPUJLjNLC2N7WtnFZR0QMqPeZ4KruDB3miKy5rh1lKpSNLuqrcp780F93wnkdp
-	gab2EWwAv8xyOGTR/Torx5SHoEnu8LhryEt2CtwNzMg/q6if/vFpC6XyXmDxo+9j
-	hMolatYINZtvg4s/5AGp3ec7e3505ADuPFWsry1m4NFISDIx0fi2ZdqhoP2y7mxD
-	Fybj5ryRQmmOPXg6fLVhUr27Z1bhna3g0S0U8G44YhZ/h3OT2CxSCqb3g1zYtbHB
-	EzHG8WD8/AwMJe/Qk2KQ3Q==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1794930118; x=
-	1795016518; bh=Ll1OJgMTfmbPO7d5RPNU8rQH+se51A5k26zqVWnejZw=; b=x
-	jk0STV/L7B3O32tU8VWQ+CXfuJNPCEgZftRy6OCtYsguLRqbFWxi8TcoLDMess9D
-	u7YjlWVhKHXW7Ez8ZujQNovmIVo2avPQC1xH7fK0iehkA4Cg4+tUVd9GhVk4AXSe
-	iAP5DPYQ1ltZU8fXdllavVvDIlH0brQAaLrHMwNQJr4PZD+d9o/txnf0rBw0+61h
-	WfJKoINsTt8fSQKUD2C5M7fpa3e+kkbOZPKq9c8nOZL+uS5NxQnGb9lP7F0zp19e
-	Z+U45BXjDR9EPtbOv4gpqPHnmp+3cf0fFX4Uu2yxdovwgCRELzokQqgvmxUOsGvT
-	MPa0smRqY2s+RbOinkIJA==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=arndb.de a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1794930118; d=arndb.de;
-	mf=PGFybmRAYXJuZGIuZGU+;
-	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:EbYqlm43aOp12Egbz6vbBDsGU4Ld4Bwpu1ttRgXGLF8J8zm
-	dpIIllczFqb/9Hq+4D6q+uf3Fk8zLJWgvQI+wpyRPsFfZJDOfdL13cCkpUECOOvx
-	1wrCgR49qJ03/Wcc1ZFJ5tLkIf8q5teUHVnrcnr+nTPoasSxjN5XsP7GWUlsc8oz
-	Z+YpKITdzHPDYn1z1/iQaqQ1MQACkAnFYevkUtDYpc78gnh0KnOT/LVcBblF5RVX
-	Pq6MaJhAsAnYWlVMsmbF8nlEcSwk80+5S0JsKDrT+9Pcv4pv9oFoRbRq4/2pNMH9
-	l8skL/8HYb/btD2dh+WeUHKrx84pDb0lVf/kDRQ==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
-	from,in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:2E40Akz7CxLdmuHlTptnFJiub4jcCNuV3dW/pONaNOE=:XQKkVDqsZ6QAFyQa7gMxgcUZ+KiF7YSNEoDW2ZGC3Os=;
-X-ME-Sender: <xms:uHX8aj1ULntcAUjkLkyeKKS2OhHsnYaZboc_qTKkPmMb_Rh6xj1BlA>
-    <xme:uHX8as5_M3xbsNzHJjlSvktxoxnwpOJmqi5r_0lEtCjqhB5l-ociCBTlam_GSGS9P
-    Wsk0QaMd_UCkjc9EPKz8ZHIPqIWuwy9Mbnpi8R2MQFfJzvmv4o-rsxg4Q>
-X-ME-Proxy-Cause: dmFkZTEeJL0hwSgutYTXOLa07funNRvMyPcPnJNDU5g67C7XEeTwvtKXcfgmBe6zntHJIV
-    hWVxBCJPwJrqa6fhior51HEG1Y92Mns1888jh4KZEm3IDFBQOvSqu8ssEeQzJpNx2oF84s
-    4H7Uj6X4t7fgv6Fjn5AQ2tudTC+laSaiRXUul5xFQjHYC029RvSS13/d+dv4wwBj7Yn3HS
-    x5VmPMgGXww/TIVieDlS8BCq2YnZ4rSLiQ7s1Sco1S5nUwg50M8BHdy+cVwTlIJQwqsCuK
-    EomYhXWiNLeYHbaHt/4WnYcbuK268FwZlL0axh3zm6ezRWHI67tZZrzPUaKVXr8vMnSDBP
-    cZniHB8BHCzNCmfI4FaQhmKAKQN00ak5GaXTEM7gXg23kxhK4HlLXfcWokveeAMUi6sm7P
-    +hwELaock05KDm5SwW6DvgqSzCdyoX+3fVVkaVyOJoKFbfhfkGB/t/f0FiBVqPJX/B2uBM
-    OnFeY7lW6pC6aX+lD2JdAqV1Ob6LSU5l2Brc7WXHHmwsCE5U1DsIyUOrP2/dx6MXbYu4/7
-    LZno59sHVe2sYLlQtO7JxYvGTvtc2xBgf1/zkTUcFbqMVNltrUVgS7pLPreEqmGsPn+4uw
-    TcuZSSv4Ot3WyFWSNCKpCQ5gMoOfu8BVMGFOEOe0oatIX9e8yLFWiAE2mxlw
-X-ME-Proxy: <xmx:vnX8auYuKawXISghf2SS_ele99TK-xlZAaQoZNwnjO3teiGw4mk6uw>
-    <xmx:vnX8aqMLx1SreMXPhKf-edBV69G0ugydCrfVeeWBQeqNzqHGXnCoZA>
-    <xmx:vnX8av4gTQP6w5zLly17IpnwDRqE3w7EqapVYUYeSjo771u0PdjAcQ>
-    <xmx:vnX8aqN1FiwixV-u1II7ik9iaKq5xJw6Bi9WyoII-D6I7ewjczzIHA>
-    <xmx:xnX8al9iigkUpsfbrzzYnNp6MlNkTaLHYYtXFBUbQ-3FEKV4pkbZlJ1a>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id DA48532A009C; Tue, 17 Nov 2026 10:41:44 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTTYB08D4z2xmk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 02:43:57 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFQV0E1096766;
+	Tue, 17 Nov 2026 15:43:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=rmlNl+
+	cN1v4ObBPuPGFVK0GCt9dkXWFacMXpgZLubfc=; b=Q2Jl2sdW7R/r+rRsLKXYJD
+	nAc+mng8ZG27UM+XVUSbUqXSPgBC3rPO7YgOQX+oQbLjRa7ycJd9T6eoNTOOkAU4
+	JzFuMUjM0O/Kk713/wrYYlXnNypnEknghpD+N49++ObMjGh2Pr6Q+CFR8+LbDDbq
+	Tx6p+LXYabDlJxOceNRW2u61MOY9G59uQ2NveRTzt/uFO/7UMbqlGDI/4+luvocY
+	vwSVTbTeOXdG+gqtOkzvr7pPFrmvGHddFY4NzRDYQr9tqMYW+v536emLnUxpXeRK
+	yQkwY/6vB73NFK1i8+vl8SPKuzCUwBYts8ksRt6yzoPFRfjbzX0Z293/aUZINIrA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hxfat43c3-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 17 Nov 2026 15:43:46 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFYutg713417;
+	Tue, 17 Nov 2026 15:43:46 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j02dfdjxa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 17 Nov 2026 15:43:46 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AHFhgAA44040666
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 17 Nov 2026 15:43:42 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3D19C20040;
+	Tue, 17 Nov 2026 15:43:42 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C0D2E2004B;
+	Tue, 17 Nov 2026 15:43:39 +0000 (GMT)
+Received: from [9.124.217.181] (unknown [9.124.217.181])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 17 Nov 2026 15:43:39 +0000 (GMT)
+Message-ID: <4b5c9a61-5876-4508-87a2-5451d363a181@linux.ibm.com>
+Date: Tue, 17 Nov 2026 21:13:38 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,121 +81,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: AwZDIwU2rPTF
-Date: Tue, 17 Nov 2026 16:41:24 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Christophe Leroy" <chleroy@kernel.org>,
- "Arnd Bergmann" <arnd@kernel.org>, linux-mm@kvack.org,
- "Crystal Wood" <crwood@redhat.com>, "Alexander Graf" <graf@amazon.com>
-Cc: "Andreas Larsson" <andreas@gaisler.com>,
- "Andrew Morton" <akpm@linux-foundation.org>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, "Ingo Molnar" <mingo@redhat.com>,
- "Jason Gunthorpe" <jgg@nvidia.com>, "Linus Walleij" <linusw@kernel.org>,
- "Lorenzo Stoakes" <ljs@kernel.org>, "Lucas Stach" <l.stach@pengutronix.de>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Malin Jonsson" <malin.jonsson@est.tech>,
- "Matthew Wilcox" <willy@infradead.org>,
- "Michael Ellerman" <mpe@ellerman.id.au>, "Michal Simek" <monstr@monstr.eu>,
- "Mike Rapoport" <rppt@kernel.org>, "Nicholas Piggin" <npiggin@gmail.com>,
- "Nishanth Menon" <nm@ti.com>, "Richard Weinberger" <richard@nod.at>,
- "Russell King" <linux@armlinux.org.uk>,
- "Thomas Gleixner" <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Message-Id: <93593ec2-0f7e-43a9-9166-dee90a9cd2c3@app.fastmail.com>
-In-Reply-To: <14e28b99-12dc-4000-a704-8b46cfeb3c0f@kernel.org>
-References: <20261116124832.662455-1-arnd@kernel.org>
- <20261116124832.662455-5-arnd@kernel.org>
- <afebfaf5-f3ee-4234-875d-e5ebf1ee64fd@kernel.org>
- <83495d02-4e09-40f0-94fe-e57a1e73d1a3@app.fastmail.com>
- <14e28b99-12dc-4000-a704-8b46cfeb3c0f@kernel.org>
-Subject: Re: [PATCH v3 04/10] powerpc: kvm: allow flexible PAGE_OFFSET
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCHv2 2/4] powerpc/watchdog: Disable preemption in
+ arch_touch_nmi_watchdog()
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        linux-kernel@vger.kernel.org, chleroy@kernel.org,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, stable@vger.kernel.org
+References: <cover.1794924821.git.ritesh.list@gmail.com>
+ <3cb2893bf883be87ea1c3712344ac03f727937d0.1794924821.git.ritesh.list@gmail.com>
+Content-Language: en-US
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+In-Reply-To: <3cb2893bf883be87ea1c3712344ac03f727937d0.1794924821.git.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX5zMOjNZaoSCU
+ sOrqbYEexznfceCYddY+QiLKtxOkgTHsl8W360ARlCOVGBnNtyuu6XGShSNDS8HS4Xlwj7x5zHt
+ BKm/vetgkzKZbftZZVm5nxEN7SKfNvw=
+X-Proofpoint-ORIG-GUID: h-wmP1IUSblYLkRfDfVYj5uljJtAMwN6
+X-Proofpoint-GUID: W-TGwsihpCE7ooHZ-hsMEY16rcbokUKZ
+X-Authority-Analysis: v=2.4 cv=IaESymqa c=1 sm=1 tr=0 ts=6afc7633 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
+ a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=_Q28vid90O0EagN2oV8A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX4fAeVGJSlOR/
+ 3Le4Gbt7cvGgu8g6yggHeUAbDUaPFUaqOSaPUcVdZwsgTFvJyMRXW/nHjRbYgOs+pvLrCOc57LM
+ h4Ze3djpVXjhCLy0/qnUj2ygmQfFb6cbRaM+rDZXn+rpufJVxjNpdfChrmRxOh8RszRT4MERs3+
+ /FNW/j380uLXbDEVQWV6ycOiiTrXeOrWkGW+m181TQzEH4XbUIHuBfcw5E/5ZTWXag709DhK6ve
+ oetIb0O4BLp3ptaJJUaJmiIrRu7eqAJx+raY0KfzvPUFfvjhxGZXL5wCef9/1ny5DYUTrSKz6p5
+ 3xxMW4/cjhuAmYYaht9H+OaSUJ5FRpqpg2/YiXtGOcz/eogIWqdAvlp03ojZHzTxPPVg/DQZAtm
+ oQhHoPaw0xzJEvpCKqmd/WpjPkAcYQMZdeOzpF7eFA8OKZsNCT6euJz9EjJ5qvyXTGRgTnQXsV5
+ MUq8M7KjPBPkX+eHdfQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-17_03,2026-11-16_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 phishscore=0 adultscore=0
+ lowpriorityscore=0 clxscore=1015 impostorscore=0 malwarescore=0 bulkscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611170061
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 17, 2026, at 16:11, Christophe Leroy (CS GROUP) wrote:
-> Le 16/11/2026 =C3=A0 23:54, Arnd Bergmann a =C3=A9crit=C2=A0:
->> On Mon, Nov 16, 2026, at 14:38, Christophe Leroy (CS GROUP) wrote:
->>> Le 16/11/2026 =C3=A0 13:48, Arnd Bergmann a =C3=A9crit=C2=A0:
->>=20
->> --- a/arch/powerpc/kvm/book3s_32_sr.S
->> +++ b/arch/powerpc/kvm/book3s_32_sr.S
->> @@ -107,14 +107,12 @@
->>          KVM_LOAD_BAT(2, r9, r10, r11)
->>          KVM_LOAD_BAT(3, r9, r10, r11)
->>  =20
->> -       /* Restore Segment Registers */
->> -
->> -       /* 0xc - 0xf */
->> -
->> -        li      r0, 4
->> +       /* Restore Segment Registers, assumes PAGE_OFFSET is segment =
-aligned */
->> +        li      r0, (0x100000000 - PAGE_OFFSET) >> 28
->
-> Fine, thank should work allthough I would have used 0x10 - (PAGE_OFFSE=
-T=20
->  >> 28)
->
->>           mtctr   r0
->> -       LOAD_REG_IMMEDIATE(r3, 0x20000000 | (0x111 * 0xc))
->> -        lis     r4, 0xc000
->> +       LOAD_REG_IMMEDIATE(r3, 0x20000000 | (0x111 * (PAGE_OFFSET >> =
-28)))
->
-> Maybe an opportunity to replace 0x20000000 by SR_KP
 
-Ok, changed both.
 
->>>> @@ -115,7 +115,8 @@ static u32 get_host_mas0(unsigned long eaddr)
->>>>    	mtspr(SPRN_MAS6, 0);
->>>>    	mas4 =3D mfspr(SPRN_MAS4);
->>>>    	mtspr(SPRN_MAS4, mas4 & ~MAS4_TLBSEL_MASK);
->>>> -	asm volatile("tlbsx 0, %0" : : "b" (eaddr & ~CONFIG_PAGE_OFFSET));
->>>> +	asm volatile("tlbsx 0, %0" :
->>>> +		: "b" (eaddr & (rounddown_pow_of_two(PAGE_OFFSET)-1)));
->>>
->>> I think this is not valid.
->>>
->>> With PAGE_OFFSET equal to 0xc0000000,
->>>
->>> Before:
->>>
->>> eaddr & 0x3fffffff
->>>
->>> Now:
->>>
->>> eaddr & (0x80000000 - 1) =3D eaddr & 0x7fffffff
->>=20
->> I'm probably still misunderstanding the intention of this code then,
->> my reading of the comment was that both 0x3fffffff and 0x7fffffff
->> would be valid choices here as both are below PAGE_OFFSET and
->> large enough to alias the correct set.
->>=20
->> What are the actual requirements for the mask?
->
-> I'm also struggling to understand this so I might be wrong. My=20
-> understanding at the moment is that here we are looking for the physic=
-al=20
-> address matching that effective addr in order to find the 1:1 MMU=20
-> mapping. The particularity of booke is that you cannot turn off the MM=
-U,=20
-> so to simulate MMU off you have to have a MMU translation to translate=20
-> logical address 0 to physical address 0.
->
-> Therefore IIUC the correct calculation should be (eaddr - PAGE_OFFSET)
+On 11/17/26 7:55 PM, Ritesh Harjani (IBM) wrote:
+> touch_nmi_watchdog() can be called from preemptible context, e.g.
+> sysrq-w via /proc/sysrq-trigger. The powerpc implementation uses
+> smp_processor_id(), so with DEBUG_PREEMPT we get:
+> 
+>    root@buildroot:/# echo w > /proc/sysrq-trigger
+>    sysrq: Show Blocked State
+>    BUG: using smp_processor_id() in preemptible [00000000] code: bash/238
+>    caller is arch_touch_nmi_watchdog+0x3c/0xd4
+>    CPU: 0 UID: 0 PID: 238 Comm: bash Not tainted 7.4.0-rc2-00029-g7664547149ae-dirty #126 PREEMPT
+>    Call Trace:
+>     dump_stack_lvl+0x138/0x150 (unreliable)
+>     check_preemption_disabled+0x120/0x158
+>     arch_touch_nmi_watchdog+0x3c/0xd4
+>     show_state_filter+0xf0/0x338
+>     sysrq_handle_showstate_blocked+0x24/0x38
+>     __handle_sysrq+0x134/0x3a8
+>     write_sysrq_trigger+0x178/0x22c
+>     proc_reg_write+0xf4/0x150
+>     vfs_write+0xfc/0x71c
+>     ksys_write+0x8c/0x150
+>     system_call_exception+0x310/0x590
+>     system_call_vectored_common+0x15c/0x2ec
+>    ---- interrupt: 3000 at 0x7ffd01755b98
+> 
+> Unlike the generic version, which only sets a flag, we update the CPU's
+> timebase stamp and its SMP watchdog pending bit, so a migration in
+> between touches the state of a CPU we are no longer on.
+> 
+> Disable preemption across the update. While at it, let's also mark the
+> function as notrace (since we might be within a tracer when this
+> function gets called).
+> 
+> Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
-AIU that would be wrong for PAGE_OFFSET=3D0x70000000 if eaddr>0xf0000000
-is a valid argument here, as that would still point into the linear
-lowmem map. I've added Crystal and Alex to Cc with their current
-work emails, maybe one of them knows.
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 
-     Arnd
+> ---
+>   arch/powerpc/kernel/watchdog.c | 8 ++++++--
+>   1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+> index 44f178e07531..32d4e716cb0a 100644
+> --- a/arch/powerpc/kernel/watchdog.c
+> +++ b/arch/powerpc/kernel/watchdog.c
+> @@ -456,12 +456,16 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
+>   	return HRTIMER_RESTART;
+>   }
+> 
+> -void arch_touch_nmi_watchdog(void)
+> +notrace void arch_touch_nmi_watchdog(void)
+>   {
+>   	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
+> -	int cpu = smp_processor_id();
+> +	int cpu;
+>   	u64 tb;
+> 
+> +	/* Callers may be preemptible. Stay on this CPU for the update. */
+> +	guard(preempt_notrace)();
+> +	cpu = raw_smp_processor_id();
+> +
+>   	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
+>   		return;
+> 
+> --
+> 2.39.5
+> 
+
 
