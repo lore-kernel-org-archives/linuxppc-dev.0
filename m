@@ -2,72 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48B44606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 15:36:22 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E83B8606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 15:39:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FcKF3Cgz
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kJJNtNQf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTTNP0DSfz2xmk;
-	Wed, 18 Nov 2026 02:36:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTTSQ4hbbz2xmk;
+	Wed, 18 Nov 2026 02:39:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794929780;
-	cv=none; b=ev8ViAOhgFhYxuyiIfFQlgphscnkGpLaNmbIH5aQ+ynkLgqAJW9c27N4CfvH5WzguAnhjOwUs+m91ZaPf+c0dBOjxssyXWMj5c8Iw1dvt95i9AlNnYE0r1opMQGGH3gtU+5dCkUacVzhGGGuQiSDyCFe2ICfctErGbXTlIJkz70TAImzpTikokyNYIMILG6UW0vKu8I84H5UwirkTlsTFaufdgAvraM6chr5AjHksamExX89rFWoOwS2e5JJ9cgq7m6AuuaEmzMeZxDjXLdW0ky5kcsqQi/wtdYPZ3frTyyH3CBSl8JdtKMWj9ty3C7AVOARK1W0BO8RYo+E1x5lXg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794929990;
+	cv=none; b=M6NoDReESbsM53HKy9M9CRN8Nvujjvpi8VWoxydwxCLSRYyM1s5b+AtGch0WU1vRNTY0JmqqPyJlPMQXQ+dC2jl8E6B5BrlmqCxU46+XSlf5n3oc7Ly8U86L7yYnfRe5GzaFQZz60kzVb8OVUu09ypQA/ct2QCXXBQKVzhKqJ1+vot15pB9nFup6gUOg903eF5BGw8lKBX9QeBHunCVJVG8+K8esN6KLH9jycCJu6OxPJjR9ANFLPOO/sWH+FVu8d5xwH4/p4T6NrgsvRuK1wYd0S11Ylx1LVE3S04UGpnwTEKWqL/kjI8PWTUSIVjQEyV0sZQmuQxj/wO59eHuVrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794929780; c=relaxed/relaxed;
-	bh=2npSNYVs8QqeFnCbwh7kSwq92z+qQL0m3NQfZzbwv2o=;
+	t=1794929990; c=relaxed/relaxed;
+	bh=pqaMMNWM/Q7lcArrwhm35JxHeiilvtfQVWCH8k7KGCU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DJ4WOWGzexacZhNEAp8lfePRfE2PumVwEKCKaQ8gli2OqjmosrPSfxEWq7OTJYAUg6+1DHwWJAuAJIsmzcyfLtkL7IpqymRa6p7gmsbkzR8g38hRjCoXbJDNL0T9FGEs7+Z77DKYkpUixOSQKWqGfyJsa7Ch+hqeZxXnAoVeTBDW1zjZHd/nItZ7MFmOJk2fg6ycg1DJXSJrWvK6AYhMBdGAVyFT8CwzVtuSxG3K7lm4AFks8MUsJS51pzFQ5Vxw2nuIt6JtPY60RkCrwQG8PiaM9BIRdWmvEXBtJDr+8/TH27olQGXxIr1cUTcdDcJUlEYLsIJ4xkVuuKPYX6kpGQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FcKF3Cgz; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=HCDS1LePHoNAsFwWVSzJybf/XGz15IRgx0oGW7C0IczIndzAdOzPfuALXGO45FhKauNQF2HyAFJEK3X1o4txslpr6PK2C18YZp0MleFWGwJB3VXZ5OLmgfoZl3D5hIXSHsnqW9WJQBbIQ/Wf4DwAk3HCHcYt1xboIy00Q+PAUkEQZv8ozRT54C1aHEkjEKsS1PNQBXvy0YIB9+JUX4Dn6eJ3objS7hbhn0ulIBLW0aUp8ESzBjH23YZYeiF0RtSYUyhPpy12NPZvWllnTNzVvDptj8hgp0DcPhFdcYBKcGA5ynoVDDFy/457XcRZjEB04W0kdX26bTpWgtya2eUyDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kJJNtNQf; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FcKF3Cgz;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kJJNtNQf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTTNN1gg4z2xNT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 02:36:19 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFQcrC1097020;
-	Tue, 17 Nov 2026 15:36:11 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTTSP51ZDz2xNT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 02:39:49 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFQcjl2892664;
+	Tue, 17 Nov 2026 15:39:41 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=2npSNY
-	Vs8QqeFnCbwh7kSwq92z+qQL0m3NQfZzbwv2o=; b=FcKF3Cgz2I382VpheGQkSF
-	ENxudKLBGWxivdUcndIV1+Ye6mmQiJwdUUC6F+MWTtdhVv/AO3mILfBiseox2gqm
-	sie/Xu7GtCWHl5CFMAhsQiPl4rUB+5+3LYzu8xLPS70+VPNeVwGs6wvREA+mvPDw
-	/StSGpiFggfeEZ5rVKx54v0gUUwHbVfZJT9PRIgTDHblZwbXtqSvgxEhQ/Iq6DRo
-	SDN1k9QljsAncN0W2HzMcJz1EcjxmrgOo2E3ukmzE6otqAormM01XqDEFT5YT2Kf
-	uBVPfvqCKqnZXni8vogcDiHaomT34aTeJz4k0nhW/dXyOVuVZkLmKxm6x48z3wvA
+	:message-id:mime-version:references:subject:to; s=pp1; bh=pqaMMN
+	WM/Q7lcArrwhm35JxHeiilvtfQVWCH8k7KGCU=; b=kJJNtNQf0WcnhQqYF8+K7m
+	4qrsAy1gLq1EAs3kiVAYa5G7HpSkcWUO2HeW21IZAp535Ved4U+dzLJBasa0V8j9
+	ao23ze7rTq/F5/+iyA9cQ05rBRgf2v3JIURH02vWljYjArdBwaS6O74zU/pKkSnM
+	mbpMqkQw3XdmHIwjfGGFZt+XxD2to+YT9VsETAwobWkcl9D7dwvOsUlPDLdpVueT
+	vh5ScsVz6hyApIgg83p1hIIJFxr4Kv9HjYs2/PdvAhftXloCKjFPe81RczMNbaQ1
+	QVZof2y9y88+X6qtvL9YxZkEHfSSCVDy0ekjuF84GbNeFTPhm7F86MKEetAb7j2Q
 	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hxfat42ac-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hxf56c3kr-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 15:36:10 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFYwGZ3749399;
-	Tue, 17 Nov 2026 15:36:10 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j067nc91g-1
+	Tue, 17 Nov 2026 15:39:40 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFYwdU1758420;
+	Tue, 17 Nov 2026 15:39:39 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j02jucm5k-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 15:36:10 +0000 (GMT)
+	Tue, 17 Nov 2026 15:39:39 +0000 (GMT)
 Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AHFa8RE16319064
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AHFdbYK27984492
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 17 Nov 2026 15:36:08 GMT
+	Tue, 17 Nov 2026 15:39:38 GMT
 Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 72A3358064;
-	Tue, 17 Nov 2026 15:36:08 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A3F5C58054;
+	Tue, 17 Nov 2026 15:39:37 +0000 (GMT)
 Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2F45F58062;
-	Tue, 17 Nov 2026 15:36:04 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6090D5803F;
+	Tue, 17 Nov 2026 15:39:33 +0000 (GMT)
 Received: from [9.39.20.228] (unknown [9.39.20.228])
 	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 17 Nov 2026 15:36:03 +0000 (GMT)
-Message-ID: <6d067199-3077-48a2-80cc-e21352f5c837@linux.ibm.com>
-Date: Tue, 17 Nov 2026 21:06:02 +0530
+	Tue, 17 Nov 2026 15:39:33 +0000 (GMT)
+Message-ID: <2a142695-8623-4904-93f7-ecee8303e86d@linux.ibm.com>
+Date: Tue, 17 Nov 2026 21:09:31 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,8 +82,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/8] powerpc/perf: mpc7450: Fill in the L1 data cache
- events
+Subject: Re: [PATCH 5/8] powerpc/perf: mpc7450: Add the PMC6 L3 events to the
+ alternatives table
 To: Matt Turner <mattst88@gmail.com>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
         Michael Ellerman <mpe@ellerman.id.au>,
@@ -94,41 +94,40 @@ To: Matt Turner <mattst88@gmail.com>,
         Paul Mackerras <paulus@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20261109-ppc32-perf-v1-0-a6e8a55b3b48@gmail.com>
- <20261109-ppc32-perf-v1-4-a6e8a55b3b48@gmail.com>
+ <20261109-ppc32-perf-v1-5-a6e8a55b3b48@gmail.com>
 Content-Language: en-US
 From: Tanushree Shah <tshah@linux.ibm.com>
-In-Reply-To: <20261109-ppc32-perf-v1-4-a6e8a55b3b48@gmail.com>
+In-Reply-To: <20261109-ppc32-perf-v1-5-a6e8a55b3b48@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX6l0RonZy5bsN
- Tof4GVEoRwywe54JYDXk2qwLemoaroHz1Zqt/eFxThYMzeEH+4IJGKfTrwi1g4T8mfIBhqWnGuA
- wMMiwvyjCdDAUKJE7QUH9Mt8xOlS1e0=
-X-Proofpoint-ORIG-GUID: 4O-OD-z1XMFSsWnZWo_snrJIvTs2xrgT
-X-Proofpoint-GUID: eC4FSpXgKRjUWDF16RBJjd7Yu8jweYoL
-X-Authority-Analysis: v=2.4 cv=IaESymqa c=1 sm=1 tr=0 ts=6afc746b cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX4+3pzylmdJpY
+ ZHWMf72sF1n3Xb9LiOZhlDvNmv7bM/WorKa7Xb9nssL577hQ9kGV12tqMNx/WAw3RT2Vfs/T+M7
+ Wb/6D3eeLDeVH0AsyLejVKXd5Va16nc=
+X-Proofpoint-GUID: PIau_JvXvrW0yfbM5nG7gadDxs11NamO
+X-Authority-Analysis: v=2.4 cv=ROImjIi+ c=1 sm=1 tr=0 ts=6afc753c cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=pGLkceISAAAA:8
- a=VnNF1IyMAAAA:8 a=GCOtrVCJrbrT3k62i-gA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX0H3tEUhB0dyl
- jRNyMfCSxEiH3bIup+HrMO9JFjyIu9pK38qHqvDuu8DXIiFJAfkF1UoLm3/Pq7n1rAxtDuvA9Eu
- 8Bsr7n0dTQYbSdlcUGhXtgSKYaW4ryNSmXXzBSPqWHpZYjnKnWiVmbmEB1FChZ0ob2jEAb858Ex
- 6Jt4/elOO1sqtEl2TrOFGVu4r0K9iECG8EsyznR4VOrSiEUMvCDdTV6eGGobdVSKSb+pPhcNeBo
- ENewOvT2HuQI5jbfy8rkzpRMxm/QS3aSV27GHGpDoflpeRZSVjAnPbzDbkQOsZKn2qg2dKV0RYb
- dWzLNpX/uNzby7UrKui1NOVnUZHpgKnf+SKGFrY22vI0JoCKnwqeqYSH3/L4rAITjGVAiYSlDNY
- SOhghlkTGV+mHatOhGs/HGMc9OoiFOHTx0WNrrqBxgu9Ec/lTZpZCKILoNSGFTu+6v/s2DfVxTP
- 77vAOR78Zn5GT11dMKA==
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=pGLkceISAAAA:8
+ a=VnNF1IyMAAAA:8 a=N1JELc4CeVoOcBN2EHAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: tJuVAV-lLvwxtgY2maYRyCH3ZEZN89Qa
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfXxdti2hsq1RE0
+ mgg2UiyZrtwCjdU+B9faiPrzScSZGiRUw6nm13yNcuPAUvPi4R4hEuHEBfrWSuCNRDJ2qgohoP0
+ epVNAKXf9LISp3KMwFv8Q25fyLXTraQbiBVmGtRPkb9Kv3t8Qa0a8lRSERN0onEeezIXCRH5tN4
+ /k93waYsXj/fG3m+/qEjx7FpFnrj60KlyHo//UDd0lBLl+WIPVSMzTotjckCqDlEZX1Fj2yJGBT
+ K+2HRabpuIV57g7J1BaAgTmo8sIhqfDZgGMQxi0GqxrRYI4cedFiBED9ehoiekibrBt5Sb7kI6k
+ J/fd5PerysC9yP8KNco+YYdunxa6vFa19F5ozIpr8SGOwSCri7ftqhQyL6BlVVgOPmd+jG0xgm7
+ 1KqK4fsZ7RLRJeBhfGtlXhPWTp1DbzIwZwb/2XWJnCXhIljOnZaniC5vtZ+kxvFozLShpo1cUuI
+ qtBIl75Y4Tw+Yu5PjZw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-17_03,2026-11-16_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 phishscore=0 adultscore=0
- lowpriorityscore=0 clxscore=1015 impostorscore=0 malwarescore=0 bulkscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611170061
+ impostorscore=0 clxscore=1015 priorityscore=1501 bulkscore=0 spamscore=0
+ adultscore=0 lowpriorityscore=0 suspectscore=0 malwarescore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611170061
 X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
@@ -138,72 +137,72 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 11/10/26 7:17 AM, Matt Turner wrote:
-> The L1D row of the cache event table has load and store misses but no
-> accesses, and nothing for prefetches, so L1-dcache-loads,
-> L1-dcache-stores and L1-dcache-prefetch-misses are not supported.
+> PMC6 repeats five L3 events at a second select value that the
+> alternatives table doesn't list:
 >
-> The MPC7450 has no L1 data cache access event, so approximate the
-> accesses with PMC2 select 26 (load instructions completed) and select
-> 20 (store instructions completed, PMC1 or PMC2).  These also count
-> cache-inhibited accesses.  PMC2 select 38 counts dcbt, dcbtst and dst
-> line fetches that miss in the L1 data cache.
+>    0x61f  L3 hits, also 0x503 and 0x603
+>    0x620  L3 misses, also 0x514 and 0x61e
+>    0x621  L3 instruction misses, also 0x505 and 0x605
+>    0x622  L3 data misses, also 0x507 and 0x607
+>    0x625  L3 touch hits, also 0x50e and 0x60e
 >
-> On a 7448, a loop with one store in every 32 instructions counted
-> 645840841 instructions and 19773839 L1-dcache-stores, about one store
-> per 33 instructions.
+> Each is the same event as the PMC5 code, so add them to its row.  The
+> scheduler can then move them to PMC5 when PMC6 is taken.
 >
-> Loads and load misses are both PMC2-only events, so perf multiplexes
-> L1-dcache-loads and L1-dcache-load-misses when both are requested, and
-> refuses them in one group.
+> Not tested on hardware with an L3; the 7448 has none.
 >
 > Signed-off-by: Matt Turner <mattst88@gmail.com>
 Hi Matt,
 
-I checked the new L1D entries against MPC7450UM Rev. 5:
+I checked the five new PMC6 codes against MPC7450UM Rev. 5:
 
-   0x21a  PMC2 select 26 (Table 11-10), "Load instructions completed"
-   0x014  select 20 (Tables 11-9 and 11-10), "Store instructions
-          completed", valid on PMC1 or PMC2
-   0x226  PMC2 select 38 (Table 11-10), "L1 data touch miss"
+   0x61f  select 31, L3 cache hits          (same as 0x503 / 0x603)
+   0x620  select 32, L3 cache misses        (same as 0x514 / 0x61e)
+   0x621  select 33, L3 instruction misses  (same as 0x505 / 0x605)
+   0x622  select 34, L3 data misses         (same as 0x507 / 0x607)
+   0x625  select 37, L3 touch hits          (same as 0x50e / 0x60e)
 
-The codes match the descriptions in the commit message. 0x014 falls
-in the "PMC1 or PMC2" class in mpc7450_classify_event(), and 0x21a and
-0x226 are PMC2-only, which agrees with your note that perf can't put
-L1-dcache-loads and L1-dcache-load-misses in one group.
+The descriptions match the PMC5 and PMC6 entries they are grouped with.
 
-Using completed load/store instructions for the L1D access slots is an
-approximation, but I think it's reasonable given there is no L1D access
-event, and x86 does something similar. I'll leave it to the maintainers
-if they feel differently.
-
-If you have a quick load-only run for 0x21a,
-it would be nice to see the numbers, but that's not a blocker.
+The rows are now at most 3 entries, so they still fit MAX_ALT.
 
 Reviewed-by: Tanushree Shah <tshah@linux.ibm.com>
 
 
 Thanks
 Tanushree Shah
+
 > ---
->   arch/powerpc/perf/mpc7450-pmu.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
+>   arch/powerpc/perf/mpc7450-pmu.c | 10 +++++-----
+>   1 file changed, 5 insertions(+), 5 deletions(-)
 >
 > diff --git a/arch/powerpc/perf/mpc7450-pmu.c b/arch/powerpc/perf/mpc7450-pmu.c
-> index 9890c87c58ef..27337a03ebde 100644
+> index 27337a03ebde..b2fe977cea16 100644
 > --- a/arch/powerpc/perf/mpc7450-pmu.c
 > +++ b/arch/powerpc/perf/mpc7450-pmu.c
-> @@ -362,9 +362,9 @@ static int mpc7450_generic_events[] = {
->    */
->   static u64 mpc7450_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
->   	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
-> -		[C(OP_READ)] = {	0,		0x225	},
-> -		[C(OP_WRITE)] = {	0,		0x227	},
-> -		[C(OP_PREFETCH)] = {	0,		0	},
-> +		[C(OP_READ)] = {	0x21a,		0x225	},
-> +		[C(OP_WRITE)] = {	0x014,		0x227	},
-> +		[C(OP_PREFETCH)] = {	0,		0x226	},
->   	},
->   	[C(L1I)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
->   		[C(OP_READ)] = {	0x129,		0x115	},
+> @@ -185,18 +185,18 @@ static int mpc7450_get_constraint(u64 event, unsigned long *maskp,
+>   static const unsigned int event_alternatives[][MAX_ALT] = {
+>   	{ 0x217, 0x317 },		/* PM_L1_DCACHE_MISS */
+>   	{ 0x502, 0x602 },		/* PM_L2_HIT */
+> -	{ 0x503, 0x603 },		/* PM_L3_HIT */
+> +	{ 0x503, 0x603, 0x61f },	/* PM_L3_HIT */
+>   	{ 0x504, 0x604 },		/* PM_L2_ICACHE_MISS */
+> -	{ 0x505, 0x605 },		/* PM_L3_ICACHE_MISS */
+> +	{ 0x505, 0x605, 0x621 },	/* PM_L3_ICACHE_MISS */
+>   	{ 0x506, 0x606 },		/* PM_L2_DCACHE_MISS */
+> -	{ 0x507, 0x607 },		/* PM_L3_DCACHE_MISS */
+> +	{ 0x507, 0x607, 0x622 },	/* PM_L3_DCACHE_MISS */
+>   	{ 0x50a, 0x623 },		/* PM_LD_HIT_L3 */
+>   	{ 0x50b, 0x624 },		/* PM_ST_HIT_L3 */
+>   	{ 0x50d, 0x60d },		/* PM_L2_TOUCH_HIT */
+> -	{ 0x50e, 0x60e },		/* PM_L3_TOUCH_HIT */
+> +	{ 0x50e, 0x60e, 0x625 },	/* PM_L3_TOUCH_HIT */
+>   	{ 0x512, 0x612 },		/* PM_INT_LOCAL */
+>   	{ 0x513, 0x61d },		/* PM_L2_MISS */
+> -	{ 0x514, 0x61e },		/* PM_L3_MISS */
+> +	{ 0x514, 0x61e, 0x620 },	/* PM_L3_MISS */
+>   };
+>   
+>   /*
 >
 
