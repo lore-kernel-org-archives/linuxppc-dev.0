@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A649606A329
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 14:25:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8599A606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 14:26:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=X9St/jtM
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=aTD5jmA/
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTRpz53zfz2xnZ;
-	Wed, 18 Nov 2026 01:25:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c36"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794925547;
-	cv=none; b=XQ+m6qrNfdgU/lVgNXfHiu2JDgugPI+fyWUd+O02diKVyS5878hEP+pULBoW5bregadgNS+/iQ7JfMWrxS7+x0o7Lr/c8+MPMxN1H/NGqjGKyrlEV8WaFLYVEhZHWMjgVT1NBjTJ7TFtuYFTwMAlERKcWHooXpZgpWaZNt2EBcCrm9aj3Z1awHfT3bjwkFBydQzLLLnvmwkJ4sDju36RCYnH2GR7tQLhe5UH7hk06hxjl4mOlsjAqn1XEk16CqFAPQA5N0ZOq9pKXvarFg5xD8itzQ+jWCckTHqwMr831PLOiPZlngi/6IA+d4oEl3axq4GkjCdxOrJhmCZAhuggTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTRq5378Mz2yfS;
+	Wed, 18 Nov 2026 01:25:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c34"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794925553;
+	cv=none; b=BEFmrC7b+TOZG358IAPAj48zeY8N76Hs8kB9ZmqX+6Y7+bK+zHFKEnEB657wEsBmR+k62recCcGfOElgvV4xYjfayfSh3eplU1tL+IwajzCw7Y13coD7n8iK1yPN8LEj/yLIR8Gu3bIox4cjWctf3aigH7gRC+EgLxvP26bNkAH+FH9iXReajv7pkUj++Wf3ZevBWU7y7m2TV85ir1tT98jKvPXABE3ulZS4ZXTT5LhDAzx1Vy6BW9Xn+/NBj6u5pH9epGgJ75RviPdMPyV5j6fgmywiVzoEXjxnTVkbPYgdyoljnap7Rdi9mxRHUB05C1AInfaeARSfrazpJJuK0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794925547; c=relaxed/relaxed;
-	bh=rjmPFH4B/D4fb22VPFX9Sq3mznItdFyAVWsb2qu0yoE=;
+	t=1794925553; c=relaxed/relaxed;
+	bh=AK+gHSxZdcAvKZ7cQ385RlBq7MDtihQM1tWGeZNK/Ig=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=WdYLBQBeAh9R7qcAOTwB1PBEwHRR5dw63NmwR3uJNOYwpA3KNBVqytOe2Wk6FznVH3YmprRo0FpSsTh7w/nZ6m/cUnH6yHvxBKnTzaj3BCWiOwQTFaBW6X79dOWqQ152g35xpkFimuRzi3D65BvgENSaCJDowt9HPkDPnAsBeOrVaNI1/AIr+e9oTkyZmaK5sv2r5JqTYfaZe6RN3jhEBxUUZS1Vsijxzdj6bsRf/B3JDezFY3jRu3Whb9eBgynIbhCJjwbfMzbC9SJt/ssJozFWZnN9exOsZ4+DHIyBhVGk53Ei+Q/fyGDlOGDfwtNFonGDPDC2CpXTAoxhSXeI4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=X9St/jtM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c36; helo=mail-oo1-xc36.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=GI6qQkfpsDGdwR/uDLarTTyWhbFbajP43vITzY/ABdvain+ddEVXZ7DZG8lM65c6muq9xrlpEFzlmUkLxB/y4ww0Tw6gZdG9Hhlh5lyL3/fvHQqx6ZBjSdM/td5rgG7Ry1mJfyvxgemlvG1kOFB20Q69Erc3iKMgxwmdcNoaT/6xSH4ErkhVR1jRXBpImVtsOiA0ChLMR8Vh45J1iPK9TKYHyN06vLrq0x2AhpJeP7AYj178sg4e38tWhh3eldLlONgbSaQsWJj86IBNqhp6c4H17xV0p27cl44QMjG22ZlJlW+XbFAYh9jO+UOy6ObktcmZ8OKHw5kBohF6xCwU3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=aTD5jmA/; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c34; helo=mail-oo1-xc34.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=X9St/jtM;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=aTD5jmA/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c36; helo=mail-oo1-xc36.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c34; helo=mail-oo1-xc34.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc34.google.com (mail-oo1-xc34.google.com [IPv6:2607:f8b0:4864:20::c34])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTRpy6SpTz2xmk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 01:25:46 +1100 (AEDT)
-Received: by mail-oo1-xc36.google.com with SMTP id 006d021491bc7-706113e92f9so3372841eaf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 06:25:46 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTRq43sdpz2xmk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 01:25:52 +1100 (AEDT)
+Received: by mail-oo1-xc34.google.com with SMTP id 006d021491bc7-70b875f6f1fso4819009eaf.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 06:25:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794925544; x=1795530344; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794925550; x=1795530350; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=rjmPFH4B/D4fb22VPFX9Sq3mznItdFyAVWsb2qu0yoE=;
-        b=X9St/jtMpQcTQsnhYBcpu6wfBZUg9HzqXl+uDe5G9QMjbl+R2/8LvwkWSZkznKPjCs
-         JakpVrq33EwlEiPvmWt9l1tCfS82CJXqrEz43XQIKEQXc6/M4+e9C/bONvOgDyAiZZ6h
-         T10jugCzpVKS72eGLUynOLsUyFgZfOWT1VXDbIMLsCKlcbQXRI3rC/0chQ5mY6YUc0nc
-         3hbuv1m55NrSj2eO68wxaWnprtV3QP9P76qK6HiKJlX6FpaJabArbr2GCSRUS2GgdkdE
-         l7kAjm/709tb0QAjxbuFR/HkrEe0RFG28zAT9uPYqVCKSXjT8C7i9QBq78eiqJ1uy6dX
-         3KGw==
+        bh=AK+gHSxZdcAvKZ7cQ385RlBq7MDtihQM1tWGeZNK/Ig=;
+        b=aTD5jmA/McFQdXo/HbqypTVkz+ZoWWoq88dYeWQzl7w+U5wUImQbDLD8X+gZ256dH8
+         UiSeweyW29UdBuBSSW4ssZpf8F5DseMBABlB+2djoMCoE1rOREfvzxNWUNf1cMCP5ljm
+         pg0PdSQjf08kTKr3hTFNCOuPkPBa/ySmHEDDVV7OyEjvh571sPsi3q5NzHTV6DG7JNtE
+         DhltKerifQtUNAtnbWXkJNZxKQJOPYigENcCJI6pjuQ3sJzdsrxPhcQxa8p/MAkoyM05
+         k7SqlmUkxghcRhOcfOh0BMokWcpIxH8PuMEng0bvGQlcS80ep/OjxyxdfljA6fNxhcMI
+         Wf7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794925544; x=1795530344;
+        d=1e100.net; s=20260707; t=1794925550; x=1795530350;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=rjmPFH4B/D4fb22VPFX9Sq3mznItdFyAVWsb2qu0yoE=;
-        b=Lu+WbLnm4aB+2k9y519XdR+hYgiD3CDc9x5blENnXGsQS/HVcvWbQtEYLD1XpCUsiY
-         /8vYRitcwrmnAvCylHrnmzjNoOriYU2RQfcqXy42zV2vHn/Gl/rrwqnGvF1TO0FnKdOv
-         ns9Gq6A6+/K7U/ZVUw9L0e+Om2aiVdj6DsZ1cws7klMwqqx7CyvXRiPCKRIO22SBWiV/
-         xnWtK5W53epgBzFzgopST0AfXJ8mWcCpsNtwPnqLgs9pjMpHIKkfSC/hku7A6HmMYp6e
-         3Bc0UDG68E+Yfv3prKuHZBC1W/6Cgzz5jnKvPDXB3hGD3ol2I9dxUKIlihKVfEODns97
-         CZ9w==
-X-Gm-Message-State: APuU4Z9lZFqvFo+Qo79VJKigtlt1V7BCPDlGpKEEgTmI84kgjl4toWtH
-	ABo9hp/pbVhEIaEauWS8gP75RW2BEKG8jImuGh8cq02ID51S7zprSYBBI1FERA37
-X-Gm-Gg: AYBFou1in3XzMlA31mYlt1/t9k3E4fSSFxRzTHJwQQaWgGRZ/T8VgNw7gCrCMQbw9/A
-	rORaX0ctwcdmj77/l6AIRSOu65SvQ/SVGB6hCPMbnN6DpfRAw+6dsc0rY7GX/x5cjuEplW7BBvL
-	zDpCaUt4j2ZMr69P9cnGZCjfDIBQWDTr3H71Z0+r8zsamwZ2E9FAk53MW9wwAsS7QrCdtFu5NcV
-	vcg8xyKbe9S5guv0Ou3TZmJPgFpSnFGzCiguT3raTvl6Jw2+4rXc6UgJfKDc36eeL/L6b1/8kbI
-	AFYc3pNfmOd4dxGpQtVCOrEYfys7M8Ik1KpgtWO3VyVA4S/E6a9mrpeWo3wzY1dxtPjktNowg1Y
-	1+YMvElEIbnFByBkKstskwoDaiFqfiE09Q4wV5pPrEw8wqxr8EtwmWmT5cftDMy62pgdJ0ZiXY4
-	hOHgxnPrT2o1+6v+i/JMHl4gQVz3PJUQaBd+41WmUDeVVqSEXXUPXb/Ub6H+y+ApfVEhWh6LHPU
-	Yci6R3eHYKwmt4to95Gy/m3aNUHomQHSMzVkk5CYpM4rb6GGysDQdOKbqXUV9W4qwQWhuTvfZgN
-	1iT3FIMnZzfkUv9qKfkJElg25b0DVWdK2qQ=
-X-Received: by 2002:a05:6820:3388:20b0:71a:eea9:81b7 with SMTP id 006d021491bc7-71aeea987dfmr3362475eaf.54.1794925543956;
-        Tue, 17 Nov 2026 06:25:43 -0800 (PST)
+        bh=AK+gHSxZdcAvKZ7cQ385RlBq7MDtihQM1tWGeZNK/Ig=;
+        b=PmSRGhkPYVZeGGhGLjyA9jd/Bk9yurGUgN3DOSrUhNxxFHohoYZR6yGXzEUryf6ghi
+         LJSB2UMzgpcyM0shFlzCih+KFSoZUaegkX/hBiwD+p2w3v88IVYRd6h93c0evqAjf4cp
+         vxSwc6Smf3PQ0vgaD6ZKaGplZB5PfHnAEp10oxIaxpLQDVGRM/nWkggBZIDXQPEnQdzQ
+         bXTdMVwkyZNd+OphpX4DUhxjCLidvJsPkWA651FojBJ96QWTsilxKF13bKrDewQtKlCp
+         n53yd2ZEb3P8UTvPxEzSswKUAie+S6+HwC7mQvdnOTVK5gUyrwswZNR7HTo0EEuhVL8E
+         dgKA==
+X-Gm-Message-State: APuU4Z9dxNerTV2XGtJl7DgVQOYhLfdZJ+z70NrrDJ9G1fb7vS8YIaSz
+	dQHtAq+sCb7XaVOHdQbF0DG++dsguTTIJYGohIGAlDER68DQZs5HWi/jI6Y/Rcj2
+X-Gm-Gg: AYBFou0us0Uy4DZoNDVUoEkw0eCHbuNzVb5hKbaCIy67Ydz8n1vmQZiK7wHf6DLAaIp
+	67MIfr6ZbC4qBn1iP5NW37n24qpWIIJG1p1sJXEK6+Mnn0aVUWQ2FyVzYfzTGgghg8zoHMC4m4j
+	5aRDVWjxdiog12jgbdwADaJf4DoDoeopGbVwN1ejd8iFK9yITXzF1yVr9KIalbOR/bC8rtBPSjg
+	K7Z9i2YNqueheMLN7mVOTq5Buz6Bt3FJwhX8tC0A9rAGDZbQHpF5OQoK1MWLQyS5kLTxGu1t0Q9
+	IlYNkD4l1j+W0k2kpc3L7DUenRGW1PbWk/SVMkllUNIcTiCkNGcTtCxzhakG9Erq1UAQ6vOHqYa
+	SXtmmB3Qx5EyfK8ZFrCGotkykNngdQS7unNUWaqVhSpH9B6lvhp7RPUJwjfVhyNwJVM1kkY642I
+	a7JwjtGNzfUgRRW7qFI8aCqzVEzhahmlleWyxVzS8kWyPi0J82dXn5jKQzYTR3mwry7Sz2IwCVZ
+	aq6IRUOV37g3TiZ+Iu3XNjHfvsFgPLQPOjj6JiLKwX+W71xerwywq2TI1zhs7OSVzvaqTr234ke
+	xarY5qPlF0lJIubpC8IdBdr/ySVYgS8HGg==
+X-Received: by 2002:a05:6820:2207:b0:716:bf6e:a4a5 with SMTP id 006d021491bc7-71ab52173d6mr7833605eaf.81.1794925549512;
+        Tue, 17 Nov 2026 06:25:49 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-71af0a8a18csm5313709eaf.4.2026.11.17.06.25.38
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-71af0a8a18csm5313709eaf.4.2026.11.17.06.25.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 06:25:42 -0800 (PST)
+        Tue, 17 Nov 2026 06:25:48 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -84,9 +84,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
 	stable@vger.kernel.org
-Subject: [PATCHv2 2/4] powerpc/watchdog: Disable preemption in arch_touch_nmi_watchdog()
-Date: Tue, 17 Nov 2026 19:55:18 +0530
-Message-Id: <3cb2893bf883be87ea1c3712344ac03f727937d0.1794924821.git.ritesh.list@gmail.com>
+Subject: [PATCHv2 3/4] powerpc/kvm-hv-pmu: Don't allocate gsm/gsb GFP_KERNEL allocations under spinlock
+Date: Tue, 17 Nov 2026 19:55:19 +0530
+Message-Id: <f52c0f92dacb6d9102a92aa9c6059b3edfb694da.1794924821.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1794924821.git.ritesh.list@gmail.com>
 References: <cover.1794924821.git.ritesh.list@gmail.com>
@@ -112,69 +112,128 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-touch_nmi_watchdog() can be called from preemptible context, e.g.
-sysrq-w via /proc/sysrq-trigger. The powerpc implementation uses
-smp_processor_id(), so with DEBUG_PREEMPT we get:
+kvmppc_init_hostwide() takes lock_l0_stats with spin_lock_irqsave() and
+then allocates the guest state message and buffer with GFP_KERNEL. On
+a nested API v2 host with DEBUG_ATOMIC_SLEEP this warns at boot:
 
-  root@buildroot:/# echo w > /proc/sysrq-trigger
-  sysrq: Show Blocked State
-  BUG: using smp_processor_id() in preemptible [00000000] code: bash/238
-  caller is arch_touch_nmi_watchdog+0x3c/0xd4
-  CPU: 0 UID: 0 PID: 238 Comm: bash Not tainted 7.4.0-rc2-00029-g7664547149ae-dirty #126 PREEMPT
+  BUG: sleeping function called from invalid context at include/linux/sched/mm.h:322
+  in_atomic(): 1, irqs_disabled(): 1, non_block: 0, pid: 1, name: swapper/0
+  preempt_count: 1, expected: 0
+  RCU nest depth: 0, expected: 0
+  locks held by swapper/0/1: 1, on CPU#0:
+   #0: c000000004ad95b8 (lock_l0_stats){....}-{3:3}, at: kvmppc_register_pmu+0x50/0x270
+  CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted 7.4.0-rc2-00028-ge5a8bf3a3ee9-dirty #124 PREEMPT
   Call Trace:
-   dump_stack_lvl+0x138/0x150 (unreliable)
-   check_preemption_disabled+0x120/0x158
-   arch_touch_nmi_watchdog+0x3c/0xd4
-   show_state_filter+0xf0/0x338
-   sysrq_handle_showstate_blocked+0x24/0x38
-   __handle_sysrq+0x134/0x3a8
-   write_sysrq_trigger+0x178/0x22c
-   proc_reg_write+0xf4/0x150
-   vfs_write+0xfc/0x71c
-   ksys_write+0x8c/0x150
-   system_call_exception+0x310/0x590
-   system_call_vectored_common+0x15c/0x2ec
-  ---- interrupt: 3000 at 0x7ffd01755b98
+   dump_stack_lvl+0xe8/0x150 (unreliable)
+   __might_resched+0x190/0x30c
+   __kmalloc_cache_noprof+0x4dc/0x760
+   kvmppc_gsm_new+0x68/0xcc
+   kvmppc_register_pmu+0xd4/0x270
+   do_one_initcall+0xac/0x48c
+   kernel_init_freeable+0x3cc/0x7f0
+   kernel_init+0x3c/0x274
+   ret_from_kernel_user_thread+0x14/0x1c
 
-Unlike the generic version, which only sets a flag, we update the CPU's
-timebase stamp and its SMP watchdog pending bit, so a migration in
-between touches the state of a CPU we are no longer on.
+The lock is not needed for the allocation of gsm and gsb buffers.
+Allocate and fill the message and buffer without the lock and only take
+it to publish the two global pointers.
 
-Disable preemption across the update. While at it, let's also mark the
-function as notrace (since we might be within a tracer when this
-function gets called).
-
-Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
+Fixes: f0c9c49c5067 ("powerpc/kvm-hv-pmu: Implement GSB message-ops for hostwide counters")
 Cc: stable@vger.kernel.org
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/kernel/watchdog.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/perf/kvm-hv-pmu.c | 65 ++++++++++++++++------------------
+ 1 file changed, 30 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 44f178e07531..32d4e716cb0a 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -456,12 +456,16 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 	return HRTIMER_RESTART;
- }
-
--void arch_touch_nmi_watchdog(void)
-+notrace void arch_touch_nmi_watchdog(void)
+diff --git a/arch/powerpc/perf/kvm-hv-pmu.c b/arch/powerpc/perf/kvm-hv-pmu.c
+index aa72b96b5a8c..a58634f656e9 100644
+--- a/arch/powerpc/perf/kvm-hv-pmu.c
++++ b/arch/powerpc/perf/kvm-hv-pmu.c
+@@ -314,53 +314,48 @@ static struct kvmppc_gs_msg_ops gsb_ops_l0_stats = {
+ 
+ static int kvmppc_init_hostwide(void)
  {
- 	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
--	int cpu = smp_processor_id();
-+	int cpu;
- 	u64 tb;
-
-+	/* Callers may be preemptible. Stay on this CPU for the update. */
-+	guard(preempt_notrace)();
-+	cpu = raw_smp_processor_id();
+-	int rc = 0;
++	struct kvmppc_gs_msg *gsm;
++	struct kvmppc_gs_buff *gsb;
+ 	unsigned long flags;
++	int rc;
+ 
+-	spin_lock_irqsave(&lock_l0_stats, flags);
+-
+-	/* already registered ? */
+-	if (gsm_l0_stats) {
+-		rc = 0;
+-		goto out;
+-	}
+-
+-	/* setup the Guest state message/buffer to talk to L0 */
+-	gsm_l0_stats = kvmppc_gsm_new(&gsb_ops_l0_stats, &l0_stats,
+-				      GSM_SEND, GFP_KERNEL);
+-	if (!gsm_l0_stats) {
+-		rc = -ENOMEM;
+-		goto out;
+-	}
++	/* allocate the Guest state message/buffer to talk to L0 */
++	gsm = kvmppc_gsm_new(&gsb_ops_l0_stats, &l0_stats, GSM_SEND,
++			     GFP_KERNEL);
++	if (!gsm)
++		return -ENOMEM;
+ 
+ 	/* Populate the Idents */
+-	kvmppc_gsm_include(gsm_l0_stats, KVMPPC_GSID_L0_GUEST_HEAP);
+-	kvmppc_gsm_include(gsm_l0_stats, KVMPPC_GSID_L0_GUEST_HEAP_MAX);
+-	kvmppc_gsm_include(gsm_l0_stats, KVMPPC_GSID_L0_GUEST_PGTABLE_SIZE);
+-	kvmppc_gsm_include(gsm_l0_stats, KVMPPC_GSID_L0_GUEST_PGTABLE_SIZE_MAX);
+-	kvmppc_gsm_include(gsm_l0_stats, KVMPPC_GSID_L0_GUEST_PGTABLE_RECLAIM);
++	kvmppc_gsm_include(gsm, KVMPPC_GSID_L0_GUEST_HEAP);
++	kvmppc_gsm_include(gsm, KVMPPC_GSID_L0_GUEST_HEAP_MAX);
++	kvmppc_gsm_include(gsm, KVMPPC_GSID_L0_GUEST_PGTABLE_SIZE);
++	kvmppc_gsm_include(gsm, KVMPPC_GSID_L0_GUEST_PGTABLE_SIZE_MAX);
++	kvmppc_gsm_include(gsm, KVMPPC_GSID_L0_GUEST_PGTABLE_RECLAIM);
+ 
+ 	/* allocate GSB. Guest/Vcpu Id is ignored */
+-	gsb_l0_stats = kvmppc_gsb_new(kvmppc_gsm_size(gsm_l0_stats), 0, 0,
+-				      GFP_KERNEL);
+-	if (!gsb_l0_stats) {
++	gsb = kvmppc_gsb_new(kvmppc_gsm_size(gsm), 0, 0, GFP_KERNEL);
++	if (!gsb) {
+ 		rc = -ENOMEM;
+-		goto out;
++		goto free_gsm;
+ 	}
+ 
+ 	/* ask the ops to fill in the info */
+-	rc = kvmppc_gsm_fill_info(gsm_l0_stats, gsb_l0_stats);
++	rc = kvmppc_gsm_fill_info(gsm, gsb);
++	if (rc)
++		goto free_gsb;
+ 
+-out:
+-	if (rc) {
+-		if (gsm_l0_stats)
+-			kvmppc_gsm_free(gsm_l0_stats);
+-		if (gsb_l0_stats)
+-			kvmppc_gsb_free(gsb_l0_stats);
+-		gsm_l0_stats = NULL;
+-		gsb_l0_stats = NULL;
+-	}
++	/* setup the Guest state message/buffer to talk to L0 */
++	spin_lock_irqsave(&lock_l0_stats, flags);
++	gsm_l0_stats = gsm;
++	gsb_l0_stats = gsb;
+ 	spin_unlock_irqrestore(&lock_l0_stats, flags);
 +
- 	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
- 		return;
-
---
++	return 0;
++
++free_gsb:
++	kvmppc_gsb_free(gsb);
++free_gsm:
++	kvmppc_gsm_free(gsm);
+ 	return rc;
+ }
+ 
+-- 
 2.39.5
 
 
