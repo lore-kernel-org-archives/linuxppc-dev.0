@@ -2,105 +2,61 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A43A606A32A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 16:23:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7DC20606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 16:43:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LS5XszJi
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTVR16pC7z2xPb;
-	Wed, 18 Nov 2026 03:23:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794932621;
-	cv=none; b=KDhpoWChkglQR9DcGKZPhpPELGBipQnwsC8UlC+hKKPctEdmEz1EerGbAnNtf4+oKrmK9OxOfFGWBi8KkT7W21Fj8aNfdwYRY1n7/J0fHBv2CMes077MonbOzPSu4NSpHxWg5t+eR2iF4+zTFeg3oYjPjjPsoK+37TM8U5kK5E+mDqbniAKKE5BMgir1tswvmIHrS2kZTOh3cSat0iymVLE/MLxNYJsEfAoFt9lLa3fPyxmaNOSoo20kyFreLHNwnt0T69DVKsU17Bb6eGOia6XiTkWYKZAIyLklfqFyuPqzYP9ebZAfbaIVEhEemShsARIHnjNBFwhCCq/y20nv8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTVtB1W50z2xl0;
+	Wed, 18 Nov 2026 03:43:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794933826;
+	cv=none; b=XSR4a1iNS66GU7ZnDklg1GZJGMGvJHGRgVmGAwr2+d/lXOxcQBI7h5Y4enm3HHwKUjrDHcWMJ5PU9A7gKOiX32iDIahtYzfZwKMhucIjuZYRxtI6kyUuZf+/YC1XZw7fFODDO3IF79mH6nvMEfr3BYTkMd44n8yzRPdQv8AqBK0wY2zto0+4ooLi/gD/VQXcZu7C59pSma2epjIpE/T31TDUq94I+6nI5yIcKI4qZ2ERJ7jSKlSa6TGLf0Qu4GRlno0uVf8pXFFwtnkFKj/vwo2IjevdrCNftLe2OMbbWpARsXjdxMsAWH6NdR1pLOMUomF1e0scD4ktq1/imJhpMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794932621; c=relaxed/relaxed;
-	bh=9bKC9y5sYZUFVKo3cJF968X4JmNJ/KKgeW9i3uCsAQ4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=SdKoC4seof0vQqEuQ6pwAY/yy0dD9iUxFcYdbBp0/zixFBpfzxkvQxgyvjkMy46amoXvTyorzsKixzYFVZrLpgyGbdoIOZIGAwhAjr4UeixWCQkGRsc2uQel1A2TiFNc0SOLTLhjXhgWQfrZAizUdT4Fh8SJ9vLBmRlJxkGNeWqkicPKeR0bKxppC705HS5gIDwtaTyOtWNuEC65BgrMH0yw5REGQghCHoJ7aZVK6j3Kzj6/g8yOufmgLukbCsB0PPVlmJAq/zqi2R/dFouwAwy3z/yVC7ryeD43/gt8fJS3GXIGlj5e9WIXsNP2GykEunU8MbpAsH8UBGXN/hJ6Rg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1794933826; c=relaxed/relaxed;
+	bh=ZTHwNVFWZLgXt2unt2sBi2B/rMYxeErvHfpuelqEzts=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=lmwSu6NFnBp6TZucCYwV9yeQxswXwUN03mczFXwrwTi075JHsIe+FZ40+V8L5Q7Al3BFnGP59rvFp6Nj+xWLN3p8PS7XdnFZp/xhnrKt2yjDyLj2WbWEGbwsvjnPMGRj3K/Th0evfuCotyELSnmnulEcIeYRfNVJSRW/oMAWcOzekq8EpN8M+j6nRPpafjidrzJB67zXh24rMxzEM6n4q7JhyVWSHobBcvCba550mYFTzmF4WTArDHJ0uPBft+40fEeHoYcJmTNBFJ6aw5KA/5jxXNOTKynItFDcpj1DZo7n7WJoFfCEFt5bYs8PDL+NeOU80YFb6m2lwoXkrfHZpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LS5XszJi; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A672g0X6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LS5XszJi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=oleg@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTVR01fJCz2xNC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 03:23:38 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794932615;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9bKC9y5sYZUFVKo3cJF968X4JmNJ/KKgeW9i3uCsAQ4=;
-	b=A672g0X6Nd0bvkqcf9/cMSE8K/y6lNmme/bxa4qT/ZCnrisU+xUwCI+O+3udz3wjDuCyMS
-	F91nI9Wlf82UfUDMGLEK76cWMFpNGwzj+kEBl2ZQVXyxn60fN8exd9cSQCnKQvSmejyzJe
-	ULuN2IhRy0OEHOQXD+j/uWuuJ8A/hDM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794932615;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9bKC9y5sYZUFVKo3cJF968X4JmNJ/KKgeW9i3uCsAQ4=;
-	b=A672g0X6Nd0bvkqcf9/cMSE8K/y6lNmme/bxa4qT/ZCnrisU+xUwCI+O+3udz3wjDuCyMS
-	F91nI9Wlf82UfUDMGLEK76cWMFpNGwzj+kEBl2ZQVXyxn60fN8exd9cSQCnKQvSmejyzJe
-	ULuN2IhRy0OEHOQXD+j/uWuuJ8A/hDM=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1794932615;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9bKC9y5sYZUFVKo3cJF968X4JmNJ/KKgeW9i3uCsAQ4=;
-	b=A672g0X6Nd0bvkqcf9/cMSE8K/y6lNmme/bxa4qT/ZCnrisU+xUwCI+O+3udz3wjDuCyMS
-	F91nI9Wlf82UfUDMGLEK76cWMFpNGwzj+kEBl2ZQVXyxn60fN8exd9cSQCnKQvSmejyzJe
-	ULuN2IhRy0OEHOQXD+j/uWuuJ8A/hDM=
-Received: from mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com
- (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-577-XavX1kWgOCO_-y1dC__RfQ-1; Tue,
- 17 Nov 2026 11:23:30 -0500
-X-MC-Unique: XavX1kWgOCO_-y1dC__RfQ-1
-X-Mimecast-MFC-AGG-ID: XavX1kWgOCO_-y1dC__RfQ_1794932608
-Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-prod-mc-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D234E19560B5;
-	Tue, 17 Nov 2026 16:23:26 +0000 (UTC)
-Received: from onestero-thinkpadp1gen7.tpbc.csb (headnet04.pony-001.prod.iad2.dc.redhat.com [10.2.32.116])
-	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with SMTP id C0C371956054;
-	Tue, 17 Nov 2026 16:23:20 +0000 (UTC)
-Received: by onestero-thinkpadp1gen7.tpbc.csb (nbSMTP-1.00) for uid 13628
-	oleg@redhat.com; Tue, 17 Nov 2026 17:23:26 +0100 (CET)
-Date: Tue, 17 Nov 2026 17:23:19 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Renzo Davoli <renzo@cs.unibo.it>
-Cc: linux-kernel@vger.kernel.org,
-	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
-	Kees Cook <kees@kernel.org>, Andy Lutomirski <luto@amacapital.net>,
-	Will Drewry <wad@chromium.org>, Thomas Gleixner <tglx@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Shuah Khan <shuah@kernel.org>, "Dmitry V . Levin" <ldv@strace.io>,
-	Alexey Gladkov <legion@kernel.org>,
-	Eugene Syromyatnikov <evgsyr@gmail.com>,
-	Davide Berardi <berardi.dav@gmail.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	linux-kselftest@vger.kernel.org, strace-devel@lists.strace.io
-Subject: Re: [PATCH v11 2/3] ptrace: add PTRACE_SET_SYSCALL_INFO syscall
- skipping support
-Message-ID: <avx_d9SSnpwhSyqU@redhat.com>
-References: <20261114181923.370930-1-renzo@cs.unibo.it>
- <20261114181923.370930-3-renzo@cs.unibo.it>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTVt92J91z2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 03:43:45 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3D31061256;
+	Tue, 17 Nov 2026 16:43:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC0041F000C8;
+	Tue, 17 Nov 2026 16:43:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794933821;
+	bh=ZTHwNVFWZLgXt2unt2sBi2B/rMYxeErvHfpuelqEzts=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=LS5XszJiRCQq12tLhYFW9XoELb+ayrhWFUzIjRgwbEEM+HXtG5NWYfzScy9fHajIO
+	 QTkrxhxM+CJBXBnfguXKOR069mkrEtbkjD8Y3reNQszDYNbIxDD7bKDKK2y5zclCi5
+	 gNkDBJ78Rs8g4NIn1WMYp7PqwXma4rceLKNplVI2Y+hKmbf6nDCKb3AKDDXzEQxiM7
+	 BfP+/6IYGhGnM0Mvt6E22uE3q1dSBXWfxTNKQyojkTt+Ae1S6WmJ8xKUieZM/dg7Bp
+	 Q2TxkkV4d3RchaJwdZOwXMCAlzM9z06OmctVNnMaG/aKsiXIGf4Kg1ZS5pYjQ6VdlX
+	 nh1sulooRi0vQ==
+From: Mark Brown <broonie@kernel.org>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, 
+ Shengjiu Wang <shengjiu.wang@nxp.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+ phucduc.bui@gmail.com
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org, 
+ linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20261110075841.12104-1-phucduc.bui@gmail.com>
+References: <20261110075841.12104-1-phucduc.bui@gmail.com>
+Subject: Re: [PATCH 0/2] ASoC: fsl_sai: Improve error handling
+Message-Id: <179492781045.77896.18198371225516958659.b4-ty@b4>
+Date: Tue, 17 Nov 2026 15:03:30 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -114,52 +70,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20261114181923.370930-3-renzo@cs.unibo.it>
-X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
-X-Mimecast-MFC-PROC-ID: VsfivtZPvgcLJdS4HDuyTSeb6Ygf2-R5l022PcFOeK8_1794932608
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.17-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1472; i=broonie@kernel.org;
+ h=from:subject:message-id; bh=1rSLxismt1EO+6tSoslxFlG+H3uyXURGnUef1APXImU=;
+ b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLL+tFiyW0pEqR+YuubCoZN+7hvTAuI2VwqcFTfNa8lP3
+ 878v9ayo5SFQYyLQVZMkSUui/tlfcnrNXwHF7bBzGFlAhnCwMUpABM58Zvhr8yipV9s1tjf5j/r
+ tLnyx0OZ6fZbGI9dX5h1YnrF7JTTfqcYGfoCnk+9Ynrhwp/VjbeMt28/skul+OzvqQbRLpXaksa
+ XtdgB
+X-Developer-Key: i=broonie@kernel.org; a=openpgp;
+ fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/14, Renzo Davoli wrote:
->
-> Extend PTRACE_SET_SYSCALL_INFO to support skipping a system call
-> triggered via seccomp.
+On Tue, 10 Nov 2026 14:58:39 +0700, phucduc.bui@gmail.com wrote:
+> ASoC: fsl_sai: Improve error handling
+> 
+> From: bui duc phuc <phucduc.bui@gmail.com>
+> 
+> Hi all,
+> 
+> This series includes two follow-up changes for the FSL SAI driver,
+> covering hardware reset handling and dataline configuration
+> error reporting.
+> 
+> [...]
 
-...
+Applied to
 
-> Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
-> [v8: skip via seccomp_ptrace_skip_syscall() instead of syscall_set_nr(-1),
->  separate ptrace_set_syscall_info_seccomp_skip(), reject later
->  PTRACE_SYSCALL_INFO_SECCOMP updates during the same stop]
-> [v11: report the stop as PTRACE_SYSCALL_INFO_EXIT once the syscall is
->  skipped, instead of rejecting PTRACE_SYSCALL_INFO_SECCOMP explicitly]
-> Assisted-by: claude-opus-5-5
-> ---
->  kernel/ptrace.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 47 insertions(+), 2 deletions(-)
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.5
 
-Reviewed-by: Oleg Nesterov <oleg@redhat.com>
+Thanks!
 
+[1/2] ASoC: fsl_sai: Make fsl_sai_reset_hw() return void
+      https://git.kernel.org/broonie/sound/c/7192f1a8cb6d
+[2/2] ASoC: fsl_sai: Report dataline configuration read errors
+      https://git.kernel.org/broonie/sound/c/6616554f4166
 
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Sashiko has some concerns
-https://sashiko.dev/#/patchset/20261114181923.370930-1-renzo%40cs.unibo.it
-but IIUC this is the "pre-existing" problem fixed by
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-	[PATCH v3 0/2] powerpc/syscall: Fix the return value of skipped syscalls
-	https://lore.kernel.org/lkml/20261030084926.1068384-1-renzo@cs.unibo.it/
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
 
-so this change do not need to depend on the powerpc-specific fix above.
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
-Right? Just to be sure...
-
-Oleg.
+Thanks,
+Mark
 
 
