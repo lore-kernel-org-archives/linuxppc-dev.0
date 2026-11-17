@@ -2,83 +2,83 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82532606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:44:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 29079606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:44:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LU3MiBBq
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=J/eL05uh
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTXCr5nRnz2xns;
-	Wed, 18 Nov 2026 04:44:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937448;
-	cv=none; b=MQHHIqGIu+IiNnwwy5RB+/SFa5iQKURi0hrRP4jgREX75jSzrpjugH55HIHSt0LphjTigUt7sM5l/BhZoxoX/vxUpG7D305fOOtGB55IvK6ZhtFP46EJnyF9KHye6364/JOYrVXGjqkVZlX1iHSGECdNDbUYzPHfyqWeBzUXg8OaIKKlXeNasZBFGFonUZN3BySlZYeJMyTxnNtOWwtkXUFLYWLt5450jG8gJqMiKnZJBcZ4NnQaXR+tRWhDWItKHDgV5BS5FhdGPeNeHyBz/1nWNX1rF9aHqQDHwFiySJr/mq/QHhZ9VPPFCvOgCq7iTlF59cT38ZHBcAnmadPEvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTXCt5rWSz2y71;
+	Wed, 18 Nov 2026 04:44:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1131"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937450;
+	cv=none; b=bn1GR5zqSGRd4lmvTtopqSGomJzBJAWGYtWauDCp/IV+Bzza5Gg+ijqLFC5aUYgVCRhB3qVqqWUbdLUi9ORxcdCDPEO/Zl6qtCzt2ycGl632Oyd+gii0KAHLNJjW9ChNp2S8ukvnMJPR62L4kGbSlnZ4D2317gxgedIx8P/RTdDJh/uqfgMIQrDA5ZX0GykfFmRkfAU6hhQ8d1UY/BZ+F4zr+rBrZuiS6+tIa8k97Qpj9nBOhTFkbNOsZjA1jYIUA0khy34upw659SVnvCrvbZl5TGasUn6RBpnNN1otGSVV7beI1+LskzoE4qG4pr8pDhi5wBH1LIQ/RV+57xHyNw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794937448; c=relaxed/relaxed;
-	bh=uKVN3cMMqKcQp/QJBvqNbe2qemW+gMKwHZ5x6CAtQXY=;
+	t=1794937450; c=relaxed/relaxed;
+	bh=EMofIhkXpaZ8+oSY685djaeZJDUF5sw2CncgWG8cpWg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AQejGrnT4Rtb9HKxAAiPQCJftvG5xLoInq6gEYGTadVXGY3JvGltwEB9X0+42fTl5ViiydfAdBBd4N86z3Dk0rpef6DkBAE/ng3cWuKo4Jtic+GzENek4Dc6ypf5FmZ6eQEV/ZsVE9iWgtV4toyp2Es7sSBtOh7nSNKScobMcryLMC8xDp1jIun/BJ29Luk1/eL7DFfduOzhoYE7N68gP37NyuZ3LIEphOOXn5yKjLuSneUm7S/ZNPL3b+zoZT+StrCQw10u48mCkh3RyMh+i+n6/AUFy0ZDzReEep6ctXVz11lU7uMOF8uQSmeQNNO6koRHIiXgBgDrEaQSoxT7wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LU3MiBBq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12f; helo=mail-yx1-xb12f.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=l2dbRJEs1cZn9ux/MGTbSrPyfBEXx5cu7Mw/vtvJOujS7MxKbSIH5ku/1ybtgmW0bsduyhjOpoi2PrYVmfSdgLvO1jTe9F2UZdPqIhRUZcTSlQsdGceynwwHb9I187w3qkuSz8QPW9KDC459e9Weu31Wi8BKtPxFf/5fqKtDfvGbk9EN0ESpCe54r9erpZT5A+UsiB7O5S/ODNEEgZrnwiRFbxSHGFgcbasPxAINJXdADroxwW5NRlo/Xjff36+S1RMoMaJZdks9uo53EGLhS7NHMTFfA42D57B6f55T5j5bfp8VGfet9g1afVtcGahRNtblC3rFGRuYTTnovuc5Iw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=J/eL05uh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=LU3MiBBq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=J/eL05uh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12f; helo=mail-yx1-xb12f.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12f.google.com (mail-yx1-xb12f.google.com [IPv6:2607:f8b0:4864:20::b12f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTXCr14LJz30NF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:44:08 +1100 (AEDT)
-Received: by mail-yx1-xb12f.google.com with SMTP id 956f58d0204a3-679a2b5fe87so5312386d50.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:44:07 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTXCt0BBcz30V1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:44:09 +1100 (AEDT)
+Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-8b4e2fcc300so23081487b3.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:44:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794937446; x=1795542246; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794937447; x=1795542247; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=uKVN3cMMqKcQp/QJBvqNbe2qemW+gMKwHZ5x6CAtQXY=;
-        b=LU3MiBBq+CobtcaJ8mSqViHywG/+Zc1lDxKj/JpJDdAFZXYzrJeFiy4MWG9dcGcbD0
-         ZdDGrE4IH5ncvx51+TowBWmNz2AUeN1zG+s4LI6Sfm+hqY5Z1a+NBp1YJ3yBcFR9pxRL
-         myTyZbvepIwcA5kCcOg4BUTkj6Rkp1I7RCOKlsHLh9oMT5iUkBiVItpZ4J5ong9VgweF
-         q1vYLSwvtDJCBdyvpJMqseeUWk4nwt0VZH/dscyQlsTqnTqUElyHpJZSZMr7m16VfhJh
-         caESmQWJdWqGxah6pGSs03ZjPHqx4Aey2juuG05jkrzRcuY0bZb2BtF2U7axkGM+zEPe
-         uRzQ==
+        bh=EMofIhkXpaZ8+oSY685djaeZJDUF5sw2CncgWG8cpWg=;
+        b=J/eL05uhsl3yXhy6Q6tEQHVRFqejrptP4ULpDMqKVILw45SXuwsBTgzjgtKt7UzW6o
+         MKjbU371aW2AZUk9Y3CWHQ3domaLoJozsP71yqT+izDykmNn0J6QWW/V6RopXRBiF8+S
+         cuA4Ijx09IRJuSDFBfS/WYl6XIBBwxyHAurnbnOP3w+TZE8A3btgR11qxPOFku9whOTL
+         Ri265eIajta07WXqd7AFvosIMR+RsNcq2fipRnocTYCJ8Se8Fot/oyOWAdMF8hECjRmO
+         rv+NMvn13840wYqs3nK22D+zAPC5ETZxjfejt1iCp5MI//wDfaYPg6SLaJdR3aYPrlMa
+         8zoA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794937446; x=1795542246;
+        d=1e100.net; s=20260707; t=1794937447; x=1795542247;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :content-type:mime-version:subject:date:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=uKVN3cMMqKcQp/QJBvqNbe2qemW+gMKwHZ5x6CAtQXY=;
-        b=lw56GgLIazugiTVNyhw+fZ2vvjC5oOsXfE+SObVH7W+/JJjH5f2dPc6PWbWgaZVizZ
-         ft/ug+O26ozWODVwu2mNmmdDKF6EEkC/POZrcg7497c5u1nuJy5oXIib64VW7iPx7KDl
-         7G6XxkP7EhcRwBPk0720Na6aa/3f4TlP8QNIQ6aivJCzKTcUVtzfrGra43Fb6A+F1ik3
-         h1e7z3KFAWus7CFW+CyUlOQ6fIzBh4a2ULV69qhw0+d679HVSpJGFtFPF2jcsibU9R0F
-         3r1WAZ2kvGhBqoK2sgDSSMH5bSL80ejPtrETy/M1IanyBBa2nEK1qcYwctJyAe7gwust
-         BhCQ==
-X-Gm-Message-State: APuU4Z+Ccj2vOeAAxnrruAxeHRUslQAXJqrC8bsgT1MhJ0Feswux/OFI
-	osOOI//DBTk3rOlyfN8cALWlFGtBHVkEnl9Ks3cbin1cZ7frAgv9EBuG
-X-Gm-Gg: AZFdTZcWG5aYTA3SMj0cSsZUtggYrhIsA5Uo5zCw2Ew+zy3uvXIjYpRCxivaWpITjuZ
-	UsVYq1WRfDyd/0CbQ+w2vJ8zi1lXVSBPH3TFRs65ROKKwjA929ihHN+Sk0za0md4rPG/AGzxVMF
-	ji6uwTL0DF2bpDgcp2O0oOWwagbm+60I6ifXdnVnzcNPoYu256aXn/F4L4oERmr52X/ffhFDRrp
-	B6hShmIncl61aGu5hFPvfAROX5LVf7emeEu4EN01gmcBKlqAV+h/AEUIf6I/1eOsOEQEmXf7zBu
-	jTOlGpNUPAVvH98P4XDU1LnZkEpwQrtvOPE2PufJldrkb3P9wr1OeLpf47EVTr4jy/nNQLHexwH
-	QAK6kxcwa7i1R5/JdvLFoaRmUHYHbljUNxpCTDOs0GYDCIfqqdZgb2kzndhhdoihcgMIGhQBjRo
-	w0WTL28EpWzfTAia3yRBH8m5S9/kXhBAHkqRLmP42/ob0vE9dhD4zMAtYL6MytaA0gj1lo7FVwP
-	x6h+S3OlCQW7dYrAVCGlYkr0l7ehBy0uCgcQ+VCvKJ2Bj0QffieR9+KmdfqKiiCcG8mt95ElUT/
-	TR1EUDoiGAwP0PXWAz1dPlFpszJ1oxYnWKR9pX7s9letHwqEGotbu/qW3JWupl0kzj2HBVstCcj
-	3GXyN4aqYn3nXTHl6TptH6iljuDehvSrhK/gPas8cOw5JD/ZH9yqb+16/o1RNq460blpQrxYaQb
-	qnvBwsK7Dj7u/BinIBgg==
-X-Received: by 2002:a05:690e:151b:b0:67d:c37d:331e with SMTP id 956f58d0204a3-67dd3fe9f53mr89877d50.119.1794937445825;
-        Tue, 17 Nov 2026 09:44:05 -0800 (PST)
+        bh=EMofIhkXpaZ8+oSY685djaeZJDUF5sw2CncgWG8cpWg=;
+        b=drUFKW0ycL6sPjV/Z7z7XjR8FvPV7DPnyVvt320a7LcpLFOKaQSLyZ1gVZ0HPSNCOH
+         uG6f5CCZPgMKI1a88eIN1XZZxZBpauN5Ks1Plp587u0xN4ziTzvtqDxDqPvI3m0gSycC
+         s5ghBopJ6h+J4k5ghTUYa+NhuKkRDFsdFarJXklkrex37nlfO6dRQwFXFwHjKkL54Qsa
+         TYN1fK5pdp+hgc1T/ZXSQOJ5UUOvpGXYV1jYY8EKTT6CcayIKWCGxYKpljCQscKAJVd/
+         pv3ZbHuHPjrD7y0DIxADzFmkCQ9UkFZgfA6/Ab+xHIRd0gCuTvb/9BtagQIdSoch2ca3
+         XfFw==
+X-Gm-Message-State: APuU4Z98gW8wVCfOE++fn/9j5Bk9fzsZ8rlmTFIeYnFzb//li/9kfogz
+	B/Z4BrzCDnV68h5nzkOoOjlBAQZ6TaXfPhEJpr0PxqIrSniNEeZK0ESv
+X-Gm-Gg: AZFdTZd1HGR7vKSi01G8x6agMYizdw2G8tk8jJdCXbmcFqG28zgGLGPYgzZWmS16wOJ
+	f9IqcXaMGfkqSNvbHPwsszqcvV2masgk8h90X5/f5/8jDq4xEk8fwn253pb54MrGC2dbp+3mDj/
+	lkfT8btBLyMSuqzV/xcqKtVIVqXaDneirgs2B/uJ4gINgGEgcOI0NV2xXUgLDlsYEMu7iq8Z52l
+	ClIwhkJOAkwD5ewPcip387gz94OCtqog47wR23BnJrUSzE5T+CLQt0HDGPwMYClJnkBEiG+TRka
+	liWCdUR0comi5hhSJzhUbSGr1zVTCyIAdTbjwPokOpYZSyLhpcrxYM3JuyTo4Pm6pQhMJCfzf0c
+	f7Y9NVc1tXBn1ytoc+ZrMKGGuxL9IoEqqIGW/V2kvvkdrPVzfvUqZ02t7Pz2XqQnjNVaz4Dvh05
+	Pjd9m6k+PtN4LqSvZ68q0FpI5M6d3AWgFaHt7PUxIJqjMoY5Mm8lgdHj1iYTUFVy0QvKj4ZKfdq
+	xtKVc8kfQdwHz6KtAHqrHNQdS6WzoZ0BMS1gq4I6UOJGiTwwFzjh1qLG3bjoVFfcGIgI+X6Q3MX
+	uhQQqUHq8ipKhwSAPkw+0oNNgUd+uTsILjYXAC+W2vx/TjKDPUtVDh3hD9jMKxNMAwBYcFqaxQP
+	wngK6brHJOZORpWOdI/vTZEJGRRqmoKPAsevKN36ux7wPJsOdRk0aBsxLV1mtLXBjWeIUvJ4psO
+	RWpKbLZ9YqGcvq2Bcasw==
+X-Received: by 2002:a05:690c:30a:b0:8b4:e3f7:9edb with SMTP id 00721157ae682-8b4e3f7a668mr28160497b3.97.1794937447362;
+        Tue, 17 Nov 2026 09:44:07 -0800 (PST)
 Received: from localhost (107-220-129-194.lightspeed.chrlnc.sbcglobal.net. [107.220.129.194])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67dd3fed5e0sm205158d50.5.2026.11.17.09.44.04
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fe07408esm2161937b3.22.2026.11.17.09.44.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 09:44:04 -0800 (PST)
+        Tue, 17 Nov 2026 09:44:06 -0800 (PST)
 From: Matt Turner <mattst88@gmail.com>
-Date: Tue, 17 Nov 2026 12:43:57 -0500
-Subject: [PATCH v2 6/8] powerpc/perf: mpc7450: Export the event format in
- sysfs
+Date: Tue, 17 Nov 2026 12:43:58 -0500
+Subject: [PATCH v2 7/8] powerpc/perf: Use SIAR for sample addresses on
+ 32-bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,7 +94,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261117-ppc32-perf-v2-6-2072e9b90009@gmail.com>
+Message-Id: <20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com>
 References: <20261117-ppc32-perf-v2-0-2072e9b90009@gmail.com>
 In-Reply-To: <20261117-ppc32-perf-v2-0-2072e9b90009@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -103,16 +103,16 @@ To: Madhavan Srinivasan <maddy@linux.ibm.com>,
  "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
  Shrikanth Hegde <sshegde@linux.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Matt Turner <mattst88@gmail.com>, Tanushree Shah <tshah@linux.ibm.com>
+ Matt Turner <mattst88@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1965; i=mattst88@gmail.com;
- h=from:subject:message-id; bh=+lEsdbEQj8rALkNtLr6OeVNtXuxnotW+z/AE7BFI7fU=;
- b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+TIow3N16UvC5FRNL39GZdtxmbzjET2xz5U3g8q1fM
- vXtt2fTOz6yMIhxMcwUU2SJW6/IMqttx1Kf09K/YOawMoEMkRZpYAACFga+3MS8UiMdIz1TbUM9
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3533; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=sQH/oeX/+nbUx0BbEEHc52r/vsgK7BzhKRKCWM0N8VA=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+TIo0NGUxEJC7tOo634SlwSv/KV89fO+6YNCBVxly+
+ Wt7+Gy8Oz6yMIhxMcwUU2SJW6/IMqttx1Kf09K/YOawMoEMkRZpYAACFga+3MS8UiMdIz1TbUM9
  QyBDxygeIqfHoJFZXFyaWqSbVlDkkJdfkliSmZ9XrJdfkJpXkF6gl5aZVpKRkV9UnAo0Qi8vtcT
- U1dHNyNDAxNLRwszJwtHUxNnZydDJzdHR2dXJyNLcxMDZ0tHE1dKcgYtTAOaahdEM/wtPtj3MO6
- Blxm/SKP0vU1B9+WuWyutW2drcW/dcW3fu+3yGv8JaW57+nbfc+vWxTPfwR66vOawkHCq456rPZ
- L0dvU69nw0A
+ U1dHNyNDAxNLRwszJwtHUxNnZydDJzdHR2dXJyNLcxMDZ0tHE1dKcgYtTAOaaSEeG/zE930sb7r
+ vyP2d/pfxslRGv58b6oycvLvTXOvbmkwiPTD3D/5CrHFGFs0QXmy2zyFE/+O5B6iem/ScONDO/4
+ 7rlIr/2BAMA
 X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
  fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -123,64 +123,82 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The MPC7450 PMU has no format/ directory, so perf can take its events
-only as raw codes, and cannot set the threshold by name.
+On 32-bit, perf_read_regs() sets regs->result to 0, so regs_use_siar()
+is always false and every sample is attributed to the interrupted PC.
 
-Describe the fields of the event code: the PMC select (bits 0-6), the
-PMC (bits 8-10), the threshold (bits 12-17) and the threshold multiplier
-(bit 18).  A threshold event can then be written as, e.g.,
-cpu/event=0x12b,thresh=20/.
+The MPC7450 family's SIAR holds the address of the last instruction to
+complete before the performance monitor exception is generated
+(MPC7450UM Rev. 5, section 11.3.7). The exception can be generated
+with MSR[EE] = 0 and is taken once EE is set again (section 11.2), so
+when interrupts are disabled the interrupted PC is wherever they are
+re-enabled, while SIAR still points into the disabled region.
 
-Reviewed-by: Tanushree Shah <tshah@linux.ibm.com>
+On a 7448, sampling cycles system-wide with --intr-regs=nip during dd,
+perf bench sched pipe and find, 46% of the kernel samples have SIAR and
+the interrupted PC in different functions. 13270 samples have their PC
+on the instruction after the mtmsr that restores interrupts in
+ata_scsi_queuecmd(), and 11661 of those have SIAR in udelay().
+
+With interrupts enabled SIAR helps less. Sampling a 32-instruction
+loop with one store and one branch with -c 10007, 99.8% of the samples
+land at:
+
+  event             interrupted PC   SIAR
+  r122 (branches)   br + 13          br + 9
+  r014 (stores)     stw + 21         stw + 17
+
+Because the exception is held off, it can also be taken on the other
+side of a user/kernel transition from the instruction in SIAR, e.g.
+just after the rfi at the end of a system call. SIAR also holds a real
+address while translation is off, such as 0xc00 in the system call
+vector. Recording a loop that alternates user work with getppid() with
+perf record -g -c 1000000, 3022 of 16953 samples had SIAR in a
+different mode from the interrupted PC. The callchain is walked from
+regs, so taking its first entry from SIAR there starts a user
+callchain with a kernel address, or reports a kernel sample as a user
+sample at 0xc00.
+
+siar_valid() already returns true on 32-bit. Use SIAR for PMU
+exceptions when it is in the same mode as the interrupted context, and
+the interrupted PC otherwise. With that, the same test has no samples
+with mixed modes.
+
 Signed-off-by: Matt Turner <mattst88@gmail.com>
 ---
- arch/powerpc/perf/mpc7450-pmu.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ arch/powerpc/perf/core-book3s.c | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/mpc7450-pmu.c b/arch/powerpc/perf/mpc7450-pmu.c
-index b2fe977cea16..9bed5c238f45 100644
---- a/arch/powerpc/perf/mpc7450-pmu.c
-+++ b/arch/powerpc/perf/mpc7450-pmu.c
-@@ -398,6 +398,31 @@ static u64 mpc7450_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
- 	},
- };
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 10ded865583c..4c9c9ff1073e 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -112,9 +112,25 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
+ {
+ 	return 0;
+ }
++
++/*
++ * The MPC7450 family's SIAR holds the address of the last instruction to
++ * complete before the performance monitor exception was generated, so for
++ * a PMU exception it is closer to the event than the interrupted PC.
++ *
++ * The exception is held off while MSR[EE] is clear, so it can be taken on
++ * the other side of a user/kernel transition from the instruction in SIAR,
++ * e.g. just after the rfi at the end of a system call. SIAR also holds a
++ * real address for code running with translation off, such as the start
++ * of an exception vector. Use SIAR only when it is in the same mode as
++ * the interrupted context, so the sample's mode and the callchain built
++ * from regs stay consistent with it.
++ */
+ static inline void perf_read_regs(struct pt_regs *regs)
+ {
+-	regs->result = 0;
++	unsigned long siar = mfspr(SPRN_SIAR);
++
++	regs->result = siar && is_kernel_addr(siar) == !user_mode(regs);
+ }
  
-+PMU_FORMAT_ATTR(event,		"config:0-18");
-+PMU_FORMAT_ATTR(pmcsel,		"config:0-6");
-+PMU_FORMAT_ATTR(pmc,		"config:8-10");
-+PMU_FORMAT_ATTR(thresh,		"config:12-17");
-+PMU_FORMAT_ATTR(thresh_mult,	"config:18");
-+
-+static struct attribute *mpc7450_pmu_format_attr[] = {
-+	&format_attr_event.attr,
-+	&format_attr_pmcsel.attr,
-+	&format_attr_pmc.attr,
-+	&format_attr_thresh.attr,
-+	&format_attr_thresh_mult.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group mpc7450_pmu_format_group = {
-+	.name = "format",
-+	.attrs = mpc7450_pmu_format_attr,
-+};
-+
-+static const struct attribute_group *mpc7450_pmu_attr_groups[] = {
-+	&mpc7450_pmu_format_group,
-+	NULL,
-+};
-+
- struct power_pmu mpc7450_pmu = {
- 	.name			= "MPC7450 family",
- 	.n_counter		= N_COUNTER,
-@@ -411,6 +436,7 @@ struct power_pmu mpc7450_pmu = {
- 	.n_generic		= ARRAY_SIZE(mpc7450_generic_events),
- 	.generic_events		= mpc7450_generic_events,
- 	.cache_events		= &mpc7450_cache_events,
-+	.attr_groups		= mpc7450_pmu_attr_groups,
- };
- 
- static int __init init_mpc7450_pmu(void)
+ static inline int siar_valid(struct pt_regs *regs)
 
 -- 
 2.56.1
