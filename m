@@ -2,72 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 109D9606A32A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 15:44:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE39F606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 15:52:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q2Jl2sdW
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=URGWjLaz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTTYB5n2pz2xnZ;
-	Wed, 18 Nov 2026 02:43:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794930238;
-	cv=none; b=hHcpKIGIVZ+Gv4coqFqgPqdxv0z3Z4+aQ7Z+La73zpxwCK4GywXdKsAXZNv2H3fRVVLD3e20pTkNeFVactOBZ4F1opBfX3cgcy/ksexdJkhyMZtHPpEofTp3CuvtSlW9EBpY6CJ4rb83qYep1rTU71xZFGCS40Mz2zUdMiWctxI+wMSeuFGrwntxyZ+ZmpC6nC4eDfirpjWxlLBs5nccpoWms6T9bnxAUb1EKe4iPrCNLHNFCN0PpF17h3dyv0EpEK21gKzevRz588ODZfboT2OwAUVYeeL+u35LhEMibddTnX1A2DtcZbRRNQHjZQdbPvDuME8IEU/i2ygpP4c+FA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTTlD2rgzz2xmk;
+	Wed, 18 Nov 2026 02:52:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794930760;
+	cv=none; b=ZuGdqVH2ZqhvrDdCHBu0HRn1uOFN6Vs8nExkK5GzLOchiRDNGOrQipHcANI0MY1JGBlQq56MXLNtvFjL/0PRLQmSACGujCKC4fKs7XIuz8y42cZxMvm+uY17mymoV2vxHYKl0k8YcMiKWiqBQH98mEJz1jh/hCB8IMjy0EYPO9H7/Nczn8efXzdzgbp5EmukYC+WjwwHiJW+/mUXVTghIAammq79wDFQpkl6wNVbX+thTwLeKs+r1ze4RmiDlzDnq0WB5/zUtWBOcQFIxr6vqT2R7Qy8POxvaU/UqbvxgMOddXtmJ0gqdBHbxINkqHrOVNmtYiOFlcPGskhtJ0DnmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794930238; c=relaxed/relaxed;
-	bh=rmlNl+cN1v4ObBPuPGFVK0GCt9dkXWFacMXpgZLubfc=;
+	t=1794930760; c=relaxed/relaxed;
+	bh=rWQ3LCKx81yVb4ZPYmvkuNFKtOFNJfTl68Lxuk3875w=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GnnlUXwuldWVzXz1988RfSL5z0XNm1sn2yg67rKbx5TWc6SsU+BjAeb6b7BKzWNbdTlQkfoGXoRJUB0bky4aQll3PG5hKmz2F4ZGVlG/oxW2q24FB7ZMypsO5B3llPw++yExYrpwKLSLBmgMmqRvNpkgglZ2qpl1tZ4Vn76mfk+ZcMZYIKwlsh760ca5GN2gw9V0L/2gaPcMj8JtkedqzWEkpjBN+zH89O5EJAmcvwSGnxO+4E6DtOH+l+PhKsQJBZ+exdqwFEzVwEQOwpfSw0wBw5KzugMvs04Me/SM1PMAqLgg+EpSKMDL19Dd7jfg0K4cSO6XlB/UdJDhhRhXBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q2Jl2sdW; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=hB2xOmkgJLOpZk1KncFYY2vZij4dJc4CFoHKGJXs4rgfRusJl0FjQiDnbatWejP1n9RHde1jB/mfgfv09WvmgzjF15ypKvv8H/DMK5hOksGO6pHzPmH+nRHjSoWtKeMAkFEUz4OuyRHf/Jlrd1F/njaFR7PW7jl2IjXvd6q3+SyuxOIAUAQArLEwMpdxA8V4jIGni79r0VDV9B0Sz8gRjtHguVDpMX9jAxXFVthCxvu0T9FzFeOhJ/a6wxXXHocwaI+fz0tgqfA2k4t6aScZITiPlB+wgkCtzWZ/TBI3x17ifRi+XBimM4MfEZZCrPotouMs6zxoDhdx7+UhUDshAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=URGWjLaz; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q2Jl2sdW;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=URGWjLaz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTTYB08D4z2xmk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 02:43:57 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFQV0E1096766;
-	Tue, 17 Nov 2026 15:43:47 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=rmlNl+
-	cN1v4ObBPuPGFVK0GCt9dkXWFacMXpgZLubfc=; b=Q2Jl2sdW7R/r+rRsLKXYJD
-	nAc+mng8ZG27UM+XVUSbUqXSPgBC3rPO7YgOQX+oQbLjRa7ycJd9T6eoNTOOkAU4
-	JzFuMUjM0O/Kk713/wrYYlXnNypnEknghpD+N49++ObMjGh2Pr6Q+CFR8+LbDDbq
-	Tx6p+LXYabDlJxOceNRW2u61MOY9G59uQ2NveRTzt/uFO/7UMbqlGDI/4+luvocY
-	vwSVTbTeOXdG+gqtOkzvr7pPFrmvGHddFY4NzRDYQr9tqMYW+v536emLnUxpXeRK
-	yQkwY/6vB73NFK1i8+vl8SPKuzCUwBYts8ksRt6yzoPFRfjbzX0Z293/aUZINIrA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4hxfat43c3-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 15:43:46 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHFYutg713417;
-	Tue, 17 Nov 2026 15:43:46 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j02dfdjxa-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 17 Nov 2026 15:43:46 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AHFhgAA44040666
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 17 Nov 2026 15:43:42 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3D19C20040;
-	Tue, 17 Nov 2026 15:43:42 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C0D2E2004B;
-	Tue, 17 Nov 2026 15:43:39 +0000 (GMT)
-Received: from [9.124.217.181] (unknown [9.124.217.181])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 17 Nov 2026 15:43:39 +0000 (GMT)
-Message-ID: <4b5c9a61-5876-4508-87a2-5451d363a181@linux.ibm.com>
-Date: Tue, 17 Nov 2026 21:13:38 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTTlC2Xpnz2xNT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 02:52:39 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 71DC04099F;
+	Tue, 17 Nov 2026 15:52:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B7A01F000C7;
+	Tue, 17 Nov 2026 15:52:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794930757;
+	bh=rWQ3LCKx81yVb4ZPYmvkuNFKtOFNJfTl68Lxuk3875w=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=URGWjLazzCNyXLQoIZq8i+Ieeqm5wCpQGJa3a+x8rIKCdnXEJkzUl48TG7es5hN1t
+	 aP23+qbwX5cDttOoJpIdRG2DNigYRritwoUMwYe5KGFybBNRKJT2cKLlO6S2VHwCX5
+	 nTq11yf1pXMzhm3FpbRLshfnXfHG+9AUmH7xVqNnVZ3Sda/vcLAuqVhRPy1kCVnLNq
+	 hWS+pU8vcqeNP/Jb3fhA2XXC1mHLAylbRZb8a+8164OusWf81YmV756sceh5ysQ1X1
+	 yHPP7ilExlBiJ1uEbvfmlw5YbLkfvdHAmr3phQzeESesk8U2rDraLjNjIe++54oCc+
+	 XRu+Xb4FIPsRw==
+Message-ID: <07b9bd2b-19da-4e3c-9b01-552364a82269@kernel.org>
+Date: Tue, 17 Nov 2026 16:52:31 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,127 +60,154 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCHv2 2/4] powerpc/watchdog: Disable preemption in
- arch_touch_nmi_watchdog()
+Subject: Re: [PATCHv2 1/4] powerpc/64: Leave lockdep hardirq context around
+ replayed interrupts
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-        linux-kernel@vger.kernel.org, chleroy@kernel.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, stable@vger.kernel.org
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Mukesh Kumar Chaurasiya <mkchauras@gmail.com>, stable@vger.kernel.org
 References: <cover.1794924821.git.ritesh.list@gmail.com>
- <3cb2893bf883be87ea1c3712344ac03f727937d0.1794924821.git.ritesh.list@gmail.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <3cb2893bf883be87ea1c3712344ac03f727937d0.1794924821.git.ritesh.list@gmail.com>
+ <cfdac7c3508cf0eb1cbf063e7f6331dccb128796.1794924821.git.ritesh.list@gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <cfdac7c3508cf0eb1cbf063e7f6331dccb128796.1794924821.git.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX5zMOjNZaoSCU
- sOrqbYEexznfceCYddY+QiLKtxOkgTHsl8W360ARlCOVGBnNtyuu6XGShSNDS8HS4Xlwj7x5zHt
- BKm/vetgkzKZbftZZVm5nxEN7SKfNvw=
-X-Proofpoint-ORIG-GUID: h-wmP1IUSblYLkRfDfVYj5uljJtAMwN6
-X-Proofpoint-GUID: W-TGwsihpCE7ooHZ-hsMEY16rcbokUKZ
-X-Authority-Analysis: v=2.4 cv=IaESymqa c=1 sm=1 tr=0 ts=6afc7633 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8
- a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8 a=_Q28vid90O0EagN2oV8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE3MDA2MSBTYWx0ZWRfX4fAeVGJSlOR/
- 3Le4Gbt7cvGgu8g6yggHeUAbDUaPFUaqOSaPUcVdZwsgTFvJyMRXW/nHjRbYgOs+pvLrCOc57LM
- h4Ze3djpVXjhCLy0/qnUj2ygmQfFb6cbRaM+rDZXn+rpufJVxjNpdfChrmRxOh8RszRT4MERs3+
- /FNW/j380uLXbDEVQWV6ycOiiTrXeOrWkGW+m181TQzEH4XbUIHuBfcw5E/5ZTWXag709DhK6ve
- oetIb0O4BLp3ptaJJUaJmiIrRu7eqAJx+raY0KfzvPUFfvjhxGZXL5wCef9/1ny5DYUTrSKz6p5
- 3xxMW4/cjhuAmYYaht9H+OaSUJ5FRpqpg2/YiXtGOcz/eogIWqdAvlp03ojZHzTxPPVg/DQZAtm
- oQhHoPaw0xzJEvpCKqmd/WpjPkAcYQMZdeOzpF7eFA8OKZsNCT6euJz9EjJ5qvyXTGRgTnQXsV5
- MUq8M7KjPBPkX+eHdfQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-17_03,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 phishscore=0 adultscore=0
- lowpriorityscore=0 clxscore=1015 impostorscore=0 malwarescore=0 bulkscore=0
- spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611170061
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
 
-On 11/17/26 7:55 PM, Ritesh Harjani (IBM) wrote:
-> touch_nmi_watchdog() can be called from preemptible context, e.g.
-> sysrq-w via /proc/sysrq-trigger. The powerpc implementation uses
-> smp_processor_id(), so with DEBUG_PREEMPT we get:
-> 
->    root@buildroot:/# echo w > /proc/sysrq-trigger
->    sysrq: Show Blocked State
->    BUG: using smp_processor_id() in preemptible [00000000] code: bash/238
->    caller is arch_touch_nmi_watchdog+0x3c/0xd4
->    CPU: 0 UID: 0 PID: 238 Comm: bash Not tainted 7.4.0-rc2-00029-g7664547149ae-dirty #126 PREEMPT
+Le 17/11/2026 à 15:25, Ritesh Harjani (IBM) a écrit :
+> With PROVE_LOCKING, boot warns once and lockdep turns itself off:
+>    DEBUG_LOCKS_WARN_ON(lockdep_hardirq_context())
+>    WARNING: kernel/locking/lockdep.c:4448 at lockdep_hardirqs_on_prepare+0x22c/0x2d4, CPU#0: swapper/0/0
+>    CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 7.4.0-rc2-00027-g074831f06e18-dirty #123 PREEMPT
+>    NIP:  c0000000002b2f2c LR: c0000000002b2f28 CTR: c000000002426f90
+>    REGS: c000000004f075c0 TRAP: 0700   Not tainted  (7.4.0-rc2-00027-g074831f06e18-dirty)
+>    MSR:  8000000002021033 <SF,VEC,ME,IR,DR,RI,LE>  CR: 48022221  XER: 20040000
+>    NIP [c0000000002b2f2c] lockdep_hardirqs_on_prepare+0x22c/0x2d4
+>    LR [c0000000002b2f28] lockdep_hardirqs_on_prepare+0x228/0x2d4
 >    Call Trace:
->     dump_stack_lvl+0x138/0x150 (unreliable)
->     check_preemption_disabled+0x120/0x158
->     arch_touch_nmi_watchdog+0x3c/0xd4
->     show_state_filter+0xf0/0x338
->     sysrq_handle_showstate_blocked+0x24/0x38
->     __handle_sysrq+0x134/0x3a8
->     write_sysrq_trigger+0x178/0x22c
->     proc_reg_write+0xf4/0x150
->     vfs_write+0xfc/0x71c
->     ksys_write+0x8c/0x150
->     system_call_exception+0x310/0x590
->     system_call_vectored_common+0x15c/0x2ec
->    ---- interrupt: 3000 at 0x7ffd01755b98
+>      lockdep_hardirqs_on_prepare+0x228/0x2d4 (unreliable)
+>      trace_hardirqs_on+0x98/0x11c
+>      irqentry_exit+0x64c/0x1064
+>      timer_interrupt+0x274/0x6bc
+>      __replay_soft_interrupts+0x158/0x380
+>      arch_local_irq_restore+0x1cc/0x244
+>      console_flush_one_record+0x438/0x654
+>      console_unlock+0xb8/0x1e0
+>      vprintk_emit+0x300/0x56c
+>      vprintk+0x20/0x34
+>      _printk+0x40/0x54
+>      lockdep_init+0xdc/0x104
+>      start_kernel+0xa24/0xc68
+>      start_here_common+0x1c/0x20
 > 
-> Unlike the generic version, which only sets a flag, we update the CPU's
-> timebase stamp and its SMP watchdog pending bit, so a migration in
-> between touches the state of a CPU we are no longer on.
+> Since commit bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature") a
+> replayed handler always returns via irqentry_exit(), which traces hardirqs
+> on while the replay is still inside irq_enter():
+>    arch_local_irq_restore()
+>      irq_enter()                        hardirq_context = 1
+>      __replay_soft_interrupts()
+>        timer_interrupt(&regs)
+>          irq_enter_rcu()                hardirq_context = 2
+>          irq_exit_rcu()                 hardirq_context = 1
+>          irqentry_exit()
+>            trace_hardirqs_on()          hardirq_context != 0 -> WARN
+>        next_interrupt()
+>          lockdep_hardirq_exit()         too late
 > 
-> Disable preemption across the update. While at it, let's also mark the
-> function as notrace (since we might be within a tracer when this
-> function gets called).
+> Leave the hardirq context before each replayed handler instead of
+> after it:
+>    arch_local_irq_restore()
+>      irq_enter()                        hardirq_context = 1
+>      __replay_soft_interrupts()
+>        lockdep_hardirq_exit()           hardirq_context = 0 // fix
+>        timer_interrupt(&regs)
+>          irq_enter_rcu()                hardirq_context = 1
+>          irq_exit_rcu()                 hardirq_context = 0
+>          irqentry_exit()
+>            trace_hardirqs_on()          ok
+>        next_interrupt()
+>          trace_hardirqs_off()
+>          lockdep_hardirq_enter()        hardirq_context = 1
+>      irq_exit()                         hardirq_context = 0
 > 
-> Fixes: 2104180a5369 ("powerpc/64s: implement arch-specific hardlockup watchdog")
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
 > Cc: stable@vger.kernel.org
 > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-
 > ---
->   arch/powerpc/kernel/watchdog.c | 8 ++++++--
->   1 file changed, 6 insertions(+), 2 deletions(-)
+>   arch/powerpc/kernel/irq_64.c | 11 +++++------
+>   1 file changed, 5 insertions(+), 6 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-> index 44f178e07531..32d4e716cb0a 100644
-> --- a/arch/powerpc/kernel/watchdog.c
-> +++ b/arch/powerpc/kernel/watchdog.c
-> @@ -456,12 +456,16 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
->   	return HRTIMER_RESTART;
+> diff --git a/arch/powerpc/kernel/irq_64.c b/arch/powerpc/kernel/irq_64.c
+> index d5c48d1b0a31..b189e796eb34 100644
+> --- a/arch/powerpc/kernel/irq_64.c
+> +++ b/arch/powerpc/kernel/irq_64.c
+> @@ -75,12 +75,6 @@ static inline void next_interrupt(struct pt_regs *regs)
+>   		WARN_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED);
+>   	}
+> 
+> -	/*
+> -	 * We are responding to the next interrupt, so interrupt-off
+> -	 * latencies should be reset here.
+> -	 */
+> -	lockdep_hardirq_exit();
+> -	trace_hardirqs_on();
+>   	trace_hardirqs_off();
+>   	lockdep_hardirq_enter();
 >   }
+> @@ -137,18 +131,21 @@ static __no_kcsan void __replay_soft_interrupts(void)
+>   	if (IS_ENABLED(CONFIG_PPC_BOOK3S) &&
+>   	    irq_happened_test_and_clear(PACA_IRQ_HMI)) {
+>   		regs.trap = INTERRUPT_HMI;
+> +		lockdep_hardirq_exit();
+
+Can we include that in irq_happened_test_and_clear() instead of 
+duplicating it 5 times ?
+
+>   		handle_hmi_exception(&regs);
+>   		next_interrupt(&regs);
+>   	}
 > 
-> -void arch_touch_nmi_watchdog(void)
-> +notrace void arch_touch_nmi_watchdog(void)
->   {
->   	unsigned long ticks = tb_ticks_per_usec * wd_timer_period_ms * 1000;
-> -	int cpu = smp_processor_id();
-> +	int cpu;
->   	u64 tb;
+>   	if (irq_happened_test_and_clear(PACA_IRQ_DEC)) {
+>   		regs.trap = INTERRUPT_DECREMENTER;
+> +		lockdep_hardirq_exit();
+>   		timer_interrupt(&regs);
+>   		next_interrupt(&regs);
+>   	}
 > 
-> +	/* Callers may be preemptible. Stay on this CPU for the update. */
-> +	guard(preempt_notrace)();
-> +	cpu = raw_smp_processor_id();
-> +
->   	if (!cpumask_test_cpu(cpu, &watchdog_cpumask))
->   		return;
-> 
+>   	if (irq_happened_test_and_clear(PACA_IRQ_EE)) {
+>   		regs.trap = INTERRUPT_EXTERNAL;
+> +		lockdep_hardirq_exit();
+>   		do_IRQ(&regs);
+>   		next_interrupt(&regs);
+>   	}
+> @@ -156,6 +153,7 @@ static __no_kcsan void __replay_soft_interrupts(void)
+>   	if (IS_ENABLED(CONFIG_PPC_DOORBELL) &&
+>   	    irq_happened_test_and_clear(PACA_IRQ_DBELL)) {
+>   		regs.trap = INTERRUPT_DOORBELL;
+> +		lockdep_hardirq_exit();
+>   		doorbell_exception(&regs);
+>   		next_interrupt(&regs);
+>   	}
+> @@ -164,6 +162,7 @@ static __no_kcsan void __replay_soft_interrupts(void)
+>   	if (IS_ENABLED(CONFIG_PPC_BOOK3S) &&
+>   	    irq_happened_test_and_clear(PACA_IRQ_PMI)) {
+>   		regs.trap = INTERRUPT_PERFMON;
+> +		lockdep_hardirq_exit();
+>   		performance_monitor_exception(&regs);
+>   		next_interrupt(&regs);
+>   	}
 > --
 > 2.39.5
 > 
