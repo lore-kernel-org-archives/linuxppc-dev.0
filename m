@@ -2,94 +2,81 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D5A1606A323
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 14:26:10 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C905260A261B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 14:53:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=uEtQzxW8
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CU9p2Po0
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTRqD0DRqz2xqL;
-	Wed, 18 Nov 2026 01:26:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c35"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794925559;
-	cv=none; b=j4YIasUgBM7KDd4BY4F52/xTBS2HUOzwYtb5KGwGTj32GT69hL++QkhLkxzMzX98kS68RxMTlsDwt/S2T49+Sv+VFd7/j9JSqXJtwEAfiCdEXyLUj+Iy42pPLJVCOj2q0BGgT930ZSyIrFYepBWKpn8xnYgZ8tIAhkC8Y4Fugf1gBFu5PucWocdxS79NBQtOXlY9Kb9fX/PNkWVGek65gA9WHGC/Vfb9SM2E+psuUN751DaIu19tQni7tXEGtdZKHkluOqlmXpZv3FVtavYPTSPphwBEmvO44ZW4G9bGRdCvcFlnuVOiBaJhYfM90I9IFirDS8brR2b1Tns1ysoUyg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794925559; c=relaxed/relaxed;
-	bh=qTTU/HttU3fjnx/LLkySkKgelZHAjJmF566oK0Z4Ap4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=mHbcRboa1SnBjcS/9dW5bPROZOmLW2DUbaYTJjvGsITf2K2Hy/0PVc6SbPASgRxj75hsgrfNzkUX1dTXH9QSGsF1DSqr2EXwcFtShfdYxlH1Q+oQZTN+ecsffAh24ZsFjDDX07fylfpZUVhcQDTda+lZQM6AvTIkNb1j2Jwj3bfKRpS33ftOZMR44UT3/kwLL68MoQ7XmeksuWxZJE5GPfu9tkgdNFulTIzzeWrMftAl9b0GfkpYjEzVIL4cx+gEkGJRKpEpuep4UbpcAfiFkS86iQraMiL/c6UxItMkJeuT4wsC7UosRZtJCaKmPnx/uaPZo1pCAg+XLIPXKG9FeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=uEtQzxW8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c35; helo=mail-oo1-xc35.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTSQy35kSz2xmk;
+	Wed, 18 Nov 2026 01:53:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.234.252.31 arc.chain=kernel.org
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794927210;
+	cv=pass; b=RQpv9CfstF0QzaiGvcUp1UMUL2z4e2l4lGfDZU8aUV9xnxzzEjVsTHS8sQfWATQ6aXR/SIeZZ0oD+YUr8TvY2JLA0qUw60gvYZ23NurYQm9dy6h9kcb1PC5zhdmgNFfQKItLHYCYbDNLBqDtalTaWuA7gLM1eN86XZjLdIFP9L3n6EngW+IVi2mWEVusN4InkdwYGMUn8k1asmK4Ora5mBgtXk1SRGDXN+xyOfwG3TVn0k7humshUHe00jyaWBdhqeZr2jr5rxXp6VakKnh6tcJfXUO48ykNNt3Kb6iYuTvqQZNHaHgd9KO87u1q6IZhtJMKbAdzl+snyVb631106w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794927210; c=relaxed/relaxed;
+	bh=a4PoB+1aicRpvLxDE1/KgNnpi1kOiDP2CU5f5EIZbKM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=C0vQUoe0d8l3SLvoOieQyvsip5mvEKVPC+Dqv7OyVuhGwC1O4GuL+0eiTLHaUM1x1BoBJGpwZqM4QlJCCrx0enys2SIZY9tG7+KJSd6NRC/6iVoqUT3F5gZ/+NcsInnhGu2CNKYCJW3l6aEcea4hWQKdiw0xOICR7iER+dqmOTSzFSVYxzQsWYmFVYcic2qkmXhLuQXkzMhgM8MZBDa79bk2cSjPQDQMe9vtDnzW4D6nEJetwDgh186TZq/hQrweZ77wVgutq3xv4pWG9OAPXAFD31Dcv62voVZreddZcRseR0NXeZ4UZ36ihgOGiJwO9uXn8ghmIEhHG4aZG/47zQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CU9p2Po0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=uEtQzxW8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CU9p2Po0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c35; helo=mail-oo1-xc35.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc35.google.com (mail-oo1-xc35.google.com [IPv6:2607:f8b0:4864:20::c35])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+vjardin.free.fr@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTRqC2KCxz2xqJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 01:25:59 +1100 (AEDT)
-Received: by mail-oo1-xc35.google.com with SMTP id 006d021491bc7-70b875f6f1fso4819285eaf.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 06:25:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794925557; x=1795530357; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=qTTU/HttU3fjnx/LLkySkKgelZHAjJmF566oK0Z4Ap4=;
-        b=uEtQzxW89GeCVukfjrEbnidTn4dvd8VksOuYGgUAMIc4pSdktYKl9EOeCgNXmyzJfi
-         zQy4Ww67tM9wOwazha23ApjCEcoJ08tBbFvAXmmaCXtnvEtET3YIP8qyeBCMIHNL9OFs
-         dEVGLxCPbysJ5R8YP5TT/p8OrwGi3YMrN1uu7h4UhgJWmmJPHTmnnu11NXw1gxEyK53n
-         Izz5Jlc3InK6yql1kI9CIATTgPNZLdIcCY6/6Z0tmie8Lwb4y5Q+huHyW50Lxo8WvPPR
-         NSQuCd+z50JWpvK5u720ennSUQveL3mG6Vr6oBmDfy33Qbp3aZqL2eIksk+ElI+QoooU
-         BWzA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794925557; x=1795530357;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=qTTU/HttU3fjnx/LLkySkKgelZHAjJmF566oK0Z4Ap4=;
-        b=OTDGpfL9Ae7fPykuuNgLp5FnEJ/PM9TxnUO8Ds/OzrK4bLVZKr9OZN/97mpmZqGXVw
-         0d3F7797o7LPJDj7CgIGFBDG1ezJ4e67D8yeWCmOXGkLqCPoPfMMbHRaTdIa/tcsLu8D
-         3jE2oBCjZn5rCIWVcy1lvUqjae0Yv2AyIqmRJncFi6T7Jv1WxJFnZG2LSi5hfz7goJDF
-         oy6aM0wy8DdPAyX/ZSfFWpknaDZ71Ur6iWIt1tr0mCYl6ONAHdya0aDL0PGCaHq+IW/u
-         cawnmBxa8Wsb9Kf0b1JYzwEsuv9dvuxsi00wLF//lEjLQqBD/AENqgymAOYcpR6JslvT
-         G9uA==
-X-Gm-Message-State: APuU4Z/sX0fVQ5lrsex2tw1CWHS5H15DgoxM4RPHvJdMnKCTaC3ZgJEm
-	/W3wiLucSytVH5deljspOsgYg0Mol1m5NwNWiZ3d3jzASnEgABlUSWDwfqWoGc2A
-X-Gm-Gg: AYBFou059gHpCikSEGP6n9mATRE6lLXOfoKOflrB4ySUiUkP9hd/MS96vN4DPEMjpKd
-	c1vmxGKrSIYV5WQdihdm3J069vvUR9Umy922DLrZtwl580iFc6JARNbKAvK4fJrCft7cvNdJDvM
-	nz0GkwJK5TEJEgUsnZtHQd9iaxPu2b2jLzZUa565j+yZzLtYVzpVFp9HsnGLDhAH8GX1Kb9rX0o
-	ixYQeY1MU7cg+eCP7+cloEdaAgrAEBuY6u2xJch8MSAwOtOlUAqPwNY4NDi0Ps440BQ0+Hr/CiZ
-	te/TCnInzLZPtoRontII1oMW8qjZYoEQk7jcMfspaJSpRCIIzxkFWZWQHpD/r5dHNcWr3ZaunJh
-	FEhwDgIXGAQsZYYnryGrliPN5NqX0hhsLgfYetFvol9GXX5GwOvULURQgrmj2jCN8cesDRY1c7B
-	TbPkE4kQzX9msiWFu1A1pZrhfPLw3VNxpdzq/emrT6y3o8laQACnwlqnBRTPCl4sAk5Hi8c+mYv
-	6GfpKjH5qcCuUHy/ed3JSIRuhLgOJA14SPVEmPh+dIKW6jxmOVMt/G3fWQfg1RswLjEIAfl5Cj0
-	qKe8S55BzjXbBfhXocaJuowmVgTwnZ3zxIE=
-X-Received: by 2002:a05:6820:1353:b0:719:1ad8:a34a with SMTP id 006d021491bc7-71ab51ad506mr8840255eaf.67.1794925555161;
-        Tue, 17 Nov 2026 06:25:55 -0800 (PST)
-Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-71af0a8a18csm5313709eaf.4.2026.11.17.06.25.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 06:25:54 -0800 (PST)
-From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	linux-kernel@vger.kernel.org,
-	chleroy@kernel.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCHv2 4/4] powerpc/kvm-hv-pmu: Free hostwide stats buffers if perf_pmu_register() fails
-Date: Tue, 17 Nov 2026 19:55:20 +0530
-Message-Id: <f26a80d822ddfceb926aa732deb96e81c40dd2f9.1794924821.git.ritesh.list@gmail.com>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <cover.1794924821.git.ritesh.list@gmail.com>
-References: <cover.1794924821.git.ritesh.list@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTSQx3yPZz2xPb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 01:53:29 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id DFC0E448BC;
+	Tue, 17 Nov 2026 14:53:27 +0000 (UTC)
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1794927207;
+	b=upivYtpT+0o4hcWruKtyF209lGJ149JXD2zC/OTKiZcQQavyeMFJjYqggYNKpVEI7QD8
+	 bNH1eQ5p3wtphFUuinjuLXjTwL1QUnDT49QVG9hF7zSSOmWLVTyoTOMOXk1V1Fw/LX9qv
+	 K8a7WGP2dSPzyy86G97hTFtkN6gGD/1AJuHLgIyXsVrawxD7fWVJnESfLtrnZvtKv5BSn
+	 bkcu/pnLSwiIkdqYy8VLJfp+NzpuTEpJU8szzGegyDcSkhoMVwoDpR1DGxKJHTVeCZWXn
+	 ed6gnJt33LdbrGmCitgEQiPWFqwbx35msReq8+hm/OZlMmS9ZwXdavudobnlJ+zqa0A==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1794927207;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=a4PoB+1aicRpvLxDE1/KgNnpi1kOiDP2CU5f5EIZbKM=;
+	b=ctlWwBiiYhq3DuuTLoI9UVYY6mBTGrXIsBqE6/d6mYpBS8iU9jMM9g+4sZ6bTZSeDRed
+	 sedo0Ovaz4BhRQPpsaruPLvIoQrpITtaeo5M9mpNrhCxTSH6QyqmNSA6jlEcaJHHKAx1Q
+	 GsyREc+xw0Sd2MaTCLDj3IcrabYpGjSnF8QO4UEdt2CLgGa8cvFIbpSfWWAHGBz2e3OKN
+	 QiVBc4apXxQdKc88w9zguTYtJfrztLiMCr/CaFx74KNoww8SYp06NOxdQi9m5H9p5z8Cc
+	 uo+0kKcaF9SrXzGpjxp/ev3gHtDh075QrhQGGMdpzvWiQBj1NBSMQJO0P3znOFaLEfw==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.kernel.org (Postfix) with ESMTPS id 271611F000C9;
+	Tue, 17 Nov 2026 14:53:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794927207;
+	bh=a4PoB+1aicRpvLxDE1/KgNnpi1kOiDP2CU5f5EIZbKM=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=CU9p2Po0+oGDABryw3jRmJpihX9FvjjZl3Y5Ci/+pv4v3je6o1E1jB+eegn8s6bxy
+	 jnKXh4koh9Vd7DS19G+bgBzUare3Utc6MWkm6ZTiZfgEc9Poi8Lw8eGEWX72kr/P3v
+	 6mHfBT5BYmfDJxx+aXTLuLONtm1U4tyQJA0Yu/frOIUNzIT1bgVzhNf14vaNZFEv2N
+	 MZLnhuLzc0I3X2wgvuSlzLVpxCOO9XPiEeoTxGQ1rGKmYXbtdEZxCAil1L5IKnFX6V
+	 ipEzaqLwMmPCxCE2NEiXyJgHRTRTx615KsZeaTT8RdU1oY2WLxOUrJCW7G2lbHFaFo
+	 wE7u/+yhdjXRg==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id AAC4E4A9C8;
+	Tue, 17 Nov 2026 14:53:26 +0000 (UTC)
+From: Vincent Jardin via B4 Relay <devnull+vjardin.free.fr@kernel.org>
+Date: Tue, 17 Nov 2026 15:53:12 +0100
+Subject: [PATCH v7 2/6] dt-bindings: soc: fsl: layerscape-dcfg: add the
+ LX2160A pad-mux child
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,45 +90,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-2-5d7201970629@free.fr>
+References: <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-0-5d7201970629@free.fr>
+In-Reply-To: <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-0-5d7201970629@free.fr>
+To: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>, 
+ Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>, 
+ Pengutronix Kernel Team <kernel@pengutronix.de>, 
+ NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>, 
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev, 
+ Vladimir Oltean <vladimir.oltean@nxp.com>, 
+ Ioana Ciornei <ioana.ciornei@nxp.com>, Vincent Jardin <vjardin@free.fr>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1794927205; l=1719;
+ i=vjardin@free.fr; s=20260525; h=from:subject:message-id;
+ bh=CVizR3NF8jRDqX6EvvjxDP8c9Q4ToahcqGl3Dh7PyAk=;
+ b=3TPhrYj6d+1xEf11drbCP6wqDTqz8ph4uhtqO3Ieji2ssW1alXM+tDr6BIAJnQq3/T5pLc0sW
+ bSelyra8Y0eASYPzOB+S0UcAtUvi+qH3H7H9TBHnyeIqds7wgQ0ncWP
+X-Developer-Key: i=vjardin@free.fr; a=ed25519;
+ pk=hppgLeFpGpKOi7LNwGEZ4jOYofJCoGd4Jf1ltAabiLw=
+X-Endpoint-Received: by B4 Relay for vjardin@free.fr/20260525 with
+ auth_id=871
+X-Original-From: Vincent Jardin <vjardin@free.fr>
+Reply-To: vjardin@free.fr
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-kvmppc_register_pmu() calls kvmppc_init_hostwide(), which allocates
-gsm_l0_stats and gsb_l0_stats. It then registers the pmu. If
-perf_pmu_register() fails we return without freeing them.
+From: Vincent Jardin <vjardin@free.fr>
 
-Call kvmppc_cleanup_hostwide() on that error path.
+On the LX2160A the DCFG node holds the pad mux, overridden through its
+DCSR view. Allow fsl,lx2160a-dcfg with simple-mfd, so that the child is
+populated, and the pinctrl child, on the LX2160A only.
 
-Fixes: f0c9c49c5067 ("powerpc/kvm-hv-pmu: Implement GSB message-ops for hostwide counters")
-Cc: stable@vger.kernel.org
-Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Signed-off-by: Vincent Jardin <vjardin@free.fr>
 ---
- arch/powerpc/perf/kvm-hv-pmu.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ .../bindings/soc/fsl/fsl,layerscape-dcfg.yaml          | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/arch/powerpc/perf/kvm-hv-pmu.c b/arch/powerpc/perf/kvm-hv-pmu.c
-index a58634f656e9..ec05b4855736 100644
---- a/arch/powerpc/perf/kvm-hv-pmu.c
-+++ b/arch/powerpc/perf/kvm-hv-pmu.c
-@@ -402,8 +402,10 @@ static int __init kvmppc_register_pmu(void)
+diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+index fc14fd0bf84b1..bb9dbcfec1881 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/fsl,layerscape-dcfg.yaml
+@@ -32,6 +32,7 @@ properties:
+       - items:
+           - enum:
+               - fsl,ls1028a-dcfg
++              - fsl,lx2160a-dcfg
+           - const: syscon
+           - const: simple-mfd
+ 
+@@ -66,10 +67,27 @@ patternProperties:
+   "^clock-controller@[0-9a-f]+$":
+     $ref: /schemas/clock/fsl,flexspi-clock.yaml#
+ 
++  "^pinctrl@[0-9a-f]+$":
++    $ref: /schemas/pinctrl/fsl,lx2160a-rcw-pinmux.yaml#
++    description:
++      The pad muxes of the RCW on the LX2160A, at their RCWSR12 to RCWSR14
++      and RCWSR27 windows, overridden through the DCSR view of this block.
++
+ required:
+   - compatible
+   - reg
+ 
++allOf:
++  - if:
++      not:
++        properties:
++          compatible:
++            contains:
++              const: fsl,lx2160a-dcfg
++    then:
++      patternProperties:
++        "^pinctrl@[0-9a-f]+$": false
++
+ additionalProperties: false
+ 
+ examples:
 
- 		/* Register the pmu */
- 		rc = perf_pmu_register(&kvmppc_pmu, kvmppc_pmu.name, -1);
--		if (rc)
-+		if (rc) {
-+			kvmppc_cleanup_hostwide();
- 			goto out;
-+		}
+-- 
+2.43.0
 
- 		pr_info("Registered kvm-hv pmu");
- 	}
---
-2.39.5
 
 
