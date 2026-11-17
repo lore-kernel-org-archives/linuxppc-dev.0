@@ -2,85 +2,95 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 763D2606A32C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:36:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDF29606A89C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:42:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JFNDj9se
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S80DLh/l
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTX2W16Ccz2xl0;
-	Wed, 18 Nov 2026 04:36:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1332"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794936963;
-	cv=none; b=OQqj+NRRsVb/iziUHW3YU7Vgdt0MY+3rifw6KLiKS2V1qAYHS6+3lb13nBBAADeVn2yetXyWjn9qGPp/0Fvu0Hu1kXetP9WNQOi2yzBEKSZ3m3QLCqR6JEYySIY7d8jjYerxh68vCIN18vywFHQTYkfocX7UlJYYyCQ190+1W01N40EntN2QrayOFl/O5vl6zu39xDW/o7vsyqmvZql4uxkh5kl/HP1dHy/o63NCpMndE3m1FFLhl1AXJmtdMHprBIGxME6KiyEdhtlidkJoDvAOzQktekHRvDnho5TtrYzZDAtBVoZfjsB0fNHaReYSp2DvRveErx+XdTfxAUOyiA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794936963; c=relaxed/relaxed;
-	bh=DiwDSqqY3noD1OsmVqWHD0ic/HvrhuFYXysk4k3SnZc=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=bgJR9c48TNAp0c6WwnfnfRu5HibqnWQhdorl5+hJqmJ0wwUig0pGo3UoBNZEtmGbYnlgtfuC7Ha9tDpsR6Ixf3wVXRtkYtObJLVatyW8XpywQsI+ZVWtVpengLu4ZyrLJlsDVgGbqAjipDH3OPzxv7nk8s46uXC1d83HGzite+zrRL5chYcL6UhG6Li2qji0l4VfXW8D/TbU3UiLDhu3RijSqizqRNIeg9zSF32VlKi4yNyuNbaSv8E1LQtieSZX5xdXfD29NX1pqW9xQIb79oNVs7ZVjo8At++kBxKZwgGTAMC096R+DRQoRqIMF5txBM4As8uUw3YUBWQY1o9WSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JFNDj9se; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTX9X1DbBz2xl0;
+	Wed, 18 Nov 2026 04:42:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::235" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937328;
+	cv=pass; b=CA/wZXoQeYYk4TUNZVDqpWtCdaXVXubN2vuSSq0WRJBH7nht9VyNM2B/Wrc48R/Rn2NJkJgFnsqA803CeIBn827Xo2ZXOE9Zo46PPXnYvhACvC1SHgh2v2hsVXroYHI5IYbBjd6E7Hd92P71HGEwhSDmAQF8x9sDa1T9jvYJVlq8BxM7cr38+V/Nbovda7SlownAao/DK8bgB3CeL6E4z2YdjIviHyl8ptD72A2XitP17iK4OiVBJp7tqk9vvNyRpVA3W7eyJ/8UmViG3Mz5IPyd6r0f3auyHFgkPT35o/g5+3ebPCkY7PZ/zwc2DgJ2egv8+wDGw0ZnEesatbaniQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794937328; c=relaxed/relaxed;
+	bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=exoYlzT8BOJP85hFGJ6cTaFfqOq3myu7/+roDoViqC70447IVhmiHXd6aM6MSt2beIQwEHfKBiukZyM9GxIIerisg11r1wXuPA0yHtymsftKq4ZE8fy6oek9neUuNW5AAWL1iCaBa+/q6ms7dhDyQnR32KSByRkv0MKxVrIkvibqOtytdI9H8BxaUpLUa9GS40KtKBJylNz86oizBeDayDzWyddJ9E1p9RtEPP1z5AcX5AgewcAnuvI5B9fWQ02iXr77UudN0PidOr2DrFPGgmqTHeqyj7M+4Q7FfT6KWEXQZQQnOanUfHZdX+YNCJ5CPMBiS8K2mp0K9B++3UGXdg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S80DLh/l; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=JFNDj9se;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S80DLh/l;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1332; helo=mail-dy1-x1332.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1332.google.com (mail-dy1-x1332.google.com [IPv6:2607:f8b0:4864:20::1332])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTX2V3dPfz2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:36:02 +1100 (AEDT)
-Received: by mail-dy1-x1332.google.com with SMTP id 5a478bee46e88-3282db206d3so231777eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:36:02 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTX9W04CBz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:42:06 +1100 (AEDT)
+Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-3ae417eb235so1189071fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:42:06 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794937322; cv=none;
+        d=google.com; s=arc-20260327;
+        b=iMsaXkSE7ZV+oYHKdZ5GssCTb22F3L05TDZH/9by7Yd2gEdubO9VHO8GCjc2iCaXlE
+         VohzxOBKdPW7bPVhpcFFNv4MS9RMsfYqTLM6EcIInhixRW1ImF1pOK5ZCKWPvviTP2TI
+         tVqlsr7WoXfcmpjCWhL2MDFG+el/52O+4lrUvz3B9rhKdFlFuP9U1dPLYeADXVywoWyN
+         xDuVM/67VI2FW7uPX3cFJHBZCOIOVCWKnDJHfq+jmwcMA0FLz97k93GtrZEFUpDkFsbG
+         O+Lh85ILFbOEk1FmvCU85TMfoP6wrz2fom6Ibv7bTrwU+EYchs8s/nIriLbh2fyfoSdY
+         LtFA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
+        fh=xe3IuvtX7Ly7OsQZgLSZMSZfQ/GJTw93SJGBhqjGGZc=;
+        b=Wah8UXkgPvkWPCaoNAKFlp8nbrdneKngQd9fm4gWkxPg4pn3CWrdOEAgw1kcTm1trC
+         flPlAkrDya3Epg9rfjfSbxAnGep4IXBwVmauIMAg9nNk6B9mZwmQsUrP9a82Cd4F3/t5
+         w7EKAhHYDyXc3t/rrdI8T05NP/JeHKnQHc4E+zI4x4olml/6jvR8oV5jqEXMw+f3TJcF
+         9sUe6+3yJBjD9Cf8eEa9+4NLwOS8th+MGAofhRRd7HkIdFXvykKP+Um9f7WM72aKYoCu
+         Q7q0YyfP2safCAjrUE8QWestx/Amf9tPIJcT7MZnMnno66LmdfG0LiNV7H92ivEte8i7
+         mTrg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794936960; x=1795541760; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+        d=gmail.com; s=20260707; t=1794937322; x=1795542122; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=DiwDSqqY3noD1OsmVqWHD0ic/HvrhuFYXysk4k3SnZc=;
-        b=JFNDj9segcHdVhNwnJlUpeSK1kZcFLNslWBWbwOrjZ0/QseNCLJb9d4DbFhhaIfEp6
-         wf6rpc2dcT8U7hllqHRcX3l9PZZUk1EkOp5cwpk0bKjR3GpsspTdqQNDiG1ed757ypoC
-         MsWrJp6nSYBxUtVFmSGppbwPs5zadnjT3ppsanjmQ43bkLjnMlX0AenhJnyaj6XwSZ6+
-         gNxJrd+fuFmfufOWS49iButSIRGdOLdfp92AEwRhkp4mAHjdm3vF/CuhVC8OImwYiT43
-         RpAe4y+J3sQmq7REmJi3eWO1UGbYVVmXIzLjbfr3jhTrXMM5L6Zsy9WtCuWQanebEFIg
-         Oarw==
+        bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
+        b=S80DLh/leZQrXGtrlbCJbvyF3Dt8q7LYoOFqANhTo8Ih3gtHeZuy5kaRfOz2BBwtx8
+         G6rX7gBZmNk1w2XC85gwOfvujN49me1wM7/4KdRZPUWltgE23swc6B1lPj7X8WbPT0JL
+         K6vNizMyxvP6IBkniGOgQ1Nb29AihaZSEeP4EmnbFPRHaHFsTH1PJ+JVRFvyNIoHjv/6
+         7n+h7uO41Q443esKvFjjXa1wDcqoBP5Wl2WimHnD+w2IRqOiHbVQ9MJYUJrgnM1VvVop
+         Nv9CkB1BIky0BaCC93VwvBAlkf8SZqK6/NwlNeJmXejDIaW7XzUt3btdg4t0ff1k1lEf
+         ODDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794936960; x=1795541760;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1794937322; x=1795542122;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=DiwDSqqY3noD1OsmVqWHD0ic/HvrhuFYXysk4k3SnZc=;
-        b=L48TsBdBKDHTcA11LgigUzib/eYKdfeWJ7bX/Rmcu1/LHIDN+3bXN7iGRYgXnaaPGo
-         pgk8eSLPLRGYoxZ2XkekVEF33NwWFkYZzZrCyoyQezV5UtRTPKBMj4EZkiNl0iiApI3e
-         dOVh9rTJ6KsN2sR9zRRK/YcIOlFeKB1CzXlKMBHRAMKmqjVwNJ9okeY9G/NT2rdHVaC4
-         etiIb75A8Hgn2AHQKXyW6wSEdgTXJmF/A41PzXheBO7MFtkDmJn94jOVlsv7Mk5Y4u94
-         fblxiLqvebX4vpA1QccaBN9HQKx2UC7gdj8b2dHya1TW3sZ4cjDLE1BSIqXPbxjboFmW
-         yC/Q==
-X-Gm-Message-State: APuU4Z8SDygn7Dn3hWH537dp9hT8GSQN+7OqWa57dfV1Ym7r88sxwsP3
-	AZvQq08ULlUgga5B4zmGtCKdNPj6DDgHPnMNy/AKOznRyW00+fZH4c62jQ3ZDc//
-X-Gm-Gg: AYBFou1nNpL1IwqMsPy476uaovwC8OYaRHfZa8FLsP0e78Npr0peK0BaWuDnF1XiCPz
-	0Hh579P1VZ95Oklv2YHp9gJ5sanPr/CLTR0P/QZX+iR9GKG/gWwVdP7tCR+KEqyo2mT4G4JSOqh
-	Y0AgdYhHjh8Tp9iAuN85wcGCFlr5gooOmZVHbjNBXPDQ8LAekQU68DfnM3QtJrvLTHLidF9utMS
-	NYlTUnlvp0gzT9aQmd8tlvXRW4nvVkdaAO0Z4CrS0oAJicFZdn0e97uzUixKow4i3fP7p5q4aGt
-	BAEDwC1Ih656eeBQ2TxFCwA0kT/a3TTyljTMWefLDvfK0hH/4e8JBp+NKPGVxEB+cxsb2Hvoqlq
-	Nk5XHB8trjx0n1lB/N46UzYbWfprWxvzEwcybvlfiBNbo+5EPvjEpJ4BpIUYA0CJ2IijXPrFGMR
-	OnWXJJqkNlxKfIUIcFYHIedTDGkjAI2/MZoOJU7z4yG12NgdrVKfPTFuYYQeF2wu3rR88GVfH5c
-	B1rAJRdTndnUhOnICTMyYJKXDqZcq01xgMz3YmnMUrIRjVo582nxKAS30pdytrLD3/NryrbaMYf
-	Z28HXvCqZHrr+k2HocrjtMgHNb88
-X-Received: by 2002:a05:701b:2058:20b0:1b5:3878:aa29 with SMTP id a92af1059eb24-1b543d355fbmr247604c88.38.1794936960214;
-        Tue, 17 Nov 2026 09:36:00 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b5031918c7sm61333595c88.9.2026.11.17.09.35.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 09:35:59 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Mike Rapoport <rppt@kernel.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCHv2 2/3] powerpc/execmem: Allocate kprobes insn pages from the modules area on book3s/32
-In-Reply-To: <avxhmaXa7lsQ86EA@kernel.org>
-Date: Tue, 17 Nov 2026 23:03:41 +0530
-Message-ID: <tslf747e.ritesh.list@gmail.com>
-References: <cover.1794572365.git.ritesh.list@gmail.com> <82c4973addebd82923c460cb44221f5b76146afe.1794572365.git.ritesh.list@gmail.com> <avltdwzlh07VZSFC@kernel.org> <f7834f3e-6c43-4b58-806d-fe4c07a93457@kernel.org> <avsn7Kn4a8wbB2QH@kernel.org> <zev77i3i.ritesh.list@gmail.com> <eb634d1f-cb08-44a8-88c9-e3b559c399a3@kernel.org> <avxhmaXa7lsQ86EA@kernel.org>
+        bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
+        b=qAE7fogd7gM0pmuvDMX1BDVmOxJOyEF15kXnMeuCwbsc23LTYwZf3To9tqRnHjLEYv
+         cJz7urfHa5DNYS0f/KlUXZEhBsS8nPW6JnhttKrvwJ3MPC6IE/Nx6LbCHT9LjBRC46K3
+         pI4uheHcrgi+cktTDh+8TMtbK6PSBALteXHO9rqjef8trAOcio5pTg06/c7mKsVMhClH
+         oZd+t5w3btCwUUf/i1udCc1SqJ6ZUC9CY0ly+iaulvLFkyOBAthfNFRyq4b+ff85TdL8
+         xRmipA/ZX/t2nRVbSFyewOEnmLvzxPOy47KUQre8YKOc+7Bb3aEWsf34qY4uEsxKSHQu
+         DU3Q==
+X-Forwarded-Encrypted: i=1; AL+hErEybvO2C7LLaRDBMoObEaWZ9Q76fl1tpUPRvYxIL+b5CwwnB2TMUX1uZ1XvJNnAVMekjrZ29BfsZOYEOlU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/c9j7MxGB2VGHeLN/8uIEHytGJdQb7Pn8mdj3Toi11nXajAeoA
+	8hl7aKnkAWzVRRgYoUvfaBwawu/PFwH27bIbNxmbLc+7gkCg6Fn/3qZDOv3hlGeEH6LXl6agaRA
+	zWnQ1gTgCmJlJdY+lLlVa4T5rxOxSRw4=
+X-Gm-Gg: AYBFou0+sm5M/2Xugerdckq2+HYer9sUT61Jl0fx1pW8dvuSq09QQFGi0dzZ7LAgo/N
+	DucqrH9HaHmUjiyy83nvjkh7z0DiCkZd57dQ+x8WXmA1GPnMudzLanzGMlfB4d/4MoLlLwXZ2qM
+	tc2pmpAmYT6I991NV0vf2FL07FOJYO/y3j10xkCMue55f7CuNn7c3gteCsV6XITRFFNrRa5ZfKu
+	0QWQXINtv47DadCEgEEMyCnf3fi8w1mGJr9P0cZa8LvpNaCUECGMNS92tElhJZE2VNzD1hn+5w9
+	pI4x6fffT0ID7UliEn4msqMID37fA6PMt7iO+MqZXa7x47Es7rmE2bv7bQXwmDhBckfII82WLeN
+	2NijGjz6+08tvCXbiT57a2AYplCfimz7VZvXR4ji1BktF9am1XaOoBjz/S2UdUYOKQKX+bZFt/7
+	IDFwVjmI3H7MhcLb6F+/RiQ3PGMb14D24WLrMkOsatNJoDOjdM
+X-Received: by 2002:a05:651c:41cf:b0:3a7:6d4a:1c9f with SMTP id
+ 38308e7fff4ca-3ae2b4f54f0mr39588581fa.15.1794937321825; Tue, 17 Nov 2026
+ 09:42:01 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,100 +103,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+MIME-Version: 1.0
+References: <20261109-ppc32-perf-v1-0-a6e8a55b3b48@gmail.com>
+ <20261109-ppc32-perf-v1-4-a6e8a55b3b48@gmail.com> <6d067199-3077-48a2-80cc-e21352f5c837@linux.ibm.com>
+In-Reply-To: <6d067199-3077-48a2-80cc-e21352f5c837@linux.ibm.com>
+From: Matt Turner <mattst88@gmail.com>
+Date: Tue, 17 Nov 2026 12:41:47 -0500
+X-Gm-Features: AclHuK9NyOHwdZhzY_0H8BI34W0hiUQkqAtn_flXFnIyln3e7UfXyG1O1B9kp28
+Message-ID: <CAEdQ38E0prYYXVMFSBeZFUjYaSAP6gej_4aTMfL=R4ANrp7y=A@mail.gmail.com>
+Subject: Re: [PATCH 4/8] powerpc/perf: mpc7450: Fill in the L1 data cache events
+To: Tanushree Shah <tshah@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
+	Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Mike Rapoport <rppt@kernel.org> writes:
+On Tue, Nov 17, 2026 at 10:36=E2=80=AFAM Tanushree Shah <tshah@linux.ibm.co=
+m> wrote:
+> If you have a quick load-only run for 0x21a,
+> it would be nice to see the numbers, but that's not a blocker.
 
-> On Tue, Nov 17, 2026 at 03:04:49PM +0100, Christophe Leroy (CS GROUP) wrote:
->> Le 17/11/2026 à 13:33, Ritesh Harjani a écrit :
->> > Mike Rapoport <rppt@kernel.org> writes:
->> > 
->> > > > > > Hence, use the modules area for EXECMEM_KPROBES on book3s/32.
->> > > > > Right, I missed that on book3s/32 does vmalloc is not executable and its
->> > > > > protection can't be changed.
->> > > > > 
->> > > > > Could it be that 8xx also need a special treatment for kprobes?
->> > > > 
->> > > > Yes indeed, not for the same reasons but because 8xx ITLB-miss handler
->> > > > doesn't expect any instruction TLB miss on kernel addresses other than the
->> > > > ones from the module area:
->> > > > 
->> > > > Commit 4afb0be7ccda ("powerpc/8xx: Avoid testing for kernel space in ITLB
->> > > > Miss.")
->> > > > Commit 16a71c045186 ("powerpc/8xx: Preallocate execmem page tables")
->> > > > Commit 33c527522f39 ("powerpc/8xx: Inconditionally use task PGDIR in ITLB
->> > > > misses")
->> > 
->> > Right. I looked at the above series which added all of this support [1].
->> > So looks like 603 might also have this related problem (other than the
->> > per segment N bit issue), since it's iTLB miss handler only walks the
->> > task's PGDIR, unlike it's dTLB handler which falls back to reloading the
->> > missing kernel PGD entry from swapper_pg_dir. So what I meant to say is
->> > that, similar to 8xx, a new PGD entry created in the kernel's vmalloc
->> > area for an insn page does not get copied over after the task is
->> > created (/PGDIR allocated), on 603 as well.
->> > But since MODLUES_VADDR is defined for both BOOK3S/32 and 8xx, so I guess it
->> > gets covered by the same change anyways.
->> > 
->> > > > So at the end as MODULES_VADDR/MODULES_END only exist on book3s/32 and 8xx I
->> > > > think when they exist they should be used as follows:
->> > > > 
->> > > > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
->> > > > index b617b69452cd..856f4609c488 100644
->> > > > --- a/arch/powerpc/mm/mem.c
->> > > > +++ b/arch/powerpc/mm/mem.c
->> > > > @@ -428,8 +428,13 @@ struct execmem_info __init *execmem_arch_setup(void)
->> > > >   				.fallback_end	= fallback_end,
->> > > >   			},
->> > > >   			[EXECMEM_KPROBES] = {
->> > > > +#ifdef MODULES_VADDR
->> > > > +				.start	= MODULES_VADDR,
->> > > > +				.end	= MODULES_END,
->> > > > +#else
->> > > >   				.start	= VMALLOC_START,
->> > > >   				.end	= VMALLOC_END,
->> > > > +#endif
->> > > 
->> > > We already have #ifdef MODULES_VADDR a few lines above, I think the
->> > > assignment of kprobes_start and kprobes_end could go there instead of if
->> > > (IS_ENABLED(CONFIG_PPC_BOOK3S_32)).
->> > > 
->> > 
->> > Right. So let me use the following diff then?
->> > 
->> > Please let me know if this diff looks good to you? If yes, then I can
->> > send a v3.
->> 
->> My preference would go to something similar to 'start' and 'end', no init at
->> declaration, kprobes_start and kprobes_end set to VMALLOC_START/VMALLOC_END
->> inside the #else
+Sure. This is a loop of 8 lwz and a bdnz, run 10M times on the 7448,
+counted user-only with perf_event_open() and one event at a time. The
+store loop is the same with stw.
 
-Sure.
+  event                none       load      store
+  raw 0x21a               9   80000012         12
+  raw 0x014               8         11   80000011
+  L1-dcache-loads         9   80000012         12
+  instructions     10000062   90000086   90000092
 
->
-> I agree, it's more consistent this way.
->  
-
-Ok, then will go with the other approach.
-
->> > Also - it will be good to know if patch-1 and patch-3 looks ok too,
->> > before I spin a next revision?
->
-> Both make sense to me, feel free to add my
->
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
->
-
-Thanks Mike and Christophe. Will make the changes in v3 as discussed.
-
--ritesh
+The few extra counts come from the code around the loop. I got the
+same numbers on three runs.
 
