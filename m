@@ -2,69 +2,89 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B3175606A89D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 14:16:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB433606A334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 14:25:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dPNVH0AX
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=skU5Ojtm
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTRbl2rT0z2xqJ;
-	Wed, 18 Nov 2026 01:16:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794924963;
-	cv=none; b=aHC1IyMPxAHsLZPEx3jMAZs8v1K87vNYr5V3C7TqgYJ/3jEvrDJ4OK5u40Paw9B6UbbKTR9a13Bn/44xVEXf8E+y1xzcgSrVC1hHWdFhhvijg6yaolmKSxqdwZtJKNdRD3L2gdhbj86ZkFNoqdDZXtxkolhmfsNJk7LnsWFs7LuTtPlKB6wSWGg8BJVDby3T2T/7SHhYeJkA7BFHod23Z2362tVnGpfQlPkjll2AAe7xcniZl8Va/YBadaW65yA/CO4Pifp62FHTDi47iA8y2bhh+B55pfUIWmAUX21UQ+OsgpUk1du3gILjl3hjiaz9CEZg1qYOpHi7QwqR79d5rw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTRpq369dz2xnZ;
+	Wed, 18 Nov 2026 01:25:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c2f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794925539;
+	cv=none; b=Sb0z5v2m9L9WDDaZQCIqLfXk3JaMZIO7VfseU7+O9Zhr47yA34two9Kq0LLEJd3+2JSFS6hudkRr68eQhOJGBXhLYD/oR86WUgkwZ0Us6Qw80yyAygYX4GLobw/l/SnWowPSHqwG8mxsMZCDelcylbByzBPA3YZioKT+h8LvkBC6BSMi4yy5qvQvETQnDTofl3GkyZ4HAMmg3UYgRoEavQ99ntsNIeeGaTh1BmUwjoTeEvnMdWsDcDOS8T7mkrod/1bQa1kKHwcQTBywtPqayj3i9rRNBMnD0liMkOz/Xq5yy5ziO6NrUMQeyc2H9eKzusD7mPJAtFoiz0hgAZk3fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794924963; c=relaxed/relaxed;
-	bh=aeDxw0dSGGlnGghiVGMTuuktj73iHEfNfkBG2eV9bYw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bB4Sd+tqT31YtNxIWx60TftpsyIfo3jHPblZGcBoXVF5bYhUEUAWC8Rw3k9JV978V7nlFPUvKS/OejJmqgXUSNlPoTGxrZRjrrVYqBowcJ0X+pbMYRfu8Nr888cG1dtJdH0/8jZqZO3jegPdBtZxUS1vNOe/Cjw4ZX9PP+h2YbXONRRO9D88WNvCCAsrgY/gRAszaPBily25oJ364T3CMEYTn2KDu88rrrMpXQacycpFKtPXzMd8F9JT6RZBv6QztmRhzxWw574MHUvDm2R5bmEECodVL3mOI4lH9c1R0NFw1bG8puLWqRBoRQNW1Py27nnWED2vZX8MSYa8/vqhYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dPNVH0AX; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1794925539; c=relaxed/relaxed;
+	bh=VuZddKkmAmaYgOMBa+Lzz2VPLUuC+ZWxc4bgcJWjLWw=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=U6ReVnSkDY/e8b1wgrs8Ke8LvmxXUK8jCq+gcymzfwVRfF9fSSU8ADRUFJhhKw0CFp/dtvHg0xNh2NUcgdyuR6NbVhEY5eaYEy+bJ2MOj9POarFd/9usayko6zPcjPL2ViyzdAyxTEQ5mmDPiZq0AaakFEn6q9jzMFG79r6j1TyiMalXrva4BOa3hPEt8HeJC5Fi/nkj5Xy27YSjDJufh7kzhgAwK1ijApr4qASiCSuKHsCi//eTec86D6VuScAPzz60PzTlWJ4S1oyPnNmMuVnRWoi3gMLCnzXgTuEdItzEuFk7GNyK9bsJcZDUJscHWoZbB/iAfB8KIBr8TiERDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=skU5Ojtm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c2f; helo=mail-oo1-xc2f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dPNVH0AX;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=skU5Ojtm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c2f; helo=mail-oo1-xc2f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-xc2f.google.com (mail-oo1-xc2f.google.com [IPv6:2607:f8b0:4864:20::c2f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTRbk426Lz2xnZ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 01:16:02 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 87D6761178;
-	Tue, 17 Nov 2026 14:16:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 37EA61F000C5;
-	Tue, 17 Nov 2026 14:15:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1794924960;
-	bh=aeDxw0dSGGlnGghiVGMTuuktj73iHEfNfkBG2eV9bYw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=dPNVH0AXpNFa0FHwdRr6Z7/4yi5gjZRgwUrjrosl+dKdjTIuQg8SU4HEEHC2gyMOX
-	 yENh+gcRkrWW+s4t2i7YuO3yqtgPtES/VilTxpkAyhqaTjBuw9XwLFN6greIaGdFm4
-	 eM51fX/Ohbr+Z3ZgEyLA5AUMH9ccjukPUPSOC/rw9pdMH7TgsLalCLKE++WXAbPpNJ
-	 X5SEvuZxWXxjyT6V4ZzxRpd3Sk6lPR1PFIAVEk5Ddo/oMbbiO0UdJKBruAQMgguiIB
-	 zcmjsC7jTfLIYciA/tWXFzhphB8cK712SNihWdpWjePgRx9zMqC7GzyFbnFGjlKrRS
-	 fuBnc5E31Y4EQ==
-Date: Tue, 17 Nov 2026 16:15:53 +0200
-From: Mike Rapoport <rppt@kernel.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTRpp196Fz2xmk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 01:25:36 +1100 (AEDT)
+Received: by mail-oo1-xc2f.google.com with SMTP id 006d021491bc7-71ab5e64742so3616814eaf.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 06:25:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1794925534; x=1795530334; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=VuZddKkmAmaYgOMBa+Lzz2VPLUuC+ZWxc4bgcJWjLWw=;
+        b=skU5OjtmiXzTiv27CjD1GP7ZktzvoRQZKPcXoA8RU2pEerRWipej5TfdSrbsy3ey4R
+         Hx2adzqWnT9PpxP5lBIhK5RKIWxQm1+xYz7seeNOoSeM6gPR99JlqpKW5W7NJxDBndxu
+         3DrJdG4BUzcJzby90mv9mLHXhbsNqxKNEoulqUIlTffePCfPGEHI55Vad0OvdtOS3iOw
+         2MY+YfnM/sRKQTj9fHra+1Xvyw74tVPCmK48WoOcLGvfIrg2/4N8/P3yPfuicz5rd4sE
+         8K+hlK+h8GtvbKmwoOuEhhZ6o0OPoqcspz+ZKcnTEyf8kGkgxpDHSGR5AWeZ7STsewMJ
+         DQRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1794925534; x=1795530334;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=VuZddKkmAmaYgOMBa+Lzz2VPLUuC+ZWxc4bgcJWjLWw=;
+        b=A3H0t51AVd1aWMrnShp3WyAu1BvcF1JOvdk1nVpJsvZl7hB40Sf5kL3ubw5rtkokD4
+         ryLy9ZOJ4Zc0lmrJttWo5a7YnIiivRayMsUyzxYPd+4Uu8wl+92xxjGt4yyI71C8l8qx
+         u4LxG6jBx5PGjHUoGM/sNoBpIUwv6DoXCNcb9+7xii3NaH1MtnbALEguZzLYk+hdG7Gd
+         V0GlMDQ2t+nUzhfU9Is2JsTN+SMsrIU5t29P6B7o0/vz2LPjcpv5sGLLXNBgwsfXpM8E
+         wViipAwMHnMwhquCGcqo/PvWZxsYBc0qOsI79RVI+Qcu7lSXmYUqpuYbmtymsE4NdK67
+         IjNA==
+X-Gm-Message-State: APuU4Z8ctB3uckvi9fVz12hdg6stxhP1zjpCrxrBChSHBGNlw3XANAZY
+	JwnrXMK4t5tXvv3YR7GMA6FmE8HdHMDqd0tLhMV2/ZxSrblKopzVij1rONZI8CwO
+X-Gm-Gg: AYBFou1RiHcuMi+agAfUfZmwD2fmIcM2nWOYiTrj1F/g1Xskh0MfdNE0pPz7mtWq6MM
+	DlwKLpWp1mJluRmORCZkMfED2d/SxOKH2wuDZ379DVdJAyrzxTEC8F8DwAGGYRFfbHJWLnK3iv8
+	+s7C13IQzrtvz0zMA/wArz+iw8xTZtQEhF10vR4Shq45E6OAxH6LEe5uJo0QTlu6NEmUrOi2qEM
+	9pBZsAjIGyN4KQvXcaeWohwzKxNgViH6K2ylyQhCkWreMgF0co4Hc/c8m2rCQTpG4jsQewm7XdA
+	txRQ3u5hIMFUX3VCMTN8Tl/Zhy88Q+sQsXExXB0E+x0Am3JiBR9CPDmTmy37dkVwIx5om1ITyFb
+	Yask6U4u/mBmPt6eFrfoXqh+PcykW6YB6Fk6ONwGOxWx/GWVKZIq79kUJtS1QkCdK1lJkwZRjGO
+	2MIBDuaC6ugikpDMmRjQbQvOGdUF5C0oidQ8FFz0sgXlUQv5FcenCqX+q3Hq1Q010CU4coF9F05
+	iofsvzUjvJZIeXcmwOeGlk7hOo6hK91XgdJ12bm/UZHdXPVMuI1d8zkgKe16bD7b1y2jJqT4kjS
+	C1vgGW3vKzW2sdAC0hIyJl8TMork27qMig==
+X-Received: by 2002:a05:6820:8914:20b0:700:da68:739a with SMTP id 006d021491bc7-71ab5032398mr6453455eaf.47.1794925532060;
+        Tue, 17 Nov 2026 06:25:32 -0800 (PST)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-71af0a8a18csm5313709eaf.4.2026.11.17.06.25.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 17 Nov 2026 06:25:31 -0800 (PST)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+	linux-kernel@vger.kernel.org,
+	chleroy@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Hari Bathini <hbathini@linux.ibm.com>
-Subject: Re: [PATCHv2 2/3] powerpc/execmem: Allocate kprobes insn pages from
- the modules area on book3s/32
-Message-ID: <avxhmaXa7lsQ86EA@kernel.org>
-References: <cover.1794572365.git.ritesh.list@gmail.com>
- <82c4973addebd82923c460cb44221f5b76146afe.1794572365.git.ritesh.list@gmail.com>
- <avltdwzlh07VZSFC@kernel.org>
- <f7834f3e-6c43-4b58-806d-fe4c07a93457@kernel.org>
- <avsn7Kn4a8wbB2QH@kernel.org>
- <zev77i3i.ritesh.list@gmail.com>
- <eb634d1f-cb08-44a8-88c9-e3b559c399a3@kernel.org>
+	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCHv2 0/4]: powerpc: Misc fixes for debug kernel splats
+Date: Tue, 17 Nov 2026 19:55:16 +0530
+Message-Id: <cover.1794924821.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,91 +98,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <eb634d1f-cb08-44a8-88c9-e3b559c399a3@kernel.org>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 17, 2026 at 03:04:49PM +0100, Christophe Leroy (CS GROUP) wrote:
-> Le 17/11/2026 à 13:33, Ritesh Harjani a écrit :
-> > Mike Rapoport <rppt@kernel.org> writes:
-> > 
-> > > > > > Hence, use the modules area for EXECMEM_KPROBES on book3s/32.
-> > > > > Right, I missed that on book3s/32 does vmalloc is not executable and its
-> > > > > protection can't be changed.
-> > > > > 
-> > > > > Could it be that 8xx also need a special treatment for kprobes?
-> > > > 
-> > > > Yes indeed, not for the same reasons but because 8xx ITLB-miss handler
-> > > > doesn't expect any instruction TLB miss on kernel addresses other than the
-> > > > ones from the module area:
-> > > > 
-> > > > Commit 4afb0be7ccda ("powerpc/8xx: Avoid testing for kernel space in ITLB
-> > > > Miss.")
-> > > > Commit 16a71c045186 ("powerpc/8xx: Preallocate execmem page tables")
-> > > > Commit 33c527522f39 ("powerpc/8xx: Inconditionally use task PGDIR in ITLB
-> > > > misses")
-> > 
-> > Right. I looked at the above series which added all of this support [1].
-> > So looks like 603 might also have this related problem (other than the
-> > per segment N bit issue), since it's iTLB miss handler only walks the
-> > task's PGDIR, unlike it's dTLB handler which falls back to reloading the
-> > missing kernel PGD entry from swapper_pg_dir. So what I meant to say is
-> > that, similar to 8xx, a new PGD entry created in the kernel's vmalloc
-> > area for an insn page does not get copied over after the task is
-> > created (/PGDIR allocated), on 603 as well.
-> > But since MODLUES_VADDR is defined for both BOOK3S/32 and 8xx, so I guess it
-> > gets covered by the same change anyways.
-> > 
-> > > > So at the end as MODULES_VADDR/MODULES_END only exist on book3s/32 and 8xx I
-> > > > think when they exist they should be used as follows:
-> > > > 
-> > > > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> > > > index b617b69452cd..856f4609c488 100644
-> > > > --- a/arch/powerpc/mm/mem.c
-> > > > +++ b/arch/powerpc/mm/mem.c
-> > > > @@ -428,8 +428,13 @@ struct execmem_info __init *execmem_arch_setup(void)
-> > > >   				.fallback_end	= fallback_end,
-> > > >   			},
-> > > >   			[EXECMEM_KPROBES] = {
-> > > > +#ifdef MODULES_VADDR
-> > > > +				.start	= MODULES_VADDR,
-> > > > +				.end	= MODULES_END,
-> > > > +#else
-> > > >   				.start	= VMALLOC_START,
-> > > >   				.end	= VMALLOC_END,
-> > > > +#endif
-> > > 
-> > > We already have #ifdef MODULES_VADDR a few lines above, I think the
-> > > assignment of kprobes_start and kprobes_end could go there instead of if
-> > > (IS_ENABLED(CONFIG_PPC_BOOK3S_32)).
-> > > 
-> > 
-> > Right. So let me use the following diff then?
-> > 
-> > Please let me know if this diff looks good to you? If yes, then I can
-> > send a v3.
-> 
-> My preference would go to something similar to 'start' and 'end', no init at
-> declaration, kprobes_start and kprobes_end set to VMALLOC_START/VMALLOC_END
-> inside the #else
+Enabling debug options like PROVE_LOCKING, DEBUG_PREEMPT and
+DEBUG_ATOMIC_SLEEP on powerpc64 showed these warnings.
 
-I agree, it's more consistent this way.
- 
-> > Also - it will be good to know if patch-1 and patch-3 looks ok too,
-> > before I spin a next revision?
+Main motivation for me to look into this was - many folks internally reported
+that after generic entry/exit feature, they aren't able to use lockdep because
+of the warning splat it generates during boot, after which lockdep gets
+disabled.
 
-Both make sense to me, feel free to add my
+Therefore this series is an attempt to fix the warnings which are generated
+- when we enable these various debug config options.
 
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+v1 -> v2:
+========
+1. Patch-4 fixes a pre-exiting issue pointed out by Sashiko.
+2. Patch-2 and patch-3 from previous revision is re-arranged.
+3. Patch-2 change smp_processor_id() to raw_smp_processor_id() since preemption
+   is already off - (From Shrikanth)
 
--- 
-Sincerely yours,
-Mike.
+(Sorry about a quick v2 re-spin. The main reason for this was, a new patch-4
+which Sashiko pointed out as a pre-existing issue).
+
+Ritesh Harjani (IBM) (4):
+  powerpc/64: Leave lockdep hardirq context around replayed interrupts
+  powerpc/watchdog: Disable preemption in arch_touch_nmi_watchdog()
+  powerpc/kvm-hv-pmu: Don't allocate gsm/gsb GFP_KERNEL allocations under spinlock
+  powerpc/kvm-hv-pmu: Free hostwide stats buffers if perf_pmu_register() fails
+
+ arch/powerpc/kernel/irq_64.c   | 11 +++---
+ arch/powerpc/kernel/watchdog.c |  8 +++-
+ arch/powerpc/perf/kvm-hv-pmu.c | 69 ++++++++++++++++------------------
+ 3 files changed, 44 insertions(+), 44 deletions(-)
+
+--
+2.39.5
+
 
