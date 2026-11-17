@@ -2,42 +2,42 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1BAA606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 11:17:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62018606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 11:17:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=DDZWJqL3
+	dkim=pass (1024-bit key) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=EXD17zNC
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTMdb4fVYz2y7p;
-	Tue, 17 Nov 2026 22:17:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTMdz10L8z2y2B;
+	Tue, 17 Nov 2026 22:17:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794914243;
-	cv=none; b=N/BIfev6LRtXyeX4Ke2DsXHywikfpDRPQ+6ZVlWjB/ZarGTmDQXDTjc1cez26bzJc/dLMVszsAn2MRYAuK0R1CpbyQ8eyo3vL+2XubRGzHgoW577+pWxIEPrICrTd3/ZPcrckLlp0SykZWKSivdE443vWYNkeDYDt506NZQ8Mz375sX2sKBgT4pMZDLZdTrqC/SCiIZqQ/LtPXKYxgpMFzyYcL5CzY+UrM+oh6TdgXX4fsTO4ioCqYb/U8cWpZDTgFFJtG2SPCrDcguuhloHloErAqRKwFUKjOotplptLVZ01Z8lG4B4OOvu+k4HDzFQHlho1sQbwzwSwPdSb88yYg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794914263;
+	cv=none; b=kwJl2C+vwwm8oPqsBXTB+YsIjQbKkyqfWip6oRdG22LQafSIal5C52cCRakFDnGq5cnO/ZZmQcLYu2209HYxStYVAV3Bv7jsw8sHUv6W2Uo8VvpPaDJ3c6fgD68zLmJWdcKuWRtGVby0UfSP9g8K2V1l1KiL36buKiEunldfgf7WK8B0dafdi2QK6hUCQp0+UdoUjp9dpaP4ZtNmk+naBRm2Y2QkhuAoFxmCTkCG11qlhm+BLkKqTZbW63qI9YQweK/RLMQJNkaM/W17cUKmYf6Pmm9rR7AaE41AeF5p7DhEtGPEvs1Y5UI5pV3XKJXC4FnWGAkYj4zg3n8WqsvGtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794914243; c=relaxed/relaxed;
-	bh=1gFolVlbnQDXq7AXqEZR4zbd1HbosfkpV82uoaeqRJ0=;
+	t=1794914263; c=relaxed/relaxed;
+	bh=iAO+js2/rUZAhAG04GodjeRZKIKZw8+fGRUeFO86tRw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Pgoy7RBTFqL5NeOCSpZdeGH0xNpoHCzYPZbvPnZoIAsfAAdiH0hrFvGpxriHcPji+qAFzQu4URuuV+pBMxv7c/kXGROJyZqM68LrkzrhTAjRU26RzQ8WZj364wDL+ud9i+DzLs3bgP8WmNA56vP9lMwHv0vQU3JkyG96Tn03yRz+I9KEZjY6abit1Ph/m+JSF8p8e9HfWOICr86cQA+kXMWmy4agBIt+AAWg/RK4bS58gChdle5wsBfMQhASVkBUmyfUgP8r9U/qPxLaNsUG69QuA2vfugIuY743Q1d1GPq+PijbqLV3rSJpKhCLkmqjv03YKxQtocMWG/s8148Sug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=DDZWJqL3; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=pierre.gondois@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+	 MIME-Version; b=lYKckGGBvlUkJ15JgELb0bXLpk2oWeSS33FJJdEi8TQIO/7LG4yMIVVvmMLeUDWy+GFLQz4UegKbCF7lsiVresYQsmQmX4+ttUDdF5EE4LJZqXVvH+wtJ+lEmWGyJIYxlSYJnJulrO0aQAG7epr5u9u7VI2dFRIyw6wS1WMNr6r1DGtbqVmZcITCsOKuDIvBc8vZZ5aHK6i8YjMzHroaR28XMtsnfhqH3fTWzc1Nbj2heCqYnpHP5OALMKpJVnIn6kCzhwit0EzPr4q4Qpo9Cqt6S0mdduMHURe960IMMLxq35mzocCGTzrrGEZJJsYglsXa2ZWMQjfKU5clefe3Yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=EXD17zNC; dkim-atps=neutral; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=pierre.gondois@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=DDZWJqL3;
+	dkim=pass (1024-bit key; unprotected) header.d=arm.com header.i=@arm.com header.a=rsa-sha256 header.s=foss header.b=EXD17zNC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=pierre.gondois@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTMdb05FZz2xqL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 22:17:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTMdy2fXBz2xqL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 22:17:42 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 667031A32;
-	Tue, 17 Nov 2026 03:16:48 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2106B1682;
+	Tue, 17 Nov 2026 03:17:08 -0800 (PST)
 Received: from e135073.nice.Arm.com (e135073.arm.com [10.34.111.135])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DD5AD3F763;
-	Tue, 17 Nov 2026 03:16:44 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 804A43F763;
+	Tue, 17 Nov 2026 03:17:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=arm.com; s=foss;
-	t=1794914211; bh=yG1nBF1b9ClCQ09cnEWfpTO17qf4/sPT/Xz+KvI9LS8=;
+	t=1794914231; bh=/UCYlm749kr59OAqytxINHkKyAyyQPMuXp7LJQhQcMs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DDZWJqL3hpEb6fgA+Erdl+GlfKCrNmcK3poDr93VEXJbe92PdvfQewqRI75jNcKns
-	 2Zdb/0ufZrIf6sSQtpr8OvK3n9H0eyxrYw6BhS9yZUFqTPrT5XhktNX8UlqHArvYXp
-	 NBZgwM8MrOzGZuSA0iYLXFdRcJGYkZqFq+wl3uNM=
+	b=EXD17zNCa5OFTiFXqJKBo1sn21GcuAZ4JVPX2BNGoTpq0DC8Hcxs/yCtiHxP3B7Vf
+	 Jy/EPOyYGIQ+XugDtSL7BDu7K5XZRWl+57tKEU6R/UiP1TOU0nukXV/u9lzFmcGBit
+	 nLUCKxV/Hce7kI/cjB4MbGGpitcqz5UEjuUuKj1I=
 From: Pierre Gondois <pierre.gondois@arm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Ashok Raj <ashok.raj@oss.qualcomm.com>,
@@ -64,20 +64,20 @@ Cc: Ashok Raj <ashok.raj@oss.qualcomm.com>,
 	Yazen Ghannam <yazen.ghannam@amd.com>,
 	Avadhut Naik <avadhut.naik@amd.com>,
 	Jonathan Cameron <jic23@kernel.org>,
+	Kai-Heng Feng <kaihengf@nvidia.com>,
 	"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>,
 	Dave Jiang <dave.jiang@intel.com>,
-	Kai-Heng Feng <kaihengf@nvidia.com>,
 	Breno Leitao <leitao@debian.org>,
-	Dan Williams <djbw@kernel.org>,
 	Terry Bowman <terry.bowman@amd.com>,
+	Dan Williams <djbw@kernel.org>,
 	linux-acpi@vger.kernel.org,
 	linux-edac@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-pci@vger.kernel.org,
 	acpica-devel@lists.linux.dev
-Subject: [PATCH v1 04/19] ACPI: APEI: Use empty FRU values if valid bit is absent
-Date: Tue, 17 Nov 2026 12:10:14 +0100
-Message-ID: <20261117111444.4185512-5-pierre.gondois@arm.com>
+Subject: [PATCH v1 05/19] PCI/AER: Embed aer_capability_regs copy in struct aer_recover_entry
+Date: Tue, 17 Nov 2026 12:10:15 +0100
+Message-ID: <20261117111444.4185512-6-pierre.gondois@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20261117111444.4185512-1-pierre.gondois@arm.com>
 References: <20261117111444.4185512-1-pierre.gondois@arm.com>
@@ -102,46 +102,104 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-When a status block contains multiple sections, a section without valid
-FRU fields inherits pointers from the preceding section.
+commit e2abc47a5a1a ("ACPI: APEI: Fix AER info corruption when error
+status data has multiple sections") passed to aer_recover_queue() a
+newly allocated copy of pcie_err->aer_info instead of providing a
+pointer to the ghes struct. This prevented corruptions of the ghes
+record (in case the ghes record was re-used for a new error before
+the previous error was logged).
 
-Use empty fru_id and fru_text values whenever the matching VALID
-bit is not set instead of reusing the value of the previous loop.
+To prepare for using a common logging/reporting structure for
+ghes/MCE and merging extlog_print_pcie() / ghes_handle_aer() into
+a common helper, remove the dependency of ghes_handle_aer() over
+gen_pool_alloc().
+
+To achieve the above, replace (struct aer_recover_entry).regs by a
+plain struct instead of a pointer, allowing to remove the memory
+allocation.
+
+No functional change intended.
 
 Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
 ---
- drivers/acpi/apei/ghes.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/pci/pcie/aer.c | 29 ++++++++++-------------------
+ 1 file changed, 10 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
-index 703f3b7f700a6..444d8e82353a7 100644
---- a/drivers/acpi/apei/ghes.c
-+++ b/drivers/acpi/apei/ghes.c
-@@ -979,8 +979,8 @@ static void ghes_do_proc(struct ghes *ghes,
- 	int sev, sec_sev;
- 	struct acpi_hest_generic_data *gdata;
- 	guid_t *sec_type;
--	const guid_t *fru_id = &guid_null;
--	char *fru_text = "";
-+	const guid_t *fru_id;
-+	const char *fru_text;
- 	bool queued = false;
- 	bool sync = is_hest_sync_notify(ghes);
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 8708ca3257bb8..57406494ec1f7 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -1352,7 +1352,7 @@ struct aer_recover_entry {
+ 	u8	devfn;
+ 	u16	domain;
+ 	int	severity;
+-	struct aer_capability_regs *regs;
++	struct aer_capability_regs regs;
+ };
  
-@@ -990,9 +990,13 @@ static void ghes_do_proc(struct ghes *ghes,
- 		sec_sev = ghes_severity(gdata->error_severity);
- 		if (gdata->validation_bits & CPER_SEC_VALID_FRU_ID)
- 			fru_id = (guid_t *)gdata->fru_id;
-+		else
-+			fru_id = &guid_null;
+ static DEFINE_KFIFO(aer_recover_ring, struct aer_recover_entry,
+@@ -1374,24 +1374,14 @@ static void aer_recover_work_func(struct work_struct *work)
+ 					   PCI_SLOT(entry.devfn),
+ 					   PCI_FUNC(entry.devfn));
+ 		else
+-			pci_print_aer(pdev, entry.severity, entry.regs);
++			pci_print_aer(pdev, entry.severity, &entry.regs);
  
- 		if (gdata->validation_bits & CPER_SEC_VALID_FRU_TEXT)
- 			fru_text = gdata->fru_text;
-+		else
-+			fru_text = "";
+-		regs = entry.regs;
++		regs = &entry.regs;
+ 		if (entry.severity == AER_CORRECTABLE)
+ 			err = regs->cor_status & ~regs->cor_mask;
+ 		else
+ 			err = regs->uncor_status & ~regs->uncor_mask;
  
- 		ghes_log_hwerr(sev, sec_type);
- 		if (guid_equal(sec_type, &CPER_SEC_PLATFORM_MEM)) {
+-		/*
+-		 * Memory for aer_capability_regs(entry.regs) is being
+-		 * allocated from the ghes_estatus_pool to protect it from
+-		 * overwriting when multiple sections are present in the
+-		 * error status. Thus free the same after processing the
+-		 * data.
+-		 */
+-		ghes_estatus_pool_region_free((unsigned long)entry.regs,
+-					    sizeof(struct aer_capability_regs));
+-
+ 		if (!pdev)
+ 			continue;
+ 
+@@ -1429,9 +1419,9 @@ static DECLARE_WORK(aer_recover_work, aer_recover_work_func);
+  *
+  * Takes ownership of @aer_regs, which must have been allocated from
+  * ghes_estatus_pool with a size of sizeof(struct aer_capability_regs).
+- * The buffer is freed with ghes_estatus_pool_region_free() by the work
+- * item that processes the record, or immediately if the queue is full.
+- * The caller must not access or free @aer_regs after this call.
++ * Copies the registers into the queue entry and frees the supplied buffer
++ * before returning, including when the queue is full. The caller must not
++ * access or free @aer_regs after this call.
+  */
+ void aer_recover_queue(int domain, unsigned int bus, unsigned int devfn,
+ 		       int severity, struct aer_capability_regs *aer_regs)
+@@ -1441,17 +1431,18 @@ void aer_recover_queue(int domain, unsigned int bus, unsigned int devfn,
+ 		.devfn		= devfn,
+ 		.domain		= domain,
+ 		.severity	= severity,
+-		.regs		= aer_regs,
++		.regs		= *aer_regs,
+ 	};
+ 
++	ghes_estatus_pool_region_free((unsigned long)aer_regs,
++				      sizeof(struct aer_capability_regs));
++
+ 	if (kfifo_in_spinlocked(&aer_recover_ring, &entry, 1,
+ 				 &aer_recover_ring_lock)) {
+ 		schedule_work(&aer_recover_work);
+ 	} else {
+ 		pr_err("buffer overflow in recovery for %04x:%02x:%02x.%x\n",
+ 		       domain, bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
+-		ghes_estatus_pool_region_free((unsigned long)aer_regs,
+-					      sizeof(struct aer_capability_regs));
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(aer_recover_queue);
 -- 
 2.43.0
 
