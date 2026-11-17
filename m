@@ -2,95 +2,95 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EDF29606A89C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:42:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 609F4606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Nov 2026 17:43:08 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S80DLh/l
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rkgLZbei
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTX9X1DbBz2xl0;
-	Wed, 18 Nov 2026 04:42:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::235" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937328;
-	cv=pass; b=CA/wZXoQeYYk4TUNZVDqpWtCdaXVXubN2vuSSq0WRJBH7nht9VyNM2B/Wrc48R/Rn2NJkJgFnsqA803CeIBn827Xo2ZXOE9Zo46PPXnYvhACvC1SHgh2v2hsVXroYHI5IYbBjd6E7Hd92P71HGEwhSDmAQF8x9sDa1T9jvYJVlq8BxM7cr38+V/Nbovda7SlownAao/DK8bgB3CeL6E4z2YdjIviHyl8ptD72A2XitP17iK4OiVBJp7tqk9vvNyRpVA3W7eyJ/8UmViG3Mz5IPyd6r0f3auyHFgkPT35o/g5+3ebPCkY7PZ/zwc2DgJ2egv8+wDGw0ZnEesatbaniQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTXBg0ycRz2xl0;
+	Wed, 18 Nov 2026 04:43:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::231" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794937387;
+	cv=pass; b=ongdbtYkhyhdhSpHG4FbT8TQUVXbcPMpmiKf/H4PUR5KpDo8wRjOqHSY0JJWHYOs3t1tzk4QRPwpD6v4a5MeBDBUWiy5h4RjFb5ZR0LOz877YPok+l00yFtcDkqTENanJwNFb/GIX+TO9gXN1a0gDP8ppER5ZYsKQTeIwmYFIC9SlikOOlZNtfOYtyBvl1xEhptiyHrIDKMvixqbjr9dqBbo0FhCPY66dU7vYh/1pZu5caB90fm0JNgmg4uQ5Eu3EalhIZyCLkPbGaIU2dkZ7Ub5cfsILzpCg3CoM23xnZ7XImFXEM77nVd//8N2vTziYKoMXLu+CBsSwNriYmrmxQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794937328; c=relaxed/relaxed;
-	bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
+	t=1794937387; c=relaxed/relaxed;
+	bh=nvzZs1q5voEwvj1dbc4nqY6RN+HlKTD/o3FysXVRy+g=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=exoYlzT8BOJP85hFGJ6cTaFfqOq3myu7/+roDoViqC70447IVhmiHXd6aM6MSt2beIQwEHfKBiukZyM9GxIIerisg11r1wXuPA0yHtymsftKq4ZE8fy6oek9neUuNW5AAWL1iCaBa+/q6ms7dhDyQnR32KSByRkv0MKxVrIkvibqOtytdI9H8BxaUpLUa9GS40KtKBJylNz86oizBeDayDzWyddJ9E1p9RtEPP1z5AcX5AgewcAnuvI5B9fWQ02iXr77UudN0PidOr2DrFPGgmqTHeqyj7M+4Q7FfT6KWEXQZQQnOanUfHZdX+YNCJ5CPMBiS8K2mp0K9B++3UGXdg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S80DLh/l; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=EVQnqjl0QxHiIz4RPKBrqTMpIv3VHYT1D0J0W7U7ZlJ+CWezroBYh5o7B8wh6VIDJMULptqtu1njOUvInXLcMsWhxiLlnHEigVrkEYl7+wkkCMjrvoWqRFDjc+lfuS6DQwvZozAk0BNrU1s1nbe73fLHU45BB3UG7pmjcUq6zwg/XJc3Lge/dIRv2ov1ciM5pf1rcigzp2nbPU0NrTMMlFMV70s80bxz1+VkZdictHU6ya5snggZIOhtZXfSOOqOz9uWBWNkXPTM206rTXbwSRX7b88O0UTvpUXQe2PPJOC8LAF1LpfkFeTaAqRmJMmLnMjyhEPx6ibDG7jHaPro0g==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rkgLZbei; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::231; helo=mail-lj1-x231.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=S80DLh/l;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rkgLZbei;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::231; helo=mail-lj1-x231.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x231.google.com (mail-lj1-x231.google.com [IPv6:2a00:1450:4864:20::231])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTX9W04CBz2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:42:06 +1100 (AEDT)
-Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-3ae417eb235so1189071fa.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:42:06 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1794937322; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTXBf19mHz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 04:43:06 +1100 (AEDT)
+Received: by mail-lj1-x231.google.com with SMTP id 38308e7fff4ca-3ae1fd4252fso1678481fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 09:43:05 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1794937382; cv=none;
         d=google.com; s=arc-20260327;
-        b=iMsaXkSE7ZV+oYHKdZ5GssCTb22F3L05TDZH/9by7Yd2gEdubO9VHO8GCjc2iCaXlE
-         VohzxOBKdPW7bPVhpcFFNv4MS9RMsfYqTLM6EcIInhixRW1ImF1pOK5ZCKWPvviTP2TI
-         tVqlsr7WoXfcmpjCWhL2MDFG+el/52O+4lrUvz3B9rhKdFlFuP9U1dPLYeADXVywoWyN
-         xDuVM/67VI2FW7uPX3cFJHBZCOIOVCWKnDJHfq+jmwcMA0FLz97k93GtrZEFUpDkFsbG
-         O+Lh85ILFbOEk1FmvCU85TMfoP6wrz2fom6Ibv7bTrwU+EYchs8s/nIriLbh2fyfoSdY
-         LtFA==
+        b=eL3xscF7ngDO/ahT9gYms+yl3a89xLeii83di2ppNw02L0L+vX382ZVEM9gUV27ptD
+         rWc2LCQDOzvrp19HB+Tww7gQAh/+ADoVO4k/B8qUUlOZE9w0Hf4w+IwQXZxT3Mu87NfI
+         xueiZr2TtsTvyjvGbg7Kn90fc3SRCtMr5/6GRNVIE0KH3ix4HvoW6pzAxpB+e9G0VCBs
+         iut2+iZq63BYn6kFmbRBlC1RSjxXd+sG3Gh2+cpUxEwMZAKC8/Op6B8njOiNNv1E5zb2
+         vJ9fPSgdc6II1YWslq58+P0mMrhuTnBOWYOA7CBG0yGvpqjiNZ5tnraCR7ZVNKOE2CVl
+         vXOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
-        fh=xe3IuvtX7Ly7OsQZgLSZMSZfQ/GJTw93SJGBhqjGGZc=;
-        b=Wah8UXkgPvkWPCaoNAKFlp8nbrdneKngQd9fm4gWkxPg4pn3CWrdOEAgw1kcTm1trC
-         flPlAkrDya3Epg9rfjfSbxAnGep4IXBwVmauIMAg9nNk6B9mZwmQsUrP9a82Cd4F3/t5
-         w7EKAhHYDyXc3t/rrdI8T05NP/JeHKnQHc4E+zI4x4olml/6jvR8oV5jqEXMw+f3TJcF
-         9sUe6+3yJBjD9Cf8eEa9+4NLwOS8th+MGAofhRRd7HkIdFXvykKP+Um9f7WM72aKYoCu
-         Q7q0YyfP2safCAjrUE8QWestx/Amf9tPIJcT7MZnMnno66LmdfG0LiNV7H92ivEte8i7
-         mTrg==;
+        bh=nvzZs1q5voEwvj1dbc4nqY6RN+HlKTD/o3FysXVRy+g=;
+        fh=y4z+YIu6wFVcbctgudCM+rNcrz6YoZ0wyeglM5AFLPc=;
+        b=OdoxX8j86jE5hsnBP1cwBdtLJpneCcem21VU0iczsvGF8Oq5+p4Q71kRxaiMWwsHnc
+         GP7xLhT585rLqKWqIL2CfVdXJg1hDRoyHGWwcZuOYSkourVz28lK17BjdzDWpRvDkxNs
+         qPlIAqEQ6sMC+/aAE5rcv7sY3rdfcvhOCkOwRcpmtCiUER/ldimauVrjM4McH6Xvktc1
+         POprQfDZwC/iJZgwwGEBB+m5OVcEbO0EJfghNRcQw7Hd5c04E++3I1tfRp64aKYJZBKg
+         cqtXLxcfmx5C8K2RErP8/6z8yvgQCrNvqK3bc2GEQP1rXgJQETR0rZtlSMDdpD0RO9v6
+         NH8w==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794937322; x=1795542122; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1794937382; x=1795542182; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
-        b=S80DLh/leZQrXGtrlbCJbvyF3Dt8q7LYoOFqANhTo8Ih3gtHeZuy5kaRfOz2BBwtx8
-         G6rX7gBZmNk1w2XC85gwOfvujN49me1wM7/4KdRZPUWltgE23swc6B1lPj7X8WbPT0JL
-         K6vNizMyxvP6IBkniGOgQ1Nb29AihaZSEeP4EmnbFPRHaHFsTH1PJ+JVRFvyNIoHjv/6
-         7n+h7uO41Q443esKvFjjXa1wDcqoBP5Wl2WimHnD+w2IRqOiHbVQ9MJYUJrgnM1VvVop
-         Nv9CkB1BIky0BaCC93VwvBAlkf8SZqK6/NwlNeJmXejDIaW7XzUt3btdg4t0ff1k1lEf
-         ODDw==
+        bh=nvzZs1q5voEwvj1dbc4nqY6RN+HlKTD/o3FysXVRy+g=;
+        b=rkgLZbeiyT0D+YGrgrheJb940YlihL+I0Rb54T9vsqGxWOFXUVNOmFksw6N3wxzXzF
+         4Hs23HXyZAnyhggQJzHTPafB2iE7c+syiyXI4N37OqsJMLIy9tlwTDRPNYlmLUiI1x7+
+         GtdYlQo7P2A6OfGS6nHeipjxmmEz4YVZUUOPm3G/Etq0u2GW5pVHNR+69DvO+9XYMnla
+         Iva0azlpMcL7oYbRQZuHPnK5XTpK5AqPBBmIGsOtL/lpFvvF7IC/HGzwycBxwTy+ZKOb
+         he/K2Snex+rngm0lXtFRfnkPFOLQQC6O/19suUnxA2skphr3I3IulXngmd5KnQuLsORJ
+         gg1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794937322; x=1795542122;
+        d=1e100.net; s=20260707; t=1794937382; x=1795542182;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=w/O1llxQjJQ6flYIT42pXL7et85J3uKpR2Je+X6X8uA=;
-        b=qAE7fogd7gM0pmuvDMX1BDVmOxJOyEF15kXnMeuCwbsc23LTYwZf3To9tqRnHjLEYv
-         cJz7urfHa5DNYS0f/KlUXZEhBsS8nPW6JnhttKrvwJ3MPC6IE/Nx6LbCHT9LjBRC46K3
-         pI4uheHcrgi+cktTDh+8TMtbK6PSBALteXHO9rqjef8trAOcio5pTg06/c7mKsVMhClH
-         oZd+t5w3btCwUUf/i1udCc1SqJ6ZUC9CY0ly+iaulvLFkyOBAthfNFRyq4b+ff85TdL8
-         xRmipA/ZX/t2nRVbSFyewOEnmLvzxPOy47KUQre8YKOc+7Bb3aEWsf34qY4uEsxKSHQu
-         DU3Q==
-X-Forwarded-Encrypted: i=1; AL+hErEybvO2C7LLaRDBMoObEaWZ9Q76fl1tpUPRvYxIL+b5CwwnB2TMUX1uZ1XvJNnAVMekjrZ29BfsZOYEOlU=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/c9j7MxGB2VGHeLN/8uIEHytGJdQb7Pn8mdj3Toi11nXajAeoA
-	8hl7aKnkAWzVRRgYoUvfaBwawu/PFwH27bIbNxmbLc+7gkCg6Fn/3qZDOv3hlGeEH6LXl6agaRA
-	zWnQ1gTgCmJlJdY+lLlVa4T5rxOxSRw4=
-X-Gm-Gg: AYBFou0+sm5M/2Xugerdckq2+HYer9sUT61Jl0fx1pW8dvuSq09QQFGi0dzZ7LAgo/N
-	DucqrH9HaHmUjiyy83nvjkh7z0DiCkZd57dQ+x8WXmA1GPnMudzLanzGMlfB4d/4MoLlLwXZ2qM
-	tc2pmpAmYT6I991NV0vf2FL07FOJYO/y3j10xkCMue55f7CuNn7c3gteCsV6XITRFFNrRa5ZfKu
-	0QWQXINtv47DadCEgEEMyCnf3fi8w1mGJr9P0cZa8LvpNaCUECGMNS92tElhJZE2VNzD1hn+5w9
-	pI4x6fffT0ID7UliEn4msqMID37fA6PMt7iO+MqZXa7x47Es7rmE2bv7bQXwmDhBckfII82WLeN
-	2NijGjz6+08tvCXbiT57a2AYplCfimz7VZvXR4ji1BktF9am1XaOoBjz/S2UdUYOKQKX+bZFt/7
-	IDFwVjmI3H7MhcLb6F+/RiQ3PGMb14D24WLrMkOsatNJoDOjdM
-X-Received: by 2002:a05:651c:41cf:b0:3a7:6d4a:1c9f with SMTP id
- 38308e7fff4ca-3ae2b4f54f0mr39588581fa.15.1794937321825; Tue, 17 Nov 2026
- 09:42:01 -0800 (PST)
+        bh=nvzZs1q5voEwvj1dbc4nqY6RN+HlKTD/o3FysXVRy+g=;
+        b=hAJgwDFVH7mtnYC5IPbPghAje4mcExExv1G+TceBPsWbo+H58JBjtgVY9S7gcbFWbd
+         vN1FOcjeR1eCqH8+zmJbOBDxbX/q2frFJcVHKOLuuLg2pP9hSmDaxxN4yG1GF28MJJN2
+         pFvH8qCbphH5DHI3jH1jTXLm/c6a3tqvyt0N+cmHZ34QR0UqkF2/P1VzhluaC50iDUXZ
+         hTIZ34Dn2Y5J/SFtz3EhIEp/24mzIynrEhmsDwJh9gPAMd/hQCWDbxg3ue0j4PVaJFZP
+         zjCQ8G1gPIaU8cksBUcAPTq4SBnUdiQgQ2moNV2574RXFThujVDz6PBVxvij8aaDZyZT
+         /Zxg==
+X-Forwarded-Encrypted: i=1; AL+hErEqktSe9z44OK1UI04fMJDwfKCog8ZWn7SYrQ96us0LtlJVJa1mbuJd4N4C1VTY1PibfOPrDSX1KPzgqsk=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z99OY5qhyxRbZ0+pAFHsKGRA6amgfF9DpOgNpHdpbhKIhIlkbPV
+	B6qZwCvP9DZ8VIlI78p0OxjJmuy8adE+zp1EpD/lyhAjGAKCR2AuvINKtliA7C6vE0gAeE9QrMX
+	DyU3mwDxGSvFscuBFJqqYSsv6KFMa75I=
+X-Gm-Gg: AYBFou1wgtMm3rjsCpg0RPXSuhHu7RjI/tfx+iJFH7MlXc2H8IgLk6UKZJvwrmGsq3s
+	IuoCQpACZuezpP67/US9+/kWyKc0tsYVbNmIuolpFSKoVDjOstrDMusB4WzId3KQ4FgsGti3Bvr
+	cgH4noo37h0QkD09LY7etNNOfrgfvOTNTYFgq1rcz5X8foHv36BZ/mHRCtK25c8L3E2rt0U9xcd
+	njMe4/YuF/fDaNxYM5c4rzaAF8mSGAcmb5R+zwx2oN5VmCKDM2uHMtwq2BP1DGjjprELmsoEZK4
+	F8iD6n3eH2qJQvP7y1fcuTllPdZlHT22E0CWmsC/bxMBtdpOyf93uXG9S6bwb+nr69ApOXx5F/L
+	pn1YwWxjZ/paIeFWUKrA2zuNRyWRfJQm+zJBwR6s4iFO00edIKE8U/IGRjSa7cneaslqZ7cc0rU
+	N5fee6jabvVu+wmkGp0I2Jr61uIptl29RQWB+zgEwp2Rf9pIhSuihP8hE00fzXpURuukX/
+X-Received: by 2002:a05:651c:a171:b0:3a6:5ec0:7977 with SMTP id
+ 38308e7fff4ca-3ae2b52e925mr48966131fa.22.1794937382329; Tue, 17 Nov 2026
+ 09:43:02 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,13 +105,13 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 References: <20261109-ppc32-perf-v1-0-a6e8a55b3b48@gmail.com>
- <20261109-ppc32-perf-v1-4-a6e8a55b3b48@gmail.com> <6d067199-3077-48a2-80cc-e21352f5c837@linux.ibm.com>
-In-Reply-To: <6d067199-3077-48a2-80cc-e21352f5c837@linux.ibm.com>
+ <20261109-ppc32-perf-v1-7-a6e8a55b3b48@gmail.com> <3950cc84-93bf-4830-8a37-57f9739a84b0@linux.ibm.com>
+In-Reply-To: <3950cc84-93bf-4830-8a37-57f9739a84b0@linux.ibm.com>
 From: Matt Turner <mattst88@gmail.com>
-Date: Tue, 17 Nov 2026 12:41:47 -0500
-X-Gm-Features: AclHuK9NyOHwdZhzY_0H8BI34W0hiUQkqAtn_flXFnIyln3e7UfXyG1O1B9kp28
-Message-ID: <CAEdQ38E0prYYXVMFSBeZFUjYaSAP6gej_4aTMfL=R4ANrp7y=A@mail.gmail.com>
-Subject: Re: [PATCH 4/8] powerpc/perf: mpc7450: Fill in the L1 data cache events
+Date: Tue, 17 Nov 2026 12:42:50 -0500
+X-Gm-Features: AclHuK9QUI3yDbyT2B0UUj_KZN-ImAYjLn5ew9el98OjTN6HFOxuPodteoFnxMI
+Message-ID: <CAEdQ38Hr-pdXs2XYyFr0ryFsdeQ4xC5W9yG_xfDBhN068cDtBg@mail.gmail.com>
+Subject: Re: [PATCH 7/8] powerpc/perf: Use SIAR for sample addresses on 32-bit
 To: Tanushree Shah <tshah@linux.ibm.com>
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
 	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
@@ -127,21 +127,54 @@ X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 17, 2026 at 10:36=E2=80=AFAM Tanushree Shah <tshah@linux.ibm.co=
-m> wrote:
-> If you have a quick load-only run for 0x21a,
-> it would be nice to see the numbers, but that's not a blocker.
+On Tue, Nov 17, 2026 at 11:11=E2=80=AFAM Tanushree Shah <tshah@linux.ibm.co=
+m>
+wrote:> One question: the callchain still walks from regs (gpr[1],
+link), but
+> its first entry now comes from SIAR. Can SIAR and the interrupted PC
+> end up on opposite sides of user/kernel? If so, would the callchain
+> be affected? Something like perf record -g on a workload that switches
+> between user and kernel often might show it.
 
-Sure. This is a loop of 8 lwz and a bdnz, run 10M times on the 7448,
-counted user-only with perf_event_open() and one event at a time. The
-store loop is the same with stw.
+Yes, it happens. I ran perf record -g -e cycles -c 1000000 on a loop
+that does a little work in user space and then calls getppid(). Of
+16953 samples, 3022 had SIAR and the interrupted PC in different
+modes.
 
-  event                none       load      store
-  raw 0x21a               9   80000012         12
-  raw 0x014               8         11   80000011
-  L1-dcache-loads         9   80000012         12
-  instructions     10000062   90000086   90000092
+2193 had SIAR in the syscall exit path (__kuep_unlock,
+ret_from_syscall, syscall_exit_finish, syscall_exit_prepare) and the
+interrupted PC in user space. The exception is held off while MSR[EE]
+is clear, so it's taken just after the rfi. The sample is marked as a
+kernel sample, but the callchain is a user callchain that starts with
+a kernel address, so perf can't resolve that entry, and the actual
+user PC (in libc's syscall()) is missing.
 
-The few extra counts come from the code around the loop. I got the
-same numbers on three runs.
+801 had SIAR in the system call vector at 0xc00. That code runs with
+translation off, so SIAR holds a real address. The interrupted PC was
+in the kernel, but these were marked as user samples at a bogus
+address.
+
+The other 28 had SIAR in user space and the interrupted PC in the
+kernel.
+
+In v2 I'll use SIAR only when it's in the same mode as the
+interrupted context and fall back to regs->nip otherwise, which is
+what the code did before this patch:
+
+static inline void perf_read_regs(struct pt_regs *regs)
+{
+        unsigned long siar =3D mfspr(SPRN_SIAR);
+
+        regs->result =3D siar && is_kernel_addr(siar) =3D=3D !user_mode(reg=
+s);
+}
+
+A real-mode vector address isn't a kernel address, so this covers the
+0xc00 case too, and perf_get_misc_flags() no longer needs to look at
+SIAR. With that change the same test had no mismatched samples out
+of 18069. The share of samples in the kernel went from 44% to 46%
+(perf stat puts it at 57% of cycles), so falling back to regs->nip
+near the transitions doesn't lose anything.
+
+Good catch, thanks.
 
