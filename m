@@ -1,73 +1,72 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DE41606A32F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 08:19:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 48674606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 09:59:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CHYLikr7
+	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=oaQnw3aV
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTvf72jC5z2y2B;
-	Wed, 18 Nov 2026 19:19:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794989983;
-	cv=none; b=UoP7WXaYBMSnVq6zOFLYRtZD4Bk3T61s9+R9RpXAFNTxN4lKPmVOTzbapWwxazaeFKCHuO4qKzIQqZgRrfAWNwjHjFbqP27sAEcUOkx69u2+kK6+uoJLBOrSJfMJ/DQctw7MdnYqu1iEE1SdaZ/tlBYeFL9SBPYWtmsKgdubX5FYF/Leh3GZP4Azdvq47Ulx+Hns4GDarQ8BioyDAzou2IJNbAjZnnGKRyJPlEdqAuJFIU60v+DERT5fiX7D6yCiHqYiZEp6nYF7PQJ0iauJVxD5EmLFfxBMjnRVEmDRjBV4e8Q9EvDlE4DhOxqPRyiT4iN34t4UxauCkHb2ZSncHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTxrz2Dmfz2xdV;
+	Wed, 18 Nov 2026 20:59:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0c:1:1599::15"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794995955;
+	cv=none; b=l6WdJRZYuiNETjytV22OqMuQ+HJxJMWBqnLToVz2Ldn1qgaDRRBzkBhidZIc4H5a8wBTTWdaJ0pT6G3898uia1X3d4TTibn5J3TUeQP7CDE1e9CCzFZFAhskF/d7U1w4Nr0OLerhFpTrop/BwKC2NGEgv0tuDi2g4eTTitXi8Y9mnS7APcDpKmSWcL1Ww9ypnXmOOJPVwHd0wjzrfoG47ncg/WxL3Ttr0qlmy11+7BBbIwz/f7rY6VsH4B7307gc5vi1LF3XvH0veHCw4oKcXoFFCd9TuS03ydktFswR+a51jvQg+u8p/n9bMo3GAg1DNRg9WOxgGWTFPsI315VN9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794989983; c=relaxed/relaxed;
-	bh=NZ2DiUYcYA6riJMrquv0S0uzwR3KjlESIdF8oXXvnq4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Twr/ldGM0VtapC9Vanx33C3L2IxCL1xSqatc/Nq7DlOP7LRzAYx3Ufh+d2JFvUxq2NUSr9TjBs+7DqxVkwz6/UedhB8v2Lsg6Etc33gNjHHPL9KxfmAyb4Jna7/WLLORBIDbma7IPsn8Z3QkTKlxFfFhdvwf1cFtq5xhCZI/u5eIBfxFkh9IpGF8ecpl3FiCB2FTn6Rl0lSWEHRw4w3eddVSVhX+Djjym1CfU8/lXRaKlgYWtbe67fQZbEaWf/V6J/UcqqKIWRotRvjHUW6P3UQhhIRiMhAODuS3HGQbQv1UcLxehMyYkC/VA4+0FHCRNkqUgwA/db6uHSnKcpwVAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CHYLikr7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794995955; c=relaxed/relaxed;
+	bh=wVxSIi4bRaqI2NNvgQHyFiPGPX0+mZZDkHVHA/9ddgo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LK1q6AnIjvK1ENP1I9qIM0q/bW1uvwkOh3BAstKC6pl8RWdW/wdSUjfje/QaewVFQddMmmAwgcuaMzOIY9kv8P34kFT4ohPvBKPKkR0Kn3JwxWYvFBJcY4GgrFsFzkeZlGbO18Pa6OvLswRZrsl2ZgoTamcAeGSDNzTTjaDSU3yRaxczFhSUDB4V4r3msvVsO5noheQ7eBYmEJsf9ZsFUNi7oD5swKvq1f74rotVt8Q0nXor+a0ddb5bMZvcQFRBkNZ2lJKwppIrFC8iYyItzMaMO1Zz9Pg2znWRIqh8AaIelYayorv9aWbAz3bOvb0xwfeb3WNzHxl6OEL4gw9KKQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=oaQnw3aV; dkim-atps=neutral; spf=pass (client-ip=2a01:e0c:1:1599::15; helo=smtp6-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CHYLikr7;
+	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=oaQnw3aV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=2a01:e0c:1:1599::15; helo=smtp6-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
+Received: from smtp6-g21.free.fr (smtp6-g21.free.fr [IPv6:2a01:e0c:1:1599::15])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTvf64Kl3z2xlY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 19:19:42 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AI2SM6x032357;
-	Wed, 18 Nov 2026 08:17:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=NZ2DiU
-	YcYA6riJMrquv0S0uzwR3KjlESIdF8oXXvnq4=; b=CHYLikr74UQY3xDY0mK1ln
-	UItMzkTfsxSuJmhUcOAg25lgq/Of3U/OWPyIqfvLwQJ5EO59MWPJqU/lkOiOw00F
-	QiaAQBtE4k4Hc9WrB/lQuSIre+I1HQTnaoDHCIqDtNuktjoUHG6jjFYNEL+AYOWp
-	AkwsM8SEMvfiFPLYfswocUBfLnLW6kY91l7jwFy16irUd2Hyu43GUzzYEquNSQXo
-	UyK4S+t3uNsLdoaGXVScfZ1Y9C4vhqTpxzeoQRyohmRx50QrMikRGXZr1iamvt6U
-	CdORrNAtH07XBbOCxsGRMb7C0/KVmFR39RPr9LZDxeNhQaaVAWzIQkbMBJPj7Smg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105n9h67-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 08:17:32 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AI8GsLG2766497;
-	Wed, 18 Nov 2026 08:17:31 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hyxwt7qfs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 08:17:31 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AI8HTxD34734796
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Nov 2026 08:17:30 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C966458052;
-	Wed, 18 Nov 2026 08:17:29 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 971BB5805D;
-	Wed, 18 Nov 2026 08:17:14 +0000 (GMT)
-Received: from [9.123.14.23] (unknown [9.123.14.23])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Nov 2026 08:17:14 +0000 (GMT)
-Message-ID: <f201c30a-6fa9-4d9a-a77b-74d39f89f2d9@linux.ibm.com>
-Date: Wed, 18 Nov 2026 13:47:12 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTxrx2kv2z2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 20:59:11 +1100 (AEDT)
+Received: from L30177.local (unknown [213.36.7.12])
+	(Authenticated sender: vjardin@free.fr)
+	by smtp6-g21.free.fr (Postfix) with ESMTPSA id 5A024780331;
+	Wed, 18 Nov 2026 10:58:42 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
+	s=smtp-20201208; t=1794995946;
+	bh=PWhoRlLKNjf+e4xV0f2mSPdPAM1c5SfrVYrUMaV3T4U=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=oaQnw3aVfnOts8ga92P93O8AsnQL0oPXuJ2clCNHXXjkpLKYQe43SdAtntcQBrCVG
+	 TsEz074ulTs4/KGu+ZYB0bkpWZpFkESyq8Uv7ovgeaLAvLNjEqZ8I82QZfygu8hMiQ
+	 0Q6ipzXv/xH/91tlCu9+GOjPNHQvE0j1kPxmP5IViu4koP/AOtBRG4AGv+wImgdnO2
+	 030X2btsdTzQ8xSttdiJK22GJfzm6z4YLXY8HEbcQmnj/k3xhsq4JcCCsP1FKnoETK
+	 aLaLKCGzr/OYT1etXlU8MOuD7ubI5ppHt8Bc3xqUiDZQUo9Iif4h3gUmjQeGO64DmV
+	 UziCaH6xhDHvg==
+Date: Wed, 18 Nov 2026 10:58:41 +0100
+From: Vincent Jardin <vjardin@free.fr>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
+	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	NXP S32 Linux Team <s32@nxp.com>, Linus Walleij <linusw@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev, Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: Re: [PATCH v7 1/6] dt-bindings: pinctrl: add the NXP LX2160A RCW pad
+ mux
+Message-ID: <av120SMcb31YLAWK@L30177.local>
+References: <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-0-5d7201970629@free.fr>
+ <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-0-5d7201970629@free.fr>
+ <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-1-5d7201970629@free.fr>
+ <20261117-for-upstream-lx2160a-rcw-pinmux-v1-v7-1-5d7201970629@free.fr>
+ <avzBgDksGfXb-MxZ@lxl00025.wbi.nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,129 +80,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/9] powerpc/secvar: Add missing kobject release
- callback to secvar_ktype
-To: Ian Rogers <irogers@google.com>, Danilo Krummrich <dakr@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kees Cook
- <kees@kernel.org>, Miguel Ojeda <ojeda@kernel.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Nayna Jain <nayna@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
-        Yoshinori Sato
- <ysato@users.sourceforge.jp>,
-        Rich Felker <dalias@libc.org>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        Juergen Gross <jgross@suse.com>,
-        Stefano Stabellini
- <sstabellini@kernel.org>,
-        Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-        Nathan Chancellor <nathan@kernel.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-        Alexander Aring <aahringo@redhat.com>,
-        Felix Kuehling <felix.kuehling@amd.com>,
-        =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
-        Zhihao Cheng <chengzhihao1@huawei.com>,
-        Sumanth Korikkar <sumanthk@linux.ibm.com>,
-        Bill Wendling <morbo@google.com>,
-        Justin Stitt <justinstitt@google.com>, driver-core@lists.linux.dev,
-        llvm@lists.linux.dev, linux-hardening@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-        linux-s390@vger.kernel.org, gfs2@lists.linux.dev,
-        xen-devel@lists.xenproject.org, linux-mtd@lists.infradead.org,
-        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-References: <20261108223913.3624571-1-irogers@google.com>
- <20261108223913.3624571-3-irogers@google.com>
-Content-Language: en-US
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-In-Reply-To: <20261108223913.3624571-3-irogers@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDAzMSBTYWx0ZWRfX6HgVMZTRPl85
- Jn18W+xXyZCi92S6DV05FbfcOPNGJFHWP78E/tejMVWymJnqf6YRWa3lQfegmn4iFOJICQoFNbC
- 8fh77AnL+jCvHbyG7D8dqSe73s/x570g9zzXuT6BEhlr8jl3r0noGCIl5NBmBZT3KVNvrFD+dKM
- jmrjNQeA0euaud80lISJyfYHrs3jCYZTQa4ayAz9gFDK104eYk/TZg18Gqwd/J5Ixj5j5H+Mg2I
- ON9WlD8PFML3ou1bPmQl5abk01ve2XueAz/SPNj8iUQ/gnppB0P6G6CBLt3MEDM4SwAoGy7KId5
- yxw54L/3ILMaq2PyBoQpvOYAK35zGDxe3Y12powlrnXTOf7DqHPX9d2RKDcqN2WywfEZZZHqYGK
- e0tqtovVEX+A89Y42Kz3zAXdwVaBquDU9m+1ZF0j3UqpHYy7om6XFvFQQwEB9vdTA/NhCTJnATW
- AUOI0KD9i8Rc7/c3tuQ==
-X-Authority-Analysis: v=2.4 cv=HN9WhYtv c=1 sm=1 tr=0 ts=6afd5f1d cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=1XWaLZrsAAAA:8
- a=VnNF1IyMAAAA:8 a=UWczDWbm3HpFH-zmGUoA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: f4vCixBvRS1iziYkzXDAyNtWHqcSULbu
-X-Proofpoint-ORIG-GUID: OYeOqBGP-BuxJLy49XGYjOXqV8575ClT
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDAzMSBTYWx0ZWRfX6D4JeSBiVpo/
- 1SUsT7QUnarJqrFd/whI1VbYytmfTPlmOafAXSjzDWGt8A4WgXnRmkoTMU5NO0iqVRltJs6vVFH
- VSWDbLyBnOCi2lpPYRK0hG7fndYLOWg=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-18_01,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 priorityscore=1501 impostorscore=0 suspectscore=0 malwarescore=0
- adultscore=0 phishscore=0 lowpriorityscore=0 clxscore=1011 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180031
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <avzBgDksGfXb-MxZ@lxl00025.wbi.nxp.com>
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Hi Vladimir,
 
-On 11/9/26 4:09 AM, Ian Rogers wrote:
-> In add_var(), a struct kobject is dynamically allocated with
-> kzalloc_obj() and initialized with secvar_ktype. If kobject_add() or
-> sysfs_create_file() fails, kobject_put(kobj) is called to clean up.
-> However, secvar_ktype does not define a .release callback, which results
-> in a memory leak of kobj (and a pr_debug warning in kobject_cleanup()
-> when CONFIG_DEBUG_KOBJECT_RELEASE is enabled).
->
-> Provide a secvar_release() callback that calls kfree(kobj).
->
-> Fixes: bd5d9c743d38 ("powerpc: expose secure variables to userspace via sysfs")
-> Signed-off-by: Ian Rogers <irogers@google.com>
+> It's a bit difficult to manually follow all the constraints, which are
+> listed in the opposite way as the RM would have them (function -> valid pads
+> rather than pad -> valid functions), but AI says it's OK and I'm not
+> spotting any obvious problems either.
 
+I am trying a small update into the yaml file, that should be easier to
+follow. You are right that this serie is having an heritage that
+should be simplified to ease the maintenance. I'd prefer to improve
+it before merging it.
 
-LGTM,
-thank you!
+I'll send the update later today.
 
-Reviewed-by: Srish Srinivasan <ssrish@linux.ibm.com>
-
-
-> ---
->   arch/powerpc/kernel/secvar-sysfs.c | 6 ++++++
->   1 file changed, 6 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-> index 395399bbab2c..f3f6ac25ea78 100644
-> --- a/arch/powerpc/kernel/secvar-sysfs.c
-> +++ b/arch/powerpc/kernel/secvar-sysfs.c
-> @@ -126,7 +126,13 @@ static const struct attribute_group secvar_attr_group = {
->   };
->   __ATTRIBUTE_GROUPS(secvar_attr);
->   
-> +static void secvar_release(struct kobject *kobj)
-> +{
-> +	kfree(kobj);
-> +}
-> +
->   static const struct kobj_type secvar_ktype = {
-> +	.release	= secvar_release,
->   	.sysfs_ops	= &kobj_sysfs_ops,
->   	.default_groups = secvar_attr_groups,
->   };
+best regards,
+  Vincent
 
