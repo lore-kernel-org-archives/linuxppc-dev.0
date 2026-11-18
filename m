@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5818A60A2609
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 19:46:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0B99606A320
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 19:50:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k8rhOii4
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=demZj214
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVBtq0gYPz2xSl;
-	Thu, 19 Nov 2026 06:46:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795031203;
-	cv=none; b=bE0tgOvMiBfEnMjoIVAbK/tTzq4/1+B06vj/5QgBlZksjZoWe0msKIkUlg/i00CvK4h5/X5QKaj5UFkg+ZPbCRvmRAOOl6OPPppYVjgcoqz2dKDWf+t/uLzbb+tA4oLQV5IMtI5V/7NNkkLp+b+HYEI+2blx7HA+71wy2xh5FVXHcMpz9++Fre9mkU/HaAoYtWRAXUDCLsiIEPNPwfrdShEnrZbwsqEvY+UGGFy1Pz7a1hXCPww8d8QrYLV6pju/j5Vh29CZVWLAabP6DEekDCKEck4FmsfPtSFdsJqd47jqRU5gN5RJlZ7BgVnFTyXVZ7O2JzYkC5Dk0gCOZWKVkg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVByb3Z20z2xSl;
+	Thu, 19 Nov 2026 06:49:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795031399;
+	cv=none; b=L4hV+lK5WMG9pGrRa3KsPYcLEtv82Yxs4V1+NaW2lpkWu2sE9gNC778hWTpoN2uthZ5EbuB/k01FWgnfwPpPF/FBZy7xEERL5zXMiAzmLZT87QlWlUYs/tbPv7ds1jeZ//+T83gL/RsC6oNoobdGT4lF9hDuQ+4GUtnrvQnu3vW4BbIYx/HtS6Vsn8wSk8gdpAJcn0y4OAEm5RtAiMmy49lneRu4GtFBDmHOMYmK4mC/HIhQM9kGY+o+FdLnZOnytnYNMag32x3XELsZ63OX8tUw8JVOUzsurUnFgyC2kCiWAXzatF2y7UNGWqAUswxESV6D57zLMUBUQcyP7LQ51g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795031203; c=relaxed/relaxed;
-	bh=FraNARuPZ3tZqbt90b68MTJtjCSnJWUqeang1fd2yUA=;
+	t=1795031399; c=relaxed/relaxed;
+	bh=XpUTJKSNd3BKZMuNsk4G3FLRtdV7s45kYttRU4gqcas=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=GP4W7Tb/C1sbdivVjZWhoNOng3UAOExQarIRUFvQVxET4To9p2wK3fN8xn36Hh3YGwwoP0Z5Dx6pmL9dqFUZzofhKHXISl4OPJt2Ts8IWYVIgR7ur1+qUmlb1x2X/zkWEwailXcZYvRnhMLEYh+SV7qc2T9TA5qjUPlZnUaQhn+ukmThvfxkI1EkTUxSYZezM0IQY55alqiCiaKvfFR0oKI/elaN7/jIrevWoIOK7QgVZmfZF8VKOHbC1HBSWgS1lJvYNBGpZsRhgxAJYl8XIalKcPYJGOKk1MBn2Y82TjfKbT8voaXZM38m4WmT2oCZYOhCLbxNPioY17txsRqlvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k8rhOii4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=WmOwclD2w7aJAUOocyDclCPOYaWiKH0Cb1pdTQm1YjAW+6++nj7RNwQG/l+FRf7ofOngYBm2zdVipYntTUBrxwOiNBUIIqp3y6nEew4tgcJlNHSYTelkibljJU+YExh2tuGytOel4SibYkf+YjtEBj8wkiHEVNr6qxLxKRH+zVxJjP/O8fyu514oaGZy3JajomiEjFpKXouPjgMfT0u/Ch34eUjvXGHt8RqXtRMXO9NVMLKrnV+NQvxkIO/p8L1GrUs9k/BForinh7uPwSJannS7vY6AsL4AtlB357IND5BxjOpcfIsD9mdRh/Sju/KUxgorkSBAp9k8K0PO+x99pA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=demZj214; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k8rhOii4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=demZj214;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVBtp3W51z2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:46:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVByZ5zZFz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:49:58 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5B077472F3;
-	Wed, 18 Nov 2026 19:46:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44C5E1F000C6;
-	Wed, 18 Nov 2026 19:46:32 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 95AE66399A;
+	Wed, 18 Nov 2026 19:49:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 255D01F000C4;
+	Wed, 18 Nov 2026 19:49:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795031200;
-	bh=FraNARuPZ3tZqbt90b68MTJtjCSnJWUqeang1fd2yUA=;
+	s=k20260515; t=1795031396;
+	bh=XpUTJKSNd3BKZMuNsk4G3FLRtdV7s45kYttRU4gqcas=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=k8rhOii4GBidYBHAj6OybYKjTi95/OE4IutpnAuro0koyhgtSDGMrHBqjxr2sRagl
-	 xsXin4sy87M6WN68cIHkqd3YIiqDzzLGmqRMy0dAcmgLOjmMTijhTQf7Uj4/jUmVrN
-	 lwFMRFnl/uAjRVANuBcqyW7GFSh2cKjw7odg8pFJGFKroRsjqyyWye4YpEJ5E5X0mu
-	 SpQubNXz2Pii6uA+K9BywHWQWqD72reCnZILizmgwg+ld1G//C9l325rWrKrAVwdna
-	 pRjtmXTtrY8/Az4tAbLk4ZVbgV2OY6SA2/k3co8e/Kq7g+ymgLGiZqR4I0uKOjOlcP
-	 screbGc9dWcmw==
-Date: Wed, 18 Nov 2026 19:46:28 +0000
+	b=demZj214Okph6xJpa/01zUcpC44TH2tWspl3ewP38RpUZK/Usoqx9e1ixsVubSSXO
+	 JCIiOBOUQb0dwTOGZBIKsU3wri/J8Jqcl//pGCJG0chd0j3HciCxzN158i8tpa1v2E
+	 gr1wLsOY7D3E/bGcsfBtKk7iBRZSzmG9+EFVX//i503bzxYB96Q/HD8PnYTdBpp19K
+	 F48hTsAvMkiq1LAsN+DsXwYpr8IPXP6ea4uScDktTGCzULUGOHu4kZ4qkHX/VF/pDw
+	 KPM2CLvpEMNAC56U+xbRc5sWFNb+YDGckQ1+LcmREDLdtiq5ir9oUxJjCPo1apthpD
+	 24lLCWhDkBbVA==
+Date: Wed, 18 Nov 2026 19:49:48 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Pierre Gondois <pierre.gondois@arm.com>
 Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
@@ -58,20 +58,19 @@ Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
  <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, Bjorn
  Helgaas <bhelgaas@google.com>, Maciej Wieczor-Retman
  <maciej.wieczor-retman@intel.com>, Pawel Chmielewski
- <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>,
- Avadhut Naik <avadhut.naik@amd.com>, Kai-Heng Feng <kaihengf@nvidia.com>,
- Dave Jiang <dave.jiang@intel.com>, "Fabio M. De Francesco"
- <fabio.m.de.francesco@linux.intel.com>, Breno Leitao <leitao@debian.org>,
- Terry Bowman <terry.bowman@amd.com>, Kuppuswamy Sathyanarayanan
- <sathyanarayanan.kuppuswamy@linux.intel.com>, Dan Williams
+ <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, Qiuxu
+ Zhuo <qiuxu.zhuo@intel.com>, Avadhut Naik <avadhut.naik@amd.com>, "Fabio M.
+ De Francesco" <fabio.m.de.francesco@linux.intel.com>, Kai-Heng Feng
+ <kaihengf@nvidia.com>, Dave Jiang <dave.jiang@intel.com>, Breno Leitao
+ <leitao@debian.org>, Terry Bowman <terry.bowman@amd.com>, Dan Williams
  <djbw@kernel.org>, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  acpica-devel@lists.linux.dev
-Subject: Re: [PATCH v1 10/19] ACPI: extlog: Simplify fatal record printing
-Message-ID: <20261118194628.30ad2621@jic23-hlaptop>
-In-Reply-To: <20261117111444.4185512-11-pierre.gondois@arm.com>
+Subject: Re: [PATCH v1 11/19] RAS: Remove unused ras_userspace_consumers()
+Message-ID: <20261118194948.45293a26@jic23-hlaptop>
+In-Reply-To: <20261117111444.4185512-12-pierre.gondois@arm.com>
 References: <20261117111444.4185512-1-pierre.gondois@arm.com>
-	<20261117111444.4185512-11-pierre.gondois@arm.com>
+	<20261117111444.4185512-12-pierre.gondois@arm.com>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -88,31 +87,49 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 17 Nov 2026 12:10:20 +0100
+On Tue, 17 Nov 2026 12:10:21 +0100
 Pierre Gondois <pierre.gondois@arm.com> wrote:
 
-> Only fatal CPER records reach print_extlog_rcd().
+> Remove the unused ras_userspace_consumers() and atomic
+> trace_count as the previous patch made extlog select
+> CPER console output by severity.
+wrap longer.
 
-Maybe mention that is only true due to an earlier patch
-(just refer to it by title). This kind of reads like
-it has been true for ages and you are just tidying it up.
+Otherwise, if the rest goes forwards this is obviously fine.
+However, more to do.. See below.
+Given it's trivial I'll just assume you'll do that.
+Reviewed-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
 
-> Merge the two helpers, remove the unused prefix argument
-> and return value, and keep a single rate limiter.
 
-I love the trivial sometimes.  Short wrap.  Go to 75ish chars.
 > 
 > Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-With any background you can add (or none if it seems it was never
-any different). 
+> ---
+>  drivers/ras/debugfs.c | 10 ----------
+>  include/linux/ras.h   |  2 --
+>  2 files changed, 12 deletions(-)
+> 
+> diff --git a/drivers/ras/debugfs.c b/drivers/ras/debugfs.c
+> index 42afd3de68b22..838cc689b9989 100644
+> --- a/drivers/ras/debugfs.c
+> +++ b/drivers/ras/debugfs.c
 
-Reviewed-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
+>  
+>  static int trace_release(struct inode *inode, struct file *file)
+>  {
+> -	atomic_dec(&trace_count);
+>  	return single_release(inode, file);
+
+Use that as the callback. No need for the wrapper.
+
+>  }
+>  
 
 
