@@ -1,46 +1,49 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B892606A320
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 10:40:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0561606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 10:42:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTymw1t8nz2y2T;
-	Wed, 18 Nov 2026 21:40:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:1000::53df:5fcc:0"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794998448;
-	cv=none; b=Z0daTRdSQAUwzFTV/6ZgVFceivukLzfG48C13Uts6dpZZyzZBqERsMzLXQEd1P/bLMnQSzFR5NzuEND559y7Ni4vJ5JaGeXxFLqAVEmodUv+04vV1/1s5sU6b1og02ooxiKDAzaVujdQXZFLPpLZQyLWfec3120Y1oQpQnCzJbFiLrDJVFHnEe6TdidfFi2PRXHbHmfWToEVh4jKN5i84MR1Zu4wx7paY0gFgnRGlnjYG503T0nER6m+LP1H58+7bp1XiVbMQRP/RMf46U6CzwFNZ+gNx9pHMZToeNlIw4S3GFsdm4anlFTQP58CiwUtSzkL35/5+SqQ8MdU/h8N5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTypQ32jGz2yMn;
+	Wed, 18 Nov 2026 21:42:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.76.133.104
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794998526;
+	cv=none; b=OevH+cTlDAuIHUferlgOS62aH26/Gr9N0F/66cO21lSoHC9rYMeBJhnhBqO2klp8bgAOA4c9PplNI/a8cbk3IHcwSl9YwMtIRrt+iw2uyHAY1b4qTxRSA+lbnIjC3GKH8u7CfeoseIG042t1uI+4EfGr9CzAngwsaMVzj1NNtqPIt/Lb+FgX+XbQnLd8WbYMYuZI/s8PfFs0E6qEDbPjTRVszCKWDBTx4Q0s5WvN18US0rqnowCCF03F4MkBovGZsf/v16sMs4NLsDfPy9LiQeuAb9OWwu7mMfK+BIkYD8+mlXzExmjshf3Q4laUiuP2tRKSHH0/d4q/5fpm7BRSGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794998448; c=relaxed/relaxed;
-	bh=lJRXZTaLABiQOC03YvgzkJOyiEumqmL4Ha8lE9HKd2U=;
-	h=Message-ID:From:Date:Subject:To:Cc; b=eWDcyNYv4TEk/BSur3CL8vzMGEZN41QQoKhjzsQHyPx4dos4Q0vsJK714RFFA/KKGkNn/GCA4gRucepctrB+DpGHWsUUkO2pMRbs3PZQT4L2CiQeZ1uPtF653wstBsP6t7KnKPnEg231Qk9AUkGNdrFoeULpNYw0hngxADbNwNjwW4SD+5qcgoJEUWR/b31F2jwvX+wnC+8F0uJ1izRUh9TITsQ4O6zCfeSNo9T1BhK7FY/elkxR5tSU5N0hnsGM18q2LTle6CzeXNakRy3DJm9Wqp/WX4ipEs+3pWgtb5rDKXRwnXjwiRKRCVJLKIFis8VnyDjo1Iw32px4QFhCuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:1000::53df:5fcc:0; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+	t=1794998526; c=relaxed/relaxed;
+	bh=7ULs6kFe6nCSS6/2neQFMZlz5nGwnDgQN00Y1eoPHhQ=;
+	h=Message-ID:In-Reply-To:References:From:Date:Subject:To:Cc; b=CUPsRkIkXzFoaztHgOWvwA+KSCulVwiC83Hrj+imokmvE3t4uYAadEES2c48oSx6f2chcrLaYSQFa2i0u17VAsbCnO3YUnVm+c/ON2UlUBj8zpf55tTsoAZ66GQXheQbBpAUIQQ6igq9vdWfTVUgzrn0WQyXguBSI1t0xO6/I1lZ6l4amEACwR9RyYbex73N/cuMjWMxQdyRYd9Z5O7IbZkUECuJWWMUFy0HsZN+DWseEgEY3ZdjXuavBQTR724l8HVDry81MGfh8lxNO/agGdIsbvGoFrGMkCsW8fMSRv5sIFqvNinQSShsO4OQmdXVV7svhhGxrK7ZVgtG185KRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=144.76.133.104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:1000::53df:5fcc:0; helo=mailout1.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout1.hostsharing.net (mailout1.hostsharing.net [IPv6:2a01:37:1000::53df:5fcc:0])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=144.76.133.104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [144.76.133.104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTymt3QF9z2y2B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 21:40:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTypP4xc0z2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 21:42:05 +1100 (AEDT)
 Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
 	 client-signature ECDSA (secp384r1) client-digest SHA384)
 	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout1.hostsharing.net (Postfix) with ESMTPS id 3C4CD3438;
-	Wed, 18 Nov 2026 11:40:39 +0100 (CET)
+	by mailout3.hostsharing.net (Postfix) with ESMTPS id 745661C64;
+	Wed, 18 Nov 2026 11:42:00 +0100 (CET)
 Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 361D4600034D; Wed, 18 Nov 2026 11:40:39 +0100 (CET)
-Message-ID: <cover.1794997749.git.lukas@wunner.de>
+	id 3A5C06000333; Wed, 18 Nov 2026 11:42:00 +0100 (CET)
+Message-ID: <34c9ee153876bac953135b4518035194b7c07c6c.1794997749.git.lukas@wunner.de>
+In-Reply-To: <cover.1794997749.git.lukas@wunner.de>
+References: <cover.1794997749.git.lukas@wunner.de>
 From: Lukas Wunner <lukas@wunner.de>
-Date: Wed, 18 Nov 2026 11:40:00 +0100
-Subject: [PATCH v2 0/7] Error reporting for AER-incapable devices
+Date: Wed, 18 Nov 2026 11:40:01 +0100
+Subject: [PATCH v2 1/7] PCI/DPC: Avoid access to non-existent AER capability
 To: Bjorn Helgaas <helgaas@kernel.org>, Raag Jadav <raag.jadav@intel.com>, linux-pci@vger.kernel.org
 Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Aravind Iddamsetty <aravind.iddamsetty@intel.com>, Srinivasa Adatrao <srinivasa.adatrao@intel.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Terry Bowman <terry.bowman@amd.com>, Keith Busch <kbusch@kernel.org>, Maciej Grochowski <Maciej.Grochowski@sony.com>, Yazen Ghannam <yazen.ghannam@amd.com>, Darshit Shah <darnshah@amazon.de>, Jason Perlow <jperlow@gmail.com>, Riana Tauro <riana.tauro@intel.com>, Yury Murashka <yurypm@arista.com>, "Matthew W Carlis" <mattc@purestorage.com>
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -56,82 +59,129 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 
-Bjorn suggests "the PCI core should do pci_enable_pcie_error_reporting()
-independent of whether the device has an AER Capability":
+Downstream Port Containment does not mandate presence of an Advanced Error
+Reporting capability, so a Downstream Port may support DPC, but not AER
+(PCIe r7.1 sec 6.2.11.2).
 
-https://lore.kernel.org/r/20260826212619.GA1566339@bhelgaas/
+In February 2019, commit 9f08a5d896ce ("PCI/DPC: Fix print AER status in
+DPC event handling") amended the DPC driver to access the AER capability
+without checking for its presence.
 
-This is done in patch [7/7].  The preceding patches contain prep work.
+This did not cause actual problems because in March 2018, commit
+4e5fad429bd1 ("PCI/DPC: Do not enable DPC if AER control is not allowed by
+the BIOS") had seemingly inadvertently prevented instantiation of a DPC
+port service on AER-incapable ports.
 
-For context, PCIe r7.1 sec 6.2.1 defines two error reporting paradigms:
-AER and baseline capability.  The latter relies (solely) on the error
-enable/status bits in the Device Control and Device Status registers,
-which exist on every PCIe device.  The kernel has supported the AER
-paradigm for 20 years.  With the present series, it gains support for
-the baseline capability paradigm.
+However in October 2019, commit 35a0b2378c19 ("PCI/DPC: Add
+"pcie_ports=dpc-native" to allow DPC without AER control") made it
+possible to override this:  The DPC driver may access a non-existent AER
+capability if "pcie_ports=dpc-native" is passed on the command line.
 
-Patches [1/7] and [2/7] reinstate DPC on AER-incapable Downstream Ports.
-The kernel used to support this until 2018.  It is hereby fixed because
-it eases introduction of baseline capability error reporting in the
-subsequent patches.
+Fix it by making the DPC driver cope with AER-unsupporting Downstream
+Ports.
 
+There are two places where the AER capability is accessed:
 
+- dpc_get_aer_uncorrect_severity() uses it to discern whether a Fatal or
+  Non-Fatal Error triggered DPC.  Access the Device Status Register
+  instead, in accordance with PCIe r7.1 sec 6.2.5.
+
+- dpc_is_surprise_removal() uses it to detect whether a Surprise Down
+  Error triggered DPC.  Return false on AER-unsupporting devices.  The
+  function works around an AMD-specific quirk and it seems reasonable to
+  assume that all affected products are AER-supporting.  In any case the
+  detection is not possible without AER capability.
+
+Insert a temporary check for an AER capability after the call to
+aer_get_device_error_info() because the function currently returns false
+for AER-unsupporting devices.  The check will become obsolete and will be
+removed with the imminent baseline capability error reporting.
+
+Fixes: 35a0b2378c19 ("PCI/DPC: Add "pcie_ports=dpc-native" to allow DPC without AER control")
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Cc: stable@vger.kernel.org # v5.5+
+---
 Changes v1 -> v2:
-
-* Patch [1/7]:
   * On AER-capable devices, infer severity from AER Extended Capability
     instead of Device Status register because the latter also logs masked
     errors (Sathya).
   * Fix storytelling in commit message because 4e5fad429bd1 changed
     behavior, not 708b20003624 (Sathya).
+ 
+ drivers/pci/pcie/dpc.c | 45 ++++++++++++++++++++++++++++++------------
+ 1 file changed, 32 insertions(+), 13 deletions(-)
 
-* Patch [3/7]:
-  * New patch to clear error status bits more selectively (sashiko).
-
-* Patch [4/7]:
-  * Clear Fatal Errors as well on recovery failure (Sathya, sashiko).
-
-* Patch [6/7]:
-  * Amend kernel-doc of pci_aer_unmask_internal_errors() (Sathya).
-
-* Patch [7/7]:
-  * Convert AER severity to Device Status bit with new severity2devsta[]
-    array, instead of renumbering AER severity (sashiko).
-  * On entry of aer_get_device_error_info(), clear info->mask and
-    info->first_error (Sathya, sashiko).
-  * Emit "(no details available)" message for AER-incapable devices
-    as well as for devices whose AER registers are deliberately not
-    read on Fatal Errors (Sathya).
-  * Amend commit message to inform that System Errors may be raised
-    by AER-incapable devices if they have no AER- or DPC-capable
-    port in their ancestry (Sathya).
-
-Link to v1:
-
-https://lore.kernel.org/r/cover.1790531238.git.lukas@wunner.de/
-
-
-Lukas Wunner (6):
-  PCI/DPC: Avoid access to non-existent AER capability
-  PCI/DPC: Reinstate support for AER-incapable ports
-  PCI/ERR: Clear error status bits more selectively
-  PCI/AER: Drop AER native check from handles_cxl_errors()
-  PCI/AER: Move AER capability check out of pcie_aer_is_native()
-  PCI/AER: Enable baseline capability error reporting
-
-Yury Murashka (1):
-  PCI/ERR: Avoid stale error status bits on recovery failure
-
- .../ABI/testing/sysfs-bus-pci-devices-aer     | 26 +++++--
- Documentation/PCI/pcieaer-howto.rst           |  9 +--
- drivers/pci/pcie/aer.c                        | 76 +++++++++++++------
- drivers/pci/pcie/aer_cxl_rch.c                |  3 +-
- drivers/pci/pcie/dpc.c                        | 46 +++++++----
- drivers/pci/pcie/err.c                        | 14 +++-
- 6 files changed, 120 insertions(+), 54 deletions(-)
-
-
-base-commit: 6d69eeae8966bc3bea0facbd550f45ef9de41cc4
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index 2b779bd1d861..d02cbbbe3143 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -238,19 +238,35 @@ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
+ {
+ 	int pos = dev->aer_cap;
+ 	u32 status, mask, sev;
++	u16 devsta;
+ 
+-	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_STATUS, &status);
+-	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_MASK, &mask);
+-	status &= ~mask;
+-	if (!status)
+-		return 0;
+-
+-	pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_SEVER, &sev);
+-	status &= sev;
+-	if (status)
+-		info->severity = AER_FATAL;
+-	else
+-		info->severity = AER_NONFATAL;
++	/*
++	 * Infer severity from AER Extended Capability if present, else from
++	 * Device Status register.  The latter cannot be used on AER-capable
++	 * ports because it also logs masked errors (PCIe r7.1 sec 7.5.3.5).
++	 */
++	if (pos) {
++		pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_STATUS, &status);
++		pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_MASK, &mask);
++		status &= ~mask;
++		if (!status)
++			return 0;
++
++		pci_read_config_dword(dev, pos + PCI_ERR_UNCOR_SEVER, &sev);
++		status &= sev;
++		if (status)
++			info->severity = AER_FATAL;
++		else
++			info->severity = AER_NONFATAL;
++	} else {
++		pcie_capability_read_word(dev, PCI_EXP_DEVSTA, &devsta);
++		if (devsta & PCI_EXP_DEVSTA_FED)
++			info->severity = AER_FATAL;
++		else if (devsta & PCI_EXP_DEVSTA_NFED)
++			info->severity = AER_NONFATAL;
++		else
++			return 0;
++	}
+ 
+ 	info->level = KERN_ERR;
+ 
+@@ -275,7 +291,7 @@ void dpc_process_error(struct pci_dev *pdev)
+ 		pci_warn(pdev, "containment event, status:%#06x: unmasked uncorrectable error detected\n",
+ 			 status);
+ 		if (dpc_get_aer_uncorrect_severity(pdev, &info) &&
+-		    aer_get_device_error_info(&info, 0)) {
++		    (aer_get_device_error_info(&info, 0) || !pdev->aer_cap)) {
+ 			aer_print_error(&info, 0);
+ 			pci_aer_clear_nonfatal_status(pdev);
+ 			pci_aer_clear_fatal_status(pdev);
+@@ -353,6 +369,9 @@ static bool dpc_is_surprise_removal(struct pci_dev *pdev)
+ 	if (!pdev->is_hotplug_bridge)
+ 		return false;
+ 
++	if (!pdev->aer_cap)
++		return false;
++
+ 	if (pci_read_config_word(pdev, pdev->aer_cap + PCI_ERR_UNCOR_STATUS,
+ 				 &status))
+ 		return false;
 -- 
 2.53.0
 
