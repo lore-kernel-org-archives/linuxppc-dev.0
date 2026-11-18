@@ -2,72 +2,77 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68D3E606A7E6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 19:42:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A393606A334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 19:45:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MqRX8LLo
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L6dt6FME
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVBnb0pSCz2xdX;
-	Thu, 19 Nov 2026 06:42:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795030931;
-	cv=none; b=W8UXkrA2sY9U+2/BPnIoLKP47RxkaRnxQyVdfB4Kl3Gw+0i0ECisJJANhQmR0WzZudPps8eQ58e48cCqcS0764Ky5OK4ZOb7VtAd32inoOmhFnz6NjhhNVVrGfmz7Emr+nTa7rsUpyPmYAPQRezq+9GARFBm9TorxM94mtGfacN80qVhXvcubjPZMIoxZnVa5qtbupMwBoOGvTnIP1IsJskvq4sX8IBhKKbOfWLDroT7aglOXm9lu9J2tcSLmNL5yROuHo9Hq3UsAc7ap+cPynimZisX6TslAZy7dRadshG60uPdg6YWadaOHC7YP4KXiC9Js2XPFEPAiYKdhPKnEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVBs85tp6z2xdX;
+	Thu, 19 Nov 2026 06:45:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795031116;
+	cv=none; b=cuPZyxZBc0UJ1IYVbVI2WFxqga6ml+n6Ug1PYca6YdLiTBX7OMB3FL1Pi+AcWnszFcDJwYroI2wkkyJV6ZxtOND8TC1JSMptk3+NpFX6ZA6+AGOeRxf6D03Jfl5Ay6NfI1equgK3j4cDcIImuMwdibP8wnDxI0G0I0Mx/IgVe0tnUve3XUn9t+PwmBXJ8XcLQhhmyJ3JVvRD7A+QOaOV+xOJlDVeo9aOQZxgDQ8UXeTaSYsBCdsEQmWbApQjk5frGuCTJzRPZVCUKaeFo8tnhx5Pzxg7dcRt65loDyW1X+A886XT2sq6+ablsnv37WWGSDJlbSgM0aLNkrjNPoEnkw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795030931; c=relaxed/relaxed;
-	bh=ZwkeXhoNuf2KPdjEfw4sg2NJFsMy7sV1rDjpKTrhj/g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nyqHxFJanmG5HguJRxu6/UB6pJ/aogDZnTbaOH95m7+zhjFOYScwnYdBtyET4uHsdfi2hLNIbYEhRteBLBjWi1S11ceWCX8vWO1KExEUR8GbM49DVo29wabrALoyOJYgN/7J7kzABhVCQhD8GHE9z8yN52krSC1o+Jo1iuEJ9x+l7liHf5vYZIBHxbf/R/92cFGvIgQ6ud4bb24GBuXdZRMFumS6DMQpAcmCJICa8GLUReixXQNh5o93NgF2rBG003GqPYcJMKt7sm5h4zzim4KEDL1wUugOQdsRwQ6EqffxdgNu24uLG7CGcykcHNtIw9RiRvLX5xn+J/WreIqWRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MqRX8LLo; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795031116; c=relaxed/relaxed;
+	bh=na5w5nNR+vMQdY7egGSiK+WyNzzJugfy513I7z+3ojw=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=XNB39OA5OVl8kFM+JrAJjTYCfghQWqtDzHPq3GsH61ZdK773mt+mOXKXGHYn7VCpZfHJX2I2o2jtnAT+HW58SwiSzHb0iRflgRbM66tJ9hyOnH+gl6eBNWwGMoepHoygsG9rorNwtWK5oMa8kb5F8/SvuC+MeRmppVsVZCo3+IiSMXLCpN3bR2hNC5Xc2YrZ9z7pjkpFXCGIu6bkaOQfMWpSix+4uqqIKIva0ID4zxlOdsY0OS7VCTHD7Lv7G7kdT0Xq9gW12HcDZsUrcWqVJCowZpU1qVxVfg0TsBuNlJyKjoUH3LlGdwJrah3+XGJhy1tFIQ0AeyLROQAP2IA+7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L6dt6FME; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MqRX8LLo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L6dt6FME;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVBnZ1JVzz2xSl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:42:09 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AIJQ9Sm755960;
-	Wed, 18 Nov 2026 19:41:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ZwkeXh
-	oNuf2KPdjEfw4sg2NJFsMy7sV1rDjpKTrhj/g=; b=MqRX8LLorA35SpP2mwQbYx
-	7179nv1xPZ1GIzqefkbFUIqw5WxhoIkcOjyUMisBTjYuK5n1ZXx6cg0ItNBPjCKQ
-	PRhBauw6hUFDes1o7EUWvIVZtokj4QGVxD/qcKwDayybix4Bblrgm0gNGOjsMpBO
-	h1ePHO67qco/qBu7Cm7vH6MsvXExtaY6hjqBs5rX9rDMw925seHr93O1r7OY55k6
-	k+caNOIz/PMthUuWtHa+fvbVhCLE9nb7V+k9BY+QZZbY+9GJ3vKzp3iuDYgCItPv
-	uElwjfkussuIKyBAkl2z0SF1AfvWW1SPK9qMuIXtMSZ6eV6YGlBJALgabFGNk/bA
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105vv5ff-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 19:41:58 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AIJK45s3854450;
-	Wed, 18 Nov 2026 19:41:57 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1hd6r6y3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 19:41:57 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AIJfrcY45547844
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Nov 2026 19:41:53 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AC53620043;
-	Wed, 18 Nov 2026 19:41:53 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B7B0420040;
-	Wed, 18 Nov 2026 19:41:48 +0000 (GMT)
-Received: from [9.39.20.8] (unknown [9.39.20.8])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Nov 2026 19:41:48 +0000 (GMT)
-Message-ID: <2ed69cf8-eca2-41ed-a100-844f9d84c2ad@linux.ibm.com>
-Date: Thu, 19 Nov 2026 01:11:47 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVBs74tDMz2xSl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:45:15 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 96D9063965;
+	Wed, 18 Nov 2026 19:45:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A0221F000C4;
+	Wed, 18 Nov 2026 19:45:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795031113;
+	bh=na5w5nNR+vMQdY7egGSiK+WyNzzJugfy513I7z+3ojw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References;
+	b=L6dt6FMEOP1zQQVYmvm4CWgf23sQN8hCZAeCPpJLUWYgTvFf7gXRCmY8q9oe8FB89
+	 mFwKA3cTtvdAfFZFl9F4ioYJcVEsMKWTCue8zDVaHf+I205Vj88up8tmRM8/QJNPNo
+	 vEQFVc++El8isjgs4ePvndtd+czHKU8rEk60UDeg/yTC1yvwG7kGmcolbdJL7mtuh4
+	 TDuR2OHULNcxBLOrwg2XKiNuq/Wsl91E7uHihCnXYbc5Q2INuNk3OP0ridc8bmnQBi
+	 e6EQvW9xW8L5Lje24dTZqRGEKPige77kZlY9Gtz4XcL4NGvfXo27DslnJIgUouq6sl
+	 vJ13TA7NrXqog==
+Date: Wed, 18 Nov 2026 19:45:08 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
+ James Morse <james.morse@arm.com>, Mark Brown <broonie@kernel.org>, Thomas
+ Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
+ <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rafael@kernel.org>,
+ Len Brown <lenb@kernel.org>, Tony Luck <tony.luck@intel.com>, Hanjun Guo
+ <guohanjun@huawei.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Shuai
+ Xue <xueshuai@linux.alibaba.com>, Mahesh J Salgaonkar
+ <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, Bjorn
+ Helgaas <bhelgaas@google.com>, Maciej Wieczor-Retman
+ <maciej.wieczor-retman@intel.com>, Pawel Chmielewski
+ <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>,
+ Avadhut Naik <avadhut.naik@amd.com>, Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
+ "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>, Dave Jiang
+ <dave.jiang@intel.com>, Kai-Heng Feng <kaihengf@nvidia.com>, Breno Leitao
+ <leitao@debian.org>, Terry Bowman <terry.bowman@amd.com>, Dan Williams
+ <djbw@kernel.org>, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ acpica-devel@lists.linux.dev
+Subject: Re: [PATCH v1 09/19] ACPI: extlog: Report errors independently of
+ RAS consumers
+Message-ID: <20261118194508.150029b4@jic23-hlaptop>
+In-Reply-To: <20261117111444.4185512-10-pierre.gondois@arm.com>
+References: <20261117111444.4185512-1-pierre.gondois@arm.com>
+	<20261117111444.4185512-10-pierre.gondois@arm.com>
+X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,140 +86,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 5/5] powerpc/powernv/eeh: Map generic EEH error types
- to OPAL
-To: Narayana Murty N <nnmlinux@linux.ibm.com>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Oliver O'Halloran" <oohall@gmail.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        Alex Williamson <alex@shazbot.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin
- <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org, sbhat@linux.ibm.com,
-        harshpb@linux.ibm.com
-References: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
- <20261023073642.59657-6-nnmlinux@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20261023073642.59657-6-nnmlinux@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: dD3dmLOBGgk3P7MvaFjHXl3PaL0cdUFu
-X-Authority-Analysis: v=2.4 cv=Z8x5j3RA c=1 sm=1 tr=0 ts=6afdff86 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
- a=b7QKy6wA_HDc8uP7B80A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: 24-5BvSMu5bUjEc5gTmCj54tFA2Il3nN
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA3NiBTYWx0ZWRfX+VaaMvH9OC22
- X/BsPWKxhumCgqKsNQEp91OA1GWrXNi2CBC+ZAvXNdVyEpHajz4O/10O6jvHVYR5+XgtiSFTFoJ
- DDSjrIZuGO/++G/tAaknwFWzZ/ulSxE=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA3NiBTYWx0ZWRfX0kxVU6SDNxfA
- H5U5y1fqFXmdCQzUpajVMRASJjdQRlw6DWTekL6xN1Mupnfzrm4gU5t5Diiszm1lz1mC8tbN/2w
- UgzHWwiuwyhRsY2iJzXoQWQLqz7LHLVjLegXZKUO6TgB107TrCtKp5LBnV40QCPcrGJehvRHbh3
- XR60x2Z+QuZZueMkVVj70a5eLQU3d+HJP2OZ5AkKtYcHliUl3OxPQpTxIbrgU+vkdvjwP01W3wH
- jHHuZWjS+hT1Qnzari7rMJWRzQ/dtErfOsLZ1qGhBtddeglTquNhnZm3rm3CPJa4BNtYuP3ZrjG
- 8RiGu7HhKar0Y8DbUv2D1wHsigdab7xQ5AGU5FOyIQleg7YfUUizj/2h+/VmW6kcfmMGrfrFAfa
- hZNeAMs81jPgnxPDoBqMD/wHdGvrBkKMHxPi63wdy0ZRtyz/IcKGGi8PGYXYM1Uo87cvT7FzMcB
- 6UDZZb429Z+xIehEJPg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-18_06,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0 malwarescore=0
- adultscore=0 bulkscore=0 clxscore=1015 impostorscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180076
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hello Narayana,
+On Tue, 17 Nov 2026 12:10:19 +0100
+Pierre Gondois <pierre.gondois@arm.com> wrote:
 
-For my understanding, could you clarify why this change is needed as 
-part of this series?
-The series is about enabling RTAS-based error injection, and PowerNV 
-doesn't support RTAS.
-How does this change fit with the earlier patches in the series?
+> The RAS consumer check removes:
+> - trace events when no daemon is registered
+> - CPER console report when one is registered
+> This ties tracing, PCIe recovery and CXL protocol delivery to daemon
+> registration, and can hide a fatal record when userspace cannot process
+> its trace event before a reset.
+> 
+> Remove the RAS consumer registration condition and:
+> - always emit trace events
+> - print the CPER record only for CPER_SEV_FATAL
+> 
+> [1] additionally suggested to have a cmdline parameter to dynamically
+> update the above policy. Keep a simple hard coded policy for now.
+> 
+> [1]
+> https://lore.kernel.org/lkml/20240521183913.GGZkzqUSN1hdE-_OEY@fat_crate.local/
 
-On 23/10/26 13:06, Narayana Murty N wrote:
-> eeh_pe_inject_err() is called with generic EEH error types defined in
-> the VFIO/EEH userspace ABI (EEH_ERR_TYPE_32, EEH_ERR_TYPE_64).  The
-> PowerNV backend previously compared these generic values directly against
-> OPAL firmware constants (OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR and
-> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64).
->
-> This is fragile: it relies on the generic EEH ABI values being
-> numerically identical to OPAL-specific values, and would silently
-> misbehave if they ever diverged.
->
-> Add an explicit mapping in pnv_eeh_err_inject() that translates:
->    EEH_ERR_TYPE_32 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR
->    EEH_ERR_TYPE_64 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64
->
-> Return -ERANGE for unsupported error types, preserving the behavior
-> of the original code.  Decouples the VFIO/EEH interface from OPAL
-> implementation details.
->
-> No change to existing userspace ABI or PowerNV behavior.
->
-> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+Use a link tag probably.
+
+Link: https://lore.kernel.org/lkml/20240521183913.GGZkzqUSN1hdE-_OEY@fat_crate.local/ #1
+
+I'm not entirely convinced this is a good idea without the policy aspect.
+Still let us see what others think.
+
+> 
+> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
 > ---
->   arch/powerpc/platforms/powernv/eeh-powernv.c | 22 +++++++++++++++-----
->   1 file changed, 17 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index db3370d1673c..01dae760cecb 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1167,12 +1167,24 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->   {
->   	struct pci_controller *hose = pe->phb;
->   	struct pnv_phb *phb = hose->private_data;
-> +	int opal_err_type;
->   	s64 rc;
->   
-> -	if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
-> -	    type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
-> -		pr_warn("%s: Invalid error type %d\n",
-> -			__func__, type);
-> +	/*
-> +	 * eeh_pe_inject_err() receives generic EEH error types from the
-> +	 * VFIO/EEH userspace ABI.  The PowerNV backend must not rely on
-> +	 * these generic values being numerically identical to OPAL firmware
-> +	 * values.  Translate to OPAL-specific types before calling firmware.
-> +	 */
-> +	switch (type) {
-> +	case EEH_ERR_TYPE_32:
-> +		opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR;
-> +		break;
-> +	case EEH_ERR_TYPE_64:
-> +		opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64;
-> +		break;
-> +	default:
-> +		pr_warn("%s: Invalid error type %d\n", __func__, type);
->   		return -ERANGE;
->   	}
->   
-> @@ -1192,7 +1204,7 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->   
->   	/* Do error injection */
->   	rc = opal_pci_err_inject(phb->opal_id, pe->addr,
-> -				 type, func, addr, mask);
-> +				 opal_err_type, func, addr, mask);
->   	if (rc != OPAL_SUCCESS) {
->   		pr_warn("%s: Failure %lld injecting error "
->   			"%d-%d to PHB#%x-PE#%x\n",
+>  drivers/acpi/acpi_extlog.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/acpi/acpi_extlog.c b/drivers/acpi/acpi_extlog.c
+> index e09ea571c32f5..16a16b12d8ccf 100644
+> --- a/drivers/acpi/acpi_extlog.c
+> +++ b/drivers/acpi/acpi_extlog.c
+> @@ -208,10 +208,9 @@ static int extlog_print(struct notifier_block *nb, unsigned long val,
+>  	if (cper_estatus_len(tmp) > ELOG_ENTRY_LEN || cper_estatus_check(tmp))
+>  		return NOTIFY_DONE;
+>  
+> -	if (!ras_userspace_consumers()) {
+> +	/* Print fatal records regardless of RAS consumer registration. */
+> +	if (tmp->error_severity == CPER_SEV_FATAL)
+>  		print_extlog_rcd(NULL, tmp, cpu);
+> -		goto out;
+> -	}
+>  
+>  	/* log event via trace */
+>  	err_seq++;
+> @@ -255,7 +254,6 @@ static int extlog_print(struct notifier_block *nb, unsigned long val,
+>  		}
+>  	}
+>  
+> -out:
+>  	mce->kflags |= MCE_HANDLED_EXTLOG;
+>  	return NOTIFY_OK;
+>  }
 
 
