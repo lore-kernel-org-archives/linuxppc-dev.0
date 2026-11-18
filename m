@@ -1,133 +1,80 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 385E2606A325
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 04:24:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1DA51606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 05:14:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=U+vYH3kX
+	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=on/4JbEu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTpQh6sP2z2xqv;
-	Wed, 18 Nov 2026 15:24:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794975868;
-	cv=pass; b=kcyFoz7FWjAuC7MGgx//xRFOAraeIgRcaHTLDRDvdXxGvlnSCLlYHDhF62nXVFssC03plbvwqaj+SldFlqPxbf6t21wQFvtauiiWmDb9XZB4fxNrGSznl/5hSSLhO3YUnHmzsTS9Se7nxi4RX138nDS5YCUdwrH8IPlbY/6UtenrfUa8jAfhsD5VbT3A9WIU/2ES9RSNqflq6PGeU8QkwK/RHFVeVbXXTf/uiqMzCpWFjIv0S4AinmiKynlGO5cGef1aoPZjQ8GXZOAfSfn0I9NctUyMpkG38Uga/YmvLcGfIHvc+ChIeZ7fg80O8IYs94xOxhbvVV89BOCmy8P3cw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794975868; c=relaxed/relaxed;
-	bh=4MjRG3TLW1v4YlU9r5k7pH4O2XZ1LNGrs34K2EFdv5I=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=KZdhB0qrbYPllz2p8mPf+kgjeuHERiIS6e/7/TgCL1Y19u+I5svPIaynjetvhM1wUvpwFgpg4e6Zw1nF4oIEn+xBpcHtRqii0zCaAw+CD0t+qPhEgdXCphlnezr65gHO7qj+dRkaV1n7ur86b4Dy4XYzM16w1bpsL9X295s+TzNF92NcGQAGyjgsm4eB1BcUUE0LDxfEdtnX37GhrVLDx9Qd3KqkOoKZibwY4m+3dqUK4JxX/EZA89AVvhGZUJhtrBNNHJXr5xYqNCM4vXRWP4kz0bnNNtE/mnup2+IDGRSc83Ad8JJBffpXcc2qrzm32EwCBSx2ZZa9Pzp35OKPEA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=U+vYH3kX; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTqXm3VWHz2y2B;
+	Wed, 18 Nov 2026 16:14:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794978888;
+	cv=none; b=EnO+UbDAgxXtbwepZjXxwQmmprGRdFOk4IexmCRqhXPHEEVsAxsERsvzViyAJHluWpop7kxgzah8si8chdsOPFTwnqnXEwUq1xT/tZKBsQnnIOEPtsf/aMYEJSsslpe6V+Rvm+oG5Yq/mhe9mlfci+v3gonnx5zgVwMW5e1MHhroL3Zika2Wktybbp9ZxMONCyOtPttzH1muevjfSZbeElHf9GXTMiOwxEu0IYhxp4KRDBAcsGaGLFhaqqIDLkXueAYersl8S5ZdmowLt/pZFK9qHvXkxRmGOh03jYWfgz4J/i31aXJhvkqFf7tM7YSM0NbZNCv0ek0Whx1xDf2duw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1794978888; c=relaxed/relaxed;
+	bh=ComRRml0ZzynV3ARoUry0O9EESmxNStjxfOKpHuXfew=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZLKvx4oXXV8CEUrRuRG9PUhLWGpH6CG2sqBqZtMZjMrQ6JZQq7YtKbV90646/JDrIULEW4fscLw5IqRLy+M5relVRZlG5tnJov8kdpc4zGHbC6XjOS6cJKMGHIau7rdQTWt/mJF+3p2t5jTA4PGE8HTTxisZM5iZUTaREa39MgPTHH5PtVN8shM93rQO3Rouspu4JVgcV8mNijOI436uvZoAQwo0C5JmVkZzUkztxlMtMDhiJT/iMH212z5ejo8EeLvvNfA20QtR0KJ1t8hSie8YRMKmc3DhtrbMmu/4MKVaAlxD/NzVuNIIInkbmxDKeaZHaNVoGPnXEdYxmX4a3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=on/4JbEu; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=U+vYH3kX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=on/4JbEu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::6; helo=am0pr02cu008.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from AM0PR02CU008.outbound.protection.outlook.com (mail-westeuropeazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTpQg4xsVz2xlY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 15:24:27 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=k3ZMOxNIils3A9mbWeVaHvyZHpoM2K90pgNBnqHBZfT95eoebcx+RLMBHFDrDoFtLoVdcWsvyKdCVXvMS4xQiN3v7NPfy2/pci4Q5lVpuN3eiRYA7cwRsfE7I7wW0uudkqHdHjA5+fOQ1inYWzjFy0rzGToAWdLub7W9LqZUkC6YFGGR6pCIJv+uVvy7t5oLM+g+mRLSb/B4JOt6UKCdnUsCvNsSJEVoryZdPi57+6h49FjPUS/zXCjVGgG6lBjytiYwOWTi1UNXjsNiN9V3GZpYLCs4XMp7zaMJt5ULUxoCxavMY0wbnW9oO6SWwkWLBcdlywJM5o6j/dfN3GRepg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=4MjRG3TLW1v4YlU9r5k7pH4O2XZ1LNGrs34K2EFdv5I=;
- b=dzCzHLwmp1bCsyzmEnkhpIFhhmV0arVlWRL2J5mzaj/hH9xxpj722vhoWSmM0zaFYNuK9UfMD9kuPJ9Yb9pNFzB7Tvr+8q2RpZUVBwMIshFa4LDt8jyq+gO9DCVir3k42AIQRj9b1f6F4S/4lkIOCqgtmvMFVcb9HO57GmxWkTlDukBjGKit4I+/kkIIcEcPSlWPsc4krhY1D7xy0WWe8Hzw5UBSSkny4JiEmteZO8TAWSNi1mWpIGqqq5CP5w9cE4MWC1DaHuyZ/f8YODX/AaM5uayQ1bzjk5lMEfWp2rqQlF9uBSaVjl4CNUpv2TWQf0IDLKUNsgUxBR5bmVmfKw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4MjRG3TLW1v4YlU9r5k7pH4O2XZ1LNGrs34K2EFdv5I=;
- b=U+vYH3kXUI2SSqLHkl8yIMiqsn+LA8yRTYQkPBkfAEngmlByWZp65EdfDsxXR8NKK5VBGiWXuToDi+8+eV+IPHDZOIT297J0RVStC15SnGOZKqoE0Zn6xIoWWjBs7BAETHTzTkDL1hLZbHr8C36Q8m2fgtcLz4etoxMAey2ojpNNTScaFtqU3Qix6p/DH16hk2Q8NptKY47dMs0MV1CzMoDttRPWCvOooYSGlCzbJC3BCSnqfSo4I8w3IzEwf7tTN5M8Mpd7vHcU7V8V44X9UoRqQHKbf4EIYtuq0NiX7lgNwdpDnBZrLrzjKkTeIEMgceUBB7iPQVv7W7NBUsmUzA==
-Received: from AS4PR04MB9338.eurprd04.prod.outlook.com (2603:10a6:20b:4e6::17)
- by VI0PR04MB11940.eurprd04.prod.outlook.com (2603:10a6:800:307::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.615.14; Wed, 18 Nov
- 2026 04:24:00 +0000
-Received: from AS4PR04MB9338.eurprd04.prod.outlook.com
- ([fe80::7c4c:9c56:8552:f680]) by AS4PR04MB9338.eurprd04.prod.outlook.com
- ([fe80::7c4c:9c56:8552:f680%7]) with mapi id 15.21.0615.013; Wed, 18 Nov 2026
- 04:24:00 +0000
-From: Wei Fang <wei.fang@nxp.com>
-To: "Wei Fang (OSS)" <wei.fang@oss.nxp.com>, Clark Wang
-	<xiaoning.wang@nxp.com>, "andrew@lunn.ch" <andrew@lunn.ch>,
-	"olteanv@gmail.com" <olteanv@gmail.com>, "andrew+netdev@lunn.ch"
-	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
-	"edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
-	<kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
-	"horms@kernel.org" <horms@kernel.org>, "richardcochran@gmail.com"
-	<richardcochran@gmail.com>, "linusw@kernel.org" <linusw@kernel.org>,
-	"linux@armlinux.org.uk" <linux@armlinux.org.uk>
-CC: "imx@lists.linux.dev" <imx@lists.linux.dev>, "netdev@vger.kernel.org"
-	<netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH v7 net-next 0/9] net: dsa: netc: add PTP support for NETC
- switch
-Thread-Topic: [PATCH v7 net-next 0/9] net: dsa: netc: add PTP support for NETC
- switch
-Thread-Index: AQHdcaUbCEw420b0TEa1e67jj7Uo/bczROnQ
-Date: Wed, 18 Nov 2026 04:24:00 +0000
-Message-ID:
- <AS4PR04MB93388587139E3C5D7240A030887A2@AS4PR04MB9338.eurprd04.prod.outlook.com>
-References: <20261111062753.1397582-1-wei.fang@oss.nxp.com>
-In-Reply-To: <20261111062753.1397582-1-wei.fang@oss.nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: mx.microsoft.com 1; dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: AS4PR04MB9338:EE_|VI0PR04MB11940:EE_
-x-ms-office365-filtering-correlation-id: 47ada314-79ea-4414-8d01-08df452bc53d
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|376014|7416014|19092799006|23010399003|921020|38070700021|10067099003|56012099006|261102130727099003|261026140227099003|11063799006|261028144727099003|261021121427099003|261022105027099003|261026121527099003|261021123027099003|261102123227099003|261009223027099003|22082099003|18002099003|6133799003;
-x-microsoft-antispam-message-info:
- 3dEfdYumt6V4nqukBeThCt5MEfqBgsb97vLL+xc12gDbxL8tC2cPoNbbPtM1rTFUi+27hjKZHGWNOaCDUyTfnuocyPJuSYD+KUaPwEODqxLlj/iY5KPh1Z5haL8c3fetV7ken+Gt/R+yqOHh/d3dEcv0l46eu+jsgygityB8QlPRUeqmsmjTb1CcU/2HnwfimgSInGQMAsFWZ8bF/BqyfpXoSL5cx+Ymj0AFz4oWrftTcu2IAmagW4AWVUV0f0JkO0HQEIm1i1Q20x3JwdrieWAVZr4Sdp+LaqG/+0BvRZdwpo0hmXqVGycCmxVfUWi7pR5hPRgGHORgoMp5LvoBOgYyP8b0txssVc+NFy07qmwp2nxz7w6QhqMpYGrPJGkajR4EIVKbkLOZt+k6TzK8eCx3vf2c9KAEGGjh4Dkq0oX6DnR79psjb4w/WBz13490XTF1OlatH4N/uWmKuPaOQ6g+rYD7iWXI9ocQwRxZkeV1N6CYx003dMDQ1BnXEqCb6WOc3Ey7XDS8beERw43/z2Mi8wqg4Xwspgez8JBr/CauccwLHaVtmXcBm6LFfeHRDj3+K3+iVjUXlWoseuC/PY5NuyZkHN5oz/JVujwY3v5D4EjGQsxYlMgUdksTnydnBvUSKFdzuzYFdIJcCO/lUzGpqoH2LuDH1qJ2TRetnbM43uyGMVBWWfe+R5A9+G0d
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS4PR04MB9338.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(7416014)(19092799006)(23010399003)(921020)(38070700021)(10067099003)(56012099006)(261102130727099003)(261026140227099003)(11063799006)(261028144727099003)(261021121427099003)(261022105027099003)(261026121527099003)(261021123027099003)(261102123227099003)(261009223027099003)(22082099003)(18002099003)(6133799003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?XUXeajxnYKMK/gxtq+rSA7koZEDHH9e2tjWnvWEphkpJ+0VJKXIiDjncCAHA?=
- =?us-ascii?Q?Zn7jjEYykOURccAW1YDmdn8v+IeE6igiGVgwnKYRXNetSA4cv0TqQovkX45y?=
- =?us-ascii?Q?EEOljMWJYV7zaBU8z0K939fAtJSspOMrJGbKcd+2qbbufLD+9DTPLkIPS9nW?=
- =?us-ascii?Q?g/guE0YucieeYKZECXgzEWL2Yq2OOB/Nv44sD5kvHdjyfG2xRIQyMMNvPA4x?=
- =?us-ascii?Q?4H8tz9e36vmXEIv11YdGmqP9+zf4yqEmeyvb7BSoxx6zAq6eWfBCPd+/C4/z?=
- =?us-ascii?Q?bcUsUTBSw/or/Q1+vcR9J9RIg48z3dYBCVD1jW408jD7QuICdzJCtEESzIrO?=
- =?us-ascii?Q?pOpU83hSqkjuAu8dt1LmfJfLzMrQHnnuOYBzRzy9DBbDD1AFM1vvb24mEn9c?=
- =?us-ascii?Q?58ebvnRjivdCqzINMKL5dzpmMN1Z0A+1vxbRrbb3SV0WqD9ANkZ9bcJt3V4J?=
- =?us-ascii?Q?WzrqYEGJe8N0/DfvDskQQkzr8pZkZ+84B7ylPHw2aG1URMQCPTyir4nPcLRE?=
- =?us-ascii?Q?+iwTd8VYW2FXSUftA8TCjzOdWdN0R0cGvOJS4fsA4765KSNRPAZNo14RU3yQ?=
- =?us-ascii?Q?31xwyyOcj7BAU5OeAfHNxmfpGLzIQhi1N8CAnwtOkFukizeMa4kSv71cNAF0?=
- =?us-ascii?Q?NcU8qIgQD+N035TqDO7lS3RqjEfvLeQXSqQoRdYR5XYGes10bDwL9iFoBoLu?=
- =?us-ascii?Q?Fw610HIwPxU9FoekCrY3Vy1yMbpyOCKhm0OwvO4TyZ/nXrwO9yTekWVjKyGj?=
- =?us-ascii?Q?wA2nVbwWuzph7cQkFtZ3KsxPdaom0uP8oP2cXuMlgKjeH2thwOur5R5cdc9c?=
- =?us-ascii?Q?jZEFF0coKqHbsvfwKO57vfS9ZVKDBHch2/YIZuk3F0m3WCYVJwNrQJvYTqX1?=
- =?us-ascii?Q?dQHTIZ/rDKVSnZyUAnOzpJDuU8Be5RE/iuOjplzGtlUE6r+m3vP7Gmn/ZyF3?=
- =?us-ascii?Q?18EcyMibhJbDU0/qtJfU4UHOqxgRVf4ljv1IOXHaFvwWr5eoaztpgG7tScPV?=
- =?us-ascii?Q?0uXvWbmr2HVHLHBWA4LIMirNuFe2A5dmlaSjz8yDhPyiu4y0w0IryBHLPkMW?=
- =?us-ascii?Q?7y9OBSFAfPa8A2/Tcc5+obZXRGLJVOVfjZ9GVxKuWtPEhnRFrn0lhYsTEyoW?=
- =?us-ascii?Q?7EFT+z0u2DmuemKmkcYEUSoN2uc+2d1YCSpaq2qEFnvUQ0dVbZY0hcCcKF9t?=
- =?us-ascii?Q?XAUNo6GyLO6GoWj/TbmuLI2P/ZaMk0WVcSVfQ7eXURZ2HrQU0jdrFtgZLXeI?=
- =?us-ascii?Q?ef3j/2GAGTrYlX1hmV3nbIT1t5YJWK4PFAk5OV229tMLyG2tT75gYmGfRtgo?=
- =?us-ascii?Q?LJiLrBSAwWMDV/un0tPBHgbwW85y4DlfqvTwSpl+KY0VDFNjeG+x+g3ufXAX?=
- =?us-ascii?Q?v9hXWnoCA0jCbZtdIrLOcqgawyCzvPoLucHlgWayaCy8ALi98BWxfkW36/Aq?=
- =?us-ascii?Q?46cgqEBD32M1+pn4nKeTouat87QqoRYhj9Qct2zqFFsZO9DLEWp/mHjUJb11?=
- =?us-ascii?Q?qzEEf8HS0oQ7SdrJkW1dKV0tKzZ6/Ar6CKFE34Xl8NnD+Mbsud9lzm7mzo2W?=
- =?us-ascii?Q?Mk4zp8hO1UYzU1nfo/fShZfXy40o6hFbfHICjqYFSPpdZrG6L0A9ZExyXjUd?=
- =?us-ascii?Q?8TI4aqkVyFUW9BQ17IykHiKojBAOW5qYWAmTUgkJw6Fv09Bglys1paSaqmWY?=
- =?us-ascii?Q?NhujGHISDN4idXOTytngEg5tYcw083vOqBs0qq4n82tcHpok?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTqXl48dJz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 16:14:47 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AI2RuAW4062985;
+	Wed, 18 Nov 2026 05:14:34 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=ComRRml0ZzynV3ARoUry0O9EESmxNStjxfOKpHuXf
+	ew=; b=on/4JbEuoL/+CjWlEo00BA0nJGe7N0+ZWo3zhzBU6ObdwxoHmv+sks8I0
+	gUW/4jVNnK6l98F/UFyXOVaUeALJ8uN/nPnL42/uJNIWycugL7BwU67sIJ8NdVuf
+	xcsjCb875XAS225Jlu3wHLYJMSyXdAfI193vV274rv8F9oqkaZ3eR5NNA8lMDGTM
+	LHFDqjphg+OPk62C2WbwHf7+sR4yC1RyIk8847p/ufL5NCPI/BthrN0NPg3jJ/5+
+	e/lXIl3zGEXlKYlZEQOvJs6SmdRvJpmUlqJskF3mqz8+oLz1OfQ3FXtzesm2Oxhy
+	VGImPISD/Z/S3Zsp8RwNPoZPFr6fg==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105t0yp1-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 18 Nov 2026 05:14:34 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AI2nt6M680839;
+	Wed, 18 Nov 2026 05:14:33 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hy2bvgugx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 18 Nov 2026 05:14:33 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AI5ESLC39059904
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 18 Nov 2026 05:14:29 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D10AB20043;
+	Wed, 18 Nov 2026 05:14:28 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CB59120040;
+	Wed, 18 Nov 2026 05:14:23 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.20.10])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 18 Nov 2026 05:14:23 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, chzigotzky@xenosoft.de
+Cc: sshegde@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        msuchanek@suse.de, ritesh.list@gmail.com, harshpb@linux.ibm.com,
+        gautam@linux.ibm.com, amachhiw@linux.ibm.com, venkat88@linux.ibm.com,
+        nnmlinux@linux.ibm.com, mkchauras@gmail.com
+Subject: [PATCH v5 0/3] KVM: PPC: BookE: Fix boot hang on preemptible kernels
+Date: Wed, 18 Nov 2026 10:44:16 +0530
+Message-ID: <20261118051419.783878-1-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -141,114 +88,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: AS4PR04MB9338.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 47ada314-79ea-4414-8d01-08df452bc53d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Nov 2026 04:24:00.4362
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 04H1MQE2yxfMkEdL5dK2igc6UiDZ0WxXCFrqHXiDuOUJXdIxpJG1IXUpT3JgKh/eNEuJwg+eWOS9AwAWGcy2uQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI0PR04MB11940
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=unavailable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=IouL47/g c=1 sm=1 tr=0 ts=6afd343a cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=4M4rjlPIC_omUXLxwSAA:9
+X-Proofpoint-ORIG-GUID: _FAZnjFIzeN-a8vdkVqegOlU-Q2ZS0UB
+X-Proofpoint-GUID: AWPUZCe4tdD6RDAW4nXxPz1YetxgyF0d
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDAxOSBTYWx0ZWRfX/4cOi/7WqLDI
+ DoA813Z8croph3KK8Po1k4KC32DNEpAx9sACtFZW6unOpdg8XCyKEFpggIm2VINjNF4xmzP0wIr
+ yJuR3+UGs8H94ZNBrvXMcJXwBPaL6Swb25PDrd6QHJGxkuwr4X61MuQdtVsWqbB8PzJGae4+C2v
+ ECoGWVAubGV5TwqebemkXhNWhu1CG/fkJYuxCRckPb8ltkj++NGnQ1vudBf+QOpqTcVXDsyJWwR
+ p3n/by5ADr1vgUT9KgfarwkSSJD/20p2qE6ObJekRzmsobm3bd9hvkEe+qNMb3PAs1Bq9Nx2jgl
+ SXNd2nH/5oB7og0BPLjBKS9GzWr5RID334oL0Lvszx/Dlt92cNWbCM/fd1t/LqIng7B8nYt5pCU
+ prAgSrHpdT7/Ga2L5nPP6EpxjE+L114UYE1tAZmjTRJhMnm5oylBz1At+hlrHKJPSlhfK+g2nBH
+ r2H4sZV+WEKFTpbvtsw==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDAxOSBTYWx0ZWRfX2vs4yp0Hw8Gy
+ tmc7RygorD/sn3Tgt7fmSsxUXmQHGOqzqmRIA8zm7MkypBIkh9wF85KZDjpOHBh0Y4PvxhetJIL
+ LwfDTy7kl5bvox1urOIe/sBvp8TZlK4=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-18_01,2026-11-16_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 spamscore=0 adultscore=0 priorityscore=1501
+ lowpriorityscore=0 suspectscore=0 phishscore=0 clxscore=1015 malwarescore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611180019
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-> This patch set adds PTP timestamping support to the NETC switch, so that
-> the switch ports can be used for IEEE 1588 PTP synchronization.
->=20
-> The NETC switch has no time registers of its own and instead shares the
-> PTP time of the NETC Timer, which is a separate PCIe function driven by
-> its own driver. The first 3 patches prepare the Timer driver for this
-> role: tidy up its 64-bit register access, drop an ineffective reset, and
-> export netc_timer_get_current_time() so the switch driver can read the
-> current PTP time across the driver boundary in a race-free way.
->=20
-> The switch redirects PTP frames to the CPU through the ingress port
-> filter table (IPFT). A few patches harden and simplify the existing IPFT
-> and host flood handling first, then enable the ingress port filtering
-> lookup by default so PTP filter rules take effect without extra software
-> tracking.
->=20
-> On top of that groundwork, the switch driver gains RX timestamping and
-> both flavours of TX timestamping. Timestamps are carried between the
-> hardware and the driver through dedicated switch tags: the ingress and
-> transmit timestamps ride in To_Host tags, and per-frame requests ride in
-> To_Port tags. Two-step TX matches a queued skb clone against the
-> timestamp response echoed back by the hardware. One-step TX defers the
-> Sync frame to a per-port work, where the driver reads a fresh PTP time
-> and writes it into the Sync frame's timestamp field, then programs the
-> single-step register and transmits the frame so the hardware can add the
-> residence time to the correction field on the wire.
->=20
-> Together these changes let standard user-space PTP stacks drive hardware
-> timestamping on the NETC switch ports.
->=20
-> ---
-> v7 changes:
-> 1. Rename in_probe to configured in struct netc_switch
-> 2. ptp_ipft_eid[] is initialized for every port, next to ipft_hf_eid
-> 3. Return -EOPNOTSUPP when netc_get_phc_index() is negative in
->    netc_port_hwtstamp_get()
-> 4. Initialize onestep_state to NETC_ONESTEP_PORT_INACTIVE in
->    netc_port_ptp_init()
-> 5. Drop the netc_port_enable_onestep() call from netc_port_enable()
-> 6. When the frame is not known to be a one-step Sync, set *twostep to
->    true instead of dropping it
-> v6 link: https://lore.kernel.org/imx/20261103021024.3121936-1-
-> wei.fang@oss.nxp.com/
-> v5 link: https://lore.kernel.org/imx/20261012095924.1129312-1-
-> wei.fang@oss.nxp.com/
-> v4 link: https://lore.kernel.org/imx/20260918072852.501420-1-
-> wei.fang@oss.nxp.com/
-> v3 link: https://lore.kernel.org/imx/20260831082335.1184605-1-
-> wei.fang@oss.nxp.com/
-> v2 link: https://lore.kernel.org/imx/20260808032146.2335723-1-
-> wei.fang@oss.nxp.com/
-> v1 link: https://lore.kernel.org/imx/20260728104548.3301214-1-
-> wei.fang@oss.nxp.com/
-> ---
->=20
-> Wei Fang (9):
->   ptp: netc: use ioread64_lo_hi/iowrite64_lo_hi for 64-bit register
->     access
->   ptp: netc: remove unnecessary pcie_flr() call in probe
->   ptp: netc: export netc_timer_get_current_time() for cross-driver use
->   net: dsa: netc: tie setup resources and reset to DSA setup/teardown
->   net: dsa: netc: use entry ID instead of pointer to track host flood
->     rule
->   net: dsa: netc: check return value of ntmp_ipft_delete_entry()
->   net: dsa: netc: enable ingress port filtering lookup by default
->   net: dsa: netc: add PTP two-step timestamping support
->   net: dsa: netc: add PTP one-step timestamping support
->=20
->  drivers/net/dsa/netc/Kconfig          |   2 +
->  drivers/net/dsa/netc/Makefile         |   3 +-
->  drivers/net/dsa/netc/netc_main.c      | 404 +++++++++---
->  drivers/net/dsa/netc/netc_platform.c  |   1 +
->  drivers/net/dsa/netc/netc_ptp.c       | 895 ++++++++++++++++++++++++++
->  drivers/net/dsa/netc/netc_switch.h    |  67 +-
->  drivers/net/dsa/netc/netc_switch_hw.h |   5 +
->  drivers/ptp/ptp_netc.c                | 136 ++--
->  include/linux/dsa/tag_netc.h          |  38 ++
->  include/linux/fsl/netc_global.h       |  10 +
->  net/dsa/tag_netc.c                    | 228 ++++++-
->  11 files changed, 1619 insertions(+), 170 deletions(-)
->  create mode 100644 drivers/net/dsa/netc/netc_ptp.c
->=20
-> --
-> 2.34.1
+Christian Zigotzky had reported that preemptible kernels don't boot on
+his FSL Cyrus+ board. The board freezes on running either full/lazy
+preemption and has been an issue for a while now (years!).
 
-The code base of the switch driver has been updated, so this series
-needs to be rebased as well.
+https://lore.kernel.org/all/b897b0fd-90f2-4215-bcd4-3714e497d773@xenosoft.de/#t
+More details in cover-letter of v2[1]
 
---
-pw-bot: cr
+v4->v5:
+- Removed fixes tag for patch 1 as backports could be
+  complicated and added stable instead.
+- Collected tags.
 
+v3->v4:
+- Modify hard_irq_disable for PPC32 to simply call
+  local_irq_disable which does tracing/lockdep in addition
+  to actually disabling the EE bit. (Ritesh Harjani)
+- Modify the guest entry code to use the above (Ritesh Harjani)
+- Collected tags. Thanks to Ritesh Harjani, Narayana Murty N.
+
+v2->v3:
+- Comment removal (Mukesh Kumar Chaurasiya)
+- Add missing booke change (Sashiko)
+- Collect tags (Thanks to Mukesh Kumar Chaurasiya, Christian Zigotzky)
+
+v1->v2:
+- Re-order to avoid preempt count dance (Narayana Murty N)
+- Do only hard_irq_disable on PPC64 to avoid second warning. On PPC32
+  use local_irq_disable to acheive the same. (Ritesh Harjani)
+
+v2: https://lore.kernel.org/all/20261110053238.3794500-1-sshegde@linux.ibm.com/#t [1]
+v4: https://lore.kernel.org/all/20261117131612.707038-1-sshegde@linux.ibm.com/
+
+Apologies in case any nitpicks are missed.
+I'm surviving on half a night's sleep these days.
+
+As said in v2, remaining usecases of hard_irq_disable will be taken up
+later, which are in:
+arch/powerpc/kexec/core_64.c
+arch/powerpc/kvm/book3s_hv.c
+arch/powerpc/platforms/85xx/smp.c
+
+Shrikanth Hegde (3):
+  PPC32: Fix hard_irq_disable to follow tracing and lockdep state
+  KVM: PPC: BookE: Load FP and Altivec before enabling the interrupts
+  KVM: PPC: Hard disable interrupts before guest entry
+
+ arch/powerpc/include/asm/hw_irq.h | 2 +-
+ arch/powerpc/kvm/booke.c          | 4 +---
+ arch/powerpc/kvm/powerpc.c        | 8 --------
+ 3 files changed, 2 insertions(+), 12 deletions(-)
+
+-- 
+2.54.0
 
 
