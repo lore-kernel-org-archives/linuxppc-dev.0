@@ -2,88 +2,68 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC866606A334
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 03:48:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C5FF5606A332
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 04:09:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oxpCpkek
+	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=M0OSyXlq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVPZP4ZwWz2y2T;
-	Thu, 19 Nov 2026 14:48:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795060093;
-	cv=none; b=aWXyPsLyJ6zGNce6jcLVivSwBj4FfGRXin4x5JiTltj/hMn6QXnB6Y6sEaTPYuvkN6y3ph/Uifwfg7+QwkrfTAMs87kgT8M6Q/9uO6Cj32292QTcJGVuMSgaCPjyoq/shyYTKokO90EaSpGb/moi20IxwEjhWcr7WHGItMaXLyJwvJ0hF4aC2PG7ziObEh2hzxxihhmDXd3TP23OSlYLw+KiTMQ85v0WuVZkj1bqBlipvKTzh0daXqEb4+O47cgf3Bzhg+b3uA0I3bi7kIMvNhV+pUz8BZB9JcoahHLK9NjbyKpJlfADsCbzJ49V2ns8lwGH2aBhLDX91EcvpEAIHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVQ2f34Prz2xN4;
+	Thu, 19 Nov 2026 15:09:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795061354;
+	cv=none; b=La7UFliEtctMV08AygCfMOEZaumHgGU/NgHUGBYhWJ80tl1e0Tdc9OwiOfVOb+5TYgG6jUTGaXFZc3IubTK99zlrbE1LwVg4UV+gsZp7qjGegLGVIMm2zuEUuW+bIW6o9EtCDo2z/Z04CTWx0eWH4KNQz/zigg57zQpVgys7tvN6uQS0kG+LImoGtHcOG0/TI98LpgS39FhHu+/Yz4NJNZRpdx7m3mMFZOqlxAr0F5GvbqA9oP0gU21R2I163GCoARob3zYN7ZYK8NxERjOEv3XY/q7bGkWifTATmZShkmdPAm0LHk5Gts7esuHBfWuoFieLdf/J8ioUhr1w6sJIoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795060093; c=relaxed/relaxed;
-	bh=S5D8kWPJIdUaQq5yb68+AQ6+c9WqO7R4Em+vte/XbIk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LrlYgN5K6iai3ruJgcUZEQtosHaGH/JikPH3caPTKEhgAP4xfPQRdCni1EiBkYcMstGevh9M5Vf+S25b9dmKlETbhJJFXkjsaiAY5BA3H2XH0bFibay4oSgO1U6hK53ChKnKDYZlVk39GT6xOU7i7EhHOG/1VXYLK9D6AtLjI1AQvvLTcL2U7HlXt80rUtON1MXu57RAXzuNAfDJavkJfXeXc9x2DpfVhd75jG70ueUZOXCy7kvGzPsxUNLycv4a54EeqNXVqBAejBriwHLoeXY01yG1JNjYuv15Ii+DL/ubdPoHAS+/uwuH7B/iR9EfJ1NtE+1HW65miwSFaH+k/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oxpCpkek; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=hj351016@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795061354; c=relaxed/relaxed;
+	bh=+fiS5lSjlv1XeLg4ntd5I5AZBbPipyB8eDsuBWBCVq8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=BaANGppDtxX49kPMJk9bH3F3YXLuwBFK3RmPKnwtdVAPKyof7qQmFDv5m2/1iAalqIVpjr7H1MesmuU+tFlrTSVeQwi7OS1WBOr2fs4MlIT6oe9RfOrIiQcz8aXPFvdG5R8CC7YOexmxscBi8/OFYq7GE//KLzHNlY/IZK3R67C+thupFc5mejpDnQkXO8mfeYlFr2K2500CkcRM401XAwuCcY9Z2uY2mu4hEOzc2B3nw3Msb2+/tuK2OEduJ9dYagZignt+/cZQRwUMnpIDdLI+TdAy3LYhG/8u6yN7aJPM8xlATIY5OZ+Cu2lULNEZ9dubVYBEcgcv2wIdrUr93A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=M0OSyXlq; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=oxpCpkek;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=M0OSyXlq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=hj351016@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVPZN49lSz2y2R
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 14:48:12 +1100 (AEDT)
-Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-cdb2e0062bbso995414a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 19:48:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795060090; x=1795664890; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=S5D8kWPJIdUaQq5yb68+AQ6+c9WqO7R4Em+vte/XbIk=;
-        b=oxpCpkekJNPcHdamoU2fFXoy6FycAfm7L/KxXEqwYGwiRMOiaZ7xt7IRGEzamWyf2m
-         uZ3urQ3GhA89rcFtQcg4sRNZbynsmPhpkfHjBeWLuNpfamDWHiGKcI4DRblNEiq4D3nf
-         Oe6p94Jd9hZnvjiSuFMoRXIYQa0OZemd4VhGdAlurhftGCT6tva0WLAKd+5Ehs7Zkfax
-         29nhoFYRKnp7Xk2gLGG638Z+/PBstV8tRN7598VDoVsk4ntSv2CKk5L6+fPhCNYqqQdV
-         lK3uMsQicHOQxB77Nf642sg+thulcNKn9VQ4AsRazZoPQMSTt3eBi5e2XD/QVm012Ey1
-         +DWw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795060090; x=1795664890;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=S5D8kWPJIdUaQq5yb68+AQ6+c9WqO7R4Em+vte/XbIk=;
-        b=K3Nsy0WbE2PsGZaaHrlcfdZ4Hw04ZYRUzbYkizhoyUF8Tt8KHVV9AtWc9I+3r4lI70
-         KKr3pS5lsmcPmtXYKFDaDE3pXNmfrXrROEsGQ9dLa6P81Ry27INMb9gARrwvvpJCmHlp
-         XM1AEo4yeCmVal1ORXPK+V39aAz2HdehrdRzDImx797HxBkOcoDPGK024hd2wq1tJSgH
-         A1IipKJ3VGzsKv6VxsefV0nfaDwxVXYC5B9yHPGViUobSE32tYTt9ilBu1XFSZ94IIj8
-         I3VPFPvyZwY9Uoec1D37ZJ7riIkj8J6Jjd0BaOxidiw2ZqH+PzUEOjLVw65eF3Gh54q3
-         ZEQQ==
-X-Forwarded-Encrypted: i=1; AL+hErGfcbmyNdvi9zwLmwCMS88/9dlmkH+tSxv/LPYW4iMui9UN57yKZdl72QxA9YrmLmbow+he+5OXIhyFvbQ=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9X6pr7blMiGpmodiar2cMWWbOAOz12GWI13Vm6ipZL9m6fmgaj
-	zkg/by+JX8OSQxg88wL4GXxB41/C29iOOZssRYz4JNrg83U3wmsJyMkCE/fwboQb
-X-Gm-Gg: AZFdTZdxHBlNZjDzljWnCDy0e0JEfr7oJVG0rt9U99lEPGtiRbzQo04Nqm/77RlPBqi
-	ixzEo0eEcEl/zbcEMr+fFQs4958CZuJDg03jBy1HQA0H6uiLTUT820oqEEpb2YwzK5hLVxqK8tX
-	2lC0e1n5bzvYC5mvA+laVjZDg7xfM+1vk6rJu8Z85attoHRSJrTxD9pxhIPcHmURds80rin+OMJ
-	eb/uVL3QBJ+EW9p9WcYVY3DhzTDvCKzyiQxhfN+vXRfi241lmw7n2Lbz3GpYegR8L0N7Io8zd8s
-	m/fBQu3PL7i3aHAInGx4HgNv7CsAHJjSdBNXf5Qjt6nO2BZNowOYjpIGhJLXhgEvEwQLBLcoMO0
-	SezrQj94mIpv70VHGz9/R8Hfpz9IPJydHRZelEuIc/0eYZCVSv1LCzV4sRpbnX6KK5OZJkr1gIN
-	68F4xWSXevfYPF8K1Sx6wvI+wNId7miK0/QnOA7fg0MZwCiWe9zGx4OdFmTxgab6hhB1q5BOGcW
-	6R0ebUYMTo72K3g1JqE+pKIjr5nMDkzl2PxMw8g6tDMf4snIO7mHtXIqKDtsn1pg6AJyhM3sB53
-	Lz5ywvkv6qGNiEOwm4TwEleFt7sXKGe2DVCnYnS5Ze6Y+6O5
-X-Received: by 2002:a17:90a:d445:b0:3ac:8897:7bab with SMTP id 98e67ed59e1d1-3b3d0686792mr4179890a91.6.1795060089811;
-        Wed, 18 Nov 2026 19:48:09 -0800 (PST)
-Received: from hj.. ([163.239.22.29])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b405d629ccsm316045a91.7.2026.11.18.19.48.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 19:48:09 -0800 (PST)
-From: Hyunjung Ko <hj351016@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Ritesh Harjani <ritesh.list@gmail.com>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVQ2d2Zt7z2xLG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 15:09:12 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 176F1634B0;
+	Thu, 19 Nov 2026 04:09:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D19A1F000C4;
+	Thu, 19 Nov 2026 04:09:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
+	s=korg; t=1795061349;
+	bh=+fiS5lSjlv1XeLg4ntd5I5AZBbPipyB8eDsuBWBCVq8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=M0OSyXlqUhkkyEHBNY5eUVuKkDS+ZAesuQjT+EVdVkokWbrCJ76NDK4lVlEstKGwX
+	 wmkKoRfyFCQ1VasDwKrsHnbr68uOOeyH57JmAO5FK2LkmRcz+W7VV7To0KYpkWltN8
+	 CiTB83mg6f4UR8HWs2y7RE9gIZ9Vv+V5vxYLBmU4=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	Terry Bowman <terry.bowman@amd.com>,
+	Robert Richter <rrichter@amd.com>,
+	Oliver OHalloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org,
-	Hyunjung Ko <hj351016@gmail.com>
-Subject: [PATCH] powerpc/papr_scm: initialise metadata_size before reading it
-Date: Thu, 19 Nov 2026 12:47:45 +0900
-Message-ID: <20261119034745.1460361-1-hj351016@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	linux-pci@vger.kernel.org,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.10 1522/1848] PCI/AER: Forward RCH downstream port-detected errors to the CXL.mem dev handler
+Date: Wed, 18 Nov 2026 15:59:20 +0100
+Message-ID: <20261118150023.066942464@linuxfoundation.org>
+X-Mailer: git-send-email 2.56.0
+In-Reply-To: <20261118145911.150052362@linuxfoundation.org>
+References: <20261118145911.150052362@linuxfoundation.org>
+User-Agent: quilt/0.69
+X-stable: review
+X-Patchwork-Hint: ignore
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,48 +78,230 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-17.7 required=3.0 tests=BAYES_00,DATE_IN_PAST_12_24,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-papr_scm_probe() reads "ibm,metadata-size" into metadata_size without
-checking the return value, and the property is optional, as the comment
-right above the call says.  of_property_read_u32() only writes the output
-when it can decode a value, so for a device tree without that property
-p->metadata_size is set from an uninitialised stack value.
+5.10-stable review patch.  If anyone has any objections, please let me know.
 
-p->metadata_size is the bound for the metadata get/set commands:
+------------------
 
-	if ((hdr->in_offset + hdr->in_length) > p->metadata_size)
+From: Robert Richter <rrichter@amd.com>
 
-so a garbage value decides which metadata accesses are accepted.
-Initialise it to zero, which makes those commands reject every access
-when the platform does not advertise a metadata area.
+[ Upstream commit 0a867568bb0d203ca3d28634a611a1367d7c892d ]
 
-Signed-off-by: Hyunjung Ko <hj351016@gmail.com>
-Cc: stable@vger.kernel.org
+In Restricted CXL Device (RCD) mode a CXL device is exposed as an
+RCiEP, but CXL downstream and upstream ports are not enumerated and
+not visible in the PCIe hierarchy. [1] Protocol and link errors from
+these non-enumerated ports are signaled as internal AER errors, either
+Uncorrectable Internal Error (UIE) or Corrected Internal Errors (CIE)
+via an RCEC.
+
+Restricted CXL host (RCH) downstream port-detected errors have the
+Requester ID of the RCEC set in the RCEC's AER Error Source ID
+register. A CXL handler must then inspect the error status in various
+CXL registers residing in the dport's component register space (CXL
+RAS capability) or the dport's RCRB (PCIe AER extended
+capability). [2]
+
+Errors showing up in the RCEC's error handler must be handled and
+connected to the CXL subsystem. Implement this by forwarding the error
+to all CXL devices below the RCEC. Since the entire CXL device is
+controlled only using PCIe Configuration Space of device 0, function
+0, only pass it there [3]. The error handling is limited to currently
+supported devices with the Memory Device class code set (CXL Type 3
+Device, PCI_CLASS_MEMORY_CXL, 502h), handle downstream port errors in
+the device's cxl_pci driver. Support for other CXL Device Types
+(e.g. a CXL.cache Device) can be added later.
+
+To handle downstream port errors in addition to errors directed to the
+CXL endpoint device, a handler must also inspect the CXL RAS and PCIe
+AER capabilities of the CXL downstream port the device is connected
+to.
+
+Since CXL downstream port errors are signaled using internal errors,
+the handler requires those errors to be unmasked. This is subject of a
+follow-on patch.
+
+The reason for choosing this implementation is that the AER service
+driver claims the RCEC device, but does not allow it to register a
+custom specific handler to support CXL. Connecting the RCEC hard-wired
+with a CXL handler does not work, as the CXL subsystem might not be
+present all the time. The alternative to add an implementation to the
+portdrv to allow the registration of a custom RCEC error handler isn't
+worth doing it as CXL would be its only user. Instead, just check for
+an CXL RCEC and pass it down to the connected CXL device's error
+handler. With this approach the code can entirely be implemented in
+the PCIe AER driver and is independent of the CXL subsystem. The CXL
+driver only provides the handler.
+
+[1] CXL 3.0 spec: 9.11.8 CXL Devices Attached to an RCH
+[2] CXL 3.0 spec, 12.2.1.1 RCH Downstream Port-detected Errors
+[3] CXL 3.0 spec, 8.1.3 PCIe DVSEC for CXL Devices
+
+Co-developed-by: Terry Bowman <terry.bowman@amd.com>
+Signed-off-by: Terry Bowman <terry.bowman@amd.com>
+Signed-off-by: Robert Richter <rrichter@amd.com>
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Dave Jiang <dave.jiang@intel.com>
+Link: https://lore.kernel.org/r/20231018171713.1883517-18-rrichter@amd.com
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Stable-dep-of: e86ac10110d0 ("PCI/AER: Fix struct pci_dev reference leak in aer_process_err_devices()")
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/papr_scm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/pcie/Kconfig |  9 ++++
+ drivers/pci/pcie/aer.c   | 93 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 100 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index 5c3bf06bb59b..e9895e9b070c 100644
---- a/arch/powerpc/platforms/pseries/papr_scm.c
-+++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -1361,7 +1361,7 @@ static struct notifier_block mce_ue_nb =
- static int papr_scm_probe(struct platform_device *pdev)
+diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
+index 45a2ef702b45b..c38789da37ac6 100644
+--- a/drivers/pci/pcie/Kconfig
++++ b/drivers/pci/pcie/Kconfig
+@@ -45,6 +45,15 @@ config PCIEAER_INJECT
+ 	  gotten from:
+ 	     https://www.kernel.org/pub/linux/utils/pci/aer-inject/
+ 
++config PCIEAER_CXL
++	bool "PCI Express CXL RAS support"
++	default y
++	depends on PCIEAER && CXL_PCI
++	help
++	  Enables CXL error handling.
++
++	  If unsure, say Y.
++
+ #
+ # PCI Express ECRC
+ #
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 688b9e7345380..c46ad6e868f27 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -935,14 +935,97 @@ static bool find_source_device(struct pci_dev *parent,
+ 	return true;
+ }
+ 
++#ifdef CONFIG_PCIEAER_CXL
++
++static bool is_cxl_mem_dev(struct pci_dev *dev)
++{
++	/*
++	 * The capability, status, and control fields in Device 0,
++	 * Function 0 DVSEC control the CXL functionality of the
++	 * entire device (CXL 3.0, 8.1.3).
++	 */
++	if (dev->devfn != PCI_DEVFN(0, 0))
++		return false;
++
++	/*
++	 * CXL Memory Devices must have the 502h class code set (CXL
++	 * 3.0, 8.1.12.1).
++	 */
++	if ((dev->class >> 8) != PCI_CLASS_MEMORY_CXL)
++		return false;
++
++	return true;
++}
++
++static bool cxl_error_is_native(struct pci_dev *dev)
++{
++	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
++
++	return (pcie_ports_native || host->native_aer);
++}
++
++static bool is_internal_error(struct aer_err_info *info)
++{
++	if (info->severity == AER_CORRECTABLE)
++		return info->status & PCI_ERR_COR_INTERNAL;
++
++	return info->status & PCI_ERR_UNC_INTN;
++}
++
++static int cxl_rch_handle_error_iter(struct pci_dev *dev, void *data)
++{
++	struct aer_err_info *info = (struct aer_err_info *)data;
++	const struct pci_error_handlers *err_handler;
++
++	if (!is_cxl_mem_dev(dev) || !cxl_error_is_native(dev))
++		return 0;
++
++	/* protect dev->driver */
++	device_lock(&dev->dev);
++
++	err_handler = dev->driver ? dev->driver->err_handler : NULL;
++	if (!err_handler)
++		goto out;
++
++	if (info->severity == AER_CORRECTABLE) {
++		if (err_handler->cor_error_detected)
++			err_handler->cor_error_detected(dev);
++	} else if (err_handler->error_detected) {
++		if (info->severity == AER_NONFATAL)
++			err_handler->error_detected(dev, pci_channel_io_normal);
++		else if (info->severity == AER_FATAL)
++			err_handler->error_detected(dev, pci_channel_io_frozen);
++	}
++out:
++	device_unlock(&dev->dev);
++	return 0;
++}
++
++static void cxl_rch_handle_error(struct pci_dev *dev, struct aer_err_info *info)
++{
++	/*
++	 * Internal errors of an RCEC indicate an AER error in an
++	 * RCH's downstream port. Check and handle them in the CXL.mem
++	 * device driver.
++	 */
++	if (pci_pcie_type(dev) == PCI_EXP_TYPE_RC_EC &&
++	    is_internal_error(info))
++		pcie_walk_rcec(dev, cxl_rch_handle_error_iter, info);
++}
++
++#else
++static inline void cxl_rch_handle_error(struct pci_dev *dev,
++					struct aer_err_info *info) { }
++#endif
++
+ /**
+- * handle_error_source - handle logging error into an event log
++ * pci_aer_handle_error - handle logging error into an event log
+  * @dev: pointer to pci_dev data structure of error source device
+  * @info: comprehensive error information
+  *
+  * Invoked when an error being detected by Root Port.
+  */
+-static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
++static void pci_aer_handle_error(struct pci_dev *dev, struct aer_err_info *info)
  {
- 	struct device_node *dn = pdev->dev.of_node;
--	u32 drc_index, metadata_size;
-+	u32 drc_index, metadata_size = 0;
- 	u64 blocks, block_size;
- 	struct papr_scm_priv *p;
- 	u8 uuid_raw[UUID_SIZE];
+ 	int aer = dev->aer_cap;
+ 
+@@ -966,6 +1049,12 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
+ 		pcie_do_recovery(dev, pci_channel_io_normal, aer_root_reset);
+ 	else if (info->severity == AER_FATAL)
+ 		pcie_do_recovery(dev, pci_channel_io_frozen, aer_root_reset);
++}
++
++static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
++{
++	cxl_rch_handle_error(dev, info);
++	pci_aer_handle_error(dev, info);
+ 	pci_dev_put(dev);
+ }
+ 
 -- 
-2.51.0
+2.53.0
+
+
 
 
