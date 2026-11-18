@@ -1,87 +1,72 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69D16606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 01:46:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A7CD9606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 02:30:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UjFWg8DB
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZMch4Q+4
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTkvR2LPwz2yPR;
-	Wed, 18 Nov 2026 12:45:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794966339;
-	cv=none; b=f1mpaUpnS8QBGGOgOJcbtBuP43RLJ4wExgWW7C0uI3mmKsrH8qkX9U6r/L/1R3UZkNeMmf5csFHGHKggE6iuNimx14nkC1pRd3NmX2K2yZ86A9oP5SX1FnaKL+RvhyJZU08+QacNvDDlOB5fgeYHQC0OUgpvhqklsDQsJNwJp8hL9DOZe23zHUpfF4FjCUxZG7ZK0OYBiO3lSy5en7SbMY1W3f3r5QPexPTeJbSjuKyLjqk6I9IJaVAm6qIdlxcr6KHZPvM1547tezN7kX2e0p37M4uoSLg5uX322QccNbKkz4lOuO378vAGAS7JOoOKNhBWwJYCj07g65aT/I9kIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTltm2kjNz2xNC;
+	Wed, 18 Nov 2026 13:30:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794969008;
+	cv=none; b=A982VjlV1NTctnqc8rQwYNqewx5znVn9B44/C3fpht+Msdhl/r8s76E52gx2BXYURp5/balg7K3e79yVSWOk4em6sLHuXf4w7tW+37arHgWgz6J2E+rwkoMWlbGiPwh1uYr8vgsa7N7/5Ba6l1iPHFtjfcs0aUhZ1j/vBtcWfSiwjNaIf3u8L++tE9yhmSO3yMxPC8lXYc+g//lzIXuz0YT1nOzeaaLLIDCXtvlPa6yDnz2ck1vD4eAYhrwa2v98VPmCrn5jkTP5dNjnaY8sPgsagMRJV9TgBLQgRBlHLKZ8E7Bgd2CWCBrwLyDuP9P5m6cfnp2gU5MK1eq2LVG2Vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794966339; c=relaxed/relaxed;
-	bh=JFZOKiemVFn+ZpLaCoT/8XChxYhHMw6NmRWsjDKhJq4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XP8RLD0pUbX1gKh92vxqSzxk+KF/6HYAmKQFhxXgtuUWjUCY6QvjUBkZPULisOV5BqdyOeHA5QwVkThbaYg0xCCIdN/NxB7VrqeRXjbxK7PBfcOrZ++skItDoI542H+1syvQcejiroHLF/vjFrBonvojx9Tvfz/wI3Q4UvGm/YLaXLDRrY8QJMpWlX5igIm7jYB18nlNqfA1jSeFmhRgQea/qSawyd6vMdKgOmrOYf2RSHnEDK5foW2qqiLWBIl/q0WlBsCpzGz2gnj9+LGV2o1gRPt7xq2va/vOTLxc1sDG3ChTvlIHnumRGWa16fcaTqsjEZdZ6t5dMupo6Tf0RA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UjFWg8DB; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1794969008; c=relaxed/relaxed;
+	bh=12uYNWixrNxChlP2U/vVzYNoiX0h+AZW7KfjzyKi3nk=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=WNVkX8Kxp0g5gzrFL0HASrlvcAuPt0VYwEnpBK9X+0U9n7ZkAnteJdqq2PyJdM3mkNJV4V78PY7XxWMas1iGe/hWVAtUdHCnRu5B2rLcXf/pNhsAfft9I6vg9Vn+isTQrtkUiRi9Th8qtxvgGqGQYkhMLzRQotqk39k3BmwZEBh42hOQi1Hx54QKXMxJ6hD4xkYV7swY9vGDP5BkKdFqVP43dVp2ltIr9dVSb5b2I09M/X6bQiJQ2EpnAZc2uC2dsdOgzEjp9mMBzUyFoiEJjHzQu1B81/UF3aEYB2Yzk5piI9vaeomJk5jwwCj66fVdj+jXUUkP/Gb3saI/dj5AAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZMch4Q+4; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UjFWg8DB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ZMch4Q+4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTkvQ3Vrnz2yLg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 12:45:38 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHMwof62444013;
-	Wed, 18 Nov 2026 01:45:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=JFZOKi
-	emVFn+ZpLaCoT/8XChxYhHMw6NmRWsjDKhJq4=; b=UjFWg8DBNtOC+K1kTyIgW/
-	sIGcZ+EJnU3B3KHPnkgse8zApaknk6NW+8tdKJxrHXcEBmkXYOsiM6yURsJiqyhy
-	VNJEIjF0nYEgIBeBGjc7B1IpiTHhgk6H2fbvu4qweclMj3BlMnBJdFIBjOhd1tcc
-	xH5OEFqDi6pZcbs5WIJnufa+B1TcVTKoIlpzNQvqnHDgzKPlea8xcoBjign3jpAL
-	JWGhHgqWMny/BjIdl281aNlmtjFf2Eidao0rspmtqRqGYjWpUyooHRzCxOyFwCzJ
-	yRc5Z7/mx4zAbQYxLaywzytw4ryxfTYci0fDRaePlJRmT0x19BOHWN01FqNHJnMA
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105vrcrx-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 01:45:26 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AHMnwdH030777;
-	Wed, 18 Nov 2026 01:45:25 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j067ne2pc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 01:45:25 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AI1jMnT47907174
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Nov 2026 01:45:22 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1C80520040;
-	Wed, 18 Nov 2026 01:45:22 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7A1C92004B;
-	Wed, 18 Nov 2026 01:45:18 +0000 (GMT)
-Received: from Linuxdev.ibmuc.com (unknown [9.43.63.250])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Nov 2026 01:45:18 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        "Oliver O'Halloran" <oohall@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, Jiale Yao <yaojiale02@163.com>
-Cc: stable@vger.kernel.org
-Subject: Re: [PATCH] powerpc/eeh: NUL-terminate force recovery input
-Date: Wed, 18 Nov 2026 07:15:17 +0530
-Message-ID: <179496619893.633156.18174588142349778639.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261029052948.2525048-1-yaojiale02@163.com>
-References: <20261029052948.2525048-1-yaojiale02@163.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTltl3jkYz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 13:30:07 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id A173B61F03;
+	Wed, 18 Nov 2026 02:30:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47CF11F000C4;
+	Wed, 18 Nov 2026 02:30:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1794969004;
+	bh=12uYNWixrNxChlP2U/vVzYNoiX0h+AZW7KfjzyKi3nk=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=ZMch4Q+4in3qHAn9+Bjcqf4S35pIlJLPAz0/D2krvkydHNha0cRnPx33POjMmhH50
+	 YCmaRwfT/s4BhCABUFt2Dklex4WXK8jnR3k7NXVUuPWuJCB2caFqsgtKcl7Pd0s7VM
+	 722aFG65H15JienM/np58mjfpIVJmjBRnfYnk8gJen8Csk1+LaS5O2a1NihmFYI71h
+	 jr7WJvfMAb5OHL7bYmlDjjJM3CS48Xm/VJSujVgjdU1L3B7aNZ336rR2q0Ny+LQvvr
+	 TKHHOgorG56Tm1smKY/AwgpidOrEkLwtJSn0qcKXRdHHq/Ex3egqPlNcV359ZYo4Ab
+	 y+eRaQpT2T9Yg==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3A397392B1FF;
+	Wed, 18 Nov 2026 02:30:04 +0000 (UTC)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.4-2 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <6aec7d43-7c12-413e-a73a-3275a1ac79ad@linux.ibm.com>
+References: <6aec7d43-7c12-413e-a73a-3275a1ac79ad@linux.ibm.com>
+X-PR-Tracked-List-Id: <linuxppc-dev.lists.ozlabs.org>
+X-PR-Tracked-Message-Id: <6aec7d43-7c12-413e-a73a-3275a1ac79ad@linux.ibm.com>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.4-2
+X-PR-Tracked-Commit-Id: 9500416c8aa7c271b85be6a0d5856da62b60223a
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 7ccb044c27720d48175577080b851f047ddcfd1c
+Message-Id: <179496900297.1415040.8395913757600607238.pr-tracker-bot@kernel.org>
+Date: Wed, 18 Nov 2026 02:30:02 +0000
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, amachhiw@linux.ibm.com, brads@mainlining.org, christophe.leroy@csgroup.eu, gautam@linux.ibm.com, info@xenosoft.de, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, luiz.capitulino@linux.dev, maddy@linux.ibm.com, mdshahid03@gmail.com, mpe@ellerman.id.au, mpe@kernel.org, nathan@kernel.org, naveen@kernel.org, npiggin@gmail.com, sashal@kernel.org, yaojiale02@163.com, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,58 +79,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: XA71WWIYaHG9bzN6-8FSwGfrw5CvZaBD
-X-Authority-Analysis: v=2.4 cv=Z8x5j3RA c=1 sm=1 tr=0 ts=6afd0336 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8
- a=g1nSsVvyxN4glAn0PLQA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: FgxudGiZkK_28LRDtuavpf7Df0pJ2gc6
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDAwNSBTYWx0ZWRfX3Q6on4+nHy5R
- kQRg4RKlnxRewOBCIxourj5zUg7dcJEDlwn1WaT9HkbhOxVqvYL/CJsJ8OwI6rJaozhvM9Y9IaG
- evhGsCDgLPtBrW0x1XftDMjHQQTSAi8=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDAwNSBTYWx0ZWRfX8qkqBRqc3ZWi
- pis4+cVtmJULHZIB/qYdjC+EGOTIgo9Gny/ImuKED59X17wquI/BO/ew4OeWydKCJrt7U4zGp/Z
- Z86DsiV5Xu4Ls0CiW5/wW7HUSWVklrXUN+8JA5geToDWJbzso18gVHCRDBqFpzmBnUCll/sxTcp
- EVm0P+uYxgNz67vLgJDqXm6Xu5dimzVCO5TjxZi1hvIRgk0iiEaKNQSh+7bu4+32P7zKGxacqD9
- 5+Ymr8XQMLhG9jWwgoKtQ1bS4nOGPpNx93ezGKFBovFB/lBS8Prz+NfIMwpqMCRqZCqAWZaUUGe
- kh9kPP+DY4NJwKmOat/G+McA7glGUWqezGRLa0TlvxIVie16AJ1diNw430CrAwMHFSLz/zs4Vg5
- HCpMGz81DNvAXxOTvwJDIKWMWNjBx5+FVUEvWsDqYMvdfXc+ZJilhvVjVyVndOPx0Lt9w9/WxTz
- DcT56GzEDfw4VgCZ6eQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-17_05,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0 malwarescore=0
- adultscore=0 bulkscore=0 clxscore=1015 impostorscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180005
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, 29 Oct 2026 13:29:48 +0800, Jiale Yao wrote:
-> eeh_force_recover_write() can fill its entire stack buffer from userspace
-> and then pass the unterminated data to strncmp() and sscanf(). This can
-> make the string helpers read beyond the buffer.
-> 
-> Reserve the last byte and initialize the buffer so every accepted input is
-> NUL-terminated. Propagate copy errors before parsing as well.
-> 
-> [...]
+The pull request you sent on Wed, 18 Nov 2026 07:09:33 +0530:
 
-Applied to powerpc/fixes.
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.4-2
 
-[1/1] powerpc/eeh: NUL-terminate force recovery input
-      https://git.kernel.org/powerpc/c/f294ebd827e7a2b831b1eef4aaf437f07b2c235e
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/7ccb044c27720d48175577080b851f047ddcfd1c
 
-cheers
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
 
