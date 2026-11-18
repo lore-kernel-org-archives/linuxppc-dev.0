@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AD015606A32A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 18:54:26 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69D1B60A260A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 18:57:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CAVBtdBK
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LuK7hCqB
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jV9kT2wtyz2xMt;
-	Thu, 19 Nov 2026 05:54:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jV9pJ0rvHz2xdX;
+	Thu, 19 Nov 2026 05:57:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795028065;
-	cv=none; b=Xzz5+V9Kd/64nEfX/J0OaoN+zGjQKiQXIHro9MXcxa4XGK32OS19bqls3DWsXZnraP+PEXRU1NNNXRvayApYJss2YT+g38bKqlatYblYmJmsytD8ht9X7vkh0bOosusWzR+SwPEOqoz8GzjAYa7JjpYHJJs83P9nOD9EjOwZ6FTql5cPFwvujiFqWsbXcTN3Ugub2nCWpzQGQZ58RXvE7OqPpLmhYElaTHs9I2Ga0b0VwXP+aZCFfVwABByqDB7WIFoLm4au6iAFMVX1jQrQemFv9cTrBpVmDnQiMOFJJ53XtgZZ94/hcHUQTPlwePgYEAg8iP4Svm20cudKlPu3Tg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795028264;
+	cv=none; b=KI4b5Mjk3bTZQ3XXuO2dKy3ierBiRIU4Y0ihgzWahZem2Z4/IJ152f9X+xB6/TLnZL0ARNDNHideCYVhg16myrUGjQIBDpiuPXQksJN5p0Zs2Q1zBMeJgA+P76SdWPMtSIlbBFyo8Qd73FqffDotQR1yOd+WBqBcVF0b1OylIMrfICCC69TnHkK1Ssa9WISEGQe7jFRKIL56w1I1ErIk+GK4ndi64o5KxpRNUtQl6ikSMpZi/26oYZ0pDN3xVgAatx5YERiRkVaujzFecovvfmPHVPc0ghSJ5pm5MKgO8r7YAmr74MKWG3fVBrNxC30dQflKEnTthfhlFWKCj22czA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795028065; c=relaxed/relaxed;
-	bh=TZsTikxfxLhewEbP2xR/h7zJwb5pgHnbb8uIv7AdPeo=;
+	t=1795028264; c=relaxed/relaxed;
+	bh=wtLQxfMRtrekLd+atuTLxz0xh/VLPsXiZh9Wc00ROy0=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=L8y3jTYsxp4XpSTJqv8k16Eg+lE877xU43EBaUwDyD3yl38HQRzbUYDPWbAhH9rHqm1axhoYyv0/W3CBWVU7ssgmGsUfpESqb5fRSLarrqjAn3G9p6fknX5vr7P8fol1jhLqVCK9ED94qxSdw7exoI06YJfXy1/q49NGDrzDO9K5bLmlNc1+AKbFYr4AaoGdk6T+YDXt7+KeUNmp50bKW4vAGUFB7c4PBXl95m0h9JGYFc0yoKQqOq2UR6nZL1LC7RN90Y76Ahn6YHqRJaA9C1AslByW9DTxaauPjcbvIS/a7UUymtPMo+t3fd8ADcH3jxlrBwqmtRKDgJPSFNmcKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CAVBtdBK; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=KQrZvTwepNOyenaFBimVj5FtLg7HQKCa9a9qnZJzikSHgrBpQ/nMTVCkFqWk+3RI40FOJ0VMzmdhomnTN8yUCaPUIwq02XAo4FHkUQrms4SR334iGySTYC4D2US4XvTAljuIxCwLPS4dWKjty0DHTsNyZ2lLbl8J9EIJVXyJ2d5haAYAOku3lGuQVaISTVRONOnSc2iTBu+uyHo9V+kDRQnKC8WipBCauOl2htx4ZEISHJVJ2yU59C/kICCoSafzflTcr+eRwwt9Vg0VBh3iqv+27K8T9dBjOzQAHc1hc+HjPgTJX4VfZaDu3oDqV7z4YUkK/PBrbaLSz9MaH+seuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LuK7hCqB; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CAVBtdBK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=LuK7hCqB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV9kS1hRxz2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 05:54:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV9pH28qtz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 05:57:43 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 391B162363;
-	Wed, 18 Nov 2026 18:54:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DD461F000C4;
-	Wed, 18 Nov 2026 18:54:12 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 359F963825;
+	Wed, 18 Nov 2026 18:57:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A66A11F000C5;
+	Wed, 18 Nov 2026 18:57:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795028060;
-	bh=TZsTikxfxLhewEbP2xR/h7zJwb5pgHnbb8uIv7AdPeo=;
+	s=k20260515; t=1795028260;
+	bh=wtLQxfMRtrekLd+atuTLxz0xh/VLPsXiZh9Wc00ROy0=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=CAVBtdBKiBua6AQR1YohOwJUX4aO/2Q0tv9TEF+7XlxUgb8/hTMAcTjU1BRo9mNhM
-	 vXlXljYJ68uR0nta3BcJzXxhizkEaFpau8HtwwTpAMB9EpYrh7caZXxus/c58QuuJY
-	 OxQVkJTcj1AU9jmeUw5z+Xmix19MT+e/a7VRcvEgtTgCWDxrCx5CLRGY2oJVGilPrG
-	 aIR6R36xz2meISdE12Fj3Lz8mjYuedoWR31zdi66bRgzItaXpNzih99tvTnHEOYx4z
-	 3XvTuBvys9gsXyDPTo2lbtBEFr+VVVG264RmidGpNQZXHyWiy/OI5CEwB/o4aShiAP
-	 GkmDQRva+xv1A==
-Date: Wed, 18 Nov 2026 18:54:06 +0000
+	b=LuK7hCqBsWO5Cipeg3+rarR8Ul56thvo1icX282u2Yrw9tPr1sW27gfa7QmNrUKhd
+	 VX7RACiX99M+VjFrFyVC09R7g/0PZak5M2u1SiUExVC8tfQEdxZfA7+/pcB0hbwDDk
+	 QRD+m5Zx6BqDtSscym6xKDP9SaYQrFtvLGE/GWIIm7lIIdVf7J7W7AP+raXqGndq0c
+	 XVbi2vVWqNVSs5KQhfa7Zf8KKvyuk6IQbdpi76SAX2L/OznyEhu8qjEu4xPLkcp5ws
+	 94lXHDqPwhp04HXyGjmM6u27nyAcMKX/GnhkRiABcQhyDBrWxixSt19N8gKqfFXhEf
+	 N0ch+X6AzXtig==
+Date: Wed, 18 Nov 2026 18:57:21 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Pierre Gondois <pierre.gondois@arm.com>
 Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
@@ -58,21 +58,20 @@ Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
  <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, Bjorn
  Helgaas <bhelgaas@google.com>, Maciej Wieczor-Retman
  <maciej.wieczor-retman@intel.com>, Pawel Chmielewski
- <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, Qiuxu
- Zhuo <qiuxu.zhuo@intel.com>, Radu Rendec <radu@rendec.net>, Avadhut Naik
- <avadhut.naik@amd.com>, Dave Jiang <dave.jiang@intel.com>, "Fabio M. De
- Francesco" <fabio.m.de.francesco@linux.intel.com>, Kai-Heng Feng
- <kaihengf@nvidia.com>, Breno Leitao <leitao@debian.org>, Dan Williams
+ <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>,
+ Avadhut Naik <avadhut.naik@amd.com>, Dave Jiang <dave.jiang@intel.com>,
+ "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>, Kai-Heng
+ Feng <kaihengf@nvidia.com>, Breno Leitao <leitao@debian.org>, Dan Williams
  <djbw@kernel.org>, Terry Bowman <terry.bowman@amd.com>,
  linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  acpica-devel@lists.linux.dev
-Subject: Re: [PATCH v1 01/19] x86/APEI: Extract common CPER memory error
- reporting helper
-Message-ID: <20261118185406.21700e81@jic23-hlaptop>
-In-Reply-To: <20261117111444.4185512-2-pierre.gondois@arm.com>
+Subject: Re: [PATCH v1 02/19] x86/APEI: Report Memory Error Section 2
+ through MCE
+Message-ID: <20261118185721.11639b38@jic23-hlaptop>
+In-Reply-To: <20261117111444.4185512-3-pierre.gondois@arm.com>
 References: <20261117111444.4185512-1-pierre.gondois@arm.com>
-	<20261117111444.4185512-2-pierre.gondois@arm.com>
+	<20261117111444.4185512-3-pierre.gondois@arm.com>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -97,93 +96,51 @@ X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 17 Nov 2026 12:10:11 +0100
+On Tue, 17 Nov 2026 12:10:12 +0100
 Pierre Gondois <pierre.gondois@arm.com> wrote:
 
-> Prepare for reporting CPER Memory Error Section 2 records through MCE
-> by extracting apei_mce_report_mem_error_common().
+> Add support for CPER Memory Error Section 2 through MCE, allowing
+> to emit an mce_record trace event. The implementation follows
+> the existing CPER Memory Error Section (1) implementation.
 > 
-> No functional change.
-> 
-> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-One curious question + trivial comment inline.
+> Fix the mismatch between the parameter definition/declaration
+> of apei_mce_report_mem_error().
 
-Otherwise, this is a simple refactor and seems clean to me.
+Do that separately.  Trivial but shouldn't be buried in a patch
+doing anything else.
+
+Otherwise seems fine to me but I'll defer to x86 folk on whether
+this is the approach they prefer.
+
+With the trivial change split out, for both of them.
 Reviewed-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
 
-> ---
->  arch/x86/kernel/cpu/mce/apei.c | 31 +++++++++++++++++--------------
->  1 file changed, 17 insertions(+), 14 deletions(-)
 > 
-> diff --git a/arch/x86/kernel/cpu/mce/apei.c b/arch/x86/kernel/cpu/mce/apei.c
-> index 0a89947e47bc8..b993ac78a3b36 100644
-> --- a/arch/x86/kernel/cpu/mce/apei.c
-> +++ b/arch/x86/kernel/cpu/mce/apei.c
-> @@ -26,24 +26,15 @@
+> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+
+> diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
+> index 07306af5a54b9..703f3b7f700a6 100644
+> --- a/drivers/acpi/apei/ghes.c
+> +++ b/drivers/acpi/apei/ghes.c
+> @@ -1030,6 +1030,7 @@ static void ghes_do_proc(struct ghes *ghes,
+>  			}
 >  
->  #include "internal.h"
+>  			atomic_notifier_call_chain(&ghes_report_mem2_chain, sev, mem_err);
+> +			arch_apei_report_mem_error2(sev, mem_err);
+>  			queued |= ghes_handle_memory_failure2(gdata, sev, sync);
+>  		} else if (guid_equal(sec_type, &CPER_SEC_PCIE)) {
+>  			ghes_handle_aer(gdata);
+> diff --git a/include/acpi/apei.h b/include/acpi/apei.h
+> index dc60f7db5524f..a92174793d9c2 100644
+> --- a/include/acpi/apei.h
+> +++ b/include/acpi/apei.h
+> @@ -52,6 +52,7 @@ int erst_clear(u64 record_id);
 >  
-> -void apei_mce_report_mem_error(int severity, struct cper_sec_mem_err *mem_err)
-> +static void apei_mce_report_mem_error_common(int severity, u64 physical_addr,
-> +					     u64 physical_addr_mask)
->  {
->  	struct mce_hw_err err;
->  	struct mce *m;
->  	int lsb;
+>  int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data);
+>  void arch_apei_report_mem_error(int sev, struct cper_sec_mem_err *mem_err);
+> +void arch_apei_report_mem_error2(int sev, struct cper_sec_mem_err2 *mem_err);
 >  
-> -	if (!(mem_err->validation_bits & CPER_MEM_VALID_PA))
-> -		return;
-> -
-> -	/*
-> -	 * Even if the ->validation_bits are set for address mask,
-> -	 * to be extra safe, check and reject an error radius '0',
-> -	 * and fall back to the default page size.
-> -	 */
-> -	if (mem_err->validation_bits & CPER_MEM_VALID_PA_MASK)
-> -		lsb = find_first_bit((void *)&mem_err->physical_addr_mask, PAGE_SHIFT);
-> -	else
-> -		lsb = PAGE_SHIFT;
-> +	/* Missing or zero masks default to page granularity. */
-> +	lsb = find_first_bit((void *)&physical_addr_mask, PAGE_SHIFT);
-
-Silly question.  What stops it being bigger than a page?  I appreciate you
-aren't changing what is already here but it made me curious.  It's 8 bytes
-so limiting it to page size seems odd.
-
-That larger usecase came up last year for how to handle error injection
-into a VM that was running smaller pages than the host.
-
-I guess on x86 it simply isn't ever bigger than one page?
-
-
->  
->  	mce_prep_record(&err);
->  	m = &err.m;
-> @@ -60,9 +51,21 @@ void apei_mce_report_mem_error(int severity, struct cper_sec_mem_err *mem_err)
->  		m->tsc = rdtsc();
->  	}
->  
-> -	m->addr = mem_err->physical_addr;
-> +	m->addr = physical_addr;
->  	mce_log(&err);
->  }
-> +
-> +void apei_mce_report_mem_error(int severity, struct cper_sec_mem_err *mem_err)
-> +{
-> +	u64 mask = 0;
-> +
-> +	if (!(mem_err->validation_bits & CPER_MEM_VALID_PA))
-> +		return;
-
-I'd add a blank line here given that return is a mite hard to spot.
-
-> +	if (mem_err->validation_bits & CPER_MEM_VALID_PA_MASK)
-> +		mask = mem_err->physical_addr_mask;
-> +
-> +	apei_mce_report_mem_error_common(severity, mem_err->physical_addr, mask);
-> +}
->  EXPORT_SYMBOL_GPL(apei_mce_report_mem_error);
->  
->  int apei_smca_report_x86_error(struct cper_ia_proc_ctx *ctx_info, u64 lapic_id)
+>  #endif
+>  #endif
 
 
