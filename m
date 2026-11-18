@@ -2,73 +2,107 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CD79C606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 13:20:52 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 245DE606A320
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 13:34:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ro60GQ2d
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JDx/rGU0;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TEdd3r0n;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JDx/rGU0;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TEdd3r0n
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jV2Kb0FzPz2xSl;
-	Thu, 19 Nov 2026 00:20:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795008050;
-	cv=none; b=bVh7IjP6Dip2jtGtiBL6qTT6D+ozovqkmCgxhbzPmGRypX/21z8PnBTLkAatNA4kjXNp26cyyHoIR/+XB0FzDJWxc65AR3rbuHdgWuPIr4qLQnY5NTKyyFBqQTlhmohWk9GhpwaobafBDrBBn/dPNyw2ScmuqpCBI+0FTqx1+T4eOchE/UVl1T2X6/j2re0/c2+gnCFjhl6GMfF5llRVEUy4r0AoPVczr14ldFVxjRCko9bEUJz/fWuxn+a4QPvyVanTbAliNGB9vhRTgWH0KVcwgO0ElBvCYdxsAaQV+vefhX4vkkOVu7iNLe0gPOa/MD1AVzpi05jqaIuSE7y/YA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jV2cv2fFBz2xSl;
+	Thu, 19 Nov 2026 00:34:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795008847;
+	cv=none; b=JSci1lWAhUP9Cnt5rH7+sWK3yWtHOoY/+wG9CTsktvO/JxMipdLQ2sr8jgaR5WlQABOA/t91A5t7KybrQgn8u9S+hHQjSW1HfdytOqAD282ZborEJIMovaLPmAqUPpPdUSqrtt27nHiZyV1Gq3tHuVgj30iG7OctsaBdAN1Cpdn7+vf5ONtaB/2V3SF5m6K+4URnmaI0pNUZlHVkgu2EnudUGXcY8FsXGhgz2sNHsqELXPiaiGpPudUNyWXprqtesJGsEhwyoTZ7YVNXvbV178K/XoPu6U36MIUtb7UZqdLRziW5aXpzM5GiyKJBHLySNHVxZZNOOHY+MKQSEtGcLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795008050; c=relaxed/relaxed;
-	bh=0VXIPHRIgn0LdLoXwF8Z7TRdBHgp7K6Mgrfw5or/XCw=;
-	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
-	 References:From:In-Reply-To; b=WjIkjSmMaDAgN8xYRTGmtDE8xozACknAkvEVBPgOge/WfGG1AFKf5/LffNu0zt6zbr8tQtwfIWUNJ+0KM99yJ9X1tqpRvt3rGfGfknzj1T2DiJnpTFkOA7Vqv8NRGZg4jc9GzOfX+V4Tv1eBey5TQmf1vMiB2PzDUNhtrdagdReXZ2PZJpTLb9ZhPaJduLgpkuvQihBxl6oYpK/JhQejQ3Gv51L8BS1Aq30f+CrzloFk6ae5dMlUR0hPXesYZNITDGSPC3ul6RAVvligwu3UPx9Inxsudo2UfsJbGU2o1PlK/rzcl0fDm8OSl7m10dBHjtOl6o+kRymCu/pQLJ3WHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ro60GQ2d; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795008847; c=relaxed/relaxed;
+	bh=x3kW6IHZ/0RLy2LARDOC9HiEbdlANu6Ii4B8shzCZQU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iPiDN7wEBcCm4/Y7wNfi6d6b3or+CFVAuTSCX0id0GbNcZwUYv5/uW3srZJ3AmJjs8cMQbNts7h3PmPjSWuSF9FZ/PlP5UGouCRqdGzifQ0viIscmAiUI8Gct0XL5eKQXQQZbgVV2OQC29Z0hpGZmSdC9g0W8uxSK+fVuwYJDNc6bpj/kfRQJgdI209I6ol2FNwhpGKpLlDU85LISCSzZc667Igz9aHLBFD+1xVuil7H4+GegW+WZj+Yh0OIBojK8w4OmRLeRiorUX5pFcNxYdEzg+yaohVhlTW/tt0/7HRvDjG7aDSXQhmo1FARRTMp4SVCPhH/N8xMBrPSCSd3Rg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JDx/rGU0; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TEdd3r0n; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JDx/rGU0; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TEdd3r0n; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ro60GQ2d;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JDx/rGU0;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TEdd3r0n;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JDx/rGU0;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TEdd3r0n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tshah@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:2; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2a07:de40:b251:101:10:150:64:2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV2KY5Zr4z2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 00:20:49 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AIBQ76I968815;
-	Wed, 18 Nov 2026 13:20:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=0VXIPHRIgn0LdLoXwF8Z7TRdBHgp7K
-	6Mgrfw5or/XCw=; b=Ro60GQ2dAX7kUYGRbS8k4K1mfAKRz94pPyukzexR1IC8Kl
-	NGlHKJfpwoTH8crKZgNINQve5iOeKwuaXntgrJJyemLHtTV4Mvhft3Zl+zep2wdE
-	Ur0GDztemmH2cjz+UBm4e1RH7p95qc+A8yJRDa0loobOV680QwlhAnbs6pjXtNTQ
-	mwCKKtSukZbew0YABGHUNvfZe2jVJpokPzJL3STckbjE1qv99tqYgrStZauoAUGQ
-	LgG4CGQ7MD67DGULpNsm5sF/3aHPjZU9KFJOEcuWRN1/ntmu9WMcEhHSlicQuTdi
-	CORGwk8ajcg6s5lSc2Xr+L86P5gbpN42UjotJRmQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105t2jp6-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 13:20:31 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AIBK2hm3324600;
-	Wed, 18 Nov 2026 13:20:30 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4hyxwt8hn8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Nov 2026 13:20:30 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AIDKTPo59638158
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Nov 2026 13:20:29 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D70A85805D;
-	Wed, 18 Nov 2026 13:20:28 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C959258052;
-	Wed, 18 Nov 2026 13:20:24 +0000 (GMT)
-Received: from [9.39.20.95] (unknown [9.39.20.95])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Nov 2026 13:20:24 +0000 (GMT)
-Content-Type: multipart/alternative;
- boundary="------------48QNBQi89u1Ke73kOiW8LZXK"
-Message-ID: <53a68daf-e694-4c88-b99e-fb8a4c17c1a7@linux.ibm.com>
-Date: Wed, 18 Nov 2026 18:50:22 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV2cs6rMSz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 00:34:05 +1100 (AEDT)
+Received: from kunlun.suse.cz (unknown [IPv6:2a07:de40:b306:2000::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 2D37C1F76B;
+	Wed, 18 Nov 2026 13:33:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1795008837; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x3kW6IHZ/0RLy2LARDOC9HiEbdlANu6Ii4B8shzCZQU=;
+	b=JDx/rGU0HCc6Ed7gNE8IdTlpVzFAkXIp6dQOuhaLkI4aMqIeZLdi9NuqD6TWvANeQ2yCKK
+	B8dN8XDfVBaOzO/CRhgJtQwBigE5LoTdDj+YGomQSUFoJ2iqej0avIAAIiMIPndkaqXi57
+	cWNqwc0h27kfVcYcK/V1MDi2E7amH4U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1795008837;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x3kW6IHZ/0RLy2LARDOC9HiEbdlANu6Ii4B8shzCZQU=;
+	b=TEdd3r0nHiekiQs2TDHnWWl2Ub5x6e0ph8fykDPRx0Bc83uNWG+VbMJmhVD/RluGPR4cOH
+	8xCFIYgDT7aEtHAg==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="JDx/rGU0";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=TEdd3r0n
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1795008837; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x3kW6IHZ/0RLy2LARDOC9HiEbdlANu6Ii4B8shzCZQU=;
+	b=JDx/rGU0HCc6Ed7gNE8IdTlpVzFAkXIp6dQOuhaLkI4aMqIeZLdi9NuqD6TWvANeQ2yCKK
+	B8dN8XDfVBaOzO/CRhgJtQwBigE5LoTdDj+YGomQSUFoJ2iqej0avIAAIiMIPndkaqXi57
+	cWNqwc0h27kfVcYcK/V1MDi2E7amH4U=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1795008837;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=x3kW6IHZ/0RLy2LARDOC9HiEbdlANu6Ii4B8shzCZQU=;
+	b=TEdd3r0nHiekiQs2TDHnWWl2Ub5x6e0ph8fykDPRx0Bc83uNWG+VbMJmhVD/RluGPR4cOH
+	8xCFIYgDT7aEtHAg==
+Date: Wed, 18 Nov 2026 14:33:56 +0100
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Renzo Davoli <renzo@cs.unibo.it>
+Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+	Kees Cook <kees@kernel.org>, Andy Lutomirski <luto@amacapital.net>,
+	Will Drewry <wad@chromium.org>, Thomas Gleixner <tglx@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Shuah Khan <shuah@kernel.org>, "Dmitry V . Levin" <ldv@strace.io>,
+	Alexey Gladkov <legion@kernel.org>,
+	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Davide Berardi <berardi.dav@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	linux-kselftest@vger.kernel.org, strace-devel@lists.strace.io
+Subject: Re: [PATCH v11 0/3] PTRACE_SET_SYSCALL_INFO: add support for seccomp
+ syscall skipping
+Message-ID: <av2pRG1JT9te8IiM@kunlun.suse.cz>
+References: <20261114181923.370930-1-renzo@cs.unibo.it>
+ <av2PKIf8YsEPro8O@kunlun.suse.cz>
+ <av2i9kbZyMRJE9D6@cs.unibo.it>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,302 +116,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 7/8] powerpc/perf: Use SIAR for sample addresses on
- 32-bit
-To: Matt Turner <mattst88@gmail.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20261117-ppc32-perf-v2-0-2072e9b90009@gmail.com>
- <20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com>
-Content-Language: en-US
-From: Tanushree Shah <tshah@linux.ibm.com>
-In-Reply-To: <20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=IouL47/g c=1 sm=1 tr=0 ts=6afda61f cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=r77TgQKjGQsHNAKrUKIA:9 a=pGLkceISAAAA:8
- a=mwyl9ErVLGDQFkc4_RcA:9 a=QEXdDO2ut3YA:10 a=c3kXXwlcQeCTfzCFSucA:9
- a=nUcT3lNexb1k7Wf8:21 a=_W_S_7VecoQA:10 a=lqcHg5cX4UMA:10
-X-Proofpoint-ORIG-GUID: YF2nCAfTTn_9bhA_VunlH8kL2gZqfZbj
-X-Proofpoint-GUID: WkJIEpdHZB0weZQGSaXwrG-WVqhqPOHY
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA1MSBTYWx0ZWRfXw9cgXUxMG9yu
- HGztP4LkAWlRKaH4QF1sYouymd6p0twRDWiB07fmVVHDcaPJleoOxLsYKSAf2WZvjQesMPaIKqQ
- ceET7v3n9FLVYB7f7AqiJjQ95u7fpn/0m/07zUpLeZQa6a2yNOrAWBnVyMfI3b+KupkOOHnhQoB
- dHiMUrfIHfha6fwSbGnZpEq/fCvMFDbk5Y6m2uzvlygERGwca5BI33Tg4rnMEs64mlGQUieyQp6
- QyW3mzYkb79yS+6QbN/Ut0PVlAdgoxaTidW6MSkBITk0O4eEx6OkwtT50KTqCljBIuc4RLBnqZ0
- AxowxwvFD0CHEqn6twcH1DG2zz3TGVzCM7Ht+JXEoaUm8Bw3rYjYZ72W44R51aruC16ipJTQ1xa
- vL7FkE3PEq11S27Fi2YjTpkSBnWpAd1IPaGpZD7ZW0I1Dy7zlbgEtkUrJWINtHdnl6Rli3Qg9Bw
- JXaaZ0APV/Ng1C333EQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA1MSBTYWx0ZWRfX0ExwmnJoHvgC
- /EHSOP41uriItl1nMUSWw+qDWg9rufGSLPIDwsbtHvZ/36CnAnHECx1WLoR3VBUCbuZ/wkHSPrs
- x8QbUhsmrCmMlG9KhqROkLR3xVQ+y6w=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-18_03,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 adultscore=0 priorityscore=1501
- lowpriorityscore=0 suspectscore=0 phishscore=0 clxscore=1015 malwarescore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611180051
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <av2i9kbZyMRJE9D6@cs.unibo.it>
+X-Spamd-Result: default: False [-6.00 / 50.00];
+	SUSE_INTERNAL_BYPASS(-9.00)[];
+	BAYES_HAM(-3.00)[100.00%];
+	HFILTER_HOSTNAME_UNKNOWN(2.50)[];
+	SUSPICIOUS_RECIPS(1.50)[];
+	ONCE_RECEIVED(1.20)[];
+	RDNS_NONE(1.00)[];
+	HFILTER_HELO_IP_A(1.00)[kunlun.suse.cz];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	HFILTER_HELO_NORES_A_OR_MX(0.30)[kunlun.suse.cz];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.19)[-0.958];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	ARC_NA(0.00)[];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCPT_COUNT_TWELVE(0.00)[21];
+	MIME_TRACE(0.00)[0:+];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,redhat.com,kernel.org,amacapital.net,chromium.org,linux-foundation.org,strace.io,gmail.com,alpha.franken.de,linux.ibm.com,lists.ozlabs.org,lists.strace.io];
+	RCVD_COUNT_ZERO(0.00)[0];
+	MISSING_XM_UA(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Rspamd-Action: no action
+X-Spam-Score: -6.00
+X-Spam-Level: 
+X-Rspamd-Queue-Id: 2D37C1F76B
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-This is a multi-part message in MIME format.
---------------48QNBQi89u1Ke73kOiW8LZXK
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, Nov 18, 2026 at 02:07:02PM +0100, Renzo Davoli wrote:
+> On Wed, Nov 18, 2026 at 12:42:32PM +0100, Michal Suchánek wrote:
+> > from a user point of view it is not clear to me why this would be done
+> > at the seccomp event when seccomp is not used.
+>  
+> Hi Michal,
+>  
+> thank you for the review.
+>  
+> You are right, and the cover letter does not explain it (only patch 2
+> does, briefly). The series is limited to the PTRACE_EVENT_SECCOMP stop
+> because that is the only stop where a syscall can currently be skipped
+> with a preset return value in an architecture independent way: the
+> tracer's request goes through the same path as SECCOMP_RET_ERRNO,
+> which every architecture already handles.
+> 
+> At the syscall entry stop this depends on the architecture's entry
+> code. On some architectures (e.g. MIPS) the entry path overwrites the
+> return value with -ENOSYS when the syscall is skipped, so the value set
+> by the tracer is lost. A tracer that does not otherwise use seccomp
+> has to install a SECCOMP_RET_TRACE filter to use this feature.
+> 
+> > On s390 the removal of such architecture-specific flag is proposed here:
+> > [...]
+> > While that shows a way to address this problem not all affected
+> > architectures implement it.
+> 
+> Thanks for the pointer. With 05c033db7e9a ("entry, treewide: Make
+> syscall_enter_from_user_mode[_work]() indicate syscall execution") and
+> Heiko's s390 fix, the architectures using the generic entry code
+> preset -ENOSYS and leave the return value alone when the syscall is
+> skipped, so skipping at the entry stop could be supported there. As
+> in patch 1, a per-task flag checked right after the ptrace entry
+> report could be used, so that it does not depend on the syscall
+> number.
 
+As I understand it the new s390 code resolves the problem by storing the
+syscall number outside of the registers. Then the return value can be
+set directly. It does not depend on using the generic entry but on the
+architecture adding storage for the syscall number in struct pt_regs,
+and implementing the code to determine where to get/set the syscall
+value depending on the syscall stage.
 
-On 11/17/26 11:13 PM, Matt Turner wrote:
-> On 32-bit, perf_read_regs() sets regs->result to 0, so regs_use_siar()
-> is always false and every sample is attributed to the interrupted PC.
->
-> The MPC7450 family's SIAR holds the address of the last instruction to
-> complete before the performance monitor exception is generated
-> (MPC7450UM Rev. 5, section 11.3.7). The exception can be generated
-> with MSR[EE] = 0 and is taken once EE is set again (section 11.2), so
-> when interrupts are disabled the interrupted PC is wherever they are
-> re-enabled, while SIAR still points into the disabled region.
->
-> On a 7448, sampling cycles system-wide with --intr-regs=nip during dd,
-> perf bench sched pipe and find, 46% of the kernel samples have SIAR and
-> the interrupted PC in different functions. 13270 samples have their PC
-> on the instruction after the mtmsr that restores interrupts in
-> ata_scsi_queuecmd(), and 11661 of those have SIAR in udelay().
->
-> With interrupts enabled SIAR helps less. Sampling a 32-instruction
-> loop with one store and one branch with -c 10007, 99.8% of the samples
-> land at:
->
->    event             interrupted PC   SIAR
->    r122 (branches)   br + 13          br + 9
->    r014 (stores)     stw + 21         stw + 17
->
-> Because the exception is held off, it can also be taken on the other
-> side of a user/kernel transition from the instruction in SIAR, e.g.
-> just after the rfi at the end of a system call. SIAR also holds a real
-> address while translation is off, such as 0xc00 in the system call
-> vector. Recording a loop that alternates user work with getppid() with
-> perf record -g -c 1000000, 3022 of 16953 samples had SIAR in a
-> different mode from the interrupted PC. The callchain is walked from
-> regs, so taking its first entry from SIAR there starts a user
-> callchain with a kernel address, or reports a kernel sample as a user
-> sample at 0xc00.
->
-> siar_valid() already returns true on 32-bit. Use SIAR for PMU
-> exceptions when it is in the same mode as the interrupted context, and
-> the interrupted PC otherwise. With that, the same test has no samples
-> with mixed modes.
->
-> Signed-off-by: Matt Turner<mattst88@gmail.com>
+However, it seems that extending struct pt_regs breaks userspace ABI
+(probably because kernel refuses to transfer partial pt_regs to/fom
+userspace) which makes it unclear how the int_code that is used by this
+new code could be added to the s390 struct pt_regs in the first place.
 
-Hi Matt,
+Thanks
 
-
-Thanks, v2 looks right. One concern: the rule infers user vs kernel
-from SIAR's address, but a real-mode address (translation off) is also
-low, so it can look like a user address. The 0xc00 samples in the 
-results come out
-right only because the regs are kernel there. If a real-mode SIAR ever
-pairs with user regs, the rule would trust a bogus address.
-
-
-This rule avoids it and still fixes the interrupts-off case:
-regs->result = siar && !user_mode(regs) && is_kernel_addr(siar);
-User samples then use regs->nip, which loses little (SIAR was only ~4
-instructions closer in your table).
-
-
-
-Thanks,
-Tanushree Shah
-> ---
->   arch/powerpc/perf/core-book3s.c | 18 +++++++++++++++++-
->   1 file changed, 17 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 10ded865583c..4c9c9ff1073e 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -112,9 +112,25 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->   {
->   	return 0;
->   }
-> +
-> +/*
-> + * The MPC7450 family's SIAR holds the address of the last instruction to
-> + * complete before the performance monitor exception was generated, so for
-> + * a PMU exception it is closer to the event than the interrupted PC.
-> + *
-> + * The exception is held off while MSR[EE] is clear, so it can be taken on
-> + * the other side of a user/kernel transition from the instruction in SIAR,
-> + * e.g. just after the rfi at the end of a system call. SIAR also holds a
-> + * real address for code running with translation off, such as the start
-> + * of an exception vector. Use SIAR only when it is in the same mode as
-> + * the interrupted context, so the sample's mode and the callchain built
-> + * from regs stay consistent with it.
-> + */
->   static inline void perf_read_regs(struct pt_regs *regs)
->   {
-> -	regs->result = 0;
-> +	unsigned long siar = mfspr(SPRN_SIAR);
-> +
-> +	regs->result = siar && is_kernel_addr(siar) == !user_mode(regs);
->   }
->   
->   static inline int siar_valid(struct pt_regs *regs)
->
---------------48QNBQi89u1Ke73kOiW8LZXK
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p><br>
-    </p>
-    <div class="moz-cite-prefix">On 11/17/26 11:13 PM, Matt Turner
-      wrote:<br>
-    </div>
-    <blockquote type="cite"
-      cite="mid:20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com">
-      <pre wrap="" class="moz-quote-pre">On 32-bit, perf_read_regs() sets regs-&gt;result to 0, so regs_use_siar()
-is always false and every sample is attributed to the interrupted PC.
-
-The MPC7450 family's SIAR holds the address of the last instruction to
-complete before the performance monitor exception is generated
-(MPC7450UM Rev. 5, section 11.3.7). The exception can be generated
-with MSR[EE] = 0 and is taken once EE is set again (section 11.2), so
-when interrupts are disabled the interrupted PC is wherever they are
-re-enabled, while SIAR still points into the disabled region.
-
-On a 7448, sampling cycles system-wide with --intr-regs=nip during dd,
-perf bench sched pipe and find, 46% of the kernel samples have SIAR and
-the interrupted PC in different functions. 13270 samples have their PC
-on the instruction after the mtmsr that restores interrupts in
-ata_scsi_queuecmd(), and 11661 of those have SIAR in udelay().
-
-With interrupts enabled SIAR helps less. Sampling a 32-instruction
-loop with one store and one branch with -c 10007, 99.8% of the samples
-land at:
-
-  event             interrupted PC   SIAR
-  r122 (branches)   br + 13          br + 9
-  r014 (stores)     stw + 21         stw + 17
-
-Because the exception is held off, it can also be taken on the other
-side of a user/kernel transition from the instruction in SIAR, e.g.
-just after the rfi at the end of a system call. SIAR also holds a real
-address while translation is off, such as 0xc00 in the system call
-vector. Recording a loop that alternates user work with getppid() with
-perf record -g -c 1000000, 3022 of 16953 samples had SIAR in a
-different mode from the interrupted PC. The callchain is walked from
-regs, so taking its first entry from SIAR there starts a user
-callchain with a kernel address, or reports a kernel sample as a user
-sample at 0xc00.
-
-siar_valid() already returns true on 32-bit. Use SIAR for PMU
-exceptions when it is in the same mode as the interrupted context, and
-the interrupted PC otherwise. With that, the same test has no samples
-with mixed modes.
-
-Signed-off-by: Matt Turner <a class="moz-txt-link-rfc2396E" href="mailto:mattst88@gmail.com">&lt;mattst88@gmail.com&gt;</a></pre>
-    </blockquote>
-    <br>
-    <font face="monospace">Hi Matt,<br>
-      <br>
-    </font><br>
-    <font face="monospace">Thanks, v2 looks right. One concern: the rule
-      infers user vs kernel<br
-style="box-sizing: border-box; border: 0px solid rgba(0, 0, 0, 0.08); margin: 0px; padding: 0px; outline-color: rgb(35, 112, 205); scrollbar-width: thin; app-region: initial;">
-      from SIAR's address, but a real-mode address (translation off) is
-      also<br
-style="box-sizing: border-box; border: 0px solid rgba(0, 0, 0, 0.08); margin: 0px; padding: 0px; outline-color: rgb(35, 112, 205); scrollbar-width: thin; app-region: initial;">
-      low, so it can look like a user address. The 0xc00 samples in the
-      results come out<br
-style="box-sizing: border-box; border: 0px solid rgba(0, 0, 0, 0.08); margin: 0px; padding: 0px; outline-color: rgb(35, 112, 205); scrollbar-width: thin; app-region: initial;">
-      right only because the regs are kernel there. If a real-mode SIAR
-      ever<br
-style="box-sizing: border-box; border: 0px solid rgba(0, 0, 0, 0.08); margin: 0px; padding: 0px; outline-color: rgb(35, 112, 205); scrollbar-width: thin; app-region: initial;">
-      pairs with user regs, the rule would trust a bogus address.<br>
-      <br>
-    </font><br>
-    <font face="monospace">This rule avoids it and still fixes the
-      interrupts-off case:</font><br>
-    <font face="monospace">regs-&gt;result = siar &amp;&amp;
-      !user_mode(regs) &amp;&amp; is_kernel_addr(siar);<br>
-    </font><font face="monospace">User samples then use regs-&gt;nip,
-      which loses little (SIAR was only ~4<br
-style="box-sizing: border-box; border: 0px solid rgba(0, 0, 0, 0.08); margin: 0px; padding: 0px; outline-color: rgb(35, 112, 205); scrollbar-width: thin; app-region: initial;">
-      instructions closer in your table).<br>
-      <br>
-    </font><font face="monospace"><br>
-    </font><br>
-    <font face="monospace">Thanks,<br
-style="box-sizing: border-box; border: 0px solid rgba(0, 0, 0, 0.08); margin: 0px; padding: 0px; outline-color: rgb(35, 112, 205); scrollbar-width: thin; app-region: initial;">
-      Tanushree Shah</font>
-    <blockquote type="cite"
-      cite="mid:20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com">
-      <pre wrap="" class="moz-quote-pre">
----
- arch/powerpc/perf/core-book3s.c | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 10ded865583c..4c9c9ff1073e 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -112,9 +112,25 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
- {
- 	return 0;
- }
-+
-+/*
-+ * The MPC7450 family's SIAR holds the address of the last instruction to
-+ * complete before the performance monitor exception was generated, so for
-+ * a PMU exception it is closer to the event than the interrupted PC.
-+ *
-+ * The exception is held off while MSR[EE] is clear, so it can be taken on
-+ * the other side of a user/kernel transition from the instruction in SIAR,
-+ * e.g. just after the rfi at the end of a system call. SIAR also holds a
-+ * real address for code running with translation off, such as the start
-+ * of an exception vector. Use SIAR only when it is in the same mode as
-+ * the interrupted context, so the sample's mode and the callchain built
-+ * from regs stay consistent with it.
-+ */
- static inline void perf_read_regs(struct pt_regs *regs)
- {
--	regs-&gt;result = 0;
-+	unsigned long siar = mfspr(SPRN_SIAR);
-+
-+	regs-&gt;result = siar &amp;&amp; is_kernel_addr(siar) == !user_mode(regs);
- }
- 
- static inline int siar_valid(struct pt_regs *regs)
-
-</pre>
-    </blockquote>
-  </body>
-</html>
-
---------------48QNBQi89u1Ke73kOiW8LZXK--
-
+Michal
 
