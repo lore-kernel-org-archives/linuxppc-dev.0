@@ -2,61 +2,61 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13307606A332
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 16:04:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31AE0606A320
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 16:05:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CGRQTKoi
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJkskdVo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jV5yx5RF6z2xSl;
-	Thu, 19 Nov 2026 03:04:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795017897;
-	cv=none; b=MxJ8IcaZsrF2//dTklx84msZaK1QB5bpEzda1S41ND/FWEqEwcCBoe8KYcaMZ9LKnimZ3FvMUr2EmVLowLuy5x34RuT6GLDiRjZR+V+JOqSPnanXR1uop8sW+105eAt8qtWmgS4I4KamZoVzYygeMBE+r6y36sv/rmiza02jZJoWWyTfXmrv2ceJu+w1rBuKtAq9NbQUKHPwNM2GEG93IfFhSmUSNG9LDPbsjSsPk73UMtvsp12LtipO9bLyTTTATxXJh9dV/xpWDwmERWOK2qDpzp3ezW+1WNczaHwwd/tQPed+Y0BcYZt15DDSJ6mJLowrk8ibsfh36dAdHEq+sg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jV5zq6hF4z2xSl;
+	Thu, 19 Nov 2026 03:05:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795017943;
+	cv=none; b=HjboS3153KIbuC7yxy6Ugux8r9BUviBkkzqkPejPHh3vbghCoxMQ8/czqItBPqqOaasrbvsRLha/8T60lIu95GJNIKl9tktdcOEQoF/VR1p6U45PLmRlCHMhDO5j5qRYHOgFVBqLBcgI7NDiqZJMb4qgXvBNs2DOonkv53UV2l0dHMVADF3PT1PUjKJq+tLBmF1kp5DqdigTmyncwayiliKLgpnVrclzjfUlSLl6ORmijE0FTywAdoNZru5Sz6jybEWes1YIMvxi8mzsMoxXBQ0x/z/K9Kh29mi2y0xGw0fDkYYyuVVbmRe3hWpuFCuardcjpiTD4WscUofw1BxfUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795017897; c=relaxed/relaxed;
-	bh=qNdQCu46JN+AvdW92yL/KhzoPvPF7o18pJEDv6Keoe0=;
+	t=1795017943; c=relaxed/relaxed;
+	bh=Ae+3JeYiUrhjbpo8o0eXBbuZavQb3IPFMYoUFzPB4Tc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jrhfxCSVtL42744BULXZEsStfeqkGB6NnNhIlxFFGGIy6eytf8ufDTY5lQsxZluom5kG7M00eZZvr47kwblGioLf67nEVE25DOKVhS6NyKvr6oQdOSjVNrvd4AA0F6czsMnVrXVPKuSRjiSX6oxW6m8FJyNa0h9iGdeRC2PbRAIIyASOxFoahhTzz1MZklDGkNz8gC0cYNvVc808SjfNLDBam5Ed4ASKBxyj1iD5rc+LFz9IPKZHiZdrfVS41mcbZXA21rrKt8Ap2Kh/Mwl8H/UiRBg6mHfj0bO5Un9ykPrNugIp1+atbPBsaL5WIU2xtbtomguYLOahXIj5/5o5oQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CGRQTKoi; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 In-Reply-To:Content-Type; b=J6msGhQGKkfy8EbFwayw6Kr0UK+6l36ILxolwZ9nbmB0s+Ryt+3RPGsUCSSfN3Hq4cU3LeTy5YiMqP2ygGCdMuEmNXWWdUiT0J+/jazJc3t8pfjVxZq0lJRujHhKyOFL8nokwI8P/PTHY327GJZIjtrl/yeRtD63XKm0Q5J5mw74FnAwG1WQQ+PJ7L0LEuoapuIUPqdVPA0yoOGWKqSduZGLRnyonwGIo2/uVLDJrnVcaQCpy/TZuvmMeZ3hucUh6sDoMlwrM24c4uUq7W4kgn0uIAl8m8GuHmxkV+44sxkZHlkyb/kdf1d42gd1RdU9eoC49jsgUZ9OlASSHJJOmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJkskdVo; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CGRQTKoi;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJkskdVo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV5yw2p0fz2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 03:04:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV5zp4SSgz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 03:05:42 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795017896; x=1826553896;
+  t=1795017943; x=1826553943;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=HlGntMaTXfG5rGmcaRF+1287Rm/VarsPSDTRNOZC8FQ=;
-  b=CGRQTKoibn9ld2WYvCYjzV0bUJA9PfW7WLSaLW8XozuAG5cHzoGUT83o
-   sXP4oco1QJRX8VftCWTPrujFVb6z/8Ns+Q8ES1tVtUZDNtmhOYOVd2QFL
-   ZLpgSKUSFYi0TJ7EtYEGPwUBodjgZF48LkOdPEQ5NXlaip8cljiH/HkRd
-   JR32np6IiI3H1Rp6MYKKmiXcgCq7wJfp7drMPedh7uM2EvhRB516F8gAT
-   4ucfnzQr/E/OaPA0NcsgDWE0uz6aarBwfqAsVcf0kfBLMFYN1WssFjFh1
-   NkRJbqd1CDPhSZja5et0g/gBVz0/Iyx6l1YqgTCKOySNXbTwC97mtDxqd
-   A==;
-X-CSE-ConnectionGUID: qesN6+wWQ2uHo2p3TEukyQ==
-X-CSE-MsgGUID: itjAwN/YR6C4WdLivm+xsg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3727465"
+  bh=81nQPe6DhZPapz5KdmrVwUtkk4R09Ot6YOuL6uNj16M=;
+  b=eJkskdVoKC93AwwGU4lra4gQdeNLZUcfNCZOac1GODFrp4zSLX9aA6BM
+   da/ZBGZeMKmuHsz+5dLeW/C2p+Xld7DWhwre/e9316HX4uMkaxyOUFen3
+   c8BDJSyxsaohRkTzA+lWQI0nwemyOAYstKjVgoE1uY90vFDS/bUgBZoac
+   ijwzWLhF3e9crRQO1HKtY4fY8H2ZLF8B3X8/wFEF2puw1am+zJvwWzdDB
+   2nmAUs+A3NyoKowTo8/zrP5S+JZ0bu/Bi5BKvgTOIrDVNZ5TVe4gZVuLl
+   Uh9pVH4uIV+6hUobSceo151yyucblgZoWy2V8yK6URyNJEbKbfCl7nW/u
+   g==;
+X-CSE-ConnectionGUID: +5ZyzLkNTte2XDSc7sPSow==
+X-CSE-MsgGUID: pqy7pVjuQNuwDsdRgx3Vlw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11970"; a="3847341"
 X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="3727465"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 08:04:52 -0800
-X-CSE-ConnectionGUID: GMqOpEkEQZqhGqmE8CouQA==
-X-CSE-MsgGUID: 4MI+bbhVQnWNScobLRH2MA==
+   d="scan'208";a="3847341"
+Received: from fmviesa013.fm.intel.com ([10.60.135.153])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 08:05:36 -0800
+X-CSE-ConnectionGUID: AVZ4HHyQTCWUBgdhxj6XZg==
+X-CSE-MsgGUID: JKvDnjUSS8mEjic3oB+mZw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.27,219,1787036400"; 
-   d="scan'208";a="10540463"
+   d="scan'208";a="12116519"
 Received: from skuppusw-desk1.jf.intel.com (HELO [10.24.80.125]) ([10.24.80.125])
-  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 08:04:52 -0800
-Message-ID: <5cc37811-961a-43a7-8c87-278572c91ad5@linux.intel.com>
-Date: Wed, 18 Nov 2026 08:04:51 -0800
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2026 08:05:36 -0800
+Message-ID: <5eb12731-208b-4be0-84d7-9131810b7842@linux.intel.com>
+Date: Wed, 18 Nov 2026 08:05:35 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,7 +71,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 3/7] PCI/ERR: Clear error status bits more selectively
+Subject: Re: [PATCH v2 4/7] PCI/ERR: Avoid stale error status bits on recovery
+ failure
 To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
  Raag Jadav <raag.jadav@intel.com>, linux-pci@vger.kernel.org
 Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
@@ -84,10 +85,10 @@ Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
  Jason Perlow <jperlow@gmail.com>, Riana Tauro <riana.tauro@intel.com>,
  Yury Murashka <yurypm@arista.com>, Matthew W Carlis <mattc@purestorage.com>
 References: <cover.1794997749.git.lukas@wunner.de>
- <8ab33b2307e9136719f72ccc2d9f946417651eab.1794997749.git.lukas@wunner.de>
+ <2d0191cb7b92da82302f9d37b859e28ee6c9c85e.1794997749.git.lukas@wunner.de>
 Content-Language: en-US
 From: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-In-Reply-To: <8ab33b2307e9136719f72ccc2d9f946417651eab.1794997749.git.lukas@wunner.de>
+In-Reply-To: <2d0191cb7b92da82302f9d37b859e28ee6c9c85e.1794997749.git.lukas@wunner.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -101,20 +102,26 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 On 11/18/26 02:40, Lukas Wunner wrote:
-> After recovery from a PCIe error, all of the error status bits in the
-> Device Status register are cleared indiscriminately, regardless of the
-> error's severity.
+> From: Yury Murashka <yurypm@arista.com>
 > 
-> So when a Correctable Error occurs simultaneously to an Uncorrectable
-> Error, after the former is handled, it is cleared alongside the latter.
-> As a result, the Uncorrectable Error isn't handled at all.
+> pcie_do_recovery() only clears the error status bits of an error-reporting
+> device if recovery succeeds, but not if it fails.  (E.g. because reset
+> failed, drivers are missing pci_error_handlers or those handlers failed.)
 > 
-> Conversely, an Uncorrectable Error occurring shortly before a Correctable
-> Error may cause the latter to be cleared and thus ignored.
+> One undesirable consequence is that the AER driver may subsequently
+> identify a wrong device when searching for error-reporting devices in
+> is_error_source(), due to stale bits on an unaffected device.
 > 
-> Avoid by clearing only the error bits corresponding to the error severity
-> being handled.
+> Avoid by clearing error status bits on recovery failure.
 > 
+> If recovery succeeds, Fatal Errors are generally cleared by a call to
+> pci_restore_state() from drivers' ->slot_reset() callbacks.  If recovery
+> fails, those callbacks may not have been invoked or they may not be
+> implemented.  Hence clear Fatal Errors as well on recovery failure.
+> 
+> Link: https://lore.kernel.org/r/CAPzpGcRCTCZtaX1EVaJNZ103THZKsoszZduY7=gwfYdcrMo-SQ@mail.gmail.com/
+> Signed-off-by: Yury Murashka <yurypm@arista.com>
+> [lukas: drop cmdline param, rewrite commit msg, clear fatal errors]
 > Signed-off-by: Lukas Wunner <lukas@wunner.de>
 > ---
 
@@ -122,82 +129,29 @@ Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.
 
 
 > Changes v1 -> v2:
->   * New patch to clear error status bits more selectively (sashiko).
+>   * Clear Fatal Errors as well on recovery failure (Sathya, sashiko).
 >  
->  drivers/pci/pcie/aer.c | 20 +++++++++++++++++++-
->  drivers/pci/pcie/err.c |  7 ++++++-
->  2 files changed, 25 insertions(+), 2 deletions(-)
+>  drivers/pci/pcie/err.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 6f2460231422..51cf2ff8c85a 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -141,6 +141,12 @@ struct aer_info {
->  					PCI_ERR_ROOT_MULTI_COR_RCV |	\
->  					PCI_ERR_ROOT_MULTI_UNCOR_RCV)
->  
-> +static const u8 severity2devsta[] = {
-> +	[AER_NONFATAL]    = PCI_EXP_DEVSTA_NFED,
-> +	[AER_FATAL]       = PCI_EXP_DEVSTA_FED,
-> +	[AER_CORRECTABLE] = PCI_EXP_DEVSTA_CED,
-> +};
-> +
->  static bool pcie_aer_disable;
->  static pci_ers_result_t aer_root_reset(struct pci_dev *dev);
->  
-> @@ -1314,6 +1320,17 @@ bool is_aer_internal_error(struct aer_err_info *info)
->  }
->  #endif
->  
-> +static void pcie_clear_device_status_sev(struct pci_dev *dev, u8 severity,
-> +					 u32 uncor_status)
-> +{
-> +	u16 devsta = severity2devsta[severity];
-> +
-> +	if (uncor_status & PCI_ERR_UNC_UNSUP)
-> +		devsta |= PCI_EXP_DEVSTA_URD;
-> +
-> +	pcie_capability_write_word(dev, PCI_EXP_DEVSTA, devsta);
-> +}
-> +
->  /**
->   * pci_aer_handle_error - handle logging error into an event log
->   * @dev: pointer to pci_dev data structure of error source device
-> @@ -1344,7 +1361,8 @@ static void pci_aer_handle_error(struct pci_dev *dev, struct aer_err_info *info)
->  			if (pdrv && pdrv->err_handler &&
->  			    pdrv->err_handler->cor_error_detected)
->  				pdrv->err_handler->cor_error_detected(dev);
-> -			pcie_clear_device_status(dev);
-> +			pcie_clear_device_status_sev(dev, AER_CORRECTABLE,
-> +						     info->anfe_status);
->  		}
->  	} else if (info->severity == AER_NONFATAL)
->  		pcie_do_recovery(dev, pci_channel_io_normal, aer_root_reset);
 > diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-> index 1a7fc71c79d8..24a8a8263c2e 100644
+> index 24a8a8263c2e..a450146fb285 100644
 > --- a/drivers/pci/pcie/err.c
 > +++ b/drivers/pci/pcie/err.c
-> @@ -21,6 +21,10 @@
->  #include "portdrv.h"
->  #include "../pci.h"
+> @@ -289,6 +289,13 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+>  	return status;
 >  
-> +#define PCI_EXP_DEVSTA_UNC_MASK	(PCI_EXP_DEVSTA_NFED | \
-> +				 PCI_EXP_DEVSTA_FED | \
-> +				 PCI_EXP_DEVSTA_URD)
-> +
->  static pci_ers_result_t merge_result(enum pci_ers_result orig,
->  				  enum pci_ers_result new)
->  {
-> @@ -274,7 +278,8 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
->  	 * signaling device may not even be visible to the OS.
->  	 */
->  	if (host->native_aer) {
-> -		pcie_clear_device_status(dev);
+>  failed:
+> +	if (host->native_aer) {
 > +		pcie_capability_write_word(dev, PCI_EXP_DEVSTA,
 > +					   PCI_EXP_DEVSTA_UNC_MASK);
->  		pci_aer_clear_nonfatal_status(dev);
->  	}
+> +		pci_aer_clear_nonfatal_status(dev);
+> +		pci_aer_clear_fatal_status(dev);
+> +	}
+> +
+>  	pci_walk_bridge(bridge, pci_pm_runtime_put, NULL);
 >  
+>  	pci_walk_bridge(bridge, report_perm_failure_detected, NULL);
 
 -- 
 Sathyanarayanan Kuppuswamy
