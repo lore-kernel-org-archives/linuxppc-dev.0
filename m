@@ -1,69 +1,81 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 51A80606A32F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 22:29:45 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8B04C60A2602
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 23:42:48 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=nlu4JMkM
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L1sg1dqQ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVGVv5PjTz2xqh;
-	Thu, 19 Nov 2026 09:29:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795040983;
-	cv=none; b=oPGK7LIcY0Ep/xUdQdWOZD2v1e6zEgYbnrKdFyi1Ddr/fknxy0YDSqmrkSJJJBCUiEibu5oOvsfXOIF0LqKiVfweVCuUM0htDENMULqnss2ds1j3eS3Ogq36aLAynvuxu3RSrQ6sm0YBEKTnSO88uZ7haf44tlvIEwvVLLEdvemBhnUrvhb9UEag9ageSdqpSi7tzaV0THEIwk2vA/xn7dmB029C4aG/PSjaMbtn9Qq9MWZvKtPvlwfbeEOXAvY4WaTfa8UgSn7zMd5KRWOBGK3wMTQ407NGrkCL7UAf6Kokscv8jisCFl9gURDYRIy8StlFxNrfYGIz5EMfGHoYlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVJ7B4yJMz2xkr;
+	Thu, 19 Nov 2026 10:42:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795045366;
+	cv=none; b=lvUirSDfvwVX4AhJ09G/392AV6IZ3JlBxkycac5qUGfq0cgdcZTBqeiFZ7CC62liklF12+L4H7jHbvlkhTwWAvU4Gbvhy9K0amNi0saSaYupdb7N1YZ4olhTNCnKL8RImwWzv67RQ5MQFqmgk+cCzwUFuBFpyopXMaC68i/JyiAOuU4GNWGH57fMJjjyJrjjuVpavtJBfR/Zq3XkHVJcQHoQWshgN1/p6ImbV11lbI2VWv9aen1C5mS0aKeLcCANY/DLevZkAagvHvUSQoetp6q8SnP/kONSu1qsFS9gcrch0RusDgAn7jZbVYwwF4FfuPdBKLsOlwqqEXcoNFm8Mw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795040983; c=relaxed/relaxed;
-	bh=S1zXG5hSU7M7fE8I3P5fHdscFy585SUDTLAQOTjGrRw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=H8svvAuBr75GGNLi8WzG2JPJqtbZMbrOis/xrkgDJ3Q9S8ENZ+Y0FFHqeS7pO8BT6sl7Jf8V4rLWlCSFV+NNuERzeI5ov4S1yvgVrB6ponkNgVssFyhASCtpauXT9MFjPwPdiypCPoHvqLsLkGerrDHKFuQcKThE1P/sWPy0uU5zA+2YtxOx64ulJoVdBlkHZ2tUkMpsZFzA/jDrwlwvw13mQO8LqS8tR6hWMSwuMeLFthy5gKKH2pfU0ZgIGQXZiRbx/KGqpDjeSWx1WGZd3NiIw/GrZnHDtJougmafqXRWxJ5nEY++KDNHOmvvcDgD9pPk2TdBW1fx1a0fH+UXIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=nlu4JMkM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=linuxfoundation.org
+	t=1795045366; c=relaxed/relaxed;
+	bh=5gmN6H+RSfew5cKRkkzfR78AcJ/HC4QuJ1A3RJGQZBo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DyK9iGZBc+6ibFkmqWYDKNlPehCRfg3TkO15XPwoXL/5rHxed5oPYInjdxFub+5m8gFcJBucOHpJDTaTVIU+VUUGAkpCW15eRZfD36lm9hLX2mgOzrmwNPAEWxVkFynbDAwJhJNQO03SUvOgRa5sCqete/ZIIaxnBpP7WwY6mj68e/AYoXE2U/o89Of9lvdheDLf0Vkm9uK59kabJtuQ/8dIWaVUWmtmY3iJRSXeXCwKtUWJiUk7Sr4jRAcXRBgd86ZSGkZU3ZUzSUmIVkq8XJKrj8KhCqZ7nraLE6P5XXWmnGZLLLFMyjYqJooQMUx6s++59tj1cgW6hHiXT2omfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L1sg1dqQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=demiobenour@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=nlu4JMkM;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=L1sg1dqQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=demiobenour@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVGVt35pdz2xjQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 09:29:41 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7FAAB63C97;
-	Wed, 18 Nov 2026 22:29:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B00391F000C4;
-	Wed, 18 Nov 2026 22:29:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linuxfoundation.org;
-	s=korg; t=1795040978;
-	bh=S1zXG5hSU7M7fE8I3P5fHdscFy585SUDTLAQOTjGrRw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=nlu4JMkMRE9QGBHUnnj1Gpzm54IXdzPvtAlKV0K8D3PZawuKJ4ZuiO9PSatAvrhrH
-	 DbHgmKvjI59PhyuEU7dxBNalCww82hF79EzhApDlrx1X0+mpiWjr4YcpgGJ2ETlGpv
-	 zKF6S+adjZc5fJ1eEwOhsW7uRkbGZMUeWr3HRzKc=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	Terry Bowman <terry.bowman@amd.com>,
-	Robert Richter <rrichter@amd.com>,
-	Oliver OHalloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-pci@vger.kernel.org,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6 2649/3318] PCI/AER: Forward RCH downstream port-detected errors to the CXL.mem dev handler
-Date: Wed, 18 Nov 2026 15:54:31 +0100
-Message-ID: <20261118150440.520563179@linuxfoundation.org>
-X-Mailer: git-send-email 2.56.0
-In-Reply-To: <20261118150313.527275416@linuxfoundation.org>
-References: <20261118150313.527275416@linuxfoundation.org>
-User-Agent: quilt/0.69
-X-stable: review
-X-Patchwork-Hint: ignore
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVJ786n2Gz2xjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 10:42:43 +1100 (AEDT)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-8b4f4095a7aso15266997b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 15:42:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795045360; x=1795650160; darn=lists.ozlabs.org;
+        h=content-type:in-reply-to:autocrypt:from:content-language:references
+         :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=5gmN6H+RSfew5cKRkkzfR78AcJ/HC4QuJ1A3RJGQZBo=;
+        b=L1sg1dqQzxIKYmk+B6awTV/QD91AikF2sX+wLg2ohUkjpT8gXnN/Pn+ykEiXXGDG/L
+         taBmlXfBRgGECQdQUjMQNhm0G3ysb8DZ/Sw2qKKfnOpJAlPvrJr9b1r8c0T7Azf6cA1q
+         Tgf90M8KmTuJaVuYmBWS5o8VuPZ5weyXNztveyIo85ZIBHpxXSsVXSIxPs6oV+ulvZeX
+         LsfosfqU6wu4pCkUwqMvoZkbGpZrJ9/kMmTEy77tLSBHxuhSIj3LmRb0dcU80/yysNEI
+         tWPO3EJ42dVtan0yIQ54GknGhDIs4+/yxggfDziyzjd3k8DcqwuHqu5voqeSgDa92qcE
+         gfaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795045360; x=1795650160;
+        h=content-type:in-reply-to:autocrypt:from:content-language:references
+         :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5gmN6H+RSfew5cKRkkzfR78AcJ/HC4QuJ1A3RJGQZBo=;
+        b=ZvJFrsyjMvQm3Pygsnc1fywk4XhywgJGQWbj1OZLhXqwIYaYDV6S4YYEeQsqa/fg5j
+         hbZwmrdEKIP5xbAGHnCWRv3Bl2pSoN0F+mfEUcVV49sYuSH2P8G3dhhU/6SZPzSpnbQW
+         n1XveXkim+Vtnk42lCGW1HwG7kGzQte26jZRUB8kkhzlVCpv1QM6Q9+SDqp63urn25ni
+         dbQZCy+Ai3VALXrGu8H/oh0pSCzRQvDUi0jRE47fbau0HPPZkqogBdx6nKWsa/UINeSi
+         dYiHviYepzIsIcGnMxVdA6/jKObKZu7USumD6XOjsrJOu1w5ni/2yqg1DbcpSn7rHA1V
+         IN/Q==
+X-Forwarded-Encrypted: i=1; AL+hErGBPyiWJNHPpB1BIQgC57kirSpkcrqs7YjztWS8kM7XVF8uOAnnB3iAiMLIgbNUGAU3GJ2wes6uKP1SZVU=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8l/YnLD0GudqlkNCHJJFunDbFZh6YpvR9X8WzeXFz3VmBOhO+1
+	XbWQUABHyc40NEpSq2HBCDl46GM+ajkrAWcQQHCApF50TxRLALCqyzBu
+X-Gm-Gg: AZFdTZepH8Yq0xIRLfdDPHMxoZbMDIBvsNduXQrpcUV0wVAzVoJq62B0dEl2iOfo3Ab
+	WMGx8g0eMkGYbLaZ4ZB4tIrFS4mbC5KD4KhDq258d8pCgobRlGqpg1WmVt6wPWWEGhIyDyUEk/z
+	AA2XyGAt/pSuJSWmNwlXc5JPdRS/xibHfoCuR5ui/kRL2J6NVvN7HAYpGlO4cOPCp0beQv7XOJM
+	PJb6eep1qLnMeTJEdDb3RMm30l1UcvKPqUJIiA3gStSOosqN1MU2ElZPgLVlCpU2zMWDpGaarf0
+	Wt2HoZj7D21aMwCh90oxZHUnXK3D3c/n9UZIJYXoPlgIVMXTjAr7dKpfeGt/mnKV0HkimvYs8/W
+	dnkh2TjSz9Caka4Yap88z3WttA6vCad3A0MXVkeQ0kkTT4sR22UpP2/+RcVRwQLep/8Jq/4s0C8
+	fW4ZjSLM25XWPgvqEbKQ+FMLj2t3MXq200wK5MtsoK3HfljOK/taQbHu6QOBt0DrX86pu4w6q+K
+	ZTptFA+ODJpmqbrlBc6B6QBs9nWuvFz2Bpa6INDt+gCq5A6z0I6uRICK44wV3zu4fEKxn5lR7xu
+	fQVTwq/LwgsR39c8YTIhgJlx4t1DoimlYw==
+X-Received: by 2002:a05:690c:306:b0:8b0:e479:6872 with SMTP id 00721157ae682-8b4fed09583mr22589027b3.17.1795045360439;
+        Wed, 18 Nov 2026 15:42:40 -0800 (PST)
+Received: from [10.138.10.6] ([149.102.242.31])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdf1d0desm25041597b3.1.2026.11.18.15.42.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 18 Nov 2026 15:42:39 -0800 (PST)
+Message-ID: <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+Date: Wed, 18 Nov 2026 18:42:15 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,231 +89,231 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-22.2 required=3.0 tests=BAYES_00,DATE_IN_PAST_06_12,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
+ never read
+To: Rodolfo Giometti <giometti@enneenne.com>,
+ David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
+ keyrings@vger.kernel.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
+ Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
+ <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Richard Weinberger <richard@nod.at>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20261118140421.584086-1-giometti@enneenne.com>
+Content-Language: en-US
+From: Demi Marie Obenour <demiobenour@gmail.com>
+Autocrypt: addr=demiobenour@gmail.com; keydata=
+ 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
+ +MYSfkEjBz0E8CLOcAw7JIwAaeBT
+In-Reply-To: <20261118140421.584086-1-giometti@enneenne.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------jzPPC6cqPSJxGVQJoosVKqnL"
+X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-6.6-stable review patch.  If anyone has any objections, please let me know.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------jzPPC6cqPSJxGVQJoosVKqnL
+Content-Type: multipart/mixed; boundary="------------TfokhGkQ0eBXMCucH70BiVLN";
+ protected-headers="v1"; hp="clear"
+Message-ID: <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+Date: Wed, 18 Nov 2026 18:42:15 -0500
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
+ never read
+To: Rodolfo Giometti <giometti@enneenne.com>,
+ David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
+ keyrings@vger.kernel.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
+ Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
+ <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Richard Weinberger <richard@nod.at>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20261118140421.584086-1-giometti@enneenne.com>
+Content-Language: en-US
+From: Demi Marie Obenour <demiobenour@gmail.com>
+Autocrypt: addr=demiobenour@gmail.com; keydata=
+ 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
+ +MYSfkEjBz0E8CLOcAw7JIwAaeBT
+In-Reply-To: <20261118140421.584086-1-giometti@enneenne.com>
 
-------------------
+--------------TfokhGkQ0eBXMCucH70BiVLN
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Robert Richter <rrichter@amd.com>
+On 11/18/26 9:04 AM, Rodolfo Giometti wrote:
+> This RFC proposes a key type, "keycrypt", whose material user space can=
 
-[ Upstream commit 0a867568bb0d203ca3d28634a611a1367d7c892d ]
+> use for symmetric operations but never read: AES-256-CBC, HMAC-SHA256
+> and an authenticated AES-256-GCM stream, through a file descriptor that=
 
-In Restricted CXL Device (RCD) mode a CXL device is exposed as an
-RCiEP, but CXL downstream and upstream ports are not enumerated and
-not visible in the PCIe hierarchy. [1] Protocol and link errors from
-these non-enumerated ports are signaled as internal AER errors, either
-Uncorrectable Internal Error (UIE) or Corrected Internal Errors (CIE)
-via an RCEC.
+> KEYCTL_CRYPT_OPEN returns for one key and one operation.
 
-Restricted CXL host (RCH) downstream port-detected errors have the
-Requester ID of the RCEC set in the RCEC's AER Error Source ID
-register. A CXL handler must then inspect the error status in various
-CXL registers residing in the dport's component register space (CXL
-RAS capability) or the dport's RCRB (PCIe AER extended
-capability). [2]
+I haven't looked at the API, but from a cryptographic perspective,
+this encourages very poor practices.  AES-GCM even allows userspace
+to extract the secret authentication key.
 
-Errors showing up in the RCEC's error handler must be handled and
-connected to the CXL subsystem. Implement this by forwarding the error
-to all CXL devices below the RCEC. Since the entire CXL device is
-controlled only using PCIe Configuration Space of device 0, function
-0, only pass it there [3]. The error handling is limited to currently
-supported devices with the Memory Device class code set (CXL Type 3
-Device, PCI_CLASS_MEMORY_CXL, 502h), handle downstream port errors in
-the device's cxl_pci driver. Support for other CXL Device Types
-(e.g. a CXL.cache Device) can be added later.
+AES-256-CBC isn't a suitable mode on its own, unless it's combined
+with a MAC in encrypt-then-MAC.  Even then, it has a 2^64 birthday
+bound, so it should only be used 2^48 times with a single key unless
+the key is ephemeral.
 
-To handle downstream port errors in addition to errors directed to the
-CXL endpoint device, a handler must also inspect the CXL RAS and PCIe
-AER capabilities of the CXL downstream port the device is connected
-to.
+AES-GCM is not a suitable algorithm either.  If you allow encrypting
+with a key loaded from persistent storage, there is no way for the API
+to ensure it is only used with a unique nonce.  Nonce reuse leaks the
+authentication key and allows forgeries.  Using random nonces isn't
+good enough either: NIST only allows 2^32 encryptions in this case,
+and the API can't enforce that limit.
 
-Since CXL downstream port errors are signaled using internal errors,
-the handler requires those errors to be unmasked. This is subject of a
-follow-on patch.
+For long-term keys, all of the following are much safer choices.
+They have 192-bit nonces, which means that one can generate them
+at random for each encryption without any problems.
 
-The reason for choosing this implementation is that the AER service
-driver claims the RCEC device, but does not allow it to register a
-custom specific handler to support CXL. Connecting the RCEC hard-wired
-with a CXL handler does not work, as the CXL subsystem might not be
-present all the time. The alternative to add an implementation to the
-portdrv to allow the registration of a custom RCEC error handler isn't
-worth doing it as CXL would be its only user. Instead, just check for
-an CXL RCEC and pass it down to the connected CXL device's error
-handler. With this approach the code can entirely be implemented in
-the PCIe AER driver and is independent of the CXL subsystem. The CXL
-driver only provides the handler.
+- XAES-256-GCM
+- XChaCha20-Poly1305
+- AEGIS-256
 
-[1] CXL 3.0 spec: 9.11.8 CXL Devices Attached to an RCH
-[2] CXL 3.0 spec, 12.2.1.1 RCH Downstream Port-detected Errors
-[3] CXL 3.0 spec, 8.1.3 PCIe DVSEC for CXL Devices
+AES-GCM-SIV is also okay, provided that you are fine with occasionally
+leaking if two plaintexts are equal.  This happens whenever there is
+a nonce collision, so with probability 2^-32 after 2^32 encryptions.
+--=20
+Sincerely,
+Demi Marie Obenour (she/her/hers)
 
-Co-developed-by: Terry Bowman <terry.bowman@amd.com>
-Signed-off-by: Terry Bowman <terry.bowman@amd.com>
-Signed-off-by: Robert Richter <rrichter@amd.com>
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-pci@vger.kernel.org
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-Link: https://lore.kernel.org/r/20231018171713.1883517-18-rrichter@amd.com
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Stable-dep-of: e86ac10110d0 ("PCI/AER: Fix struct pci_dev reference leak in aer_process_err_devices()")
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/pci/pcie/Kconfig |  9 ++++
- drivers/pci/pcie/aer.c   | 93 +++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 100 insertions(+), 2 deletions(-)
+--------------TfokhGkQ0eBXMCucH70BiVLN--
 
-diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-index 228652a59f27e..8999fcebde6aa 100644
---- a/drivers/pci/pcie/Kconfig
-+++ b/drivers/pci/pcie/Kconfig
-@@ -49,6 +49,15 @@ config PCIEAER_INJECT
- 	  gotten from:
- 	     https://git.kernel.org/cgit/linux/kernel/git/gong.chen/aer-inject.git/
- 
-+config PCIEAER_CXL
-+	bool "PCI Express CXL RAS support"
-+	default y
-+	depends on PCIEAER && CXL_PCI
-+	help
-+	  Enables CXL error handling.
-+
-+	  If unsure, say Y.
-+
- #
- # PCI Express ECRC
- #
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 2f7d88353b028..72283b0b8d596 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -948,14 +948,97 @@ static bool find_source_device(struct pci_dev *parent,
- 	return true;
- }
- 
-+#ifdef CONFIG_PCIEAER_CXL
-+
-+static bool is_cxl_mem_dev(struct pci_dev *dev)
-+{
-+	/*
-+	 * The capability, status, and control fields in Device 0,
-+	 * Function 0 DVSEC control the CXL functionality of the
-+	 * entire device (CXL 3.0, 8.1.3).
-+	 */
-+	if (dev->devfn != PCI_DEVFN(0, 0))
-+		return false;
-+
-+	/*
-+	 * CXL Memory Devices must have the 502h class code set (CXL
-+	 * 3.0, 8.1.12.1).
-+	 */
-+	if ((dev->class >> 8) != PCI_CLASS_MEMORY_CXL)
-+		return false;
-+
-+	return true;
-+}
-+
-+static bool cxl_error_is_native(struct pci_dev *dev)
-+{
-+	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
-+
-+	return (pcie_ports_native || host->native_aer);
-+}
-+
-+static bool is_internal_error(struct aer_err_info *info)
-+{
-+	if (info->severity == AER_CORRECTABLE)
-+		return info->status & PCI_ERR_COR_INTERNAL;
-+
-+	return info->status & PCI_ERR_UNC_INTN;
-+}
-+
-+static int cxl_rch_handle_error_iter(struct pci_dev *dev, void *data)
-+{
-+	struct aer_err_info *info = (struct aer_err_info *)data;
-+	const struct pci_error_handlers *err_handler;
-+
-+	if (!is_cxl_mem_dev(dev) || !cxl_error_is_native(dev))
-+		return 0;
-+
-+	/* protect dev->driver */
-+	device_lock(&dev->dev);
-+
-+	err_handler = dev->driver ? dev->driver->err_handler : NULL;
-+	if (!err_handler)
-+		goto out;
-+
-+	if (info->severity == AER_CORRECTABLE) {
-+		if (err_handler->cor_error_detected)
-+			err_handler->cor_error_detected(dev);
-+	} else if (err_handler->error_detected) {
-+		if (info->severity == AER_NONFATAL)
-+			err_handler->error_detected(dev, pci_channel_io_normal);
-+		else if (info->severity == AER_FATAL)
-+			err_handler->error_detected(dev, pci_channel_io_frozen);
-+	}
-+out:
-+	device_unlock(&dev->dev);
-+	return 0;
-+}
-+
-+static void cxl_rch_handle_error(struct pci_dev *dev, struct aer_err_info *info)
-+{
-+	/*
-+	 * Internal errors of an RCEC indicate an AER error in an
-+	 * RCH's downstream port. Check and handle them in the CXL.mem
-+	 * device driver.
-+	 */
-+	if (pci_pcie_type(dev) == PCI_EXP_TYPE_RC_EC &&
-+	    is_internal_error(info))
-+		pcie_walk_rcec(dev, cxl_rch_handle_error_iter, info);
-+}
-+
-+#else
-+static inline void cxl_rch_handle_error(struct pci_dev *dev,
-+					struct aer_err_info *info) { }
-+#endif
-+
- /**
-- * handle_error_source - handle logging error into an event log
-+ * pci_aer_handle_error - handle logging error into an event log
-  * @dev: pointer to pci_dev data structure of error source device
-  * @info: comprehensive error information
-  *
-  * Invoked when an error being detected by Root Port.
-  */
--static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
-+static void pci_aer_handle_error(struct pci_dev *dev, struct aer_err_info *info)
- {
- 	int aer = dev->aer_cap;
- 
-@@ -979,6 +1062,12 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
- 		pcie_do_recovery(dev, pci_channel_io_normal, aer_root_reset);
- 	else if (info->severity == AER_FATAL)
- 		pcie_do_recovery(dev, pci_channel_io_frozen, aer_root_reset);
-+}
-+
-+static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
-+{
-+	cxl_rch_handle_error(dev, info);
-+	pci_aer_handle_error(dev, info);
- 	pci_dev_put(dev);
- }
- 
--- 
-2.53.0
+--------------jzPPC6cqPSJxGVQJoosVKqnL
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAEBCgAdFiEEopQtqVJW1aeuo9/sszaHOrMp8lMFAmr+N+MACgkQszaHOrMp
+8lNdbA/+LXcNkxhaSmkBIlfaAw6S95byA9OavCx3gDwybKkdpBRsqEMuUDmi6Krv
+sUsDLaeMdH3ar/BHBgzdRhYzWSYylQxAXK5kyk9Dl+eyd7ytersCCZOWNqQEXZm8
+J2LKr4uL8732Pdf9nju8nULZYGbZMMOruowXjBaVMXexkB1+6mlo5Nlg2GWQi+tq
+Hq9ZznN68KGW4g+4Tf1yUAVTrCV1il7GWH5B2NmiYoE+X7gXBAm/SN6AZFOBdC8R
+9RqyWBD49MqMMo2bJUtpO4GYBp5Nq/mj51QZMQft/SuzJIukGVOgBZjs4tYc6Rzw
+aYoqSJs44bHE4zdSItWMBMDMrFE4QwSZT9B79wJDYMc1XYC8GTEcV+A63nqID8Pm
+cGeJ75QYBrQPSOGE8Y6JeniPKwFOHc+ZapobcMEZIo/e84/XsTLt3/WLlm92W+AK
+b1B+kFVPbKu7aAp59KPE/6woXt1nWraeSJ2yT6kJv7nVlDTgmVjROCYIWx1z7Zxb
+w3CLI05Dru/vR3Kfrb1qIwcExSnqHikSICBFrlCtcJ2QIXAe7q97XMUOtrG/r/tV
+PhAcmfxf24npXFn3RhkkaT+XxqY891rJUHLUDfu1p8Rs8+QA+wf9ti+I/Ow0zC1c
+TQibXKQlhu/Pb1CwVlGfg5OG29hOQEplCyaVjnQK5oPaw9O5NEs=
+=AtsF
+-----END PGP SIGNATURE-----
 
+--------------jzPPC6cqPSJxGVQJoosVKqnL--
 
