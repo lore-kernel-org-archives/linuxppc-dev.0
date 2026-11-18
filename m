@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3897D606CB22
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 20:07:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D420F606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 20:14:36 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jPTRhgOs
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SgDlJU9K
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVCLS6zZyz2xlY;
-	Thu, 19 Nov 2026 07:07:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795032432;
-	cv=none; b=FbT6vEUd+aIgSLN5P5w9NvP0dTixD53xwXLcT9zK2ez26T0g8aGeBmyMEvCEoZUIogErGLsVbFszXZfisoLYTGUcdfgCOOHXS6yBmxfJjiZXLbqj0Jd8+5XvKlkVU9suuHOTXLCFi6WkOgp0MpTiVTRFnxIhqahJkVBJW5DJXu1TbOOea5KtQk+Rdo15AIThjbXj1DsCCUzFu633By0wQRIaWcof26ni1CAnkxaW+y6Rf04dDUWSjfdvvLpChBhG7j0DQZfk61DR4UZ2vDc4mUkWaa/6B0RPekSIkf6v03QQt74+J90dZQiqOFWl1WVhBviw9ip5mPyn+SDWLYe3Qg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVCVz4Ksqz2xlY;
+	Thu, 19 Nov 2026 07:14:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795032875;
+	cv=none; b=fWi0mxt/kN20Knl3dcuowaEZ8Z/tM2pBa5a6M+yeYQ5G6uH00d5WVuyzVFBulDJ+brRt6jhZDEjpwaJNFVxeRAjLDkk8nygFmB3CRHlneLV5akVOMhP9uMnE0Q9ruoR4XLok8s8cWZYbh5AypUwxPVukhNJOhfdN9nt1Lssi4WfN9rND3XcTIV/ppyKwLCwYOvPI//sRRRTYQhwlrQk0dJSVJ/8PwThPqpqNd7C7VbERDzXHc4TfIw8KyyHBYKxWGnb6UBK2BxNBCkfxhOmYMfH0FX9z5Br3hgHh+q4ucaJkKnXFKSbivVESKkUW9kKDV1Wn+cXife8sCC1DtjrSaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795032432; c=relaxed/relaxed;
-	bh=Ydr2zuUo4Y+Eu5vs2uIcRAQ0D83Gb2IoOYjqdt7Pl2g=;
+	t=1795032875; c=relaxed/relaxed;
+	bh=pUhs6fW7JTG/XV7F5yinkkxTZdkT2kLrXXwi/BnqRWo=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=H677urmdce2qzpsU0R7KsosDZ2RXZVfOaSgh4BYGd7YuURoq9rLunzBvpKehHYq4X2hzkphNRCyXOZCC96qvBwoAnfRgG4JrpYmTwk5zEzDtsnSTocLgYreUVcT2cgTDDNkECFUUk+MB38q+B2B9BRe44G0tZLv9+DIv4FQhqYVQIGyIcgvmQOnv36EPPjB6ILipZOVmKulYeLlJJq5qLmWb67tJLk9yafn5YRU6IhwDCbrYsJ38JPs5i71mnrO1n+jkGsuWC5XY7phuOK0A9s6ZRZCwxTboE39dxSDcXJoNO4857Xka8kWKvQOOIOaQvRWO4rB+/SBRg5JWo+2xgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jPTRhgOs; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=UpHTDNXfazWizaTeIMN9hHVuz1s09p46M2QmhQvYL0SzekoDRJ4bxYLfxZ+dQbcToNUGozgPpwmQDjIItmtReuoXVdcImn76Yeb5OKY04uf9aXoZ7sxqUKGmrHj/GIgUZEjosn4MIlsRcdvmvmAMqgSLoFkshT9jeWip6LNHftQo0wGMdO52bCm2ekJBThlTiC6kFom/UU47+Crdfy17dY+cYiOEBUVYMAEce8O83hPdPSJq4D6Eri8c5YOdDy1SbUV4Rrz3jRIIwNzAD4jpm0978EcvGuJQLBBD/cpZcL5ODBgokGpIHa1WzKgCpkSFtmJ/x9T5dthyXW7jAT0ydg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SgDlJU9K; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jPTRhgOs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SgDlJU9K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVCLS2SKZz2xdX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 07:07:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVCVy4hF6z2xdX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 07:14:34 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8900663A6D;
-	Wed, 18 Nov 2026 20:07:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A0821F000D3;
-	Wed, 18 Nov 2026 20:07:01 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 179384087F;
+	Wed, 18 Nov 2026 20:14:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 292131F000C4;
+	Wed, 18 Nov 2026 20:14:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795032429;
-	bh=Ydr2zuUo4Y+Eu5vs2uIcRAQ0D83Gb2IoOYjqdt7Pl2g=;
+	s=k20260515; t=1795032872;
+	bh=pUhs6fW7JTG/XV7F5yinkkxTZdkT2kLrXXwi/BnqRWo=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=jPTRhgOsJ3gg9xAK3g1Kxi/CA9EBREb/tAFnQ69biXVG8KJQxY4VY55gGxMgxbxMm
-	 HuUwmxC6iqTnSdybEJfmpuaXeFpp+csnzklAdxn7PjBEs5WIWMcgYJyhT2OFeTBee9
-	 y0BRDXSr+3DPOn9WkTbyfg0ILxQAWuhvk5F26WpWV1g8oOstjYX+kdxU4ekO9rkTXw
-	 Yy/qU9eXDfUrBkjNvne7I6B98W6eOVnwLr80IOwKhpsn7thKaHjd/uOO8F7ebaUdnZ
-	 DWmuXVGRBFLjieYHQ1/v3GOQUEuJJguNK84Y5TVkq4/NJtLsBBkmSubqbE78/+3N8g
-	 1tSzHbnWZ2khg==
-Date: Wed, 18 Nov 2026 20:06:56 +0000
+	b=SgDlJU9KQwoCY7Uj7jzC0Qcq473jHIyRID8jZ5fvl0wB8SFc8SfBVnUdD2m1Pkfe0
+	 +FVlzCHOF7CVIbheRt1Jaf9XvfAoDCOfZ/vlacxvcQLrCIbwz8PHgMf5+VIWDS7UuG
+	 QRu4rUGXHUZ7Zz31zetvTyZdx+z4u86WqG/VRcFvfFMDnCjF8VsBTrucw6yDPEiGdg
+	 G3gD80JGuI+UFz0js3gcgBM4TLrupQLcWQ1MR6bNT4PnOL35ZjP7jKGCZOtjde1+t0
+	 NqQm5QLRhKfiqVaVmdoONuIgH2vX9a4TwcmTVUIT2/tiwHfVpfXxa0azpvAEVvUQET
+	 6qKwxwvqSqcKg==
+Date: Wed, 18 Nov 2026 20:14:26 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Pierre Gondois <pierre.gondois@arm.com>
 Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
@@ -58,21 +58,22 @@ Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
  <mahesh@linux.ibm.com>, "Oliver O'Halloran" <oohall@gmail.com>, Bjorn
  Helgaas <bhelgaas@google.com>, Maciej Wieczor-Retman
  <maciej.wieczor-retman@intel.com>, Pawel Chmielewski
- <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, Radu
- Rendec <radu@rendec.net>, Avadhut Naik <avadhut.naik@amd.com>, "Fabio M. De
- Francesco" <fabio.m.de.francesco@linux.intel.com>, Kai-Heng Feng
+ <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>, Qiuxu
+ Zhuo <qiuxu.zhuo@intel.com>, Radu Rendec <radu@rendec.net>, Avadhut Naik
+ <avadhut.naik@amd.com>, "Fabio M. De Francesco"
+ <fabio.m.de.francesco@linux.intel.com>, Kai-Heng Feng
  <kaihengf@nvidia.com>, Dave Jiang <dave.jiang@intel.com>, Breno Leitao
- <leitao@debian.org>, Terry Bowman <terry.bowman@amd.com>, Dan Williams
- <djbw@kernel.org>, Kuppuswamy Sathyanarayanan
- <sathyanarayanan.kuppuswamy@linux.intel.com>, linux-acpi@vger.kernel.org,
+ <leitao@debian.org>, Dan Williams <djbw@kernel.org>, Kuppuswamy
+ Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, Terry Bowman
+ <terry.bowman@amd.com>, linux-acpi@vger.kernel.org,
  linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-pci@vger.kernel.org, acpica-devel@lists.linux.dev
-Subject: Re: [PATCH v1 14/19] ACPI: APEI: Return status from
- cxl_cper_post_event()
-Message-ID: <20261118200656.596420c2@jic23-hlaptop>
-In-Reply-To: <20261117111444.4185512-15-pierre.gondois@arm.com>
+Subject: Re: [PATCH v1 15/19] ACPI: APEI: Extend common CPER reporting for
+ GHES section types
+Message-ID: <20261118201426.5698499a@jic23-hlaptop>
+In-Reply-To: <20261117111444.4185512-16-pierre.gondois@arm.com>
 References: <20261117111444.4185512-1-pierre.gondois@arm.com>
-	<20261117111444.4185512-15-pierre.gondois@arm.com>
+	<20261117111444.4185512-16-pierre.gondois@arm.com>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -96,21 +97,20 @@ X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 17 Nov 2026 12:10:24 +0100
+On Tue, 17 Nov 2026 12:10:25 +0100
 Pierre Gondois <pierre.gondois@arm.com> wrote:
 
-> Callers cannot tell whether cxl_cper_post_event() queued a CPER event or
-> discarded it. Return 0 if success and 1 if aborted. Existing callers
-> continue to ignore the result for now.
+> Add ARM processor tracing and CXL media delivery to acpi_extlog_report()
+> to prepare for GHES reuse. Trace CXL records as nonstandard events when
+> validation or queueing fails, preserving their payload and FRU metadata.
 > 
-> A worker that is already scheduled still processes the queued event, so
-> its schedule_work() return value does not indicate a delivery failure.
-> 
-> This prepares for a following patch moving PCI/CXL handling to
-> extlog.c.
+> Reuse acpi_extlog_mem_err_min_len() to accept legacy 73-byte memory
+> sections while rejecting records with missing fields marked valid.
+
+I'd do this separately and add more info on why... 
+The others are more trivial
+
 > 
 > Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-
-Given no error codes are returned, why not a bool return?
 
 
