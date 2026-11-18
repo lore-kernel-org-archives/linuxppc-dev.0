@@ -1,97 +1,80 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E7360606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 16:17:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7E69F60A2609
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 16:37:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqG2vvRH
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZiOIRg+Z
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jV6F53NhPz2xSl;
-	Thu, 19 Nov 2026 03:17:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795018633;
-	cv=none; b=bxVw4bbi4Uh+VaKt7E49P5b0K5NTLULfRxs+t77wQbiU7zdk5JZekOS+JBiaHdN8Ri/ejLN1lN7SiK6RV2i6YMIRd18eKa/uoh93OjJGKXWx7b/gRub2G43ZPf0WgdU7jpebCYJlEWTe22AVarfbD6NGwJbB/nTl8M+bkz49GVgrqZEVO5GsxXp4ZEZDCl3u6hdStHmKck93jd5Mz8INaR0OZOT1ft4cuNS9oehnhpaYsSpYOXEKML7zMQ6GXdQSRX0AeWGuSvlxPbVXE3WGFIVOmj25UfMqQLePnuCIRrZSjNg6WDAPlPdAXRO6PAMAknWD9M14rHiGOfceh3/l1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jV6h104ytz2xSl;
+	Thu, 19 Nov 2026 03:37:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795019824;
+	cv=none; b=GLY6a8INwGWLyeakc4bLXRcOt0Mr1P4po1m8YVUjNVrr/aPzrKejwsyxfk/epWTIo8Sc1Yj0gRm8nRccOehyfulxlOLWE+oo+qa2qCGn5leERm2L0mPnS71+b83MKsg9TcYgz5SYMPYSmAf4QLg4zpn3pay50naOsQTFer21afRm1wFhg1g8lE5LJ4n/n9efWsbPS0mpZLpHHDMqyT0JTXu1uD0YuqMHz9I5USq+P1IC6sI2QUVbvkxR/F+igVuQg2mNXpKMA09L2lmAYI6+TnN/RaVPTH9KhHvWMqDgDHnnATzNtRC8FupV9PSfBz0T1T0fE0s+WND+mIBVHPhbtg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795018633; c=relaxed/relaxed;
-	bh=KH7bb4VaZEOEZgLtTJYQPM7/j5RYK5pPIJZczw0vLME=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=abx6M6sEmH1OGKHzysILIiqXznzPJseYxJlx7t4s0DG7loFdTVbE36TgqbXohbBxiev+6DTE8sNxzxSU++cWJxWhM/B/WltGJUIcQQ0i0FntdS2nLBd4GZsbNLphipMa4z674dSFq/hTvjXrkFYVY2CfnQi2mwW5/gJuRYHt/UhICeDJYEhf2CFdalbtjM/5UbnbfoIL3TqqZt1m1tBiq6DMDnkvlkDsULlYEY58oPPmQHNlVJQ/7sWMAnSObqzvyBIKaQtR8yOzqAKuoHnvKnJmKdinPtROKs9cOI7irW+nf0h5pbQrrhGc1nt4aADZd8pwH5q1X3124dhS22Z4Cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqG2vvRH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795019824; c=relaxed/relaxed;
+	bh=TmmYz49EZYskwqE2evp0C5eWLTGphEa9ppDYNdOJLXI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dtMQywATdiEcs4tSgwfZmxKwGNlo3liCDN3xmgMmJNho6+YwKOCEAfz9Go56ImZIpXFEnFMcJOt/8SLUdI4AIuJZIZc800+np6/yrP4XUXw7+KQnu8F7oJQYxUng2jVI/1JaUkh3hKkmPc+d6TNfHQ2CFEOn428Uom04yIzi8JQc18H3i8khLE5a86wjRlqhvlOZv7bV9aAP0lQmQPqjZnyT7YalG3vtXBarEGkx5WV4lwGhfaeXZybRx4T/ZfP8jZ89ZMd4WpXrF1tOUbuSlqeLWi/evGGushdiKRWkL5OT/d2877ECkMP/mm4Zs1QSfpx7tvjA+1OhNDS6fkRRJw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZiOIRg+Z; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MqG2vvRH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZiOIRg+Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112b.google.com (mail-yw1-x112b.google.com [IPv6:2607:f8b0:4864:20::112b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV6F41gsvz2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 03:17:11 +1100 (AEDT)
-Received: by mail-yw1-x112b.google.com with SMTP id 00721157ae682-8b4d07494b0so27826737b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 08:17:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795018628; x=1795623428; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=KH7bb4VaZEOEZgLtTJYQPM7/j5RYK5pPIJZczw0vLME=;
-        b=MqG2vvRHy/e0IG2mzerWOme6xCL4dTF6ZgzHAPywjibhnN5cLsqzrpIFRTyLr6f7WY
-         ceDCmDTfjUq8rataifS9CPozhblTw0bnXAWMdwz48rUC8EPoTpldWRGXWdoIjl6fqrvg
-         bfKAExv5g6YkLjoRrYqnqIriKXY13Wk6ktW1O0kKUTiEiJvqfLeOKo5itBVPdIavdoyx
-         EOA8Xene0lGVh7pVvrh8Y2gZkMCKEaw8wPjFGcHu4biwxCFmTpHLrh0bkjpT5rQjG73G
-         ru7ywX3hExCLDL1x/rkERHZ4NIxYCNUE9qxt26MBuaOsrGkRaYJ/7cWlxpoKviFUbMJV
-         t0hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795018628; x=1795623428;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=KH7bb4VaZEOEZgLtTJYQPM7/j5RYK5pPIJZczw0vLME=;
-        b=ycNYYnR5XMFhwXVsFlCl+0EtkPU50Txf1j1Wbo9SRqSFBKPwAUrK1KgfmFvOPfMYcB
-         Js4iBmjK3dfYRtlJL9LNG3gJNcJRG7D4Bl5esEDl1V2vNgm8NXN+dpsUjetJj9ouKCG7
-         sypuksRz/clpYolOjNHmAhN5ZvJ1RiRhWWLHK9LWlZOcTwLLNoN/ksfeKvxwpsg2RgJJ
-         PJ7uNOUi+TB/rPaLad5FF6l4tzzhHjiAFkoa4Kt6OU5DcWyU56vFyTANzESPzulH1rJ3
-         SCbuuRcYvWffKHD7tKGFZeHzcVdOmMJgmc+D4xgmAng1K/9q90AcOSgkbAgJepnY0yzx
-         c/fw==
-X-Forwarded-Encrypted: i=1; AL+hErHsVJN3VVRFrhSKevNpCNv/InWmWCei7N7E8ZmTIFqB6Eu/r17hm6rvMI+JgV5QhEK7ZFHKGyIE/dQNu+k=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/9W5ujPPMK4FwWcVEL6A+Nq9yOQAli91skl01axJRZRrycX/2B
-	nGKSnlafELRrYNgZwDpQfINw6sJL+gfm2x6yVpPp/WwJ0fH6Um/TivyS
-X-Gm-Gg: AZFdTZfrmlxLNlT5Rx0RKKDYkOJsivCpB77YHQM5k6YXF8g5gTwkgVox9mk4xDNWXOL
-	00ViqNoaVQjCVga68JTzOtfcY/88oZz+JwXB2LkDFMns3MuGVq1TuYoM6P50Iye/Bd8qbZlTmEt
-	H6UEMv35KiTh22CfBImts89/9qljyxMaJfH37g27Pl7cqIIlsQWsFLCFTNa6JexXpiRvL350yxl
-	41kF899FDpnNyqiqePR5J2PazasSRTk5bAVj3vcT7Tc3Eq9iQKIF3fC3cgbcUJe6/MDUqasaiHU
-	/Hh+Tvvjr3jg5H/nn8j79e4msjHZiIyiVQRXaJzZJUBCmTDc1sMIXHtq96E8u7iqfB8w89ZISGH
-	81keBe7W9k4qraPw1XpcqnlFdLnSSMhrywEOgFJ65cbWN2uzJJNanfldAAPzd5hs085mQ1OaFbD
-	37Qcq5GVzk+VGIUlpQTcSAyQ1L3AgQq08v8vEAnkc55bl9maCNIaUWoDxm72TLsILGWgfrRW6Pm
-	MzEMm7+lLJhOwjRWiMClEm1XhzmNf+Qm2tUu3K5NUz9/CKsWIHLaxkCG4nc0g08C7DAqe9C2qIq
-	7SaHMMpkDfHLlGh5bo/zrT9D/nW7W8oSkNtpNtVKMPHwAyzEh77+mFGOMzjVgcTIHFtX3HwHzh0
-	WMy3q/GwVm0LBtFfashrSjRmJIguWg6Bhujc+2I19pMrwh4LZSCLsOV/jV95o/BIuEYN7xI4Qhd
-	Ee58w2VRQGiPO6MSMBGQ==
-X-Received: by 2002:a05:690e:810:20b0:67d:bcce:d615 with SMTP id 956f58d0204a3-67dc786a8dfmr2191044d50.10.1795018628172;
-        Wed, 18 Nov 2026 08:17:08 -0800 (PST)
-Received: from localhost (107-220-129-194.lightspeed.chrlnc.sbcglobal.net. [107.220.129.194])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67dd58cad32sm1901629d50.22.2026.11.18.08.17.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 08:17:07 -0800 (PST)
-From: Matt Turner <mattst88@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Paul Mackerras <paulus@ozlabs.org>
-Cc: Tanushree Shah <tshah@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 7/8] powerpc/perf: Use SIAR for kernel sample addresses on 32-bit
-Date: Wed, 18 Nov 2026 11:17:06 -0500
-Message-ID: <20261118161706.2454031-1-mattst88@gmail.com>
-X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com>
-References: <20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jV6gz6f9Nz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 03:37:03 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AIDQBHE1373026;
+	Wed, 18 Nov 2026 16:36:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=TmmYz49EZYskwqE2evp0C5eWLTGphEa9ppDYNdOJL
+	XI=; b=ZiOIRg+ZJsiPTpDzqzLVlKc58MLHpAFj2+0GQtRm8uI+7TNdWT5BZaDNF
+	bSiVuiFWbaBFNcjOWqSs8ohjp5Khql/bo5wdLOSIUF8BEvsaaWvG1IgskKFssI4M
+	4QOFtDLOiOv7SJmKzpRGM4sFZFB3mh2ZZsjKYlh5Ipp1ydB4OcXX73+uSDsrD729
+	cbjWNoaOPSNHUmJXdi8tsLKJaFUC5vEhnCv9fY4FrVzk7loXNddN5BKj+SNkfYZu
+	MXcsCjJnGdiP4ZbmSaTNACqKkiKzHM7ecrM6RC8UoiFjeYVgogDAQJOrZ07miOaM
+	5CUOl4yAm3LJ9cth9Hdw5afngDaAw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105nbef8-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 18 Nov 2026 16:36:52 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AIDZGCC3180338;
+	Wed, 18 Nov 2026 16:36:51 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j02jugw5m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 18 Nov 2026 16:36:51 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AIGalL341222648
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 18 Nov 2026 16:36:47 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 99F742005A;
+	Wed, 18 Nov 2026 16:36:47 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C647A20040;
+	Wed, 18 Nov 2026 16:36:42 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.19.105])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 18 Nov 2026 16:36:42 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        driver-core@lists.linux.dev
+Cc: sshegde@linux.ibm.com, christophe.leroy@csgroup.eu, maddy@linux.ibm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
+        johan@kernel.org, sudeep.holla@kernel.org, ritesh.list@gmail.com,
+        tim.c.chen@linux.intel.com, yu.c.chen@intel.com
+Subject: [PATCH 0/5] cacheinfo, powerpc: Move powerpc to generic cacheinfo
+Date: Wed, 18 Nov 2026 22:06:34 +0530
+Message-ID: <20261118163639.890546-1-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,114 +89,103 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA2NSBTYWx0ZWRfXxTZLB/nkfKdu
+ 9ahc/7cym+FTt5RSBrwRmJXIXqkmv51RthaStlHFtD6cZA9eSezGO4m97Yzg/dBMBzFYmP9M3+Y
+ 44zrMrKcNByhN5rk0AgJ7aWWys+DDfNj5t1S1Hej626ZjLpP9Ac/qX4XRVSrYqrcaXhqKuPsIrp
+ d3xs3faJ68HGbwU8zVhVBWLvEdr4ccGufRPnbi7ktGOHfWc0M8cx+bCQ2qQCHJRLX2zAnFaj3mM
+ aIkHtsqca7jIsL96wqkotJQ6QvhmTNCXv/Zd59+9Cz3yCjO7PdXw2dZktWGytcFOoC0kCnVTXnD
+ GP68CecHsDx8M/B2+A80ZX/+C2UQ0iSaUqp9FizLs2/0vPg6UkDZrbzM7Gs16e/2BRT3Ou3LG2j
+ AtVlD3dp1J3pLQEgch4hOjFMTMOEljNeMbjUci+I3P6hJSG/tQXwdbrGxKBJDMcl0p3agohH+1x
+ mVbw4qQFfmeU39gYsCw==
+X-Authority-Analysis: v=2.4 cv=HN9WhYtv c=1 sm=1 tr=0 ts=6afdd425 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8 a=7CQSdrXTAAAA:8 a=VnNF1IyMAAAA:8
+ a=B9_qJ1oztFEBON1DZfwA:9 a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-GUID: SR1mgnAxcme0IsEfMeOJtnII3aOt2ed0
+X-Proofpoint-ORIG-GUID: HYttsEp0gA57szudWeTroFnngXI5AFGB
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA2NSBTYWx0ZWRfX8pA414+6GV9j
+ 4WKFLZ7WX0a9Fo9HrJaOnb6Z6zbCMnwY5zrNRGU5xykWUApcLhrHrNQaCptmPsVwLNzviQfYX7I
+ Mp70m814xR+IgeMawGDc6yTnjp6KkP4=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-18_04,2026-11-16_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 priorityscore=1501 impostorscore=0 suspectscore=0 malwarescore=0
+ adultscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180065
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 32-bit, perf_read_regs() sets regs->result to 0, so regs_use_siar()
-is always false and every sample is attributed to the interrupted PC.
+This is another attempt to move powerpc towards generic cacheinfo
+framework. This is spiritual successor to earlier attempts by Sudeep
+Holla [1]
 
-The MPC7450 family's SIAR holds the address of the last instruction to
-complete before the performance monitor exception is generated
-(MPC7450UM Rev. 5, section 11.3.7). The exception can be generated
-with MSR[EE] = 0 and is taken once EE is set again (section 11.2), so
-when interrupts are disabled the interrupted PC is wherever they are
-re-enabled, while SIAR still points into the disabled region.
+The context around this time was, when trying to enable Cache Aware
+scheduling on powerpc using a llc_override kernel parameter[2], it was
+pointed out that the llc_bytes which is retreived using
+get_effective_llc_bytes fails and hence the cache aware scheduling is
+effectively a NOP, moment the process has a visible footprint.
 
-On a 7448, sampling cycles system-wide with --intr-regs=nip during dd,
-perf bench sched pipe and find, 46% of the kernel samples have SIAR and
-the interrupted PC in different functions. 13270 samples have their PC
-on the instruction after the mtmsr that restores interrupts in
-ata_scsi_queuecmd(), and 11661 of those have SIAR in udelay().
+Instead of adding more hacks around with custom arch_llc_bytes, this is
+an attempt to move powerpc to generic cacheinfo instead. This removes
+the powerpc maintaining a separate sysfs entries for all caches.
+A few modifications to the generic code is necessary due to some of the
+conventions followed in the device tree specifications. The details are
+in the respective patches.
 
-With interrupts enabled SIAR helps less. Sampling a 32-instruction
-loop with one store and one branch with -c 10007, 99.8% of the samples
-land at:
+If this approach does not work, then I am afraid we might have to fallback to
+arch_llc_bytes.
 
-  event             interrupted PC   SIAR
-  r122 (branches)   br + 13          br + 9
-  r014 (stores)     stw + 21         stw + 17
+Note that initial draft of the work[code,changelog] was carried out by LLM.
+Provided the device tree blob and both powerpc,generic cacheinfo code.
+With few iterations, LLM did generate the right code with few tweaks.
+Only the cover-letter and Patch 5 are completely from me. Thanks to
+LLM, this series is in shape in few days otherwise would have taken
+more time. 
 
-Because the exception is held off, it can also be taken on the other
-side of a user/kernel transition from the instruction in SIAR, e.g.
-just after the rfi at the end of a system call. Recording a loop that
-alternates user work with getppid() with perf record -g -c 1000000,
-3022 of 16953 samples had SIAR in a different mode from the
-interrupted PC. The callchain is walked from regs, so taking its first
-entry from SIAR there starts a user callchain with a kernel address.
+Tested the values compatibilty on Power11 Dedicated and Shared LPAR's.
+All the values are same, except id and uevent which was not there
+before. That should help rather than hurt any tool.
 
-SIAR also holds a real address while translation is off, and a real
-address looks like a user address. The hash_page() fast path on
-CONFIG_PPC_BOOK3S_604 runs with translation off and EE clear and
-returns straight to user space, so an exception generated there is
-taken at a user PC with SIAR holding a kernel real address. Reading
-one word from each of 2048 pages after an mprotect() round trip has
-flushed their hash PTEs, with -c 10007, 1674 of 2659 user samples land
-on the real addresses of DataAccess, hash_page() and
-fast_hash_page_return when SIAR is used whenever its address matches
-the mode of the interrupted context.
+This may need more broader checks on different boards/configuration
+to ensure it is same. Also DLPAR CPU add/remove is not tested yet.
+Please test and report if your board/platform shows up any different
+values in those cache entries.
 
-A user SIAR cannot be told apart from a kernel real address, and the
-table above shows user samples gain little from SIAR. Use SIAR for PMU
-exceptions only when the interrupted context is the kernel and SIAR is
-a kernel address, and the interrupted PC otherwise. With that, neither
-test has user samples at kernel addresses or callchains with mixed
-modes, and 99.9% of the kernel samples in the mprotect() test still
-take their address from SIAR.
+[1]: https://lore.kernel.org/all/1424715500-21725-1-git-send-email-sudeep.holla@arm.com/#t
+[2]: https://lore.kernel.org/all/20261023131646.2907938-1-sshegde@linux.ibm.com/
 
-Suggested-by: Tanushree Shah <tshah@linux.ibm.com>
-Signed-off-by: Matt Turner <mattst88@gmail.com>
----
-Changes in v3:
-- Use SIAR only for kernel samples, and only when it is a kernel
-  address. A real-mode SIAR from the hash_page() fast path looks like a
-  user address and was used for user samples taken after its rfi
-  (Tanushree Shah).
-- Retitled from "Use SIAR for sample addresses on 32-bit".
-- Link to v2: https://patch.msgid.link/20261117-ppc32-perf-v2-7-2072e9b90009@gmail.com
+This series is needed llc_override patch[2] series to work. A subsequent
+version of that will be sent out soon.
 
- arch/powerpc/perf/core-book3s.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+PS: I am working with 90% coffee and 10% sleep.
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 10ded865583c..aab18f4dda94 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -112,9 +112,28 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
- {
- 	return 0;
- }
-+
-+/*
-+ * The MPC7450 family's SIAR holds the address of the last instruction to
-+ * complete before the performance monitor exception was generated, so for
-+ * a PMU exception it is closer to the event than the interrupted PC. The
-+ * exception is held off while MSR[EE] is clear, so with interrupts
-+ * disabled the interrupted PC is wherever they are re-enabled.
-+ *
-+ * Because it is held off, the exception can also be taken on the other
-+ * side of a user/kernel transition from the instruction in SIAR, e.g.
-+ * just after the rfi at the end of a system call. SIAR also holds a real
-+ * address for code running with translation off, and a real address
-+ * looks like a user address. The hash_page() fast path runs with
-+ * translation off and returns straight to user space, so a user SIAR
-+ * cannot be trusted. Use SIAR only for kernel samples, and only when it
-+ * is a kernel address.
-+ */
- static inline void perf_read_regs(struct pt_regs *regs)
- {
--	regs->result = 0;
-+	unsigned long siar = mfspr(SPRN_SIAR);
-+
-+	regs->result = siar && !user_mode(regs) && is_kernel_addr(siar);
- }
- 
- static inline int siar_valid(struct pt_regs *regs)
+Shrikanth Hegde (5):
+  cacheinfo: Allow architectures to provide custom cache IDs
+  cacheinfo: Support unified caches described by d-cache properties
+  cacheinfo: Add teardown and rebuild helpers
+  powerpc/cacheinfo: Move to generic cacheinfo
+  sched/topology: Remove stale comment around llc_bytes on powerpc
+
+ arch/powerpc/kernel/cacheinfo.c           | 994 +++-------------------
+ arch/powerpc/kernel/cacheinfo.h           |  13 -
+ arch/powerpc/kernel/sysfs.c               |   3 -
+ arch/powerpc/platforms/pseries/mobility.c |   2 +-
+ drivers/base/cacheinfo.c                  | 111 ++-
+ include/linux/cacheinfo.h                 |   3 +
+ kernel/sched/topology.c                   |   7 -
+ 7 files changed, 194 insertions(+), 939 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/cacheinfo.h
+
 -- 
-2.56.1
+2.54.0
 
 
