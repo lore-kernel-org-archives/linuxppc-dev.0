@@ -2,49 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1A393606A334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 19:45:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5818A60A2609
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 19:46:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L6dt6FME
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k8rhOii4
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVBs85tp6z2xdX;
-	Thu, 19 Nov 2026 06:45:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795031116;
-	cv=none; b=cuPZyxZBc0UJ1IYVbVI2WFxqga6ml+n6Ug1PYca6YdLiTBX7OMB3FL1Pi+AcWnszFcDJwYroI2wkkyJV6ZxtOND8TC1JSMptk3+NpFX6ZA6+AGOeRxf6D03Jfl5Ay6NfI1equgK3j4cDcIImuMwdibP8wnDxI0G0I0Mx/IgVe0tnUve3XUn9t+PwmBXJ8XcLQhhmyJ3JVvRD7A+QOaOV+xOJlDVeo9aOQZxgDQ8UXeTaSYsBCdsEQmWbApQjk5frGuCTJzRPZVCUKaeFo8tnhx5Pzxg7dcRt65loDyW1X+A886XT2sq6+ablsnv37WWGSDJlbSgM0aLNkrjNPoEnkw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVBtq0gYPz2xSl;
+	Thu, 19 Nov 2026 06:46:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795031203;
+	cv=none; b=bE0tgOvMiBfEnMjoIVAbK/tTzq4/1+B06vj/5QgBlZksjZoWe0msKIkUlg/i00CvK4h5/X5QKaj5UFkg+ZPbCRvmRAOOl6OPPppYVjgcoqz2dKDWf+t/uLzbb+tA4oLQV5IMtI5V/7NNkkLp+b+HYEI+2blx7HA+71wy2xh5FVXHcMpz9++Fre9mkU/HaAoYtWRAXUDCLsiIEPNPwfrdShEnrZbwsqEvY+UGGFy1Pz7a1hXCPww8d8QrYLV6pju/j5Vh29CZVWLAabP6DEekDCKEck4FmsfPtSFdsJqd47jqRU5gN5RJlZ7BgVnFTyXVZ7O2JzYkC5Dk0gCOZWKVkg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795031116; c=relaxed/relaxed;
-	bh=na5w5nNR+vMQdY7egGSiK+WyNzzJugfy513I7z+3ojw=;
+	t=1795031203; c=relaxed/relaxed;
+	bh=FraNARuPZ3tZqbt90b68MTJtjCSnJWUqeang1fd2yUA=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=XNB39OA5OVl8kFM+JrAJjTYCfghQWqtDzHPq3GsH61ZdK773mt+mOXKXGHYn7VCpZfHJX2I2o2jtnAT+HW58SwiSzHb0iRflgRbM66tJ9hyOnH+gl6eBNWwGMoepHoygsG9rorNwtWK5oMa8kb5F8/SvuC+MeRmppVsVZCo3+IiSMXLCpN3bR2hNC5Xc2YrZ9z7pjkpFXCGIu6bkaOQfMWpSix+4uqqIKIva0ID4zxlOdsY0OS7VCTHD7Lv7G7kdT0Xq9gW12HcDZsUrcWqVJCowZpU1qVxVfg0TsBuNlJyKjoUH3LlGdwJrah3+XGJhy1tFIQ0AeyLROQAP2IA+7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L6dt6FME; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=GP4W7Tb/C1sbdivVjZWhoNOng3UAOExQarIRUFvQVxET4To9p2wK3fN8xn36Hh3YGwwoP0Z5Dx6pmL9dqFUZzofhKHXISl4OPJt2Ts8IWYVIgR7ur1+qUmlb1x2X/zkWEwailXcZYvRnhMLEYh+SV7qc2T9TA5qjUPlZnUaQhn+ukmThvfxkI1EkTUxSYZezM0IQY55alqiCiaKvfFR0oKI/elaN7/jIrevWoIOK7QgVZmfZF8VKOHbC1HBSWgS1lJvYNBGpZsRhgxAJYl8XIalKcPYJGOKk1MBn2Y82TjfKbT8voaXZM38m4WmT2oCZYOhCLbxNPioY17txsRqlvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k8rhOii4; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=L6dt6FME;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=k8rhOii4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVBs74tDMz2xSl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:45:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVBtp3W51z2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:46:42 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 96D9063965;
-	Wed, 18 Nov 2026 19:45:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A0221F000C4;
-	Wed, 18 Nov 2026 19:45:12 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5B077472F3;
+	Wed, 18 Nov 2026 19:46:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44C5E1F000C6;
+	Wed, 18 Nov 2026 19:46:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795031113;
-	bh=na5w5nNR+vMQdY7egGSiK+WyNzzJugfy513I7z+3ojw=;
+	s=k20260515; t=1795031200;
+	bh=FraNARuPZ3tZqbt90b68MTJtjCSnJWUqeang1fd2yUA=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=L6dt6FMEOP1zQQVYmvm4CWgf23sQN8hCZAeCPpJLUWYgTvFf7gXRCmY8q9oe8FB89
-	 mFwKA3cTtvdAfFZFl9F4ioYJcVEsMKWTCue8zDVaHf+I205Vj88up8tmRM8/QJNPNo
-	 vEQFVc++El8isjgs4ePvndtd+czHKU8rEk60UDeg/yTC1yvwG7kGmcolbdJL7mtuh4
-	 TDuR2OHULNcxBLOrwg2XKiNuq/Wsl91E7uHihCnXYbc5Q2INuNk3OP0ridc8bmnQBi
-	 e6EQvW9xW8L5Lje24dTZqRGEKPige77kZlY9Gtz4XcL4NGvfXo27DslnJIgUouq6sl
-	 vJ13TA7NrXqog==
-Date: Wed, 18 Nov 2026 19:45:08 +0000
+	b=k8rhOii4GBidYBHAj6OybYKjTi95/OE4IutpnAuro0koyhgtSDGMrHBqjxr2sRagl
+	 xsXin4sy87M6WN68cIHkqd3YIiqDzzLGmqRMy0dAcmgLOjmMTijhTQf7Uj4/jUmVrN
+	 lwFMRFnl/uAjRVANuBcqyW7GFSh2cKjw7odg8pFJGFKroRsjqyyWye4YpEJ5E5X0mu
+	 SpQubNXz2Pii6uA+K9BywHWQWqD72reCnZILizmgwg+ld1G//C9l325rWrKrAVwdna
+	 pRjtmXTtrY8/Az4tAbLk4ZVbgV2OY6SA2/k3co8e/Kq7g+ymgLGiZqR4I0uKOjOlcP
+	 screbGc9dWcmw==
+Date: Wed, 18 Nov 2026 19:46:28 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Pierre Gondois <pierre.gondois@arm.com>
 Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
@@ -59,19 +59,19 @@ Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
  Helgaas <bhelgaas@google.com>, Maciej Wieczor-Retman
  <maciej.wieczor-retman@intel.com>, Pawel Chmielewski
  <pawel.chmielewski@intel.com>, Yazen Ghannam <yazen.ghannam@amd.com>,
- Avadhut Naik <avadhut.naik@amd.com>, Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
- "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>, Dave Jiang
- <dave.jiang@intel.com>, Kai-Heng Feng <kaihengf@nvidia.com>, Breno Leitao
- <leitao@debian.org>, Terry Bowman <terry.bowman@amd.com>, Dan Williams
+ Avadhut Naik <avadhut.naik@amd.com>, Kai-Heng Feng <kaihengf@nvidia.com>,
+ Dave Jiang <dave.jiang@intel.com>, "Fabio M. De Francesco"
+ <fabio.m.de.francesco@linux.intel.com>, Breno Leitao <leitao@debian.org>,
+ Terry Bowman <terry.bowman@amd.com>, Kuppuswamy Sathyanarayanan
+ <sathyanarayanan.kuppuswamy@linux.intel.com>, Dan Williams
  <djbw@kernel.org>, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  acpica-devel@lists.linux.dev
-Subject: Re: [PATCH v1 09/19] ACPI: extlog: Report errors independently of
- RAS consumers
-Message-ID: <20261118194508.150029b4@jic23-hlaptop>
-In-Reply-To: <20261117111444.4185512-10-pierre.gondois@arm.com>
+Subject: Re: [PATCH v1 10/19] ACPI: extlog: Simplify fatal record printing
+Message-ID: <20261118194628.30ad2621@jic23-hlaptop>
+In-Reply-To: <20261117111444.4185512-11-pierre.gondois@arm.com>
 References: <20261117111444.4185512-1-pierre.gondois@arm.com>
-	<20261117111444.4185512-10-pierre.gondois@arm.com>
+	<20261117111444.4185512-11-pierre.gondois@arm.com>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.52; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -88,71 +88,31 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no
-	version=4.0.1
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, 17 Nov 2026 12:10:19 +0100
+On Tue, 17 Nov 2026 12:10:20 +0100
 Pierre Gondois <pierre.gondois@arm.com> wrote:
 
-> The RAS consumer check removes:
-> - trace events when no daemon is registered
-> - CPER console report when one is registered
-> This ties tracing, PCIe recovery and CXL protocol delivery to daemon
-> registration, and can hide a fatal record when userspace cannot process
-> its trace event before a reset.
-> 
-> Remove the RAS consumer registration condition and:
-> - always emit trace events
-> - print the CPER record only for CPER_SEV_FATAL
-> 
-> [1] additionally suggested to have a cmdline parameter to dynamically
-> update the above policy. Keep a simple hard coded policy for now.
-> 
-> [1]
-> https://lore.kernel.org/lkml/20240521183913.GGZkzqUSN1hdE-_OEY@fat_crate.local/
+> Only fatal CPER records reach print_extlog_rcd().
 
-Use a link tag probably.
+Maybe mention that is only true due to an earlier patch
+(just refer to it by title). This kind of reads like
+it has been true for ages and you are just tidying it up.
 
-Link: https://lore.kernel.org/lkml/20240521183913.GGZkzqUSN1hdE-_OEY@fat_crate.local/ #1
+> Merge the two helpers, remove the unused prefix argument
+> and return value, and keep a single rate limiter.
 
-I'm not entirely convinced this is a good idea without the policy aspect.
-Still let us see what others think.
-
+I love the trivial sometimes.  Short wrap.  Go to 75ish chars.
 > 
 > Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
-> ---
->  drivers/acpi/acpi_extlog.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/acpi/acpi_extlog.c b/drivers/acpi/acpi_extlog.c
-> index e09ea571c32f5..16a16b12d8ccf 100644
-> --- a/drivers/acpi/acpi_extlog.c
-> +++ b/drivers/acpi/acpi_extlog.c
-> @@ -208,10 +208,9 @@ static int extlog_print(struct notifier_block *nb, unsigned long val,
->  	if (cper_estatus_len(tmp) > ELOG_ENTRY_LEN || cper_estatus_check(tmp))
->  		return NOTIFY_DONE;
->  
-> -	if (!ras_userspace_consumers()) {
-> +	/* Print fatal records regardless of RAS consumer registration. */
-> +	if (tmp->error_severity == CPER_SEV_FATAL)
->  		print_extlog_rcd(NULL, tmp, cpu);
-> -		goto out;
-> -	}
->  
->  	/* log event via trace */
->  	err_seq++;
-> @@ -255,7 +254,6 @@ static int extlog_print(struct notifier_block *nb, unsigned long val,
->  		}
->  	}
->  
-> -out:
->  	mce->kflags |= MCE_HANDLED_EXTLOG;
->  	return NOTIFY_OK;
->  }
+With any background you can add (or none if it seems it was never
+any different). 
+
+Reviewed-by: Jonathan Cameron <jonathan.cameron@oss.qualcomm.com>
 
 
