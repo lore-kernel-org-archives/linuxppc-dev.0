@@ -2,93 +2,94 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 58F5F606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 06:50:25 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 46B1D606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Nov 2026 07:26:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DiYilyc7
+	dkim=pass (2048-bit key) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=eCCCiGDt
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jTsg40HQCz2y2B;
-	Wed, 18 Nov 2026 17:50:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794984623;
-	cv=none; b=kwCsR9E7/5Tmv9QmCBBolrypuTnadRaC1qpOR2R48eKOdO9EX0IOHpJ2n34yhMBrDff8kggh0Bq8ByDb026ZxAsO5Fk/sWZAtQrETkSUkY+WPFlq9dmiilZGvxFvcm1scLycbapsQ0h2saldB26vPX/MtEvAartZQU67NtLC0qCN3mC+8i6jnHt54p/FLxhKqL99e7w43UoqwjbAHQaCctAywoPMV4UPnvjDcZ7pKvGWczWtpSV+9mCFhg03UeRxOiVtBF+zV3vFpwYwUDMYSysKXGQRfBiHbJ5A/t41/yf44wQx+svKa1A53iNDhutVC8/ZgQ7vt89muuvDODaPLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jTtSX6ph0z2y2B;
+	Wed, 18 Nov 2026 18:26:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1794986780;
+	cv=none; b=MKrmWsCn8PswnDiZW22YHDnOg+/3s24nm/CK1iHtiGh3+OJg1hpxRLg84kmSGnyBfU+0pJUzgupC3sMwi8rD+NCf5z+NChiuQ8nlNJM56TMu2Nt113WteyObPgvl8doe4ZJsV4BqQ+6h/qihPvkcUdCZeZ6CSSZuTzpLvc2tVcdcyqEuPhkgfniS1wIGtVszuXTqSl+nvJI59hVArYBa2D1wlKY0F643k2+lrSZNj0jEje3iyu8qaR9r+rxEvrQyPRq3b+hcQlJ3nb7HzJbuQeULInOuB0BFZ+G7p+gESoyorw/PMREFYgw0bS4whwULWh/sts1o0J+aKuZL63XFnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1794984623; c=relaxed/relaxed;
-	bh=U8jV7OnHEFz0j+0ag5AfooSr+IDZRuR+qja3G5heTVk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Vgq3JnhvlMIIWaX3x/8aQY+CFlS6EOJKtuCAxkkSvKQesQGbOfOqGEqwxnvPO6yUT7YgRH1y9F69yuJxsmS5iVJWyk0tsLOF3sgOukGxTcTo7VEl/Y0m9eQ8fiA9CJbXA6ImyP6kXF5P/7oB0UVZ+imSI1KUce2+wzmW3O3TPukJBbD2BVXmlTPnvvyGKqfy6so+ympekTqUqmhNU6JJwzmjnUkQ6E8lwTWcJE1shX9H4DZ2e9lRaN+YUoeYRcDEQm7ubOKNFkTS02FFmwZbAhIXCBVhSrr+vaWFyFFRTMPEWkMz4Z0WigCtAb1wjSRTjKd5g/xz+POM0i2QzN7uDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DiYilyc7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1794986780; c=relaxed/relaxed;
+	bh=BP5uJPFEij5TgQlQa0MnVpdjGYnsN3jkV0Ck605J8vA=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=lcbKteUA+82mXS6BuhckF47q47AYsW+wpd96wPKAYweQyi1tRGyT9gB4rQWqUnu0ZMb9tlod9ZXQpaMigFO+W5RFS2cQsei4DYSOTYqZDkFzxM9+N1R2ujWPy1s5Hb51Q/MweC36h6Tny1PhNZ8z3xnFBcRy0HzuUHLm9Zii7fr5NpcRyUjz615kg3es0TsYemGG4nl7wDBoII/DZuKUO+z1woYTfsG+rKdZKYS1fM4ZmY7uWBrbwPbu2APJuE2nQ1JJ3A/AnRNYPuv1/mPkPQ9w4ux6Jgi8gkgwfi+ZeZhilX6rGaJk7PyCCiektV1NwxeCED5/AawLazqhWdjAhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=eCCCiGDt; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=DiYilyc7;
+	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=eCCCiGDt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 357 seconds by postgrey-1.37 at boromir; Wed, 18 Nov 2026 18:26:17 AEDT
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTsg26BRQz2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 17:50:22 +1100 (AEDT)
-Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-cdb45e96d2bso450747a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Nov 2026 22:50:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1794984620; x=1795589420; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=U8jV7OnHEFz0j+0ag5AfooSr+IDZRuR+qja3G5heTVk=;
-        b=DiYilyc7QmVYbafy4WXCk80h8k785seVNFWH4jKfmb8RkAK08ECppgc34Vq9pqS7mW
-         w7RqRwt/ERuxIuTYRdvpgcWsAbFHA1reJ6IA8PahTc4buolRqNd/F6b0ZXJxa7Lksa7q
-         QrmbtQipZJNZ6gtL4cGYGxr4B/sSLO02SygUbBU0GMR0V0JLv/2rSrnAjSYdYIaz8hJK
-         TdL+z3c6Q7j5E2ZcPJtsBQhZ6a4XGqO/CBTIJgEDmwxA8ap+3h9KO93yQfuED3ttlsTe
-         jUDFuGKwMq8ycKJky0ELiE3PjbTqvZn4OUYPtFbvD+ZQBRN3WX6jW+n7WCpp+NgtJgin
-         0AYg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1794984620; x=1795589420;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=U8jV7OnHEFz0j+0ag5AfooSr+IDZRuR+qja3G5heTVk=;
-        b=j/IlPtqRs5pPxpm27/k4fa4DY3l+1t5Sx+IpUAn14ZmZCok+MMtHzC43zN8HvOaQ0D
-         fFrLaTbrU9Jwqt/VBBLdDuRaq2g8a7LPXltav+2iRSzNGoKVZiYEduDf35loR2tWbGve
-         OExmpLYwmwHQVj7IGkVSk8k7KdviMQBVJ0oex9uEh+hlt4F32//XPABNwZ3/D9FcL7IA
-         JbGdn3tPXIw3fET8XlMO3T27JpuYq40CFDbHQYuZRuHYWndw5lEcsvFbXvU1X+zytp/W
-         vEYg/hqFyAJnWr5WXcpohiyGCbZppWcPFoo8xr9pV3YJQ5uzNG/FMreoeLWgCtKvX0ML
-         1OaA==
-X-Forwarded-Encrypted: i=1; AL+hErGj49CmG7ZWBkP5aZkduJkX+fML2gSsC5hBpcjLdkX4mYUYHbXWcHnZOH7yJP3D4vFyOJZlxyEpCxC+WQU=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8PVwkovEYOW6RHa/g0shkI9ojLskkwVSwiMhx1ACn/Xxf/5D30
-	efzzou2TzWdMhVozao6kVv3QciZ5Zrzr2BYN4ompiu7ExyUWH1rnuOoj
-X-Gm-Gg: AZFdTZfWDrXZhMrAQkrO2porvRHBPDTddtY0+e1gYPX7WC8RVYJ1LZ9RJnhrJM6spu8
-	/QOVs8/r/oVt/Bv6xXWhDqUo1R6AemiWBujoGXnKXHDuA+i7SytM2P3wjdYd+N0LCvaeN9v5vf7
-	lRrUspWmX7LFbcugmXR4zEG6kPnJOwwoEBTzFXPw8c3HZpOknABfDg7JO7n/8EYzRSCh/r7/C4L
-	0xtTez5ZXyw8aSljikfEtVcTUiL4OAwBKDurZFJKAbKE0Az762AglmFUWpgEdKG2rp8fFh7Whrx
-	8wUxzGt7ZluqdJUcqdwUvyFGFdwlFNIpvr75hEcmATaMf+vIyo3eLd2c2t1zgkoBsdgMeI0bIL8
-	9a1M2lnpfvzBIY8igJGsbAPXsrvYBLdwYwayJsXqsv1X/ki2OCMSnUx4JAiI98VPtxvtIYjyt7T
-	D+7AKVQ5LGAMY4/WmXefqBjaYKN4WaLtHZdaN9+qxyGG9xQUveD6N2c0rNOqaqULcBJT9CUdcYk
-	PNVg7bL3c2ehEO6SVAS/2w4bCOXTPbwB31fZWOeBr9vPfhvXpcZcDdrv88nsnq3YHm1daoqD/Mf
-	2dDQKVusV/Za3xKvQudg5oQe9uEJC8y9iWHHOVEf9p37IIRMXgbB7fJNLdnUVVJIjjlKM0rsFZF
-	nizhRkYcCVw3g+MPCfTM=
-X-Received: by 2002:a17:902:cf10:b0:2ed:e22b:77a2 with SMTP id d9443c01a7336-2eff7560dd4mr16662645ad.55.1794984619740;
-        Tue, 17 Nov 2026 22:50:19 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([129.41.58.4])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2eff62897d0sm7773615ad.64.2026.11.17.22.50.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Nov 2026 22:50:19 -0800 (PST)
-Date: Wed, 18 Nov 2026 12:20:12 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, 
-	chzigotzky@xenosoft.de, mpe@ellerman.id.au, npiggin@gmail.com, 
-	christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, msuchanek@suse.de, 
-	ritesh.list@gmail.com, harshpb@linux.ibm.com, gautam@linux.ibm.com, 
-	amachhiw@linux.ibm.com, venkat88@linux.ibm.com, nnmlinux@linux.ibm.com, 
-	stable@vger.kernel.org
-Subject: Re: [PATCH v5 1/3] PPC32: Fix hard_irq_disable to follow tracing and
- lockdep state
-Message-ID: <av1KYTtbzgwtDKn_@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <20261118051419.783878-1-sshegde@linux.ibm.com>
- <20261118051419.783878-2-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jTtST1GTyz2xL4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 18:26:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
+	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:From:
+	Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:In-Reply-To:
+	References; bh=BP5uJPFEij5TgQlQa0MnVpdjGYnsN3jkV0Ck605J8vA=; t=1794986777;
+	x=1795591577; b=eCCCiGDtgVvGyB0K0IM+459ExlmIb5vecpWIcj6xrV4LUkm5+PyiDb/Iirlno
+	dewEuTe0kbhjTSJaRCHMzSt9umFMLgoSLBaZAXD7ASM8sYplVIxe2zL92JaxsiySJTsfyjp3urSCd
+	DYqJrpc/PRltPZGOITkyRFEFFAgL/JX9+bIJQBTzRMUzF1JKpGWJ52JFQZQ5KnWwoJjcFMh+7czQH
+	2cPuKpC9SK3KIHyv1BGA2o2I6ieY+QPEeIaoQKAgmaCUEzZ03BpFUv8/ZX4AyscrD3v+3D+3hoLBp
+	p1lM7BGnZMQWZu+ldltT6U15tt+DQwOvcJMwX4b8TPJxdIhK/g==;
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.100)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1xTZxc-00000000Itt-3izf; Wed, 18 Nov 2026 08:20:04 +0100
+Received: from p57bd95b5.dip0.t-ipconnect.de ([87.189.149.181] helo=[192.168.178.61])
+          by inpost2.zedat.fu-berlin.de (Exim 4.100)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1xTZxc-00000000GfQ-25vy; Wed, 18 Nov 2026 08:20:04 +0100
+Message-ID: <88645597bb3aeae8d36a7b5c499a0a6d74b4acc4.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH v3 3/9] sh: sq: Add missing kobject release callback to
+ ktype_percpu_entry
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Ian Rogers <irogers@google.com>, Danilo Krummrich <dakr@kernel.org>, 
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook
+ <kees@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, "Rafael J . Wysocki"
+ <rafael@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman	
+ <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+	 <chleroy@kernel.org>, Nayna Jain <nayna@linux.ibm.com>, Srish Srinivasan	
+ <ssrish@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>, Yoshinori Sato	
+ <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Juergen Gross	
+ <jgross@suse.com>, Stefano Stabellini <sstabellini@kernel.org>, Oleksandr
+ Tyshchenko <oleksandr_tyshchenko@epam.com>, Nathan Chancellor
+ <nathan@kernel.org>, Nick Desaulniers	 <ndesaulniers@google.com>, Viresh
+ Kumar <viresh.kumar@linaro.org>, Zhongqiu Han	
+ <zhongqiu.han@oss.qualcomm.com>, Alexander Aring <aahringo@redhat.com>, 
+ Felix Kuehling <felix.kuehling@amd.com>, Christian =?ISO-8859-1?Q?K=F6nig?=
+ <christian.koenig@amd.com>,  Zhihao Cheng <chengzhihao1@huawei.com>,
+ Sumanth Korikkar <sumanthk@linux.ibm.com>, Bill Wendling	
+ <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
+	driver-core@lists.linux.dev, llvm@lists.linux.dev, 
+	linux-hardening@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linux-pm@vger.kernel.org, 	linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, 	linux-s390@vger.kernel.org,
+ gfs2@lists.linux.dev, xen-devel@lists.xenproject.org, 
+	linux-mtd@lists.infradead.org, amd-gfx@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Date: Wed, 18 Nov 2026 08:20:02 +0100
+In-Reply-To: <20261108223913.3624571-4-irogers@google.com>
+References: <20261108223913.3624571-1-irogers@google.com>
+	 <20261108223913.3624571-4-irogers@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.62.1 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,66 +103,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261118051419.783878-2-sshegde@linux.ibm.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-ZEDAT-Hint: PO
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 18, 2026 at 10:44:17AM +0530, Shrikanth Hegde wrote:
-> On PPC32, the code for hard_irq_disable has diverged and it doesn't
-> do lockdep/tracing anymore, leading to use of both local_irq_disable
-> and hard_irq_disable on PPC32 to overcome those.
-> 
-> That is un-necessary, instead simply calling local_irq_disable is
-> enough. It disables EE bit and does lockdep tracking.
-> 
-> Subsequent patch uses this API in KVM code to avoid the warnings.
-> Wider use of it is possible, but it will be taken subsequently.
-> 
-> Cc: <stable@vger.kernel.org> # v7.2+
-> Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Hi Ian,
+
+On Sun, 2026-11-08 at 14:39 -0800, Ian Rogers wrote:
+> In sq_dev_add(), sq_kobject[cpu] is dynamically allocated with
+> kzalloc_obj() and initialized with ktype_percpu_entry. When
+> sq_dev_remove() calls kobject_put(kobj), the kobject is never freed
+> because ktype_percpu_entry lacks a .release callback.
+>=20
+> Provide a sq_kobj_release() callback that calls kfree(kobj).
+>=20
+> Fixes: d7c30c682a27 ("sh: Store Queue API rework.")
+> Signed-off-by: Ian Rogers <irogers@google.com>
 > ---
-> PS: New warnings would have started since commit 
-> 12013e3d4695 ("KVM: powerpc: Use generic xfer to guest work function")
-> which added local_irq_disable for 32 bit. The proper fix may date back
-> years ago. To avoid backport complications, keeping it backported till
-> 7.2. So removed fixes tag and cc'ed stable.
-> 
-> Also, 32 bit shouldn't need hard_irq_disable. But that can only be taken
-> up subsequently.
-> 
-> Also, below fix isn't needed anymore.
-> https://lore.kernel.org/linuxppc-dev/a14571be1897955f43d9994f0e093de3ada6ecde.1793447880.git.ritesh.list@gmail.com/
-> 
->  arch/powerpc/include/asm/hw_irq.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index b7eee6385ae5..ddb850e62abd 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -464,7 +464,7 @@ static inline bool arch_irqs_disabled(void)
->  	return arch_irqs_disabled_flags(arch_local_save_flags());
->  }
->  
-> -#define hard_irq_disable()		arch_local_irq_disable()
-> +#define hard_irq_disable()		local_irq_disable()
->  
->  static inline bool regs_irqs_disabled(struct pt_regs *regs)
->  {
-> -- 
-> 2.54.0
-> 
-Cool, this makes things simple.
+>  arch/sh/kernel/cpu/sh4/sq.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>=20
+> diff --git a/arch/sh/kernel/cpu/sh4/sq.c b/arch/sh/kernel/cpu/sh4/sq.c
+> index 908a8e09113b..f33864958487 100644
+> --- a/arch/sh/kernel/cpu/sh4/sq.c
+> +++ b/arch/sh/kernel/cpu/sh4/sq.c
+> @@ -331,7 +331,13 @@ static const struct sysfs_ops sq_sysfs_ops =3D {
+>  =09.store=09=3D sq_sysfs_store,
+>  };
+> =20
+> +static void sq_kobj_release(struct kobject *kobj)
+> +{
+> +=09kfree(kobj);
+> +}
+> +
+>  static struct kobj_type ktype_percpu_entry =3D {
+> +=09.release=09=3D sq_kobj_release,
+>  =09.sysfs_ops=09=3D &sq_sysfs_ops,
+>  =09.default_groups=09=3D sq_sysfs_groups,
+>  };
 
+Looks good to me, thanks!
 
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Acked-by: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+
+Adrian
+
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
 
