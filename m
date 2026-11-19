@@ -2,72 +2,80 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 252AB606A32A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:21:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8277606A325
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:25:23 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S8+9sYhx
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T543qXNW
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVJzg4xxxz2xMt;
-	Thu, 19 Nov 2026 11:21:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795047679;
-	cv=none; b=iAZ06Nrri5+d+KYuKdRPbfACh4p8QdaU3nminPi3qSgOe7wArs5kchQvJ3Y1smigvCzGBOMRm5PATiGk8ql/RBzWc1oqkgeqIjUSiuo5SIIsx2ziu/rpgIZER0Llz559R90eVhRxZS4pfbMiG5Mny5azR4EillL40yugEL83Dnf9On2E861puKn7eUbqJ/vh1P+slNQ9BsUv5djFGBx3cArwYgdG4r+vqaK6J7QIr8neVt6y0C99UXN93dh8DrdmIDbfWB6QBBnK2QN7+Wt+vKpWethJZXdbEiMY0kyUyN5rgxEPkZju7rUEwMjSkyxWFo3EmfRmPJZ1/Zo8SDm6Lw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVK4L4GQkz2xqh;
+	Thu, 19 Nov 2026 11:25:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795047922;
+	cv=none; b=NZMYTLNEEVPWmsN2sM+KMAlZ5wN44gEp6RnR5vBlVVcoJmB3bmaQCqQTSW82oxLP1kib0vII9gQWEbF9duanmjXLA2u7rdWclxdPNqzfFgNVU8vYK2gxhtwXf9uMQzhzsEF24ONttmLrIsh3or0r6+n+VWLaobKgk/HGTRXK+9Cw/mfIHG1cInQjNn5k1LOQxp+OFpjCAT80s8yYu7PWIAsPy93jQDdozMastDw7BxI7zvSNiiSGDCQf7buqQz0zskUedei0OELeTacfHiqwodC0bApD+t1jtic6+j6aeBHJvw2SE4ETBXnaPp64fkrf6VUHJ8VxaoXU2N945jBYYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795047679; c=relaxed/relaxed;
-	bh=y9g/SDWQtT1UZ868nSgzjGHvZwGb3p08ICUn3gSdGq0=;
+	t=1795047922; c=relaxed/relaxed;
+	bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IcUc+WOmlC+NL3xDct3B0sCNZ8ECfiu/cuP/AYQTMfKKgSoQmEOPc9LYW1I9PpSh2fhr4ErJ32jM1JlB1Txkxlaxc5p7ZVR6GwFsOI3pJ3hl7qdku5WNHYEryCXaPkct7Yggs6YTdVIvR+k/z1zpku4NzuSsnuSygW8ZPvsuSzHN+rRNJ8FEkV5lz/IKLkeCAxrY+GQ+Cg2arg+zz4rjrNBmXSgLt1AYeGSz4wPnkrumEli/zAuxfpWzQrZm2hiNsA3pvpqhpoFe9HJwSZjUrneyMj4ZhtOrlT9jpifkWwA1mQzqzX3GaQn7a+w5qF4PAf6oeq9MNF/ySM3/hOsjuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S8+9sYhx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=Vnq4yPG0d34dBx4wPmpLVXhVeYmhuRyR+2FIdquGCNIaKxS9Oq3NE2dZzkkJlhZ64mcaCuCQIGn7aA2ncluoI8syGrnMzhAn6v1q4Fb7xz3ZUahqBwYWuTsr8p0iY/v6Y2URk9j9AEjc8KUaqYn//dt9VOL4GmR0ELhc7T94zhwHK1DQ/pivmDjSQRUZ7DYOb0Ac/rhqx/kWlEMimNRq4IYk6TgnnL2p5xQ1GmSKv8r9WWyBDoMOHNRICxRIQmk4/IlmY76riXYqX4aqs9D8257ktpc78pe/fjz0YyRr5blWV9IN3e8pbLmuoGHJRcHPElG1KO1e9weHPFK3hzg01A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T543qXNW; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=demiobenour@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=S8+9sYhx;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T543qXNW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=demiobenour@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVJzf3wWtz2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:21:18 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILQcHe2240616;
-	Thu, 19 Nov 2026 00:21:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=y9g/SD
-	WQtT1UZ868nSgzjGHvZwGb3p08ICUn3gSdGq0=; b=S8+9sYhxSH4DVaR2DQBlgj
-	asOvlKTXg237kA6EJf5B309uYp/nJY9zLzNDEiAOfmCO3dhVvCijDzGrbQ1ctoaB
-	OKK3ifORzqJ9gOVVbo4/eHqEod8fNaoH0aV9AFduPv4bKMDmcCX2oIt5EFpKdYGQ
-	pEWVtZP57zwo8SxMcrHVbYdj3VDOimE18/T29tqr9jflPgcM9dGvaJy74IfBYPfY
-	frRkGOg0OQBELBrE4AJwfyKLZ5DLsJV+knqhIKV5Ulp7qJIHFf/pAG+L18D5M42G
-	K0grNbH79sd37RQZxr3TyPiBdvJMf3oq+eUOvxeYa8T3cOWI5Fc1aKPG0fMMUenA
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105vn735-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 00:21:06 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILK4dq2652048;
-	Thu, 19 Nov 2026 00:21:06 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j1bb5adyw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 00:21:06 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ0L3bK197452
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Nov 2026 00:21:03 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6C81A58060;
-	Thu, 19 Nov 2026 00:21:03 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 01C895805A;
-	Thu, 19 Nov 2026 00:21:01 +0000 (GMT)
-Received: from [9.67.93.165] (unknown [9.67.93.165])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 19 Nov 2026 00:21:00 +0000 (GMT)
-Message-ID: <d3f613be-d545-4918-92f7-0196d50449ae@linux.ibm.com>
-Date: Wed, 18 Nov 2026 16:21:00 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVK4K1Hntz2xlY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:25:20 +1100 (AEDT)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-8b4cc793704so13665087b3.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 16:25:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795047918; x=1795652718; darn=lists.ozlabs.org;
+        h=content-type:in-reply-to:autocrypt:from:content-language:references
+         :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
+        b=T543qXNW/XqMD33OKHNe/f1zNBKE+sgplo9X6YuvCrTvy6BaO7rfa4zoX3H9v1K1s0
+         6JRrgYCHLLAsHbXHw/4SQmn5fRSgAMuJujunF87LMJ0FBb96WnhUJcKS3nosgF04vucc
+         Gtb4TsjlrCHM8CXUfSB48u7z/tFuJm4k108Rj6t2zY/oEFK0pTXE8uRwLKEDqJCAR3nZ
+         z/qaRKW+tidzXy6epx50bNFSwwjU5Biux7NOkw/o3k9Fp6wsBFX5e4dLQAQYg/+e2qd+
+         VFLaUpgBqCIyYuHp78pcKj4GGlP0I0CSRFBqBHwQfnJ96xqvtPRp/NJGR9JY9frlYeH4
+         o5Jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795047918; x=1795652718;
+        h=content-type:in-reply-to:autocrypt:from:content-language:references
+         :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
+        b=D11gEHhD+hBThrsrfMxn0EBeQwou8ozzpUkgropGGWVx8PJPPeSsejXILUuodNfNIE
+         a4WAUImwnIgLGZjoR1JIzWSlCosIfSmuoH0ImWgKh1q0+Go/aezOa1JdL9/+HAvHKShN
+         g4hz+V/jgY0Dzx1BWIljJbYGKP/X2TeFvxhWd2qrZH5FYvg61Ob8Y0jgjtf9sJVd7XlW
+         MDGFTJplRxVrFO1TuzOD5W7Xi9DwLABwq3WnKNBMTteBdiqQENPU9Bf7ivjVIEuW6O1A
+         11IDQ6ZfLUr/p//2n8oW+uZYKm7ubKfglabwGA1pE7GlaVBMYoInVoDBRKGR5mNMvhCT
+         cfzQ==
+X-Forwarded-Encrypted: i=1; AL+hErE6WgqFZtsxuiGsNDBqaxMZUeX6rx635nTyvTMs9pRnjG1gERTXw13/cJoxF1/R6i1x5MdrCbbdS1s+tb0=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/47AdyGqki6Wg+xE4NpghUrUBfk0DIS/7Y9D+Ew1pMpid4x8YT
+	QBw2GHN/iiZbWCvS+xElJrR4x9+nBpd8BYONAeg6qpQXKS7EjopHa+UQ
+X-Gm-Gg: AZFdTZcxeP5onxFkK/rvsnIyciGzSGboqtq6djMGCTzCY31aiUqTCXDHmdCwn4mcqIa
+	BXBxo2yH3LqKQPVsSQr5QDOAHKbD9ImeduNFDlfICYn8JjLPdkNrEZnOOLqdQnV8LLBZHK+6OTg
+	DpY+K+qOcxNlvZNJ6UG2PX495fOz7HjfdWukeJigqTXEfc15Cgkosh7i/iTOIcUDV9596wEli+I
+	JoypuAakixl6+FwpF8HBFmzypiNBkulxKGkM5yOC4XpXlKhbDz1AyFnSJI18659wOYK5tUHilD8
+	u7xf7+Z+J4oXoUii7ncicOho62CH+T6P66iEL+086vtvLMvrYw2uhKTtcKgAbGrg2fH/Bzk7MRN
+	H8cpPrum6zBz4UQv4boTQ46rVobtQF27VRSSbqrlvvdaAKNsMDJaAmBJKrmvRnDGK/389DtS+YM
+	h4BBsUrUuWQUB9UoJpIHGdTqz1+s+bntAos73SZmsKTRqQ4Kl15tdbaobGTIrge9i5skhuCJrXM
+	s1N0mKSW27KrbtJe1YgVqY4uH6EkHc4TssGlMykeYwryEwTKTY8CeiTMnCER8ai6hCoPIi6znBg
+	qv10PYyzuVdK4cQUbYdLj9ulWyKAeDHHTF8=
+X-Received: by 2002:a05:690c:79a:b0:8b4:f2bc:7c39 with SMTP id 00721157ae682-8b4fecfc697mr13290147b3.15.1795047918306;
+        Wed, 18 Nov 2026 16:25:18 -0800 (PST)
+Received: from [10.138.10.6] ([149.102.242.31])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdf1d0desm25414957b3.1.2026.11.18.16.25.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 18 Nov 2026 16:25:17 -0800 (PST)
+Message-ID: <75946579-8335-4491-86da-fcda25ae9fd8@gmail.com>
+Date: Wed, 18 Nov 2026 19:25:09 -0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,103 +90,227 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v8 00/15] ibmveth: Add multi-queue RX support
-To: Jakub Kicinski <kuba@kernel.org>
-Cc: netdev@vger.kernel.org, davem@davemloft.net, horms@kernel.org,
-        edumazet@kernel.org, pabeni@redhat.com, andrew+netdev@lunn.ch,
-        nnac123@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, haren@linux.ibm.com,
-        ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
-        shaik.abdulla1@ibm.com
-References: <20261109235556.60604-1-mmc@linux.ibm.com>
- <20261116174225.7d9e9611@kernel.org>
+Subject: Re: [RFC PATCH 9/9] KEYS: keycrypt: Add the aes256-gcm-stream
+ algorithm
+To: Rodolfo Giometti <giometti@enneenne.com>,
+ David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
+ keyrings@vger.kernel.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
+ Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
+ <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Richard Weinberger <richard@nod.at>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20261118140421.584086-1-giometti@enneenne.com>
+ <20261118141257.627441-1-giometti@enneenne.com>
 Content-Language: en-US
-From: mingming cao <mmc@linux.ibm.com>
-In-Reply-To: <20261116174225.7d9e9611@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: Xqeim3QM5e3K8oyRVD0aSg1w3CPk4a6L
-X-Authority-Analysis: v=2.4 cv=HL9WhYtv c=1 sm=1 tr=0 ts=6afe40f3 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=Ws_xIJfpYnSn7AQFTckA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: DlVZAw_XXSlXZSrnYbTRHGjH5H2rAeYw
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX5/fgsQW2niaE
- MKcQhNIZ88pAyAcDDfzRRr6kX2qOVBndebQsxHNrlT9ChAFqB9Gu2OZM2VuR3El9epy82WIrs+W
- ys9xAVe+0pfI3gy7IAjTFbM2669sG16+utF/ar2XgPHCCX+4BACzh7dZapR+xAS1FPPKYd+BIaC
- +x4bHimY2bSRg9+lhptdiSV7js+Pj14Mq2jAa67hSC4C5br5/jlC/0Es/Z/u1hK0yNtdrJZSyVg
- n9VNwkLo7EQN4ujbM4PT26Vus0fTpCbquwMt6dt1x+By0N49iykuaN6WIBDrkC6bdTKEKQmvsoj
- GVuU3H2uKK56CEf4Z7faxPDvnwQokMyS3bUT/MQJkG3WFpUbb7vLxLootCcKQdBpEmF4VMc0XTl
- vqAmRctOtbi/5yJeDSSFiew43pyxnSRmRQsEb1BjsFnO73h/ESIpcglIIdZHPmMzDlVV8eA7X/m
- d3gE5qg7UOpHy47XMRw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfXxIuRbqaOMfK0
- hxs1BwBZg0W36cijM6nLsWl/IE8l6h7cpT0JmDbGgpnc/1yQY0HmWu/9NKhZz9w0i0eqknjWFjO
- kPYpC6uWSy4Kls7FANOei7m1JR35bVs=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-18_07,2026-11-16_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 malwarescore=0 spamscore=0 priorityscore=1501 impostorscore=0
- adultscore=0 clxscore=1015 lowpriorityscore=0 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180088
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=4.0.1
+From: Demi Marie Obenour <demiobenour@gmail.com>
+Autocrypt: addr=demiobenour@gmail.com; keydata=
+ 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
+ +MYSfkEjBz0E8CLOcAw7JIwAaeBT
+In-Reply-To: <20261118141257.627441-1-giometti@enneenne.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------FHGxV8cRNdUiD6U0H5BD0N5M"
+X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------FHGxV8cRNdUiD6U0H5BD0N5M
+Content-Type: multipart/mixed; boundary="------------5YUoLTrRSVm1eElT0Sq1GVMR";
+ protected-headers="v1"; hp="clear"
+Message-ID: <75946579-8335-4491-86da-fcda25ae9fd8@gmail.com>
+Date: Wed, 18 Nov 2026 19:25:09 -0500
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 9/9] KEYS: keycrypt: Add the aes256-gcm-stream
+ algorithm
+To: Rodolfo Giometti <giometti@enneenne.com>,
+ David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
+ keyrings@vger.kernel.org
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
+ Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
+ <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Richard Weinberger <richard@nod.at>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20261118140421.584086-1-giometti@enneenne.com>
+ <20261118141257.627441-1-giometti@enneenne.com>
+Content-Language: en-US
+From: Demi Marie Obenour <demiobenour@gmail.com>
+Autocrypt: addr=demiobenour@gmail.com; keydata=
+ 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
+ +MYSfkEjBz0E8CLOcAw7JIwAaeBT
+In-Reply-To: <20261118141257.627441-1-giometti@enneenne.com>
 
-On 11/16/26 5:42 PM, Jakub Kicinski wrote:
-> On Mon,  9 Nov 2026 15:55:41 -0800 Mingming Cao wrote:
->>   arch/powerpc/include/asm/hvcall.h   |    6 +-
->>   drivers/net/ethernet/ibm/ibmveth.c  | 5007 ++++++++++++++++++++++-----
->>   drivers/net/ethernet/ibm/ibmveth.h  |  240 +-
->>   tools/perf/python/powerpc-hcalls.py |    4 +
->>   4 files changed, 4318 insertions(+), 939 deletions(-)
-> This is way too large, I spent half an hour reviewing and only gotten
-> to patch 8. There's no reason for the series to be this big. The 15
-> patch limit doesn't mean you should try to cram as much as you can into
-> 15 patches. Please split this up into (3?) smaller series.
-Thank you for the time, and for being direct. You're right, and
-point taken on the commit messages too.
+--------------5YUoLTrRSVm1eElT0Sq1GVMR
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The plan:
+On 11/18/26 9:12 AM, Rodolfo Giometti wrote:
+> This patch is a proposal on its own: nothing before it needs it, so it
+> can be discussed, or left out, apart from the rest.
+>=20
+> aes256-cbc does not authenticate what it decrypts, and a file or a
+> transfer longer than one call cannot be sealed with a single AES-GCM
+> invocation without buffering all of it, nor decrypted without
+> releasing plaintext before its tag is checked.
+>=20
+> Add aes256-gcm-stream: the STREAM construction (Hoang, Reyhanitabar,
+> Rogaway, Vizar) over AES-256-GCM. A message is split into segments
+> of up to 64 KiB, each sealed with its own tag under a subkey derived
+> with HKDF-SHA256 from the key and a 16-byte salt drawn at
+> KEYCTL_CRYPT_OPEN; the nonce carries the segment's position and a
+> last-segment flag, and the counter lives in the kernel, so segments
+> can be neither reordered nor dropped from the end unnoticed. The
+> segments go through a new ioctl, KEYCRYPT_IOC_SEGMENT, and
+> KEYCRYPT_IOC_FINAL reports a stream whose last segment never came.
+> A tee or hsm backend draws the salt and keeps the counter in its
+> secure side; the sw and optee backends implement it.
 
-   - net-next: two fixes for bugs that exist today, posted on their own
-   - series 1: prepare the RX path, 8 patches (928+/431-, net +497).
-     IBMVETH_MAX_RX_QUEUES stays 1; same hypercalls, no new ABI.
-     Patches 1-5 move open/close onto helpers, 6 register/teardown,
-     7 a queue index through replenish and poll, 8 splits poll
-      into helpers. Your 07/08/09 comments are all addressed there
+Please use Cobblestone-128 or Cobblestone-256 instead.
+https://c2sp.org/chunked-encryption has the spec, and you can check
+against the implementation in pyca/cryptography or (for Cobblestone-128)
+the Go package filippo.io/cobblestone.  This assumes your CPU has AES
+and GCM instructions; if not, you should see about using one that does
+or work with a cryptographer to standardize an alternative that doesn't
+need them.
 
-- series 2: the multi-queue work itself: the new hypercalls,
-     registering the extra RX queues and their interrupts, per-queue
-     statistics, turning multi-queue on, and ethtool -L for the RX
-     count. Posted once series 1 is applied
+Nonstandard constructions like this one are to be avoided.
+--=20
+Sincerely,
+Demi Marie Obenour (she/her/hers)
 
-I also narrowed the scope to what multi-queue needs to go in. v8
-resized the RX queues live, without stopping traffic. Changing the
-queue count is a rare admin operation, so for now ethtool -L closes
-and reopens the device, as an MTU change does. That could remove
-lots of complexity code. (Live resize can come back later if users need it.)
+--------------5YUoLTrRSVm1eElT0Sq1GVMR--
 
-On the three series you suggested: with close/reopen the resize could be a
-single small patch, so I'd like to end series 2 with it rather than
-post a one-patch third series. If you'd rather have it separate, I'll
-split it out.
+--------------FHGxV8cRNdUiD6U0H5BD0N5M
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
 
-I just mailed out the - net-next: two fixes and series 1: prepare the RX 
-path.
+-----BEGIN PGP SIGNATURE-----
 
-Thanks,
+iQIzBAEBCgAdFiEEopQtqVJW1aeuo9/sszaHOrMp8lMFAmr+QeYACgkQszaHOrMp
+8lMKphAApmT7NKojxfNUv+4YED5wbkVa7lnarDk0nyp9M3Bt5hNIRlezPRWwnuNQ
+c3Fse2TSfDpwTAaL/pZ9bVoUW3FkLcIwnAAIe35/78qpOemxEF5XRd4CQ9OGoQkm
+MW429KUVHFxKjlSPCVrMIzW5PwLLvQVO/84lxA3BYJ503yK13kkEC2ja/5bOr2pq
+cNzlB0rvirBXLKv2LH9gyIWC3rvLI29QGgGdFocZwnV/EbsWXC+1cNqLGePQ4JW/
+X2W4CMomO+RvLWY+tfh/W+5hnUzxfaxn1oyCQbdEa+5KzWc+6oaPK9MU6x94SEhC
+qkvoS60vMTP46Q4AQT+zB918F09KoN5Gwb6kWkjYVdfoJhsq1JIToOMT4uWhxwJa
+zK5vgEPBWgvLDy5nRHf3l36sS0D8KibzPXtsQfxLrmH88Q8i8VHbMbHeuqQ3hfmi
+/7v8eSCrt2NDafwt1mKKM1s3ZhegKN+R8bDXcK9Ys9fQnVMptIcR/tlkBBf6NWes
+mdSBLNJSBR6q4Hm+kSz3+j8ah7qhuPVI9FIyKt9Lb60hrI8sHdotye0p5+Ne0iH6
+rUKkFHWYEv10C/ku2PdPBgLIc5qfhf/MPSbqH5vAcyc19JIg9xneQVTxoaFK8QD8
+aN6GKY3u02GADQHUdEuu26cEaKIBdN1yhWrjlPTIclUizw7Wppg=
+=ionq
+-----END PGP SIGNATURE-----
 
-Mingming
-
-
+--------------FHGxV8cRNdUiD6U0H5BD0N5M--
 
