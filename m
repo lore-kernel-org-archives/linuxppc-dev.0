@@ -2,80 +2,82 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CB33B606A336
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 21:26:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE328606A324
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 21:26:44 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=prugBx0W
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=OwjsUx2T
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVs3d4339z2xL1;
-	Fri, 20 Nov 2026 08:26:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1129"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795123597;
-	cv=none; b=V/raZ0XumJbzRt0w9z4+/lu7SKyVnxGPHBN6YjRsScYiCGxbEHD/Y8g4sDXUWqTJTDg2JqmmVFiYCwegSPALA9pdPrMVdhcMiyH0/uW3x1ggJYTWa31dqKOSfUhESygg4s2QauoUpYvSz4FbftFuB1A1Rw9PunrQvoPcXLkym19RZGmnAjAOf+2FrqjaOFC1h+9atuVGo4dwrg1ZmNqXuUQbE22GTjS5uBGWGJ5D30wHPOPyUobaCytXBO7iTM0yJDYFSnS5cRgKQVwZu8m6vSUCrRome37a2MONZ3JkeYofVcnP1bmDQLenwbUQ4BDoV6CAu8ZcK8c1RQswKZcXIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVs3g3sfxz2yTH;
+	Fri, 20 Nov 2026 08:26:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b134"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795123599;
+	cv=none; b=nX7feWcFrkl51i1lvepQQzRmqUCvkhktn80wHiC8ojGzlC9emjEzalGDhfeL9iCmkEwecD1BNxQl3C3kaBMtY2sLmKFEB52dmxM1XydWfvFavfezf2GH0tf87yAMlAHe3RchT2Jsd70AHU4VGfhiX7u6/NC5xpnI03JLwhWRIP4R9pLvsyfT1RvSQ0skSLYRvgQLl2hv2CxGAV+qNCU5LXZJr9/KLTvcUTF91fqubJus0FZgZj6u5BoP0WbkPUOfA25sWu/n+278W+r32iC/O4R4pjhl0jwv3p9X3zV9cS+s9No1KKYCt2Avk1Vp+lUDcXDxwnaAr6o0TdujFqH4ZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795123597; c=relaxed/relaxed;
-	bh=GpzYE3Jc1he50CMWHOLwrLBE02eLthVYkqvqGjNMGAg=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=Z5Ancm90WcLYyrG3gRz+v8SX6O30Q/DHyu1EA3ge26sBacey5XM01PHSirzNmnG3+Wlhl/gCfQ3yPd9RDW/TW3TjS8FKaLodISkd1BBZRLtyy1/OMLXXXfzdNvata592IVIosLEvVTZLOHB+VJuUDSz2XkKVI4weOIIcS3IsjeVRu1chNY5eRFV/sS/uIwZ0NdL/binGsMmnLUAkKoyFSBXgbuFUvsYaqbFsenYjmKTmJLmevHF/CkK+I4qKH0yzCSMAHT1bSqLXtI1TR9s8SRfnAivWOU5DpYGiqN3aWzoKVxJ7VymlZlhTQnToOfGwEV1847xfTOo7A3snN2FTTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=prugBx0W; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1129; helo=mail-yw1-x1129.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1795123599; c=relaxed/relaxed;
+	bh=u/T6aa6iCWFrqHcoyuakH1O4XrX3XcHQl1IIpLYEGug=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=aMU4NjzxqtEYcZ53WhVA7ADjTjDk5/RuyxIzubZqQi+IwjNEQuxqlOewvbVkv8oDiaJ3ulrPeMhVTCfkfhQSQ/Z2jSjbEP5kYDg/mCppggdLOUpkaLOFVBZ/La8EcYi/OR7aa7y+vScCWF9Qt3FLmgZlrZAyQjUPnwQ9pddqVzGNj3muR9wgQ9BlFPzzqbUHntNoKjepHectd1w+l+bYeen4O4chBKPKfZkkZScKZVho8CJtHZHJhZw86NcZ50qKsiHu6MxzfcEXiP1OLZ8EpKJFE8wNIiMSByJnEQnDMDpgT9b/LUglyVTD68cAibISU5SsY2tMkXzyR8v6ynhHBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=OwjsUx2T; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=prugBx0W;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=OwjsUx2T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1129; helo=mail-yw1-x1129.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1129.google.com (mail-yw1-x1129.google.com [IPv6:2607:f8b0:4864:20::1129])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb134.google.com (mail-yx1-xb134.google.com [IPv6:2607:f8b0:4864:20::b134])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVs3c5TNlz2xH7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 08:26:36 +1100 (AEDT)
-Received: by mail-yw1-x1129.google.com with SMTP id 00721157ae682-8b4d26094beso2183027b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 13:26:36 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVs3f5nb9z2xH7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 08:26:38 +1100 (AEDT)
+Received: by mail-yx1-xb134.google.com with SMTP id 956f58d0204a3-67990a45e02so350401d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 13:26:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795123594; x=1795728394; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=GpzYE3Jc1he50CMWHOLwrLBE02eLthVYkqvqGjNMGAg=;
-        b=prugBx0Wufmm4EocowU4O8P5VXJ7kqDahgHD3xwgmslMo0Cye/gYr/w7lDyGW5m6j7
-         7Luxik/OuwVTwAJRS5+r1yMbAQe/Ags2PRJTYmLHSNvRraj1o3q53skRAmtoxaXP8R4M
-         moybf0suwoouE3bepRsiMqWQK0/GD3gNbH3lvP2Bjm9BlKoBRi93xYAkSHMzgYvWie5o
-         y/dajBk8zrmlDQ0Ni7mRyUa7s/r6087BQksxsBaK+zRILrcxIxOPTJBbzQ0bqBJGLjWz
-         guXxhC/ANOEEsamO2t14jyX9vBSKi3avSBVWbqi2xLxWc7zviwiLYw1fC5B7r9R3geyi
-         6qBQ==
+        d=gmail.com; s=20260707; t=1795123596; x=1795728396; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=u/T6aa6iCWFrqHcoyuakH1O4XrX3XcHQl1IIpLYEGug=;
+        b=OwjsUx2TauU5RPjGiScar7qCRPmVnAWyn77pgmOx/gQsrFBf1OmX03MxHSDZjBSQB1
+         y40u1NFets5Qc5EAHUjhHBFRwdH8uDyvl8cKD1Y6DrgLukkVH1Ioq4IRDpKWvRK2t7dz
+         +1VLledaRwazeu4pOHfTGfcwpXoz9dM2SaWUUP8IKnHJKn3udnalTdmXtGpwJ7Gj3xZ4
+         UHfjViaNAFOqxZSldlz+bxVGnYim+9+GTWDZWvJfZd5c1IfcyyAfcx+RCCcNykcNviOm
+         rCCIaONnoQXjcTLgaRaoRUHr5S6Ckj32wgFTmRG/UWZlpNdrhPY4vgyM1U7Jiiz67X+K
+         uS6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795123594; x=1795728394;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=GpzYE3Jc1he50CMWHOLwrLBE02eLthVYkqvqGjNMGAg=;
-        b=YaRdU1dhgDu8lXk4mfXN+5Tx1OROYffZAPwcqDcbrvi8fwcmhN6cd4wbODZuHiGWXP
-         y3DPMdBL1WPhggy5DHoJv2keJBYyEuylVTJJvLfXDD7omryEOnUoPi3QzrSEpDf5w23i
-         780X4KJn+ysrS0Ku6YJI7pI2DCbLMFD5m6iKaT4deFj/9Xeqtd/CzGpbk5h/FMet3m+U
-         plUmn5rU1hIOxV+NJodvZSrKb5me8x+zM46moBpSPZ3v+pDljPTqo9COjjRzyjytf3iq
-         LKefrBQ2THFBytkM/F+8GtlHgH2jcEwG5Nr5PSloVjh0i0SGZlfz8WP9EwuUw9214vzE
-         jIvA==
-X-Gm-Message-State: APuU4Z924mRuBibe4T0IhTeKZAfZDdZ360E9KRfkq5hyCl8j9LDcuhrQ
-	QH16S5GQXfuup3zfe3wS2czUGXrGTrW4wvHuJ2ZQ9G9IWllXxUpmNYgE
-X-Gm-Gg: AZFdTZcE+jiEvSA9yCMHo1Q7jKNqOKppAslWykFmgRTCUecu5VdtZI3hOObb+vCwS1O
-	mSHoPmbgT/Y4GpnvDC76RBzZSTEJEBCUmtUVHI2SVv7r3RgN9YuoubMzLRWcRpuEP0wtmfVKydE
-	mB2WjhbbNzco2abbjvCrGtLaEzyklZc1VI4IBIga/cKpjmZcLw4inteSr8cPVnAGzzgTEu+6b8J
-	GJb4AKnQwT+T5XobLRvpkCifS5GnuOoGovP8UKy1ciIxUxxbeWczNEMcc1ZdXpVtnrLZ3abu1oy
-	zQMTyJu58jhKloTynuklKolBDwmad18O/KnHrg+79tSMhwl/kEBpBhdqJE0Qce7QSGeWSKX8mpL
-	zNL/Yf+cJh80NdGWnPInO2+aWgrngcmUGewi+/Uu6fZHfAnVPx9r6nYK6pTWiCeJRswgpERN/0g
-	S1zRKL0bQGOOtRZLEcuc7xinl8vcBQrwBjz2HHl1rHWstbekEN/Mj9/q14xIQLYsV/JEF8G9ofQ
-	jQn7ZKl+DNFS4GupHNTDTVpUr7CbnPzVyc8FW6RdK+mZpjFyEDXonRunS9wUh+StsljeXtD2xxs
-	ZPujBNtZltpyg/tzIas4xgteVUBTB0Hhlv9kWGSX8oprJ3UoJDhR++1rz5g6A5d6H96rWkkdi6r
-	YwbQKkggvOun5SYC7oXBpWsc8T7ouopeBq3+LGP3sMg==
-X-Received: by 2002:a05:690c:3707:b0:8b4:e17f:f7f3 with SMTP id 00721157ae682-8b52045732fmr5288457b3.22.1795123594166;
-        Thu, 19 Nov 2026 13:26:34 -0800 (PST)
+        d=1e100.net; s=20260707; t=1795123596; x=1795728396;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=u/T6aa6iCWFrqHcoyuakH1O4XrX3XcHQl1IIpLYEGug=;
+        b=rSnz0sZBmda0hZ7+TwHnQ5C+W0EsCsoz8DU98M5v7jdiXe/JNZHUfKGmBUK/HoLUhy
+         S4Oedk0rJMga5caaC2X+lUzy5xM8yGi+IWZZQ4ippMrwZEfZdVAt/YAkwVOCBW+DoiPS
+         AZtwZgqWr+qw2VGIB2A4TDvqngVFFPaNhXwUutxJeCJDLj/DdTPbm6Vn+0rIFz95ShDB
+         PF+7K1599dC+UAKQrJz257P8Tna4iyJFguNmQ3UVD/LmCcYZH7UfhqaqOerW12s0LSKI
+         3YUbIzZ0hf34fAOIUbn05eMgmNyeinh0S8r3ljKgsaDUTBX9TrIsjXfbUHxOOqiRBUuJ
+         gdoQ==
+X-Gm-Message-State: APuU4Z9X6q8nT0SMn3hxpjWl28g+szcnu5yAMdJY6N7FMfsHlIDmEJ2E
+	A2ycLZ8Tjf2lS1SeN4EZZ3xy5q5bGEgYSd0jMTXo+ybciNXhckjmq7GP
+X-Gm-Gg: AZFdTZc48sUT4J2/uGT7+hYi4XIvoOPJVMRkQFDmKBa3C18cDd2XkZ/FigLA8slhJrg
+	r4myFnVeN1pPBr5vmEwGUAx2eEz9zs1ldjIRMnK8YA/V4xfFKv4QwmZbHQ+Qr1fhkEnzAPMXeHO
+	3m4KlKVn4mlVzVDswhSOLUBk7Z1G4oc72sB6QzZY6MPifXXHle8ce38TXacWyakLkEm8J7LVUSx
+	m0D4IZpcdmElqqJJH5u0TWnqsJB9Q86ACj6qIZu0TzGY845T9/ePj5XrIprP2NIaMsQbiXTIadP
+	LkAkOABTyIo2ai2qnNJ95idS5xFFGKe3M7D1Alf9ihy0Um/x8ctkU0O9DYp9RRBsjrD/VXlo0V5
+	PTG+u+EJ+xPRsvEwK+ZMSRhmjMs829i5vbZ45UgrN+Dh6vBukBWIA2trpmhUAYsmI1hYJXIeCVg
+	GpTBYI9/IvOoTdOtem3WpfuWXXDA/MWKD4cKJsd5Jl8AJf3KkUmN8kcx7OtdzAvTrMjJkH6B30V
+	+iMfAgcnXewr51qFguWjX4DBDFg/JefjyCgOBez/v5B8z40hhbNePlSyf7H8LkxHMwKD8i9N10Q
+	K2RAlrrJNlW9JmJlXd+SRL8VWPknRtF/CMJBqkE2P++6gmaPAvVzPWxE3RrTMM3QH6Tj5wNvk6/
+	cAKSHB27Tfwe2fWz/G2zLFB9S/OqwUqEbMoE2SILbKbAAap3+uDvvgIZDFmf9m3k=
+X-Received: by 2002:a05:690e:1094:10b0:67d:bdd4:e44 with SMTP id 956f58d0204a3-67df44b0b15mr275383d50.98.1795123596293;
+        Thu, 19 Nov 2026 13:26:36 -0800 (PST)
 Received: from localhost ([2600:1702:7a90:6f9f:66f3:d5d6:2d12:d460])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b5202bef08sm5583527b3.20.2026.11.19.13.26.33
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67df338e8fesm658337d50.16.2026.11.19.13.26.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 13:26:33 -0800 (PST)
+        Thu, 19 Nov 2026 13:26:35 -0800 (PST)
 From: Matt Turner <mattst88@gmail.com>
-Subject: [PATCH 0/2] drm/nouveau/dispnv04: Support PMU sleep on the iMac G4
-Date: Thu, 19 Nov 2026 16:26:31 -0500
-Message-Id: <20261119-nouveau-pmac-sleep-v1-0-360c08654a25@gmail.com>
+Date: Thu, 19 Nov 2026 16:26:32 -0500
+Subject: [PATCH 1/2] drm/nouveau/dispnv04: Restore Apple backlight PWM on
+ resume
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,10 +93,9 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MOwqAMBBF0a3I1A6Y4AfdiljE+NQBjSFBEcS9G
- yxPce9DEUEQqcseCrgkyuESVJ6RXY1bwDIlky50rZRq2R3nBXOy343luAGebVWiqPVoNRpKoQ+
- Y5f6n/fC+H4tE3q1kAAAA
-X-Change-ID: 20261119-nouveau-pmac-sleep-c54e062bc2e7
+Message-Id: <20261119-nouveau-pmac-sleep-v1-1-360c08654a25@gmail.com>
+References: <20261119-nouveau-pmac-sleep-v1-0-360c08654a25@gmail.com>
+In-Reply-To: <20261119-nouveau-pmac-sleep-v1-0-360c08654a25@gmail.com>
 To: Lyude Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>, 
  Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
  Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
@@ -103,14 +104,14 @@ To: Lyude Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>,
 Cc: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
  nouveau@lists.freedesktop.org, Matt Turner <mattst88@gmail.com>
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1313; i=mattst88@gmail.com;
- h=from:subject:message-id; bh=H47g+gZOtNzRvfYRZiTfxTdPkEiWb/7zemgBeHo4gRg=;
- b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+Z3Y8nmwbZhz84vhDxks6a7K7SmJ+C61dciotVzqw3
- vTCbh6hjo8sDGJcDDPFFFni1iuyzGrbsdTntPQvmDmsTCBDpEUaGICAhYEvNzGv1EjHSM9U21DP
- EMjQMYqHyOkxaGQWF5emFummFRQ55OWXJJZk5ucV6+UXpOYVpBfopWWmlWRk5BcVpwKN0MtLLTF
- 1dXQzMjQwsXS0MHOycDQ1cXZ2MnRyc3R0dnUysjQ3MXC2dDRxtTRn4OIUgLnmpD8jw8Gwt5anuo
- /u9fhurCLupPTiZugO7YmvNdgOf/x8ePX1h/8YGe5e/zZ52d/b52c1JTn7LWo7wy+wRUlhFY/kz
- mMzPF/NvMsEAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4744; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=uadQHS718gQ/DHTMJAZSo4vKONsVxecudR5BmvozqCU=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+Z3asXt6nLdEw84Wu9+Lqyb4fdrte3rwmRutwtxvns
+ sAXfFMXdHxkYRDjYpgppsgSt16RZVbbjqU+p6V/wcxhZQIZIi3SwAAELAx8uYl5pUY6Rnqm2oZ6
+ hkCGjlE8RE6PQSOzuLg0tUg3raDIIS+/JLEkMz+vWC+/IDWvIL1ALy0zrSQjI7+oOBVohF5eaom
+ pq6ObkaGBiaWjhZmThaOpibOzk6GTm6Ojs6uTkaW5iYGzpaOJq6U5AxenAMw1+xYzMnQ3J7f+3s
+ 5yVrVA4PK7EOX4NXbX09fYRkWnZLN8u65cuI2R4a/M+jMr05lOJaZVOrmsLHhjG96WOOlwXu5y2
+ 5nWdne1GAA=
 X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
  fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -121,37 +122,131 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-With nouveau, the iMac G4 (PowerMac6,1, NV34M) only offers s2idle, and
-when PMU sleep is forced on, the panel stays dark after resume.
+On the Apple GPUs handled by nv04_dfp_update_backlight(), the panel
+backlight PWM lives in NV_PBUS_DEBUG_DUALHEAD_CTL. Open Firmware sets
+it up and nouveau only toggles bit 31.
 
-The dark panel happens because the VBIOS init tables, which nouveau
-runs on every resume, reset the backlight PWM that Open Firmware set
-up. Patch 1 saves and restores it.
+nouveau runs the VBIOS init tables on every resume, whether or not the
+GPU lost power, and on the iMac G4 (PowerMac6,1, NV34M 10de:0329) they
+write 0x7fff to that register. It reads 0x83e60535 at boot and
+0x80007fff after waking from PMU sleep: backlight enabled at zero
+brightness, so the panel stays dark although the display is otherwise
+working.
 
-PMU sleep is missing because boards flagged PMAC_MB_MAY_SLEEP need the
-video driver to call PMAC_FTR_DEVICE_CAN_WAKE, as radeonfb and
-aty128fb do. Patch 2 makes that call for the NV34M.
+Save the register when suspending and restore it on resume.
 
-With CONFIG_STRICT_KERNEL_RWX=y, PMU sleep also needs "powerpc/powermac:
-Fix low_sleep_handler with STRICT_KERNEL_RWX", which goes through the
-powerpc tree. The testing here included it.
-
+Fixes: 6ee738610f41 ("drm/nouveau: Add DRM driver for NVIDIA GPUs")
 Signed-off-by: Matt Turner <mattst88@gmail.com>
 ---
-Matt Turner (2):
-      drm/nouveau/dispnv04: Restore Apple backlight PWM on resume
-      drm/nouveau/dispnv04: Allow PMU sleep on iMac G4 with NV34M
-
- drivers/gpu/drm/nouveau/dispnv04/dfp.c  |  6 +----
- drivers/gpu/drm/nouveau/dispnv04/disp.c | 41 +++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/nouveau/dispnv04/dfp.c  |  6 +-----
+ drivers/gpu/drm/nouveau/dispnv04/disp.c | 27 +++++++++++++++++++++++++++
  drivers/gpu/drm/nouveau/dispnv04/disp.h |  2 ++
- 3 files changed, 44 insertions(+), 5 deletions(-)
----
-base-commit: 8e2afcd2b57990465f132367fd8fdc2e55c1adad
-change-id: 20261119-nouveau-pmac-sleep-c54e062bc2e7
+ 3 files changed, 30 insertions(+), 5 deletions(-)
 
-Best regards,
---  
-Matt Turner <mattst88@gmail.com>
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/dfp.c b/drivers/gpu/drm/nouveau/dispnv04/dfp.c
+index 00eb2aacbe93..33b5a3398460 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/dfp.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/dfp.c
+@@ -485,16 +485,13 @@ static void nv04_dfp_commit(struct drm_encoder *encoder)
+ 
+ static void nv04_dfp_update_backlight(struct drm_encoder *encoder, int mode)
+ {
+-#ifdef __powerpc__
+ 	struct drm_device *dev = encoder->dev;
+ 	struct nvif_object *device = &nouveau_drm(dev)->client.device.object;
+-	struct pci_dev *pdev = to_pci_dev(dev->dev);
+ 
+ 	/* BIOS scripts usually take care of the backlight, thanks
+ 	 * Apple for your consistency.
+ 	 */
+-	if (pdev->device == 0x0174 || pdev->device == 0x0179 ||
+-	    pdev->device == 0x0189 || pdev->device == 0x0329) {
++	if (nv04_display_has_apple_backlight(dev)) {
+ 		if (mode == DRM_MODE_DPMS_ON) {
+ 			nvif_mask(device, NV_PBUS_DEBUG_DUALHEAD_CTL, 1 << 31, 1 << 31);
+ 			nvif_mask(device, NV_PCRTC_GPIO_EXT, 3, 1);
+@@ -503,7 +500,6 @@ static void nv04_dfp_update_backlight(struct drm_encoder *encoder, int mode)
+ 			nvif_mask(device, NV_PCRTC_GPIO_EXT, 3, 0);
+ 		}
+ 	}
+-#endif
+ }
+ 
+ static inline bool is_powersaving_dpms(int mode)
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/disp.c b/drivers/gpu/drm/nouveau/dispnv04/disp.c
+index f71199a39bc4..7d44d18e1b88 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/disp.c
++++ b/drivers/gpu/drm/nouveau/dispnv04/disp.c
+@@ -35,6 +35,20 @@
+ 
+ #include <nvif/if0004.h>
+ 
++/* Apple GPUs whose panel backlight is a PWM in NV_PBUS_DEBUG_DUALHEAD_CTL. */
++bool
++nv04_display_has_apple_backlight(struct drm_device *dev)
++{
++#ifdef __powerpc__
++	struct pci_dev *pdev = to_pci_dev(dev->dev);
++
++	return pdev->device == 0x0174 || pdev->device == 0x0179 ||
++	       pdev->device == 0x0189 || pdev->device == 0x0329;
++#else
++	return false;
++#endif
++}
++
+ struct nouveau_connector *
+ nv04_encoder_get_connector(struct nouveau_encoder *encoder)
+ {
+@@ -74,6 +88,15 @@ nv04_display_fini(struct drm_device *dev, bool runtime, bool suspend)
+ 	if (!suspend)
+ 		return;
+ 
++	/*
++	 * The VBIOS init tables, which run on resume, reset the backlight
++	 * PWM that Open Firmware programmed. Save it to restore on resume.
++	 */
++	if (nv04_display_has_apple_backlight(dev))
++		disp->saved_backlight_pwm =
++			nvif_rd32(&drm->client.device.object,
++				  NV_PBUS_DEBUG_DUALHEAD_CTL);
++
+ 	/* Un-pin FB and cursors so they'll be evicted to system memory. */
+ 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+ 		struct drm_framebuffer *fb = crtc->primary->fb;
+@@ -126,6 +149,10 @@ nv04_display_init(struct drm_device *dev, bool resume, bool runtime)
+ 	if (!resume)
+ 		return 0;
+ 
++	if (nv04_display_has_apple_backlight(dev))
++		nvif_wr32(&drm->client.device.object, NV_PBUS_DEBUG_DUALHEAD_CTL,
++			  disp->saved_backlight_pwm);
++
+ 	/* Re-pin FB/cursors. */
+ 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+ 		struct drm_framebuffer *fb = crtc->primary->fb;
+diff --git a/drivers/gpu/drm/nouveau/dispnv04/disp.h b/drivers/gpu/drm/nouveau/dispnv04/disp.h
+index 85ec0f534392..2f84287a3521 100644
+--- a/drivers/gpu/drm/nouveau/dispnv04/disp.h
++++ b/drivers/gpu/drm/nouveau/dispnv04/disp.h
+@@ -88,6 +88,7 @@ struct nv04_display {
+ 	struct nouveau_bo *image[2];
+ 	struct nvif_event flip;
+ 	struct nouveau_drm *drm;
++	u32 saved_backlight_pwm;
+ };
+ 
+ static inline struct nv04_display *
+@@ -98,6 +99,7 @@ nv04_display(struct drm_device *dev)
+ 
+ /* nv04_display.c */
+ int nv04_display_create(struct drm_device *);
++bool nv04_display_has_apple_backlight(struct drm_device *dev);
+ struct nouveau_connector *
+ nv04_encoder_get_connector(struct nouveau_encoder *nv_encoder);
+ 
+
+-- 
+2.56.1
 
 
