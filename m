@@ -1,91 +1,48 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF537606A324
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 12:18:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95175606A320
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 12:18:40 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qkcEXJc6
+	dkim=pass (2048-bit key, unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=CycFhd9A
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVctd1WW8z2xnS;
-	Thu, 19 Nov 2026 23:18:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1231"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795090681;
-	cv=none; b=UZnjtNakxOXnuzAyEWB6O+dupEzXRVbuR7w53uWG+gSDhX/Q2zQ0HiNFBukbyBrSdIcnVC25527p6afakK5CNkDpzuWDO4N5SGJnV7w2JZRi1jubMwkxtJ905xgM0LBSRm1FR1PpF0zvUZPeN3+GRWclY6+J0JGSCfNuL/qbvnY6fzwEBRghOmY7zSV0Msy17jmZmUpNlHXiQmV9JeXVqk7bQGvzJhPpusujh6A5rMnY9eN8eA4x3Ohzk9qgFj+EoXnVI+iDACMgksFtOo9s8fhD1NC1bYashP2aQC6I/CqR5sqQxk2+GX3IPU2aRKg32rNYsavq21e+oEE0SCNtKQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVcvM2XQCz2xnS;
+	Thu, 19 Nov 2026 23:18:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=62.149.156.116
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795090719;
+	cv=none; b=L61uVkjFTSgidou57UVWD3kQWHbYjDwvmnn0v9lhVPLlgHKZ/FwP2CmkjTA391Of2/6Cp9dRHrY46g13F2DvvBsgQNgKLU0/DFZf1q9xp8qkI4iOZwKPZv5uT2HpBRhwHg90XNrnDd+MWOszSDZPvpqEKLvS/eFp3+uDu/D1CHdNkuholB+kcZFVs/ZhP4u9ezSsS+qXwnS0Ae9H5McOwPVFfYsIKuSZuddwFYp6p1T0ydkwp+aao9cx6WAph0QsbUu2Ery3XXPbrzBgRzzhxRSNvYDe3TwA1T5orA0bQfJs7TtG397ZdcLFr+jB+3AhZMTSlg4T0Vzw6os2Zt9kAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795090681; c=relaxed/relaxed;
-	bh=SsWTDqy6U/s3LdSWkLHVQ7n4MxNSxrVjauJtJeDqFQI=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=NpRqfHslWVJtdOJVI6uTNYoYpsfOP9Lh18JJymFyj6JuKE/tAGNgJ9opC6CCWNf+uOD66432h5t43yUoxsWpp8uaSPF7g6ty07K5oJW1/iPSmeS6H5/JM6mhTxqhdVAdf/x7TsvLoA6wXOBEKkIouKJTjFckgKO+gIu6ynoGOyIWy0Tmz7eSDpKmBUrJA4yPe+mYoo+P0aJ4v5TeKTQ0L5v/z/5gYR8H8kx+Y+gMQpNkR4/1+Ri65DOBYJBUfTkpmJAsxqcYyt46VItQAgoZJzhBXwDGEBHvMq6BIlvASkiGVBoO9V+o/G2zdka+e3oTZQBy+YnxENDoUl/OKnCHUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qkcEXJc6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795090719; c=relaxed/relaxed;
+	bh=4+hewYS5Xc85XMsrC6qSZHgaMk+5vxcwYlnKkuazLe8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=i7iKFJPbeqrm3D9vQYIq38uqBxWjrpXpEzOSJPOMoslv52Wx7s05xPMzAFSK6YtVRx3ul0d94+N7UsS/YlPIcPodtpA2iN+wSmKO1hNlX8jP9oP6oQfoeV57XPaSxYN7CQfeRmsW3OHKJdxEDqAkA44ueDamk55og65BN00IqtlUsi/ZtSuW8ki3cxDZ/mDqEWz6BH8jO98cedGYt2qYFAoCTby0UU86EwbybntTRSW2b+ZF1oK/2a72lEIkeLoj8WclRGy0My9Te9cMl/swLqvl8UPQQUi99sjaFtX0pWxnuXVpfzXN9gakyZgaqtQk8zAo1+50cMeYhfDlxGkVzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=enneenne.com; dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=CycFhd9A; dkim-atps=neutral; spf=pass (client-ip=62.149.156.116; helo=smtpcmd11116.aruba.it; envelope-from=giometti@enneenne.com; receiver=lists.ozlabs.org) smtp.mailfrom=enneenne.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=enneenne.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=qkcEXJc6;
+	dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=CycFhd9A;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1231.google.com (mail-dl1-x1231.google.com [IPv6:2607:f8b0:4864:20::1231])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=enneenne.com (client-ip=62.149.156.116; helo=smtpcmd11116.aruba.it; envelope-from=giometti@enneenne.com; receiver=lists.ozlabs.org)
+Received: from smtpcmd11116.aruba.it (smtpcmd11116.aruba.it [62.149.156.116])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVctb4xfgz2xL4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 23:17:58 +1100 (AEDT)
-Received: by mail-dl1-x1231.google.com with SMTP id a92af1059eb24-1b3a05f8b5bso2738277c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 04:17:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795090676; x=1795695476; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=SsWTDqy6U/s3LdSWkLHVQ7n4MxNSxrVjauJtJeDqFQI=;
-        b=qkcEXJc6msKdB0CGikfz0duo3zfOBAoYRgsREsSuAT+cI6P405HN2XFf1O/sFtL+D1
-         ueiOPNDhB7dXqGeCZJlG2i08W9K7502Wa0h9Q50nG+Ppb3Ud4jttgbPOQ75NkNGikLst
-         4SOxQgeisKY8X0W+1ctb/hY7nZkQy0EEVLJdebXs/CEarPjmUBD+0xFEGLK1UVD7NR9W
-         FoIZh0f1TAfSwoNxXWKr8ka5gJ16ctWMoGullggft9xJuUbXbzvOFCU722yAh22u3nA1
-         XHUhgVcV4qffwxjDqtoMtUezK89MycMJGdvsigcD0ZV+WUuKGI7+cLrOAt8VH1Cqz/Ey
-         iDkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795090676; x=1795695476;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=SsWTDqy6U/s3LdSWkLHVQ7n4MxNSxrVjauJtJeDqFQI=;
-        b=TBf4QbHZR+ncu7XL20anm2ZE8k8RGtoCEQX9r0Cn7VCK2P0ehOftDonRNdgyjwx75m
-         lx5yUoehUwg7HJ0eddQmm7w/WxnQW20AyXx23JTHSELEtX/AQl64vmoJ0jTw7jXq4PkA
-         CyqLSd1ViHuXII3mGNYXKLaH0qsSMJ18OWF9ZTv+Fwm/hIHyo7uZ+oMKVURCa5agUtoC
-         2d7zyc8wgigii4L0E3HLUg5R530zYankknHSFGsmauRvY4WwVnq2pn9Axj5GvqpHH1X6
-         K8dAPl8Yb55FzOl4Y9tieTadBPiHT7D4MjofgzCsv6sRxyxCeCbUM1AQIQnu4UCt640V
-         qiWQ==
-X-Forwarded-Encrypted: i=1; AL+hErGnHcQSQ6oHtk+leu7wAUh0Z7dCw222soRq3vRPRSssgYyad0W9uEkHOrFQFpCk4ABV+D9gxfWqDDzdGZ8=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+JIEbRAEVhmRC/5vlCZd5DWoH3SoW/uFBjv0/+crl1e4o7dAIH
-	Qay4h9As62hMG+OJa1e+o2j9669LMbLgawS0YMXrWpYlz+R0IR9DApBL
-X-Gm-Gg: AZFdTZdummUzA+yrBoAU/MAfAAlk/CuHPnHoRtPcXbYDyDbUeJP77CJwIPUnZsneqEX
-	6TFCPnxbYjdxMv4f6l2eGbzUib7sD08+xJY8Aylg7iAbdDQEsHN33CYjxiIWoCBF+mP4Lr+0y6F
-	Ukz/Q86O5r8eSuTfkru7//wiFa48KvUhxEK/jCgEGExu+UULke4r51NPnBq/KiCXrG0KMn+GbVZ
-	FUty/tQ4EEIVdCjCdRta2Hl0uhkpxQ9omuPEdA8Lo3d5t1p/KHVkBmdTokz+KCOOilyqrtRFilo
-	VZaU6z8HPtllx8m0ttFRj+sTJy9p6AIo/lSj6Js05h7+b+DKBJscMory9FmZkgvj6RU14tVrcy+
-	WsM1AGBj/8f1rHbBDxcZ0WzUAJQt/hZ1QRllkCYCtId53gJp040cjCWaBjVu/losAamhNxK+nZE
-	L9WJjgoXKq7fAt6cj2OE34o9HugNypMBpXH798o0yJXKSgK9cAwqiiI6wGyjLfU8hs2mEYtyOPK
-	cvOg6hIBfJ6TCpEq5L+vnwdIKZ8BmvT4SdHI9P+IJuLNzblDjqYoZltT1dqyIXvVZByYzT84eRZ
-	dPgIGOX6rlJK73yh6TL8t5TilSPq/oBUhE0az+R96wvX0yDr3w==
-X-Received: by 2002:a05:7300:1c9c:b0:361:1dd6:531b with SMTP id 5a478bee46e88-38281025c89mr5440546eec.26.1795090675937;
-        Thu, 19 Nov 2026 04:17:55 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-382a80bc19bsm17656695eec.29.2026.11.19.04.17.49
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 04:17:54 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev, linux-kernel@vger.kernel.org, Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@infradead.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>
-Subject: Re: [PATCH v2 4/7] powerpc/mm: handle highmem pages in arch_dma_prep_coherent()
-In-Reply-To: <20261110094830.2081847-5-m.szyprowski@samsung.com>
-Date: Thu, 19 Nov 2026 17:37:02 +0530
-Message-ID: <jym96n4p.ritesh.list@gmail.com>
-References: <20261110094830.2081847-1-m.szyprowski@samsung.com> <CGME20261110094850eucas1p1f10fa1473aca341473077f60a088b490@eucas1p1.samsung.com> <20261110094830.2081847-5-m.szyprowski@samsung.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVcvJ3sdBz2xSl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 23:18:34 +1100 (AEDT)
+Received: from [192.168.0.186] ([101.57.122.26])
+	by Aruba SMTP with ESMTPSA
+	id U14zxDwan6VShU14zxRiua; Thu, 19 Nov 2026 13:17:31 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aruba.it; s=a1;
+	t=1795090651; bh=V3OZh4icVrzbMI2k6cXTPEjlLw6DW6zRycuz+4CAfec=;
+	h=Date:MIME-Version:Subject:To:From:Content-Type;
+	b=CycFhd9A1catDJK8mSVVnIjyH5ROQd1v+wC5+drY99wllUzOcvv0JnbleYae1QyWl
+	 BfXvel5+GlGK/smjYdZVOsE8ifTJ+aNn92e3/PHwymqXJ9vopCmtPNtiJdDDxgFhXQ
+	 gH0O5LL0GqGBMM5zzAqHd0YcDoUE/TebWvQKcOdv9bAt/QbHhwHYpgUqx3x1h4Ldgp
+	 75NfGZPT+sNKTTrA02giDUkiO0gk016/Jf4H4Ha37Gpw+3d0e3MxEHOw+7cjazCAy7
+	 12PcNhVzIViATgQFKluA/RK3kpXudgDDYCPNifgplaPxzA8PVajw1Iru4DOG02ulfO
+	 Vnl/JByjL9DVw==
+Message-ID: <10d27c34-72d7-4380-abc9-6f8eddc6c08c@enneenne.com>
+Date: Thu, 19 Nov 2026 13:17:29 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,59 +55,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
+ never read
+Content-Language: en-US
+To: Demi Marie Obenour <demiobenour@gmail.com>,
+ Jarkko Sakkinen <jarkko@kernel.org>
+Cc: David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
+ Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
+ <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Richard Weinberger <richard@nod.at>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20261118140421.584086-1-giometti@enneenne.com>
+ <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+ <av5EyVHnNzT27dyK@kernel.org>
+ <61ca7c37-7b42-48a3-be2e-95deb4d999a2@gmail.com>
+ <01692969-8e92-4a08-bde9-aad86674504f@gmail.com>
+From: Rodolfo Giometti <giometti@enneenne.com>
+In-Reply-To: <01692969-8e92-4a08-bde9-aad86674504f@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-CMAE-Envelope: MS4xfKBPrYJ2CDN4f71Kap/ixDsQG8LCW21ix5G/r+qduPuGoKFzPku3ui/3D6NrDy/I4fLjS/AZ5x4bSLPCyVIF0to5TjSclhUTdSU4uon2/XK98GioKEpu
+ t0DAXGgZowfR8EBdb4xlQI1aOmtiyouqFm6ozJqENawyIYsyVwWUPVtIrxKIMh6tgg2DcE0bNvKSfTxI4E/KX6og6HQ36T9SsUF5L6ywvP0CPLLtoj3XfOJK
+ KK6OL4sQiUzIGXyKYC/g5t6eDL7TGBKZYqtynb/EnlVDCDMoH+BMpug/FQzubq89PMXLKw1FzF7r79429pnKXBHAlDBdAGSZfIFNS5uHsw8Ky4Ryb//LMK9V
+ xLfwyhC5KBHWow0xsn0MR7mF6xbrK8rHOP6EY/6N+7N/mkYzZW0dxG31VP79/qgd0FE+u/f6bwMdsGglkPiv7Y+X/kQhNQovCMTLqK/xd4/A1//iDD4ibkuq
+ 1/kQFk3iW8okXGDrlVnZ6UkHWDYJU0H4V33JM+dA1KrG1s5yxelszfrfDGYXDXRvM9MRXG2C0JJFVnXDW1DBfX7oruz0XIMBt6ZuUqYpwYoCJYgDT8/Y94gB
+ RtndS527vikEPvkczW3D2qQoIsrt4+TG4WSJC3lfoPhIyloLUzoc3clohznlcZ5d41rbBCRbfQ1vSp4l+bVmTsLWseSQTZKxyCBx5FWky+xTaEm69CxDc2nW
+ HxMYdlYxr4DwnIfL+x2fqCJ5RbC7gBciMQd6ihsH1iadIXHfBcS4KhXDviVzexL7jL7TLPHnlpjTAhT/rODrCAAiT5G8Le0zqKlXI3LhP81Ke0+765dQ0e9y
+ vgu5MhNb82zl8mX48OJ9rhfGTJKQP6C/S1uHuzQOV8VuqFJx7jL006rc7ZGJIcc4/bSi4OzRvFhFOgNVnMJP+jAWIUvBJtJS4o9aDPfIoaC0wUPeec7ltUUx
+ 3YAptj8Js+/LJy8wIk8KSIHNu1+DIrXnbtSxZ48rdWX3ylBXpUU2OdzVbAPjylucDm+hVHDEnZGmwM4stN3z19Ce9cCXkLIDcyAWyz9J1zqQ0O2bu0XmE7hv
+ 9+HAxJgOrvm6fyiIZnDN/P7bOyh6SKydeOvoEul+E155hehVkqO41wFNa7awsiPXufzyRwo7sKbPtMCbyJ4P/mnlwQSbOC29VJQeoCboPfyks3hw+p1gJkwG
+ UStDxD9YrJOkVXUS048vbJ5rbuI5vxFjkO5bxo7Dsgk2WyJjnWav55v2ahPGzLX0t+XZEaY1n4iDLxnooNN/H35sYauqbDVs3RMMPG938OJL4wUKNVf/6fDh
+ Y3+0UYag
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-Marek Szyprowski <m.szyprowski@samsung.com> writes:
+On 19/11/2026 05:35, Demi Marie Obenour wrote:
+> On 11/18/26 7:43 PM, Demi Marie Obenour wrote:
+>> On 11/18/26 7:37 PM, Jarkko Sakkinen wrote:
+>>> On Wed, Nov 18, 2026 at 06:42:15PM -0500, Demi Marie Obenour wrote:
+>>>> AES-256-CBC isn't a suitable mode on its own, unless it's combined
+>>>> with a MAC in encrypt-then-MAC.  Even then, it has a 2^64 birthday
+>>>> bound, so it should only be used 2^48 times with a single key unless
+>>>> the key is ephemeral.
 
-> arch_dma_prep_coherent() performs the cache maintenance on the address
-> returned by page_address(). On 32-bit powerpc with CONFIG_HIGHMEM that
-> is NULL for a highmem page which is not kmapped, so the flush would
-> operate on the wrong virtual range and leave the dirty lines of the
-> buffer in place.
->
-> The generic DMA code may pass highmem pages to this hook:
-> dma_direct_alloc() handles a highmem page returned by
-> dma_alloc_contiguous() by forcing the remap path, which calls
-> arch_dma_prep_coherent() on that page before creating the uncached
-> mapping. This cannot happen on powerpc today only because it does not
-> select HAVE_DMA_CONTIGUOUS, so dma-direct never gets a highmem page
-> there, but nothing in the hook's contract rules it out.
->
-> Use __dma_sync_page() with DMA_BIDIRECTIONAL, which the
-> arch_sync_dma_for_*() hooks already use and which kmaps highmem pages
-> one at a time. Without CONFIG_HIGHMEM it does the same
-> flush_dcache_range() on the linear mapping as before.
->
+CBC is there for existing formats (craf writes files that openssl enc
+can read) and because the CAAM path is CBC only. I take your points
+on it.
 
-Does that mean, this change can add additional overhead for
-CONFIG_HIGHMEM=y kernels, where the buffer received still belongs to
-lowmem? (Because of extra per-page book keeping like
-local_irq_save/restore, kmap_xxx). Thoughts?
+>>>> AES-GCM is not a suitable algorithm either.  If you allow encrypting
+>>>> with a key loaded from persistent storage, there is no way for the API
+>>>> to ensure it is only used with a unique nonce.  Nonce reuse leaks the
+>>>> authentication key and allows forgeries.  Using random nonces isn't
+>>>> good enough either: NIST only allows 2^32 encryptions in this case,
+>>>> and the API can't enforce that limit.
 
-Although functionally the change looks correct to me. But maybe
-__dma_sync_page() on powerpc side could use some cleanups (outside of
-this patch series perhaps).
+You are right that a construction of our own is the wrong choice:
+patch 9, the only GCM in the series, has no user yet and can go.
 
+[snip]
 
--ritesh
+>> The usual solution to something like this is a userspace service
+>> like ssh-agent.  Then you can do whatever key management you want.
+>> That doesn't protect against root, but if someone can get root you
+>> have bigger problems.
 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  arch/powerpc/mm/dma-noncoherent.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-> index 30260b5d146d..e646256365d5 100644
-> --- a/arch/powerpc/mm/dma-noncoherent.c
-> +++ b/arch/powerpc/mm/dma-noncoherent.c
-> @@ -118,7 +118,5 @@ void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t size,
->  
->  void arch_dma_prep_coherent(struct page *page, size_t size)
->  {
-> -	unsigned long kaddr = (unsigned long)page_address(page);
-> -
-> -	flush_dcache_range(kaddr, kaddr + size);
-> +	__dma_sync_page(page_to_phys(page), size, DMA_BIDIRECTIONAL);
->  }
-> -- 
-> 2.43.0
+The threat here is root, on devices where root eventually falls: a
+key root can copy decrypts that device's data offline and forever. A
+service that holds the key in its memory gives that away. keycrypt
+with the OP-TEE backend does not: the TA keeps the key and checks the
+purpose sealed with it at every use, so even a compromised kernel can
+only use it on that device, and only for that purpose.
+
+> Also, if you need keys stored in hardware for some reason (compliance,
+> time-limited exfiltration), you can use a userspace library or
+> daemon that abstracts over whatever the hardware-specific API is.
+
+Yes, that is the case I mean, and a daemon over a TEE would not give
+the key away either. What it costs here is, for OP-TEE's PKCS#11 TA,
+secure storage before the root filesystem exists; for the CAAM, the
+only user-space path is AF_ALG cbc(paes), the one off-CPU exception
+left in an interface the kernel documents as deprecated, privileged by
+default, with a key format per driver and no purpose.
+
+Ciao,
+
+Rodolfo
+
+-- 
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming
 
