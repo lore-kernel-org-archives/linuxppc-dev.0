@@ -1,83 +1,88 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40F37606A338
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 14:33:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC815606A326
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 14:36:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DkO9ZyBD
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tkngT6hu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVgtb3ssSz2xL1;
-	Fri, 20 Nov 2026 01:33:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795098791;
-	cv=none; b=gAseY27U3qORhCJ7htX90JlBViHsw1gJkxg2qVqoy/Tx2FWI9Y6WXlwAhe4sw8ZjsTktHcIDQAD9BRSNaCAv3A8+yDe5U4Cffq5ysl+ZSUAG+qsc63Z0TFRxTQjLpo1KV+p4FCEWwhPwdsQn+1+MgR3xOfHYA81CuhozHe3SUqD7aUCnmEifFgj4eBIMiG+zPMDMIWgAIvfduhTdnaH2RBvNeSrbbU4VNKDsZliVB9ODnUlMFPm3WI2DpZ7ZzkBz85dZiNE7I89cLP9k16TQhYBBCN2v8bLXlsTk6nSWrAdOzIHU0dEB6JvMqvCP9AFmOaz0M7gKGwWYnFID35cw0w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVgyD3P9Gz2xL4;
+	Fri, 20 Nov 2026 01:36:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795098980;
+	cv=none; b=OgjitZJszaeP6logFDwCH/ExSmLqBSFMl3QdDJuDFPAc4PHRWS+v6tf7iTGSVH/MtY3cYpkMOrXa6C+gFjLfqBCDTcdMdc8YLh4uAaBjqEyORw2JPKd2a3ovX3SZ9pghjSVo+wlvMS2BgRBsz6YlKDbhYYNqko4KfjIKzzraK5zLsxlE5aclYKvdWD2PYX6JPI3L26q/Jv85wz1jwZLU3pr39axbJqF02DcXsCXQYdxSGaxYbNttU02rMzP+EVJY+SvvQsau2TtJFB+WgPjFIN3/AmfSAJlc27/PB6jc7PvrnVaInPotH3EUVOjnznvq3aFc8V3mm6Y6j1DJOtUvdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795098791; c=relaxed/relaxed;
-	bh=lv3NYu11pHprgRUUKX5nzbXJ9PYh0wkr94sy1z7rgm4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HQOHX/Stq/JCd6ymA788OOKwwh7bb8GFLNtUtGn447bxImH5kxEmAsInb5zrZDNMuBP9nOEabBij9ErOreY4wJBSjTAnKPOsd6VXkyk/flNS/vUyDabFsauLWnRQ9NO+FXaQr5GZ5PadBxX3NzKhq8/sx86sLWAHsLB+jy42v1zPRCkbO+mT4r1dStat75FIjC60PiFB1IG2/V1JA9us4K8gpa2HJFbZXvgx0ysD3Rm9SCc8Pr3LGt1qnuiPtn09+LZgNSLauE4IFEtru3hRCY3CDcLfm1JbFhI1df3ur5sYAM8WtMWm+vihYfUsrLPvL34KlD8qkePzBZv0QyMmng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DkO9ZyBD; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1795098980; c=relaxed/relaxed;
+	bh=VnF6ja6VhKpFTfNVvE3jU57UL6Hk22nBfY4kDDWDjbs=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=eA0xRagWNsDxS806zCz06Tfq8ly4GYu1QjUSmfzXXqNEyAWmDFFIiYc8dssh9rKkfM1XjzzxziFo2k/brnuSQZUuUd+Ka9RQOaGk/5cIwN7TcsiMzJ7VMcbMawacQm4Z02By+NfMJ9O+rw1dZkkrrs5JviiwP1BwhOW7+dZS9vFkElFpQuWtqQxrog/GeUH/TUAB/RIAFHpKyXBH81a5Ot2klmmuqUA78nry58yL98ddODwcNKpPWzIbC03uyOI0lAm8ceCL2tf6zhTZcnVGiqf9QK6npIgsKX/aHGjq9SmyAGSain3ZamdieIQCle31tS15rClKIYuyYfrRfUWkzw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tkngT6hu; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DkO9ZyBD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=tkngT6hu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4jVgtZ1YFJz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 01:33:10 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with UTF8SMTP id 0AF3260A6D;
-	Thu, 19 Nov 2026 14:33:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 3738E1F000CA;
-	Thu, 19 Nov 2026 14:33:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795098786;
-	bh=lv3NYu11pHprgRUUKX5nzbXJ9PYh0wkr94sy1z7rgm4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=DkO9ZyBD2TgaZMRcs8EgWiOCyNyqCS5GVpH0PIaxsiAxioBTNKOP1wNtv66D5cYUo
-	 SVbW8UDU1ecj5E3RCQAhHUNANk3OefmNfhyVcaUvR0Gz4clykNB0Ug9GoG1Ptr8ZuJ
-	 ONnfC20iTyqzzJ2bUJn6Pg6qw6zmZqZ3ZatVKnDFWAqwRPzMWGYReKxU4oRi50tS1Q
-	 1qTF54aQpt4AAtXTH2qm2wUUGVJhq8ji6yCXpiUz4OvXBnHZfzrVs9GnUElmUD670e
-	 vrz7s2wx6vlq7TxR3Li0W0SBs0mp7rRKPrBjNuC5IHgS3SdNuJjawMEJSGy/3xT0BT
-	 6PR8vQwsFHWZw==
-Date: Thu, 19 Nov 2026 16:33:03 +0200
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Rodolfo Giometti <giometti@enneenne.com>,
-	David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	Jens Wiklander <jenswi@kernel.org>,
-	Sumit Garg <sumit.garg@kernel.org>,
-	op-tee@lists.trustedfirmware.org,
-	Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>,
-	Pankaj Gupta <pankaj.gupta@nxp.com>,
-	Sahil Malhotra <sahil.malhotra@nxp.com>,
-	Ahmad Fatoum <a.fatoum@pengutronix.de>,
-	Richard Weinberger <richard@nod.at>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Shuah Khan <skhan@linuxfoundation.org>,
-	Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
-	linux-integrity@vger.kernel.org,
-	linux-security-module@vger.kernel.org,
-	linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
-	linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Demi Marie Obenour <demiobenour@gmail.com>
-Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
- never read
-Message-ID: <av8In0Xyd5iI9N7K@kernel.org>
-References: <20261118140421.584086-1-giometti@enneenne.com>
- <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
- <av5EyVHnNzT27dyK@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVgyC0z7lz2xL1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 01:36:18 +1100 (AEDT)
+Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-cdab938dc83so1204000a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 06:36:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795098976; x=1795703776; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=VnF6ja6VhKpFTfNVvE3jU57UL6Hk22nBfY4kDDWDjbs=;
+        b=tkngT6hu7PR5bhbGovG3FMF+ZhHwGMA8MqBOjflH8AF698CqOc6okSw93eg9jk3NOR
+         Rb57gKdZDMoQ+BP88idU5w0jYkKQKMU0TG0rGV+jhLn3iYh9ruzlHsS6VsBZ0/Nei+2y
+         e3O7Qxlm36bmAxRpgl+iFsalQsLPrxloEhX3VKccHaD1rKiEGNR9gpxLoOQMxPANDcOG
+         jK7kdcrmr0/n0shsXAWRsbyCX4xaHm0MueN5dqhds8iP5pcQt+ivCa7EnnTtlof8WWw3
+         ve09iOKs23IWRLTuBxwdo8eGOQ8oLIYtTSLhEg6QIZAlgj3bk/DAC+k5m4ypZQQivSel
+         w03A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795098976; x=1795703776;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=VnF6ja6VhKpFTfNVvE3jU57UL6Hk22nBfY4kDDWDjbs=;
+        b=JlE1PrTwOzaYTEfcnKi/wsgke1rtYq0rwWbP3ceCOmIpAkBphI+3naZ8SZKEpLAY+8
+         SBrOj20gw5DEF1rppYo79dP86/NoNCE7c+H4fz7aH1Bi04NOq4dAanWjepnLe0g+ikQF
+         1i68SJ5oMhewPWKsvDbf8DLvbAZvlq3vCncQei5oqlifqJTXEY3PMjjmwjVg2pqew/Ej
+         NfDLnj0gEu6MhOhVV6SUv++b2+OlMg08GM7yArJ8frswXi6C1Y329+D5NueT12zxrdlM
+         RkDcpnDAU330rwKFJSNkdpnAH4AUxLY6LyfAcnK41OaMmc1fA45e+CeBFj0wR7k02y3n
+         EuGA==
+X-Forwarded-Encrypted: i=1; AL+hErEiCsxpS57EKncLtvKKkiT+cGUInpLHgQMcFwfNHuuT0Zo5X7Gwqt2erHT5bJiQ65xbNYMiYmwa61ZHQOs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8UGlWM9w7LBHBM0+dMkoyz11l/L2+BVOQ3VYw/KxXJbAk02JP9
+	I1SurHv9oB2MBQtvdlBwpFIe2KrBrBoC4A1qpLXHTV/mIfJ6PQH7O5EE
+X-Gm-Gg: AZFdTZfLDgd9K3m8fVn5XpdNXEDXyYDTabAP60nMw/1viOG8oUoFXaMvRVB0nVTuZMk
+	vqP+lKFuqW0/xyRUEjaL5bUrnibQPXOPOsxLPWM1cwQTuUXl+r3l0ZIlIzV7NAsbKMrGYDybdEH
+	liG22CPhtsMmcuHIZ/XrJ2d6/fPqm/pk3ct0HL/dFuWd9i5xw8deWAha/AuoNMwP+e7GJp+3q+b
+	bAksVwoBaQJQUDDqM7nulL73WZZuarInQJ/1bBNyfo65x+1ZcElhaPRmX3yeJFSNzPTsiUC5PRU
+	jYF4MAJvIoW1sLq7HSCO27NrB0pjY2hQ9vh7trMqZNAWB5kx5v9dWiCbQUEtI1vvkGVAC1CW1rU
+	5mpwpBLJOlNgFGDZPfqsGWNUMtl8hNmwD8iG4nQB74n6ip2oEyA9A3IAyMOnexzTdMMCdXqyrVc
+	gWwTFm94bmiR+uZmYfuZkYJxyBa8iPQ6nVotMFlRORXCRJQyn8cJB8TEy7u71b1TO+mXvXkOW5j
+	ksvvrFBQ/OQrE8+3IZ09GR/cZ+xa/P7dZq15QGBGmDoAfMnO78PhrSddKS+SioN1NIiXEh7xyuW
+	ecVElOg1hIx4fD8CU75LBXb2Rs/HHUNCbRoklwYAJmn06lUm
+X-Received: by 2002:a05:7300:bc19:b0:36a:18e2:64c with SMTP id 5a478bee46e88-3827f98ff0cmr7469514eec.11.1795098976262;
+        Thu, 19 Nov 2026 06:36:16 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-382a7fbceffsm19156884eec.28.2026.11.19.06.36.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Nov 2026 06:36:15 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev, linux-kernel@vger.kernel.org, "Christophe Leroy (CS
+ GROUP)" <chleroy@kernel.org>
+Cc: Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@infradead.org>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>
+Subject: Re: [PATCH v2 4/7] powerpc/mm: handle highmem pages in arch_dma_prep_coherent()
+In-Reply-To: <2b64e853-89a7-4fa5-a4f8-2c6b0b62bf74@samsung.com>
+Date: Thu, 19 Nov 2026 19:59:02 +0530
+Message-ID: <5wxslwsx.ritesh.list@gmail.com>
+References: <20261110094830.2081847-1-m.szyprowski@samsung.com> <CGME20261110094850eucas1p1f10fa1473aca341473077f60a088b490@eucas1p1.samsung.com> <20261110094830.2081847-5-m.szyprowski@samsung.com> <jym96n4p.ritesh.list@gmail.com> <2b64e853-89a7-4fa5-a4f8-2c6b0b62bf74@samsung.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,64 +95,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <av5EyVHnNzT27dyK@kernel.org>
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
-	autolearn_force=no version=4.0.1
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 19, 2026 at 02:37:33AM +0200, Jarkko Sakkinen wrote:
-> The exitential problem here is that KEYCTL_CRYPT_OPEN creates a circular
-> relationship between the keyrings API and a specific key type.
-> 
-> At hardware level I did not see any support for TPM, which narrows down
-> the potential user base.
-> 
-> The remaining potential user base is further reduced by those that use
-> trusted keys; leaving out those who need to solve the assumed problem
-> that only this patch set can presumebly sort out.
-> 
-> And we don't really know at this point that cut. This is pretty much
-> the break down of what is wrong here.
-> 
-> If there is/was a problem to sort out, it should be so constrained that
-> it should be as quick to describe as stepping over a nail really.
-> 
-> These are the main topics what I would focus on.
+Marek Szyprowski <m.szyprowski@samsung.com> writes:
 
-I'm not disregarding that there might be something; and neither
-disregarding e.g., the use of Claude. Throwing a dice can apply as well
-human made code as for me code is just code. Perhaps using Claude,
-people just tend to have just a itchier trigger finger :-)
+> On 19.11.2026 13:07, Ritesh Harjani (IBM) wrote:
+>> Marek Szyprowski <m.szyprowski@samsung.com> writes:
+>>
+>>> arch_dma_prep_coherent() performs the cache maintenance on the address
+>>> returned by page_address(). On 32-bit powerpc with CONFIG_HIGHMEM that
+>>> is NULL for a highmem page which is not kmapped, so the flush would
+>>> operate on the wrong virtual range and leave the dirty lines of the
+>>> buffer in place.
+>>>
+>>> The generic DMA code may pass highmem pages to this hook:
+>>> dma_direct_alloc() handles a highmem page returned by
+>>> dma_alloc_contiguous() by forcing the remap path, which calls
+>>> arch_dma_prep_coherent() on that page before creating the uncached
+>>> mapping. This cannot happen on powerpc today only because it does not
+>>> select HAVE_DMA_CONTIGUOUS, so dma-direct never gets a highmem page
+>>> there, but nothing in the hook's contract rules it out.
+>>>
+>>> Use __dma_sync_page() with DMA_BIDIRECTIONAL, which the
+>>> arch_sync_dma_for_*() hooks already use and which kmaps highmem pages
+>>> one at a time. Without CONFIG_HIGHMEM it does the same
+>>> flush_dcache_range() on the linear mapping as before.
+>>>
+>> Does that mean, this change can add additional overhead for
+>> CONFIG_HIGHMEM=y kernels, where the buffer received still belongs to
+>> lowmem? (Because of extra per-page book keeping like
+>> local_irq_save/restore, kmap_xxx). Thoughts?
+>>
+>> Although functionally the change looks correct to me. But maybe
+>> __dma_sync_page() on powerpc side could use some cleanups (outside of
+>> this patch series perhaps).
+> Indeed, __dma_sync_page() could be improved by calling __dma_sync_page_highmem()
+> only for highmem pages. Something like:
+>
+>
+> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+> index e646256365d5..199ce0467b58 100644
+> --- a/arch/powerpc/mm/dma-noncoherent.c
+> +++ b/arch/powerpc/mm/dma-noncoherent.c
+> @@ -97,11 +97,12 @@ static void __dma_sync_page(phys_addr_t paddr, size_t size, int dir)
+>         unsigned offset = paddr & ~PAGE_MASK;
+>
 
-The place where *in my personal opinion*  anyone who uses agents would
-be better to do manual work is the commit message. It enforces to use
-cognitive abilities even more so than writing code, if you with
-absolutely no self-deception, read it all through and write with your
-own words what the heck it does.
+Should we return early if size=0 is passed. Although I couldn't find any
+caller where this could happen, but since we are doing "paddr + size - 1",
+hence wanted to flag it.
 
-Usually when hitting the wall doing that leads into better code
-because of the healthy reality check. I'm not a medical doctor but
-I believe at least that thinking more stuff like this is also great
-for long-term health and cognitive abilities.
 
-AI is for mental health as a car is for physical health; for better or
-worse.
+>  #ifdef CONFIG_HIGHMEM
+> -       __dma_sync_page_highmem(page, offset, size, dir);
+> -#else
+> -       unsigned long start = (unsigned long)page_address(page) + offset;
+> -       __dma_sync((void *)start, size, dir);
+> +       if (PageHighMem(pfn_to_page(PHYS_PFN(paddr + size - 1)))) {
+> +               __dma_sync_page_highmem(page, offset, size, dir);
+> +               return;
+> +       }
+>  #endif
+> +       __dma_sync(page_address(page) + offset, size, dir);
+>  }
+>
+>  void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
+>
+>
+> Do You want me to add it as another patch for this series?
 
-Code quality is also over-rated although best effort should be done
-but that's all. If you get it, then it is done. It's harder than it
-sounds without self-deception part.
+I think this should work. I guess we should add this patch first and
+then patch-4 on top of it.
 
-And yeah, we don't have projected problems. I.e. "no users" is always
-NAK. You have to step on the nail at first.
+Thanks for taking care of it. This at least will avoid the extra work
+which we would have done otherwise for highmem kernels, where the buffer
+passed to this still comes from lowmem.
 
-Just need to clear my thoughts on overall the topic :-) This is I guess
-where I stand now. Hope you find these helpful.
-
-Br, Jarkko
+-ritesh
 
