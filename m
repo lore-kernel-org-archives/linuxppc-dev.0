@@ -2,69 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E0976606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:08:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0700606A320
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:08:32 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HoOP+Ekp
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dn54Yenp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVJhH5r5Xz2yNj;
-	Thu, 19 Nov 2026 11:07:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795046879;
-	cv=none; b=SjaZpr9V96uw0xHcBNJsm2i/160JT8H3Rx35vhYRTULSWxalHP4pZ51h3o5tmjukhziZFbA3tNQ47lnddpEwWvEv3SZJBu/QJsksytCWxjilOFZgTN7yqbpuWPQKZQVU+3VLbvAZhGBfP9p5Oq9qXxcbhX3W2iJ8Z0jsNS2KrUao4p1DvAnZm3Wa9VaX695GXIHXVLkEGD0xQ2U1RwdjuamyhFeLOUfQ1IH9wKbrKy+y45kJm/lxRudVI4k03mygyb4Ig3F8/h0M9oJ5hPM73xsAH65VfSFMSNWoXHbA8yGbPb49LEMyplJDq8JR9Xe07f8lGZJTHeXSsUzKFwW5Gw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVJhJ71Q0z2xnQ;
+	Thu, 19 Nov 2026 11:08:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795046880;
+	cv=none; b=obh1mKdVsCUqN9vik7mLzPF/r1mMDCHmgFXfA+1PugWqjqrLwtCoQYSfSq/O82QmBZLHV9hrj0iiu5ketEX++xoJ3H5QuLAM5osNLwffADI7SlmXRR28ARYPHSOALw3GhrG/Y0evCThC4MEalGWujss8+rhBNHThum2N0JFgSBGsBjYkfl/HrROhQF85KfhMRG8baos4e/P5mimlAKB0tkgcQjKgybl1KeIzr7CbgS6PHiWvmEJ1BYar67lRN2uYXqrYBmQozQcHw7z5fOIZxMKT2e4UV4Bu9CDLUEFW2OEW22UPIn/ofldxvnUAQc6mtgAxcM++Vr5nK4hgkxJIPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795046879; c=relaxed/relaxed;
-	bh=E5/yK5BFL9aZTy9YgRwAkZCOrghRZFHIFixHSWU6da0=;
+	t=1795046880; c=relaxed/relaxed;
+	bh=D49qK1qsI5OKwfXnbMp/fXJeWlU0W8V6GQpVpknaQLY=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=gskVIMg8HtNHkVWqq+0HyyhdlWLNSwSFzgtv4O2/00965F0G+wCaTZolV6S/a7uv/mR5n99bLOuzbZT7D2ZzpzRbM8SwoxQ3Xw8Ih06MAUC2gxps7c1JsqU0qWOks5wT3lRsgf2tjW9NzKbwQXRFMUotNG51Hx18dr7tUXhHJKfCsY1Z4uzSXj5JYNRyzfpbgZDkuii68xpQ2wQn/FsA54deMUbh+Dwyl9+n/tkgCx/6J4JrvTO5wGIVurF8SozK6cPYvHSW2vXJGTbFqByJlTjo0Q8GpZy01eS9wAn3mjSSWXJfUd7+0HIzLfd16X6NwCVJEOnP7oCPdJwKJtf54Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HoOP+Ekp; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=gkJ7lA7iOdCKEFjmfhLmqPuGBAz/LKCaqJ6JvGRM3N3tOrQ11QkFLJ18OORVBQn9W4Mx0/PqNDnSItTOB1/fMMC5gc7+QaD5m8LNYzWxUmtQkCianmdruvVqsxteGX34wvKWg9fhBVwecqBoHymqTG5r1zRwjleJyFNt8C1uIwWNhD3zO1RrCXZ0XBWNQaYf80czYSr1EWyZNwlgp9MD1TtYHfEJBma3ksRF20iBvWCvHTd41q7JsJEIiH8K23MzTImbj6UJbvmNZOWsF9Vno/vyPk2yj9lbP+vz7oC6ycXd9rlg4jfYUsMo5mHJ7YBd1vhLbJgYw5DU8WtX6D2Whw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dn54Yenp; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HoOP+Ekp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dn54Yenp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVJhG4WdXz2xnQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:07:58 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILQZ5x2200794;
-	Thu, 19 Nov 2026 00:07:46 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVJhH6Lttz2yQl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:07:59 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILQL0o583347;
+	Thu, 19 Nov 2026 00:07:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=E5/yK5BFL9aZTy9Yg
-	RwAkZCOrghRZFHIFixHSWU6da0=; b=HoOP+EkpE7MM0ettOwEsT1sFFTnYaaaTe
-	t2ale3aObBjZIjtPBX2H16jc9HjD8IzE+zUG/+FJ7HfmQjfzUgpcJJa8XI1AA7ui
-	y/dBjb8C6CluwRWIRC+Uj0QrvteABESHdgT8ocjuOR6soTXUlm/UnSpmxmROsUXz
-	5T6loV4EZLckkOS/mzaUgsQclSSVIpRkI5o1QbcdMpw0pshN3IC67+0CuxKjpAo5
-	8Sb5CwL8Edlo6iq2uriZ/sJ7bxu4oYNX8vBVDlK4dsLSVs8ZzdaBbwpt3iz6N9Pu
-	v5ooG8lZJUg8E/nDg1qVCSmUjhQbz0QNhkND0qPJq5vbtvKFFoyFw==
+	:mime-version:references:subject:to; s=pp1; bh=D49qK1qsI5OKwfXnb
+	Mp/fXJeWlU0W8V6GQpVpknaQLY=; b=dn54YenpF5n0HRkvm7pWbOFpl+WHOjcIl
+	TujpMO9vGchbbWyVL8b4j6q8o9lsee9NR+84t8dVH59l8CA0fVFctYingj4eBPE3
+	pea0tI6oMw6pY6qTQhvikZj1Kqu4RyfPKr1xzeEGodtUqxYI5kyqpwa71KRoqyd9
+	lnKU1OQu0zHDBalqw3mPsgnxYWl6kaLmVscgvDZbLhIoM2qO2nz354HDlgZDnNlA
+	5Xhw8jZ2PrC543vXuJFzzqDG1QglATWWDTOryEWgaTWKTO5l5FCYplhbtavGMWmh
+	SRN8LW8KC0WmzBLtKirCoT+h6YhGVpzrpr9QP7+lpvbjQjRjw3YLQ==
 Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105ww4js-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105rn9ns-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 00:07:46 +0000 (GMT)
+	Thu, 19 Nov 2026 00:07:49 +0000 (GMT)
 Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILK5ed3990099;
-	Thu, 19 Nov 2026 00:07:45 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1hd6s17b-1
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILK5ef3990099;
+	Thu, 19 Nov 2026 00:07:48 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1hd6s17n-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 00:07:45 +0000 (GMT)
+	Thu, 19 Nov 2026 00:07:48 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ07hLM20054724
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ07lWl28705302
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Nov 2026 00:07:43 GMT
+	Thu, 19 Nov 2026 00:07:47 GMT
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5485E5805C;
-	Thu, 19 Nov 2026 00:07:43 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0F90658051;
+	Thu, 19 Nov 2026 00:07:47 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AE08B58065;
-	Thu, 19 Nov 2026 00:07:40 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7232F5805A;
+	Thu, 19 Nov 2026 00:07:44 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.67.93.165])
 	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 19 Nov 2026 00:07:40 +0000 (GMT)
+	Thu, 19 Nov 2026 00:07:44 +0000 (GMT)
 From: Mingming Cao <mmc@linux.ibm.com>
 To: netdev@vger.kernel.org
 Cc: Mingming Cao <mmc@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
@@ -74,9 +74,9 @@ Cc: Mingming Cao <mmc@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
         pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, horms@kernel.org,
         davemarq@linux.ibm.com, haren@linux.ibm.com, ricklind@linux.ibm.com,
         bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
-Subject: [PATCH net-next 7/8] ibmveth: Pass the RX queue index through replenish and poll
-Date: Wed, 18 Nov 2026 16:07:10 -0800
-Message-Id: <20261119000711.18093-8-mmc@linux.ibm.com>
+Subject: [PATCH net-next 8/8] ibmveth: Split RX poll into per-slot helpers for MQ
+Date: Wed, 18 Nov 2026 16:07:11 -0800
+Message-Id: <20261119000711.18093-9-mmc@linux.ibm.com>
 X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 In-Reply-To: <20261119000711.18093-1-mmc@linux.ibm.com>
 References: <20261119000711.18093-1-mmc@linux.ibm.com>
@@ -96,30 +96,30 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: B8fM7eBi7f6lyBOvCrXhfNIptTrAK98Q
-X-Proofpoint-GUID: wW8Zj7VhFog17WP5_n4-IIzBkGEyAbQS
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX3NZaS70QxMqo
- dpxDuT+SUueFP8gjUy4D1xjH3q/URN+O5wwMtwIeemcf1A1gPQ+UjseGQdcf87Uk16ZkFMeELlx
- PxAVcmtPu0oxiKQm5ikM7gmp4axW+eq9Hy6D+2mgNb7DPsGadAXSDmmS++flbpmI3dYEh0PyjZa
- Hq+Y0huQGNSgz++rkF5c+Ip9EhliE8wZiYnrIkAUMoz2zifbGr+PKrX7YaiGPzCoJcZLxbC82B4
- Td2Btm2QM0Kq63Taoqt7JHcFn4a/BOdFvHnwxqrILJzvKGJyZQCUA6zzNwBq1Az3GUS/FZ7gCaA
- ZGl33O7jWnEkH9O2lVoHyDDg3ncqTohNrKsFOnjPaFTszbAPPhS4nNVid+1FI45kY+cT2ZBV2ej
- rrt//0EXsCTyWqxoZ7PsY2M5hs2UHTf53JJB3lXaPuQ8c5D/mqUzAydnPUomquZ/aE3g0LWka3E
- sjkblJoV/2J9E4+LzMw==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX/zmM5IsvDgmk
- GmlrLJGdOe88f1sCiy+340/9jWD4IgGzaZqzC8dg9TqDkz5i9FPlIl59aaSHdzhNk3/pABySHBi
- UogujzRgKixk/kC36zLe5p8U4IkL4aU=
-X-Authority-Analysis: v=2.4 cv=K+m3jCWI c=1 sm=1 tr=0 ts=6afe3dd2 cx=c_pps
+X-Proofpoint-GUID: Qh9uUwBeAn2AZSKtIE-J0mJYoNR01MEG
+X-Authority-Analysis: v=2.4 cv=e8uT2qp/ c=1 sm=1 tr=0 ts=6afe3dd6 cx=c_pps
  a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=mh6nCoZ55WTIQEOp0nAA:9
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=MGlliSgDEa_joRyuWpQA:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX8HVQlLUJvVgT
+ FoH4Uf2pTnc6jEAM/ZDm70Pn5GvknwgCtZM8svIM8KxgViw8CbaUWH7C98tARe0Fy1TsSHWN0S/
+ 5+Sd6YRNOcAwwTkD0X4GpITJvapc47A=
+X-Proofpoint-ORIG-GUID: 9dx9Qi1qvsh5xm1vnJZB8GUrcx6Wo7Fx
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX0/qvRt7RjRe7
+ eutQLzaDQ05/+PycK9ektoJJay+lgxeYC07Uq4lhwCCp7e6IkKwQmmJkiGuz6Gggrf7eBJBhCio
+ 1PNW8BpYISkoO8/Ytf13T95lbUw59H+irqd+LtSN3AIFEHwFvPnkDikCrPRXOw2GNIkJhu7tTno
+ YcPf8i8ZPeGQOBcWQAoX4jECdkEusosNwnX8Va0ZydFuxbhTOi6sTdoD5jZxz6iqsBklXrYLO7D
+ NDULKPCNyXnAKPjdvyznO9hwhdCpO10iGFFag+Pf3xSJbEEdz/i4Zwk1seUbOCnEqhWQeRgMaK1
+ hTFtCGg2CtaMwWkUPWbsk8CTSuRwgLNg36aal9GUpFn6kHUU2pvLgEnwv+R+eCOYsF09dJAb32d
+ WnV3aDg4h5iMVssC5c8cds4Kdityo9++kbnV6P6ofwKCQ6OZEaeBtB+4xm7oTLDXDZKiQ7SqiOx
+ +4At0iwjZfxzQJeqAyg==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-18_07,2026-11-16_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0 spamscore=0
- priorityscore=1501 impostorscore=0 phishscore=0 lowpriorityscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ clxscore=1015 priorityscore=1501 suspectscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 spamscore=0 bulkscore=0 malwarescore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
  definitions=main-2611180088
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -129,500 +129,314 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The rxq_* accessors, buffer lookup, harvest and replenish still
-hardcode queue 0. Give them a queue index, and have ibmveth_poll()
-derive it from its NAPI instance.
-
-Only queue 0 is used, so there is no behavior change.
+Move the invalid-slot recycle, the oversize-frame drop and frame
+delivery out of ibmveth_poll() into helpers. The bad-frame message now
+names the queue. Otherwise no behavior change.
 
 Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmveth.c | 214 +++++++++++++++++------------
- 1 file changed, 129 insertions(+), 85 deletions(-)
+ drivers/net/ethernet/ibm/ibmveth.c | 272 ++++++++++++++++-------------
+ 1 file changed, 147 insertions(+), 125 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index ab8c5f6a265b..a40d9a6abf51 100644
+index a40d9a6abf51..a36dafb8e893 100644
 --- a/drivers/net/ethernet/ibm/ibmveth.c
 +++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -99,57 +99,67 @@ static struct ibmveth_stat ibmveth_stats[] = {
- };
- 
- /* simple methods of getting data from the current rxq entry */
--static inline u32 ibmveth_rxq_flags(struct ibmveth_adapter *adapter)
-+static u32 ibmveth_rxq_flags(struct ibmveth_adapter *adapter,
-+			     int queue_index)
- {
--	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
-+	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
- 
- 	return be32_to_cpu(rxq->queue_addr[rxq->index].flags_off);
+@@ -1995,6 +1995,148 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
+ 	skb->ip_summed = CHECKSUM_NONE;
  }
  
--static inline int ibmveth_rxq_toggle(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_toggle(struct ibmveth_adapter *adapter,
-+			      int queue_index)
- {
--	return (ibmveth_rxq_flags(adapter) & IBMVETH_RXQ_TOGGLE) >>
--			IBMVETH_RXQ_TOGGLE_SHIFT;
-+	return (ibmveth_rxq_flags(adapter, queue_index) & IBMVETH_RXQ_TOGGLE) >>
-+		IBMVETH_RXQ_TOGGLE_SHIFT;
- }
- 
--static inline int ibmveth_rxq_pending_buffer(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_pending_buffer(struct ibmveth_adapter *adapter,
-+				      int queue_index)
- {
--	return ibmveth_rxq_toggle(adapter) == adapter->rx_queue[0].toggle;
-+	return ibmveth_rxq_toggle(adapter, queue_index) ==
-+		adapter->rx_queue[queue_index].toggle;
- }
- 
--static inline int ibmveth_rxq_buffer_valid(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_buffer_valid(struct ibmveth_adapter *adapter,
-+				    int queue_index)
- {
--	return ibmveth_rxq_flags(adapter) & IBMVETH_RXQ_VALID;
-+	return ibmveth_rxq_flags(adapter, queue_index) & IBMVETH_RXQ_VALID;
- }
- 
--static inline int ibmveth_rxq_frame_offset(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_frame_offset(struct ibmveth_adapter *adapter,
-+				    int queue_index)
- {
--	return ibmveth_rxq_flags(adapter) & IBMVETH_RXQ_OFF_MASK;
-+	return ibmveth_rxq_flags(adapter, queue_index) & IBMVETH_RXQ_OFF_MASK;
- }
- 
--static inline int ibmveth_rxq_large_packet(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_large_packet(struct ibmveth_adapter *adapter,
-+				    int queue_index)
- {
--	return ibmveth_rxq_flags(adapter) & IBMVETH_RXQ_LRG_PKT;
-+	return ibmveth_rxq_flags(adapter, queue_index) & IBMVETH_RXQ_LRG_PKT;
- }
- 
--static inline int ibmveth_rxq_frame_length(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_frame_length(struct ibmveth_adapter *adapter,
-+				    int queue_index)
- {
--	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
-+	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
- 
- 	return be32_to_cpu(rxq->queue_addr[rxq->index].length);
- }
- 
--static u64 ibmveth_rxq_correlator(struct ibmveth_adapter *adapter)
-+static u64 ibmveth_rxq_correlator(struct ibmveth_adapter *adapter,
-+				  int queue_index)
- {
--	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
-+	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
- 	unsigned int idx = rxq->index;
- 
- 	return READ_ONCE(rxq->queue_addr[idx].correlator);
- }
- 
--static inline int ibmveth_rxq_csum_good(struct ibmveth_adapter *adapter)
-+static int ibmveth_rxq_csum_good(struct ibmveth_adapter *adapter,
-+				 int queue_index)
- {
--	return ibmveth_rxq_flags(adapter) & IBMVETH_RXQ_CSUM_GOOD;
-+	return ibmveth_rxq_flags(adapter, queue_index) & IBMVETH_RXQ_CSUM_GOOD;
- }
- 
- static unsigned int ibmveth_real_max_tx_queues(void)
-@@ -720,14 +730,16 @@ static void ibmveth_update_rx_no_buffer(struct ibmveth_adapter *adapter)
- }
- 
- /* replenish routine */
--static void ibmveth_replenish_task(struct ibmveth_adapter *adapter)
-+static void ibmveth_replenish_task(struct ibmveth_adapter *adapter,
-+				   int queue_index)
- {
- 	int i;
- 
- 	adapter->replenish_task_cycles++;
- 
- 	for (i = (IBMVETH_NUM_BUFF_POOLS - 1); i >= 0; i--) {
--		struct ibmveth_buff_pool *pool = &adapter->rx_buff_pool[0][i];
-+		struct ibmveth_buff_pool *pool =
-+			&adapter->rx_buff_pool[queue_index][i];
- 
- 		if (pool->active &&
- 		    (atomic_read(&pool->available) < pool->threshold))
-@@ -773,15 +785,15 @@ static void ibmveth_free_buffer_pool(struct ibmveth_adapter *adapter,
- 
- /* The correlator comes back from PHYP; a bad one schedules a reset. */
- static bool ibmveth_rxq_correlator_valid(struct ibmveth_adapter *adapter,
--					 u64 correlator)
++/* Returns true if the slot could not be recycled; poll then counts it
++ * against the budget.
++ */
++static bool ibmveth_poll_recycle_invalid(struct net_device *netdev,
++					 struct ibmveth_adapter *adapter,
 +					 int queue_index, u64 correlator)
- {
- 	unsigned int index = correlator & 0xffffffffUL;
- 	unsigned int pool = correlator >> 32;
- 
- 	/* An inactive pool keeps its size but has no skbuff array. */
- 	if (pool < IBMVETH_NUM_BUFF_POOLS &&
--	    index < adapter->rx_buff_pool[0][pool].size &&
--	    adapter->rx_buff_pool[0][pool].skbuff)
-+	    index < adapter->rx_buff_pool[queue_index][pool].size &&
-+	    adapter->rx_buff_pool[queue_index][pool].skbuff)
- 		return true;
- 
- 	if (net_ratelimit())
-@@ -900,6 +912,7 @@ ibmveth_free_buffer_pools(struct ibmveth_adapter *adapter)
-  * ibmveth_remove_buffer_from_pool - remove a buffer from a pool
-  * @adapter: adapter instance
-  * @correlator: identifies pool and index
++{
++	int rc;
++
++	adapter->rx_invalid_buffer++;
++	netdev_dbg(netdev, "recycling invalid buffer\n");
++	rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, correlator,
++					true);
++	if (unlikely(rc))
++		netdev->stats.rx_dropped++;
++	return rc;
++}
++
++static void ibmveth_poll_drop_oversize(struct net_device *netdev,
++				       struct ibmveth_adapter *adapter,
++				       int queue_index, unsigned int off,
++				       unsigned int len, unsigned int room,
++				       u64 correlator)
++{
++	if (net_ratelimit())
++		netdev_err(netdev,
++			   "bad RX frame offset %u length %u (buffer %u) on queue %d, dropping\n",
++			   off, len, room, queue_index);
++	ibmveth_rxq_harvest_buffer(adapter, queue_index, correlator, true);
++	netdev->stats.rx_dropped++;
++}
++
++/**
++ * ibmveth_poll_deliver_frame - Build SKB from one valid RX slot and GRO it
++ * @napi: NAPI context for this RX queue
++ * @adapter: ibmveth adapter
++ * @netdev: net_device for @adapter
 + * @queue_index: RX queue index
-  * @reuse: whether to reuse buffer
-  *
-  * Return:
-@@ -909,17 +922,20 @@ ibmveth_free_buffer_pools(struct ibmveth_adapter *adapter)
-  * * %-EFAULT - pool and index map to null skb
-  */
- static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
--					   u64 correlator, bool reuse)
-+					   u64 correlator, int queue_index,
-+					   bool reuse)
- {
- 	unsigned int pool  = correlator >> 32;
- 	unsigned int index = correlator & 0xffffffffUL;
++ * @correlator: correlator of the current rx queue entry, as read by poll
++ */
++static void ibmveth_poll_deliver_frame(struct napi_struct *napi,
++				       struct ibmveth_adapter *adapter,
++				       struct net_device *netdev,
++				       int queue_index, u64 correlator)
++{
++	int length = ibmveth_rxq_frame_length(adapter, queue_index);
++	int offset = ibmveth_rxq_frame_offset(adapter, queue_index);
++	int csum_good = ibmveth_rxq_csum_good(adapter, queue_index);
++	int lrg_pkt = ibmveth_rxq_large_packet(adapter, queue_index);
++	unsigned int pool, room, off, len;
 +	struct ibmveth_buff_pool *bpool;
- 	unsigned int free_index;
- 	struct sk_buff *skb;
- 
--	if (!ibmveth_rxq_correlator_valid(adapter, correlator))
-+	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator))
- 		return -EINVAL;
- 
--	skb = adapter->rx_buff_pool[0][pool].skbuff[index];
++	struct sk_buff *skb, *new_skb;
++	__sum16 iph_check = 0;
++	u16 mss = 0;
++	int rc;
++
++	skb = ibmveth_rxq_get_buffer(adapter, queue_index, correlator);
++	if (unlikely(!skb)) {
++		ibmveth_rxq_advance(adapter, queue_index);
++		netdev->stats.rx_dropped++;
++		return;
++	}
++
++	pool = correlator >> 32;
 +	bpool = &adapter->rx_buff_pool[queue_index][pool];
-+	skb = bpool->skbuff[index];
- 	if (!skb) {
- 		ibmveth_rxq_no_skb(adapter, correlator);
- 		return -EFAULT;
-@@ -933,48 +949,48 @@ static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
- 		/* remove the skb pointer to mark free. actual freeing is done
- 		 * by upper level networking after gro_receive
- 		 */
--		adapter->rx_buff_pool[0][pool].skbuff[index] = NULL;
-+		bpool->skbuff[index] = NULL;
- 
- 		dma_unmap_single(&adapter->vdev->dev,
--				 adapter->rx_buff_pool[0][pool].dma_addr[index],
--				 adapter->rx_buff_pool[0][pool].buff_size,
-+				 bpool->dma_addr[index],
-+				 bpool->buff_size,
- 				 DMA_FROM_DEVICE);
- 	}
- 
--	free_index = adapter->rx_buff_pool[0][pool].producer_index;
--	adapter->rx_buff_pool[0][pool].producer_index++;
--	if (adapter->rx_buff_pool[0][pool].producer_index >=
--	    adapter->rx_buff_pool[0][pool].size)
--		adapter->rx_buff_pool[0][pool].producer_index = 0;
--	adapter->rx_buff_pool[0][pool].free_map[free_index] = index;
-+	free_index = bpool->producer_index;
-+	bpool->producer_index++;
-+	if (bpool->producer_index >= bpool->size)
-+		bpool->producer_index = 0;
-+	bpool->free_map[free_index] = index;
- 
- 	mb();
- 
--	atomic_dec(&adapter->rx_buff_pool[0][pool].available);
-+	atomic_dec(&bpool->available);
- 
- 	return 0;
- }
- 
- /* get the buffer for @correlator, read once from the current rx queue entry */
- static struct sk_buff *ibmveth_rxq_get_buffer(struct ibmveth_adapter *adapter,
--					      u64 correlator)
-+					      int queue_index, u64 correlator)
- {
- 	unsigned int pool = correlator >> 32;
- 	unsigned int index = correlator & 0xffffffffUL;
- 	struct sk_buff *skb;
- 
--	if (!ibmveth_rxq_correlator_valid(adapter, correlator))
-+	if (!ibmveth_rxq_correlator_valid(adapter, queue_index, correlator))
- 		return NULL;
- 
--	skb = adapter->rx_buff_pool[0][pool].skbuff[index];
-+	skb = adapter->rx_buff_pool[queue_index][pool].skbuff[index];
- 	if (!skb)
- 		ibmveth_rxq_no_skb(adapter, correlator);
- 	return skb;
- }
- 
--static void ibmveth_rxq_advance(struct ibmveth_adapter *adapter)
-+static void ibmveth_rxq_advance(struct ibmveth_adapter *adapter,
-+				int queue_index)
- {
--	struct ibmveth_rx_q *rxq = &adapter->rx_queue[0];
-+	struct ibmveth_rx_q *rxq = &adapter->rx_queue[queue_index];
- 
- 	if (++rxq->index == rxq->num_slots) {
- 		rxq->index = 0;
-@@ -986,6 +1002,7 @@ static void ibmveth_rxq_advance(struct ibmveth_adapter *adapter)
-  * ibmveth_rxq_harvest_buffer - Harvest buffer from pool
-  *
-  * @adapter:    pointer to adapter
-+ * @queue_index: RX queue index
-  * @correlator: correlator of the current rx queue entry, as read by poll
-  * @reuse:      whether to reuse buffer
-  *
-@@ -999,12 +1016,14 @@ static void ibmveth_rxq_advance(struct ibmveth_adapter *adapter)
-  * * other - non-zero return from ibmveth_remove_buffer_from_pool
-  */
- static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
--				      u64 correlator, bool reuse)
-+				      int queue_index, u64 correlator,
-+				      bool reuse)
- {
- 	int rc;
- 
--	rc = ibmveth_remove_buffer_from_pool(adapter, correlator, reuse);
--	ibmveth_rxq_advance(adapter);
-+	rc = ibmveth_remove_buffer_from_pool(adapter, correlator, queue_index,
-+					     reuse);
-+	ibmveth_rxq_advance(adapter, queue_index);
- 
- 	return rc;
- }
-@@ -1978,25 +1997,28 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
- 
++	room = min_t(unsigned int, skb_tailroom(skb), bpool->buff_size);
++	off = offset;
++	len = length;
++	if (unlikely(len < ETH_HLEN || off >= room || len > room - off)) {
++		ibmveth_poll_drop_oversize(netdev, adapter, queue_index,
++					   off, len, room, correlator);
++		return;
++	}
++
++	/* if the large packet bit is set in the rx queue
++	 * descriptor, the mss will be written by PHYP eight
++	 * bytes from the start of the rx buffer, which is
++	 * skb->data at this stage
++	 */
++	if (lrg_pkt) {
++		__be64 *rxmss = (__be64 *)(skb->data + 8);
++
++		mss = (u16)be64_to_cpu(*rxmss);
++	}
++
++	new_skb = NULL;
++	if (length < rx_copybreak)
++		new_skb = netdev_alloc_skb(netdev, length);
++
++	if (new_skb) {
++		skb_copy_to_linear_data(new_skb, skb->data + offset, length);
++		if (rx_flush)
++			ibmveth_flush_buffer(skb->data, length + offset);
++		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
++						correlator, true);
++		if (unlikely(rc)) {
++			dev_kfree_skb_any(new_skb);
++			netdev->stats.rx_dropped++;
++			return;
++		}
++		skb = new_skb;
++	} else {
++		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
++						correlator, false);
++		if (unlikely(rc)) {
++			netdev->stats.rx_dropped++;
++			return;
++		}
++		skb_reserve(skb, offset);
++	}
++
++	skb_put(skb, length);
++	skb->protocol = eth_type_trans(skb, netdev);
++
++	/* PHYP without PLSO support places a -1 in the ip
++	 * checksum for large send frames.
++	 */
++	if (skb->protocol == cpu_to_be16(ETH_P_IP) &&
++	    skb_headlen(skb) >= sizeof(struct iphdr)) {
++		struct iphdr *iph = (struct iphdr *)skb->data;
++
++		iph_check = iph->check;
++	}
++
++	if ((length > netdev->mtu + ETH_HLEN) ||
++	    lrg_pkt || iph_check == 0xffff) {
++		if (!ibmveth_rx_mss_helper(skb, mss, lrg_pkt))
++			csum_good = 0;
++		adapter->rx_large_packets++;
++	}
++
++	if (csum_good) {
++		skb->ip_summed = CHECKSUM_UNNECESSARY;
++		ibmveth_rx_csum_helper(skb, adapter);
++	}
++
++	napi_gro_receive(napi, skb);	/* send it up */
++
++	netdev->stats.rx_packets++;
++	netdev->stats.rx_bytes += length;
++}
++
  static int ibmveth_poll(struct napi_struct *napi, int budget)
  {
--	struct ibmveth_adapter *adapter =
--			container_of(napi, struct ibmveth_adapter, napi[0]);
--	struct net_device *netdev = adapter->netdev;
-+	struct net_device *netdev = napi->dev;
-+	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+ 	struct net_device *netdev = napi->dev;
+@@ -2002,7 +2144,6 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
  	int frames_processed = 0;
-+	int queue_index;
+ 	int queue_index;
  	u64 correlator;
- 	u16 mss = 0;
+-	u16 mss = 0;
  	int rc;
  
-+	queue_index = napi - adapter->napi;
-+
- 	while (frames_processed < budget) {
--		if (!ibmveth_rxq_pending_buffer(adapter))
-+		if (!ibmveth_rxq_pending_buffer(adapter, queue_index))
- 			break;
- 
- 		smp_rmb();
--		correlator = ibmveth_rxq_correlator(adapter);
--		if (!ibmveth_rxq_buffer_valid(adapter)) {
-+		correlator = ibmveth_rxq_correlator(adapter, queue_index);
-+		if (!ibmveth_rxq_buffer_valid(adapter, queue_index)) {
+ 	queue_index = napi - adapter->napi;
+@@ -2015,132 +2156,13 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 		correlator = ibmveth_rxq_correlator(adapter, queue_index);
+ 		if (!ibmveth_rxq_buffer_valid(adapter, queue_index)) {
  			wmb(); /* suggested by larson1 */
- 			adapter->rx_invalid_buffer++;
- 			netdev_dbg(netdev, "recycling invalid buffer\n");
--			rc = ibmveth_rxq_harvest_buffer(adapter, correlator, true);
-+			rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
-+							correlator, true);
- 			if (unlikely(rc)) {
- 				netdev->stats.rx_dropped++;
+-			adapter->rx_invalid_buffer++;
+-			netdev_dbg(netdev, "recycling invalid buffer\n");
+-			rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
+-							correlator, true);
+-			if (unlikely(rc)) {
+-				netdev->stats.rx_dropped++;
++			if (ibmveth_poll_recycle_invalid(netdev, adapter,
++							 queue_index,
++							 correlator))
  				frames_processed++;
-@@ -2004,24 +2026,31 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 			}
+-				continue;
+-			}
  		} else {
- 			struct sk_buff *skb, *new_skb;
--			int length = ibmveth_rxq_frame_length(adapter);
--			int offset = ibmveth_rxq_frame_offset(adapter);
--			int csum_good = ibmveth_rxq_csum_good(adapter);
--			int lrg_pkt = ibmveth_rxq_large_packet(adapter);
-+			int length = ibmveth_rxq_frame_length(adapter,
-+							      queue_index);
-+			int offset = ibmveth_rxq_frame_offset(adapter,
-+							      queue_index);
-+			int csum_good = ibmveth_rxq_csum_good(adapter,
-+							      queue_index);
-+			int lrg_pkt = ibmveth_rxq_large_packet(adapter,
-+							       queue_index);
- 			unsigned int pool, room, off, len;
-+			struct ibmveth_buff_pool *bpool;
- 			__sum16 iph_check = 0;
- 
--			skb = ibmveth_rxq_get_buffer(adapter, correlator);
-+			skb = ibmveth_rxq_get_buffer(adapter, queue_index,
-+						     correlator);
- 			if (unlikely(!skb)) {
--				ibmveth_rxq_advance(adapter);
-+				ibmveth_rxq_advance(adapter, queue_index);
- 				netdev->stats.rx_dropped++;
- 				frames_processed++;
- 				continue;
- 			}
- 
- 			pool = correlator >> 32;
-+			bpool = &adapter->rx_buff_pool[queue_index][pool];
- 			room = min_t(unsigned int, skb_tailroom(skb),
--				     adapter->rx_buff_pool[0][pool].buff_size);
-+				     bpool->buff_size);
- 			off = offset;
- 			len = length;
- 			if (unlikely(len < ETH_HLEN || off >= room ||
-@@ -2030,8 +2059,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 					netdev_err(netdev,
- 						   "bad RX frame offset %u length %u (buffer %u), dropping\n",
- 						   off, len, room);
--				ibmveth_rxq_harvest_buffer(adapter, correlator,
--							   true);
-+				ibmveth_rxq_harvest_buffer(adapter, queue_index,
-+							   correlator, true);
- 				netdev->stats.rx_dropped++;
- 				frames_processed++;
- 				continue;
-@@ -2060,6 +2089,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 					ibmveth_flush_buffer(skb->data,
- 						length + offset);
- 				rc = ibmveth_rxq_harvest_buffer(adapter,
-+								queue_index,
- 								correlator,
- 								true);
- 				if (unlikely(rc)) {
-@@ -2071,6 +2101,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 				skb = new_skb;
- 			} else {
- 				rc = ibmveth_rxq_harvest_buffer(adapter,
-+								queue_index,
- 								correlator,
- 								false);
- 				if (unlikely(rc)) {
-@@ -2118,7 +2149,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	 * with a NAPI poll that was already running when it was set up
- 	 */
- 	if (budget)
--		ibmveth_replenish_task(adapter);
-+		ibmveth_replenish_task(adapter, queue_index);
- 
- 	if (frames_processed == budget)
- 		goto out;
-@@ -2129,7 +2160,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	/* We think we are done - reenable interrupts,
- 	 * then check once more to make sure we are done.
- 	 */
--	rc = ibmveth_enable_irq(adapter, 0);
-+	rc = ibmveth_enable_irq(adapter, queue_index);
- 	if (rc) {
- 		schedule_work(&adapter->work);
- 		goto out;
-@@ -2138,8 +2169,9 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	/* Mask before queueing, as schedule_rx_queue() does: a threaded
- 	 * NAPI can start polling, and unmask, as soon as it is queued.
- 	 */
--	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule_prep(napi)) {
--		ibmveth_disable_irq(adapter, 0);
-+	if (ibmveth_rxq_pending_buffer(adapter, queue_index) &&
-+	    napi_schedule_prep(napi)) {
-+		ibmveth_disable_irq(adapter, queue_index);
- 		__napi_schedule(napi);
+-			struct sk_buff *skb, *new_skb;
+-			int length = ibmveth_rxq_frame_length(adapter,
+-							      queue_index);
+-			int offset = ibmveth_rxq_frame_offset(adapter,
+-							      queue_index);
+-			int csum_good = ibmveth_rxq_csum_good(adapter,
+-							      queue_index);
+-			int lrg_pkt = ibmveth_rxq_large_packet(adapter,
+-							       queue_index);
+-			unsigned int pool, room, off, len;
+-			struct ibmveth_buff_pool *bpool;
+-			__sum16 iph_check = 0;
+-
+-			skb = ibmveth_rxq_get_buffer(adapter, queue_index,
+-						     correlator);
+-			if (unlikely(!skb)) {
+-				ibmveth_rxq_advance(adapter, queue_index);
+-				netdev->stats.rx_dropped++;
+-				frames_processed++;
+-				continue;
+-			}
+-
+-			pool = correlator >> 32;
+-			bpool = &adapter->rx_buff_pool[queue_index][pool];
+-			room = min_t(unsigned int, skb_tailroom(skb),
+-				     bpool->buff_size);
+-			off = offset;
+-			len = length;
+-			if (unlikely(len < ETH_HLEN || off >= room ||
+-				     len > room - off)) {
+-				if (net_ratelimit())
+-					netdev_err(netdev,
+-						   "bad RX frame offset %u length %u (buffer %u), dropping\n",
+-						   off, len, room);
+-				ibmveth_rxq_harvest_buffer(adapter, queue_index,
+-							   correlator, true);
+-				netdev->stats.rx_dropped++;
+-				frames_processed++;
+-				continue;
+-			}
+-
+-			/* if the large packet bit is set in the rx queue
+-			 * descriptor, the mss will be written by PHYP eight
+-			 * bytes from the start of the rx buffer, which is
+-			 * skb->data at this stage
+-			 */
+-			if (lrg_pkt) {
+-				__be64 *rxmss = (__be64 *)(skb->data + 8);
+-
+-				mss = (u16)be64_to_cpu(*rxmss);
+-			}
+-
+-			new_skb = NULL;
+-			if (length < rx_copybreak)
+-				new_skb = netdev_alloc_skb(netdev, length);
+-
+-			if (new_skb) {
+-				skb_copy_to_linear_data(new_skb,
+-							skb->data + offset,
+-							length);
+-				if (rx_flush)
+-					ibmveth_flush_buffer(skb->data,
+-						length + offset);
+-				rc = ibmveth_rxq_harvest_buffer(adapter,
+-								queue_index,
+-								correlator,
+-								true);
+-				if (unlikely(rc)) {
+-					dev_kfree_skb_any(new_skb);
+-					netdev->stats.rx_dropped++;
+-					frames_processed++;
+-					continue;
+-				}
+-				skb = new_skb;
+-			} else {
+-				rc = ibmveth_rxq_harvest_buffer(adapter,
+-								queue_index,
+-								correlator,
+-								false);
+-				if (unlikely(rc)) {
+-					netdev->stats.rx_dropped++;
+-					frames_processed++;
+-					continue;
+-				}
+-				skb_reserve(skb, offset);
+-			}
+-
+-			skb_put(skb, length);
+-			skb->protocol = eth_type_trans(skb, netdev);
+-
+-			/* PHYP without PLSO support places a -1 in the ip
+-			 * checksum for large send frames.
+-			 */
+-			if (skb->protocol == cpu_to_be16(ETH_P_IP) &&
+-			    skb_headlen(skb) >= sizeof(struct iphdr)) {
+-				struct iphdr *iph = (struct iphdr *)skb->data;
+-
+-				iph_check = iph->check;
+-			}
+-
+-			if ((length > netdev->mtu + ETH_HLEN) ||
+-			    lrg_pkt || iph_check == 0xffff) {
+-				if (!ibmveth_rx_mss_helper(skb, mss, lrg_pkt))
+-					csum_good = 0;
+-				adapter->rx_large_packets++;
+-			}
+-
+-			if (csum_good) {
+-				skb->ip_summed = CHECKSUM_UNNECESSARY;
+-				ibmveth_rx_csum_helper(skb, adapter);
+-			}
+-
+-			napi_gro_receive(napi, skb);	/* send it up */
+-
+-			netdev->stats.rx_packets++;
+-			netdev->stats.rx_bytes += length;
++			ibmveth_poll_deliver_frame(napi, adapter, netdev,
++						   queue_index, correlator);
+ 			frames_processed++;
+ 		}
  	}
- 
-@@ -2827,24 +2859,36 @@ static void ibmveth_remove_buffer_from_pool_test(struct kunit *test)
- 	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, pool->skbuff);
- 
- 	correlator = ((u64)IBMVETH_NUM_BUFF_POOLS << 32) | 0;
--	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, false));
--	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, true));
-+	KUNIT_EXPECT_EQ(test, -EINVAL,
-+			ibmveth_remove_buffer_from_pool(adapter,
-+							correlator, 0, false));
-+	KUNIT_EXPECT_EQ(test, -EINVAL,
-+			ibmveth_remove_buffer_from_pool(adapter,
-+							correlator, 0, true));
- 
- 	correlator = ((u64)0 << 32) | adapter->rx_buff_pool[0][0].size;
--	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, false));
--	KUNIT_EXPECT_EQ(test, -EINVAL, ibmveth_remove_buffer_from_pool(adapter, correlator, true));
-+	KUNIT_EXPECT_EQ(test, -EINVAL,
-+			ibmveth_remove_buffer_from_pool(adapter,
-+							correlator, 0, false));
-+	KUNIT_EXPECT_EQ(test, -EINVAL,
-+			ibmveth_remove_buffer_from_pool(adapter,
-+							correlator, 0, true));
- 
- 	/* Pool 2 is in range but has no skbuff array, like an inactive pool. */
- 	correlator = ((u64)2 << 32) | 0;
--	ret = ibmveth_remove_buffer_from_pool(adapter, correlator, false);
-+	ret = ibmveth_remove_buffer_from_pool(adapter, correlator, 0, false);
- 	KUNIT_EXPECT_EQ(test, -EINVAL, ret);
--	ret = ibmveth_remove_buffer_from_pool(adapter, correlator, true);
-+	ret = ibmveth_remove_buffer_from_pool(adapter, correlator, 0, true);
- 	KUNIT_EXPECT_EQ(test, -EINVAL, ret);
- 
- 	correlator = (u64)0 | 0;
- 	pool->skbuff[0] = NULL;
--	KUNIT_EXPECT_EQ(test, -EFAULT, ibmveth_remove_buffer_from_pool(adapter, correlator, false));
--	KUNIT_EXPECT_EQ(test, -EFAULT, ibmveth_remove_buffer_from_pool(adapter, correlator, true));
-+	KUNIT_EXPECT_EQ(test, -EFAULT,
-+			ibmveth_remove_buffer_from_pool(adapter,
-+							correlator, 0, false));
-+	KUNIT_EXPECT_EQ(test, -EFAULT,
-+			ibmveth_remove_buffer_from_pool(adapter,
-+							correlator, 0, true));
- 
- 	flush_work(&adapter->work);
- }
-@@ -2889,27 +2933,27 @@ static void ibmveth_rxq_get_buffer_test(struct kunit *test)
- 
- 	adapter->rx_queue[0].queue_addr[0].correlator =
- 		(u64)IBMVETH_NUM_BUFF_POOLS << 32 | 0;
--	cor = ibmveth_rxq_correlator(adapter);
-+	cor = ibmveth_rxq_correlator(adapter, 0);
- 	KUNIT_EXPECT_PTR_EQ(test, NULL,
--			    ibmveth_rxq_get_buffer(adapter, cor));
-+			    ibmveth_rxq_get_buffer(adapter, 0, cor));
- 
- 	adapter->rx_queue[0].queue_addr[0].correlator =
- 		(u64)0 << 32 | adapter->rx_buff_pool[0][0].size;
--	cor = ibmveth_rxq_correlator(adapter);
-+	cor = ibmveth_rxq_correlator(adapter, 0);
- 	KUNIT_EXPECT_PTR_EQ(test, NULL,
--			    ibmveth_rxq_get_buffer(adapter, cor));
-+			    ibmveth_rxq_get_buffer(adapter, 0, cor));
- 
- 	/* Pool 2 is in range but has no skbuff array, like an inactive pool. */
- 	adapter->rx_queue[0].queue_addr[0].correlator = (u64)2 << 32 | 0;
--	cor = ibmveth_rxq_correlator(adapter);
-+	cor = ibmveth_rxq_correlator(adapter, 0);
- 	KUNIT_EXPECT_PTR_EQ(test, NULL,
--			    ibmveth_rxq_get_buffer(adapter, cor));
-+			    ibmveth_rxq_get_buffer(adapter, 0, cor));
- 
- 	pool->skbuff[0] = skb;
- 	adapter->rx_queue[0].queue_addr[0].correlator = (u64)0 << 32 | 0;
--	cor = ibmveth_rxq_correlator(adapter);
-+	cor = ibmveth_rxq_correlator(adapter, 0);
- 	KUNIT_EXPECT_PTR_EQ(test, skb,
--			    ibmveth_rxq_get_buffer(adapter, cor));
-+			    ibmveth_rxq_get_buffer(adapter, 0, cor));
- 
- 	flush_work(&adapter->work);
- }
-@@ -2960,14 +3004,14 @@ static void ibmveth_rxq_harvest_buffer_test(struct kunit *test)
- 		(u64)IBMVETH_NUM_BUFF_POOLS << 32 | 0;
- 	adapter->rx_queue[0].queue_addr[1].correlator = (u64)0 << 32 | 0;
- 
--	cor = ibmveth_rxq_correlator(adapter);
--	ret = ibmveth_rxq_harvest_buffer(adapter, cor, true);
-+	cor = ibmveth_rxq_correlator(adapter, 0);
-+	ret = ibmveth_rxq_harvest_buffer(adapter, 0, cor, true);
- 	KUNIT_EXPECT_EQ(test, -EINVAL, ret);
- 	KUNIT_EXPECT_EQ(test, 1ULL, adapter->rx_queue[0].index);
- 	KUNIT_EXPECT_EQ(test, 1ULL, adapter->rx_queue[0].toggle);
- 
--	cor = ibmveth_rxq_correlator(adapter);
--	ret = ibmveth_rxq_harvest_buffer(adapter, cor, true);
-+	cor = ibmveth_rxq_correlator(adapter, 0);
-+	ret = ibmveth_rxq_harvest_buffer(adapter, 0, cor, true);
- 	KUNIT_EXPECT_EQ(test, -EFAULT, ret);
- 	KUNIT_EXPECT_EQ(test, 0ULL, adapter->rx_queue[0].index);
- 	KUNIT_EXPECT_EQ(test, 0ULL, adapter->rx_queue[0].toggle);
 -- 
 2.50.1 (Apple Git-155)
 
