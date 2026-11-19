@@ -2,79 +2,112 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0504606A324
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 08:02:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B2D9E606A335
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 08:04:30 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwz66smE
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NNXYf4Is
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVWCg3Z0Mz2y2R;
-	Thu, 19 Nov 2026 19:02:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVWG51S18z2y2R;
+	Thu, 19 Nov 2026 19:04:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795075343;
-	cv=none; b=VLCgTTEqF+uSIRXhkC/6g8xWIihCKKzA0tHKfKFJPH1BptXFtFjREB3XFh7iw7cxg2cK0nVCRJrGfF78ye845nWtNHZ153h11TJdNeQiFR2oHiAoRT8tR5viOIZNrZOotq4KyTj9yHbfYVLqujtjlBjCDQPy0sV1XBoNJc+Ff29Th0HSwjR/ODLlddy30iQXUq6IEX7LgLr6ggzL7gwseJsWFodCwgtSccHZ09TwLovkDuVWnAFfTRUpoqe0ldb1ZjSbQFEeHlJ2ibXB6qdzxWaM3c10yOepPxqBDBqUtfHI58VC85Zy5p4T/N1xRU8Fx6DrdkWg/C9jWN0vUHc8Dw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795075469;
+	cv=none; b=PPcVSD6IKT8poaOnZ+wKDjdlKJOpqzOKPfZhPKOZ+X2hcTInD6N4RNhFrqZQpQuQ1r+PK6UNSK6iGxeLLo2dcJw7EZ9dugmSHLPgbvIh0nThYcpnvfHKxeZ04Q3CYC6MNB4FxFqqgG4pB9jgAigDbcV3A9bcU3vpn9kpQa/R/7LeN7qIBJrPud9z0Go+C+6qgD+zxYT6JWnxHePOE85xSDouJmJtHRfQnFkNOmXGXZ9oHNJY6qc4YnPXwBfPPkvSBCkf9/c2P0+KYS02qb/ZolbTmIdlYCLo1u2I+YE/VAR85a543KYg0/YRKdygBI3i2Gj+15/Kov/JxzVKnYlbmg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795075343; c=relaxed/relaxed;
-	bh=31F7U1b2JCUbc/EUGQuyU9kXUCzxNLz6H16BEaMugW4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TZrrQ1tazcByl+9Z3EEoT4Vn1Cthl0Ecc4ws4y93tNyCuH2U7l8NwPUb8XZaXeSQ7quiocNI+ektfXqqyQNtoV+nxAt9hliRDcGM/dyFhw6VLYQfnwvUsrlQgMaUl07GY6tU7bgI2ed8YJnyLqNqs8Ec5pyKC0krPIA1fy0DSmss9xsauoF/GOyh429ih9i7zzKREE6VmVFJfNZepebW9XonECPhKFiBHzzkj5hKSsLROzuD3PVYuiB7IubEr0Em5LFDUkXXnjiFogYZEyr5edd1qZ55/jh5HR/XToZNKjbE/k/wepOYVOsdjzM8IutL5PVT8UubFOUShr9JVNu2wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwz66smE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1795075469; c=relaxed/relaxed;
+	bh=KJVj/kj9TUfC5U25moNOJpfG8IeN1Z/DKDptskt/i9I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=P4oXPZvCOML24IZSagCCSmCY02UWNB73vOJ3j3XCLrFitDt3q94E/wpno4XUcBqSW02GhzGftHHoCTJVJfBDV23qvcYNMd1wvZRJan67OR8U85CVdKypg5T0uON24q03//2BYzBejcbIRDK/IqgYSBx8cOXarNheHUkpNuddMOKH4wytXsyTSL6sLU4DwE3/WB5+16pMO2khzHRJ0L/U1udqXv8ijsJKXWu1x8Ue368kyMYZmPiIYBrPoSYCPz/F3nwxyj6KAA1C95YtLJCfJZdRC8vRvPltvGM2rH6CcJ1J8rw0sc39HC4nyZFyoQ2NPqa7USIIPEB6CgubVWI6QA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NNXYf4Is; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwz66smE;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NNXYf4Is;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVWCf1fyKz2y0B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 19:02:22 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ6v1v23437230;
-	Thu, 19 Nov 2026 08:02:18 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVWG40yhWz2y0B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 19:04:27 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ6uX0n3598174;
+	Thu, 19 Nov 2026 08:03:38 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=31F7U1b2JCUbc/EUGQuyU9kXUCzxNLz6H16BEaMug
-	W4=; b=cwz66smEQoKZEceylq3hBnY5ZYpaRKubIEFIgcntBRq8i1tSW3502gZHC
-	okmWaIaVwpvSoqFm682FiStBFr14jDg/TByiBqaEprkVU5xdoWdWAPhlKM/FtV0D
-	GpljSBSi4G8xj4hoTeQKaWiSBDn/g0ipO3bD9SkTIwwg8kLl75OLmbgkRQH4Keyj
-	NEZBrlnHLZNoTe4TumeynBJ6Et+F6NK1MB7kEb8lsovkFt1OF1uCPTZBYmqZTniN
-	pxtqCIgeTZO1aZf02SkuMVPgu9kJJKE03DpOmN5KCogfT9HOfZJ+93NtMjTooL9C
-	MapFlFuvYPghgcT9kUdohc50IVOSA==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105t7g37-1
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=KJVj/kj9TUfC5U25moNOJpfG8IeN1Z
+	/DKDptskt/i9I=; b=NNXYf4Iskp9aW7wh9wp5+yD++njdn0lJ9UHUxyVtLnGcOh
+	+imeaNzLylMStHs7rWLVAS/6zxMvGlf790mWbLINInkhlMr5NPZfjBMEo93R6TDo
+	v1DieXnPNHqmI2iGeOfK2qN8k+7IyE/kJf5EkWt7mNkDf6dP4/w4u3TpBCrupPQ6
+	pDqkt+RQPiyksep4NBjfa54jrMrXYOPKvNmCqIAXAWDBQBpMyufCtsh83WEqcMFN
+	ht4aQkWJNRHECdzT4s6B/WQLa81T2r3p9hEXy2PAyIhG1A3SoyH2PU2IMB/IZTHN
+	Q9Sl/8Ox0awQGrT5FVxR6BIilCP6EhsnMa8O+44A==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105nfft6-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 08:02:17 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ7561T2161163;
-	Thu, 19 Nov 2026 08:02:16 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j1v9x89ym-1
+	Thu, 19 Nov 2026 08:03:37 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ74was179507;
+	Thu, 19 Nov 2026 08:03:36 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1m3htdru-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 08:02:16 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ82CvC30802444
+	Thu, 19 Nov 2026 08:03:36 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ83T0246989662
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Nov 2026 08:02:12 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8AA1A20065;
-	Thu, 19 Nov 2026 08:02:12 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8A22B2004E;
-	Thu, 19 Nov 2026 08:02:08 +0000 (GMT)
-Received: from li-4c4c4544-0042-3610-8056-b8c04f473234.ibmuc.com (unknown [9.67.189.13])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 19 Nov 2026 08:02:08 +0000 (GMT)
-From: Jyoti Gupta <jyoti@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com,
-        Sourabh Jain <sourabhjain@linux.ibm.com>,
-        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
-        Amit Machhiwal <amachhiw@linux.ibm.com>
-Subject: [PATCH v4] powerpc/mpic: Fix memory leak of mpic on error paths
-Date: Thu, 19 Nov 2026 13:31:18 +0530
-Message-ID: <20261119080118.48688-1-jyoti@linux.ibm.com>
-X-Mailer: git-send-email 2.55.0
+	Thu, 19 Nov 2026 08:03:29 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 53ABD20040;
+	Thu, 19 Nov 2026 08:03:29 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BBB2B2004E;
+	Thu, 19 Nov 2026 08:03:28 +0000 (GMT)
+Received: from osiris (unknown [9.68.31.201])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 19 Nov 2026 08:03:28 +0000 (GMT)
+Date: Thu, 19 Nov 2026 09:03:27 +0100
+From: Heiko Carstens <hca@linux.ibm.com>
+To: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+Cc: Albert Ou <aou@eecs.berkeley.edu>,
+        Alexander Gordeev <agordeev@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Baoquan He <baoquan.he@linux.dev>, Borislav Petkov <bp@alien8.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>,
+        Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Pasha Tatashin <pasha.tatashin@soleen.com>,
+        Paul Walmsley <pjw@kernel.org>, Pratyush Yadav <pratyush@kernel.org>,
+        Rich Felker <dalias@libc.org>, Russell King <linux@armlinux.org.uk>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Thomas Gleixner <tglx@kernel.org>, Vasily Gorbik <gor@linux.ibm.com>,
+        Will Deacon <will@kernel.org>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org,
+        Alexandre Ghiti <alex@ghiti.fr>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Cong Wang <cwang@multikernel.io>, Mark Rutland <mark.rutland@arm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Sven Schnelle <svens@linux.ibm.com>, WANG Xuerui <kernel@xen0n.name>,
+        kexec@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        loongarch@lists.linux.dev
+Subject: Re: [PATCH 2/2] arch, kexec: declare kexec and crash capabilities in
+ Kconfig.kexec
+Message-ID: <20261119080327.12916Ac7-hca@linux.ibm.com>
+References: <20261119-arch-kconfig-v1-0-37c276fe4d26@kernel.org>
+ <20261119-arch-kconfig-v1-2-37c276fe4d26@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,111 +121,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261119-arch-kconfig-v1-2-37c276fe4d26@kernel.org>
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=IouL47/g c=1 sm=1 tr=0 ts=6afead09 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
- a=rRvahzxraNLFjGORCMYA:9
-X-Proofpoint-ORIG-GUID: hp7CSNxdv2RSDV6YrnxB75-C-PWsPX8O
-X-Proofpoint-GUID: Eazu0D4U2q2mVgim0ovRhR9VcWCyCTgf
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfXxHnRtsGQZDS1
- 8W9bav8SUlaNmCyO0ufJlYgI0yiVgabzjotFBWuciPe7DUYdFj9AHZMZvN/7XcohZ4wPT3p76ND
- tOht2YsYtlOL52jZfTKqSk0ucTz2arUrU7MFAr7VpDTrB0da6ufkaQXuECfCzh5mSaGobIfL9zt
- ci0HbSX69g5E0STJnhpWq8f6d2TzVcaTwkmbhSU/5eFuTTzpy0r406meFew4NYfnZ9xEuzcmtxe
- n4w9+7EkeCUW12nsokTiXxtbtWnY4SQIu63XFcBNBzEly70wVoN6yhXy4waeQBBSjlI2oRhRX5P
- /0nitcXEyIsloyx0CI3pqIhth5lDM/uYWdTmJXR1KfxODr0iSXRfHpM5DuJpb8QmzrO4t2Xg5gZ
- ZwE2BNdt+CTnuXqCUhQobvbysbKVqKGnKhmUK8syuS/DbEQRi3dXpZ8pSQ83ONaXuFQ8CzZ1Ouw
- nNKyAMG8CbeKZu2SXuA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfX3rgHTVATmmRf
- 0tcCYIEmTHNO4mX28HY9vRp3jVkXTd22csMzDuhEOXyKTpo4CUxf8rl5MvBcI1TqdFxKP4Hoa5h
- lllhCwlcz6jD2IgrKcS2UGQIHORPu5w=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfXy8bDEZD/HzO1
+ Ej6fSCUmufwaGVs8qDbsLLSFspAjGF8EV57/b1UAhhkJVI7XRX4gvSjQSKfcSsiK74DRTfmozkt
+ /ROcpv4UPzkhercU92Bv3pOW124/C4PyRRuMx/ikvSMd1AE3EG9BKsoxjRjGUkLK9hw7IJKrg4/
+ YRAYeEUUMXCqn82c56PVhZptydQWuHKP4jJKXE05r4eSXDJU3z8jTciGXLv0tpOPm13aCmj/f0c
+ VlJi7ZYKgBQELDj74CX57DaiLHPhuPSCjFRc6oLUx8NvurAyLoOAcOcizOtr/oEPqrKfVSGXr8Z
+ I+pWvX+KMJTvAl1hPVIiPa366OqIAmWq2w0D6SVFoDpZkCddgcNowB9MS0YkiNpmHwVIKkH3Aig
+ TSWl3fJ/fu21seeQCA7tRQxlIoKvqNtJGr/wq/mpgR9CL98J1JRMfDEC9Y0n62mBzCDYUXdtbhh
+ 6zgnLpz9nmHYhElrFug==
+X-Authority-Analysis: v=2.4 cv=HN9WhYtv c=1 sm=1 tr=0 ts=6afead5a cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=kj9zAlcOel0A:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=VwQbUJbxAAAA:8
+ a=VnNF1IyMAAAA:8 a=rNe8aJYx3auY1A-cjiAA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: 6EMbp8-aufz9djOo_kjz6yvOKs-gD7lm
+X-Proofpoint-ORIG-GUID: 3vzaEwyOTJJHOeKIPx0B_GRjewJ73XWm
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfX+jzSPCVdQB28
+ e9b6AO4bXKV5KrHOR5wnZ38l6ryoyS9P0QgO17Eyyj1+OKhehU8TYsQNMNVX7bkCr++NTblrk4q
+ XKZmhJevMP70D8zhZsJSq4dAvRO2bY0=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-19_02,2026-11-16_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 adultscore=0 priorityscore=1501
- lowpriorityscore=0 suspectscore=0 phishscore=0 clxscore=1015 malwarescore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611190031
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+ bulkscore=0 priorityscore=1501 impostorscore=0 suspectscore=0 malwarescore=0
+ adultscore=0 phishscore=0 lowpriorityscore=0 clxscore=1011 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611190031
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-mpic_alloc() allocates struct mpic (and optionally the protected
-sources bitmap) but does not free them when mpic_setup_error_int() or
-irq_domain_create_linear() fails, leaking the memory.
+On Thu, Nov 19, 2026 at 08:16:58AM +0200, Mike Rapoport (Microsoft) wrote:
+> The options that let an architecture opt in to kexec and crash dump
+> features, like ARCH_SUPPORTS_KEXEC or ARCH_SUPPORTS_CRASH_DUMP, are
+> defined in each architecture's Kconfig as def_bool, and most of them are
+> copied over several architectures.
+> 
+> Declare these options once in kernel/Kconfig.kexec next to the options
+> that depend on them, similarly to how mm/Kconfig does it, and make the
+> architectures select them instead.
+> 
+> Selection conditions are preserved, so there is no functional change.
+> 
+> Acked-by: Baoquan He <baoquan.he@linux.dev>
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
+>  arch/arm/Kconfig       | 12 +++---------
+>  arch/arm64/Kconfig     | 36 +++++++++---------------------------
+>  arch/loongarch/Kconfig | 20 +++++---------------
+>  arch/m68k/Kconfig      |  4 +---
+>  arch/mips/Kconfig      | 12 +++---------
+>  arch/parisc/Kconfig    |  8 ++------
+>  arch/powerpc/Kconfig   | 30 +++++++-----------------------
+>  arch/riscv/Kconfig     | 28 +++++++---------------------
+>  arch/s390/Kconfig      | 28 ++++++----------------------
+>  arch/sh/Kconfig        | 16 ++++------------
+>  arch/x86/Kconfig       | 48 ++++++++++++------------------------------------
+>  kernel/Kconfig.kexec   | 42 ++++++++++++++++++++++++++++++++++++++++++
+>  12 files changed, 101 insertions(+), 183 deletions(-)
 
-Free the bitmap and the mpic in the common error path before
-dropping the device node reference.
-
-Fixes: 996983b75ceb ("powerpc/mpic: Search for open-pic device-tree node if NULL")
-Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
-Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
----
-Changelog:
-v3->v4:
- - Retain the FIXME comment about the leaked MPIC mappings (they are not
-   fixed for !CONFIG_PPC_DCR / !MPIC_USES_DCR), per Ritesh's feedback.
- - Added Suggested-by tag.
- - Collect Reviewed-by tags from Ritesh, Mukesh and Amit.
- - Link to v3: https://lore.kernel.org/all/20261006065945.391637-1-jyoti@linux.ibm.com/
-
-v2->v3:
- - Introduce 'err_free_mpic' unwind label to cleanly free mpic and mpic->protected.
- - Link to v2: https://lore.kernel.org/all/20260930180919.335930-1-jyoti@linux.ibm.com/
----
- arch/powerpc/sysdev/mpic.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 257886ec3f70..ab33992a8698 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		if (fsl_version >= 0x401) {
- 			ret = mpic_setup_error_int(mpic, intvec_top - 13);
- 			if (ret)
--				return NULL;
-+				goto err_free_mpic;
- 		}
- 
- 	}
-@@ -1489,11 +1489,11 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 						 &mpic_host_ops, mpic);
- 
- 	/*
--	 * FIXME: The code leaks the MPIC object and mappings here; this
--	 * is very unlikely to fail but it ought to be fixed anyways.
-+	 * FIXME: The code leaks the MPIC mappings here; this is very unlikely
-+	 * to fail but it ought to be fixed anyways.
- 	 */
- 	if (mpic->irqhost == NULL)
--		return NULL;
-+		goto err_free_mpic;
- 
- 	/* Display version */
- 	switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
-@@ -1526,6 +1526,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 
- 	return mpic;
- 
-+err_free_mpic:
-+	bitmap_free(mpic->protected);
-+	kfree(mpic);
- err_of_node_put:
- 	of_node_put(node);
- 	return NULL;
--- 
-2.55.0
-
+Acked-by: Heiko Carstens <hca@linux.ibm.com> # s390
 
