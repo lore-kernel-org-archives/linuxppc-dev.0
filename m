@@ -1,62 +1,83 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 100A3606A320
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 13:49:09 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 40F37606A338
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 14:33:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CxDtlnbt
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DkO9ZyBD
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVfvl5k37z2xNT;
-	Fri, 20 Nov 2026 00:49:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVgtb3ssSz2xL1;
+	Fri, 20 Nov 2026 01:33:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795096147;
-	cv=none; b=Mx6yLP7oT4btjmUYazjQXCb9Wgf0WqwBLBgnAPz/HwpZrwrSWrYhrO9czQ0rHkkiaJDIi0WQqskO0ubkAeK/+ZoQSPe1KDDqaRDUMRIp919+zGrJTa1vqKn+ebJn8NGbE2ugcXtciOzC1dcyUWVudLbEE91iC6cH0GDHSVIb8MOA1lBZsSrU1kcflXGTgaP4SN8jlawUg/09jcFOQi4EkFPbH5Oe5d4dydlTvxbjuxblYIPOOgC5tPydAHPkfmIe/2vkXQrGk7MAyHWzeZlK2E2S1BPfQSxjNtVclyYAEaWETs7ez3a4vBdOArchXta3oVKM33wLrutQCBbcVzT8yA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795098791;
+	cv=none; b=gAseY27U3qORhCJ7htX90JlBViHsw1gJkxg2qVqoy/Tx2FWI9Y6WXlwAhe4sw8ZjsTktHcIDQAD9BRSNaCAv3A8+yDe5U4Cffq5ysl+ZSUAG+qsc63Z0TFRxTQjLpo1KV+p4FCEWwhPwdsQn+1+MgR3xOfHYA81CuhozHe3SUqD7aUCnmEifFgj4eBIMiG+zPMDMIWgAIvfduhTdnaH2RBvNeSrbbU4VNKDsZliVB9ODnUlMFPm3WI2DpZ7ZzkBz85dZiNE7I89cLP9k16TQhYBBCN2v8bLXlsTk6nSWrAdOzIHU0dEB6JvMqvCP9AFmOaz0M7gKGwWYnFID35cw0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795096147; c=relaxed/relaxed;
-	bh=RHIJc1ZvM5IUGhVoXeitNJ89r1xtXyRqYi3xvQXKSls=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=TAlhne7y0nqvrNwHK5nXVTBw5vQSzZxpKrHamtGbanjRGW3GfsE2zZVYvNDeCH3ceA7fDG7ZKUKrrrXrpfu49yGeUoX3XB1UcDrlaCh/QLkB+SumTRJGAEAG+lLKuX/+9EUdohfYFFybzO7QE3i0CsIbmgSsmkBURUeGeAGEhyoX5Kblh6H3D+O3D2UT+f6VeZbQxCe/sdCOxozymNa9KZch+EqcueXepMA9Cnuk5gV1LxuYG69uW6+J7sAFRACD036v/Re3IM6OJEY8rqedi5AU3kjxL7V0uoBfQmZdFWpcDNWA8LCn+ZoiTDebzkFkkgy8YGofKOsW5Ymr3raG3w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CxDtlnbt; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1795098791; c=relaxed/relaxed;
+	bh=lv3NYu11pHprgRUUKX5nzbXJ9PYh0wkr94sy1z7rgm4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HQOHX/Stq/JCd6ymA788OOKwwh7bb8GFLNtUtGn447bxImH5kxEmAsInb5zrZDNMuBP9nOEabBij9ErOreY4wJBSjTAnKPOsd6VXkyk/flNS/vUyDabFsauLWnRQ9NO+FXaQr5GZ5PadBxX3NzKhq8/sx86sLWAHsLB+jy42v1zPRCkbO+mT4r1dStat75FIjC60PiFB1IG2/V1JA9us4K8gpa2HJFbZXvgx0ysD3Rm9SCc8Pr3LGt1qnuiPtn09+LZgNSLauE4IFEtru3hRCY3CDcLfm1JbFhI1df3ur5sYAM8WtMWm+vihYfUsrLPvL34KlD8qkePzBZv0QyMmng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DkO9ZyBD; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CxDtlnbt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DkO9ZyBD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVfvl0kjfz2xLq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 00:49:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4jVgtZ1YFJz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 01:33:10 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2CEB36129D;
-	Thu, 19 Nov 2026 13:49:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17C2D1F000C4;
-	Thu, 19 Nov 2026 13:49:01 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with UTF8SMTP id 0AF3260A6D;
+	Thu, 19 Nov 2026 14:33:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 3738E1F000CA;
+	Thu, 19 Nov 2026 14:33:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795096143;
-	bh=RHIJc1ZvM5IUGhVoXeitNJ89r1xtXyRqYi3xvQXKSls=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=CxDtlnbtdf3FiIrpS01bif1eJxVD739dNZI/DLLPKAcX2/DFt4CScsFalKfdzYq5e
-	 TyrN+ijXr2Xz19d6b8Ol2HKMu+c/dr9SM+bC7jd4h4zCiNaRa/0ZZfa6L9d/oTsw8H
-	 9ikigWXxN3/c2Vy1uIpSCMebHfmfzpNfxON0BkWWxXq+nc9TvesCJzk2tBXSJFWk5L
-	 VMe3xwrNhL7l5NuSFlHzvPwLIS8YLmx6Z/nps3YLnWLGSa18P84CYO0eNLp3DZvE07
-	 6fYD2Q2lVh5ahyN3eIP9NdObvojPD2P+r2GvMtEcglhgXM0+WSNMzyDBjzAhAo7BMu
-	 BWgYENtJ0Oaxw==
-From: Mark Brown <broonie@kernel.org>
-To: phucduc.bui@gmail.com
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, jonathan.downing@nautel.com, 
- Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>, 
- Vladimir Zapolskiy <vz@mleia.com>, linux-sound@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20261118100631.26658-1-phucduc.bui@gmail.com>
-References: <20261118100631.26658-1-phucduc.bui@gmail.com>
-Subject: Re: [PATCH 0/2] ASoC: fsl: lpc3xxx-i2s: Fix error handling and DMA
- configuration
-Message-Id: <179501192655.349622.2821526031939514716.b4-ty@b4>
-Date: Wed, 18 Nov 2026 14:25:26 +0000
+	s=k20260515; t=1795098786;
+	bh=lv3NYu11pHprgRUUKX5nzbXJ9PYh0wkr94sy1z7rgm4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=DkO9ZyBD2TgaZMRcs8EgWiOCyNyqCS5GVpH0PIaxsiAxioBTNKOP1wNtv66D5cYUo
+	 SVbW8UDU1ecj5E3RCQAhHUNANk3OefmNfhyVcaUvR0Gz4clykNB0Ug9GoG1Ptr8ZuJ
+	 ONnfC20iTyqzzJ2bUJn6Pg6qw6zmZqZ3ZatVKnDFWAqwRPzMWGYReKxU4oRi50tS1Q
+	 1qTF54aQpt4AAtXTH2qm2wUUGVJhq8ji6yCXpiUz4OvXBnHZfzrVs9GnUElmUD670e
+	 vrz7s2wx6vlq7TxR3Li0W0SBs0mp7rRKPrBjNuC5IHgS3SdNuJjawMEJSGy/3xT0BT
+	 6PR8vQwsFHWZw==
+Date: Thu, 19 Nov 2026 16:33:03 +0200
+From: Jarkko Sakkinen <jarkko@kernel.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Rodolfo Giometti <giometti@enneenne.com>,
+	David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Jens Wiklander <jenswi@kernel.org>,
+	Sumit Garg <sumit.garg@kernel.org>,
+	op-tee@lists.trustedfirmware.org,
+	Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>,
+	Pankaj Gupta <pankaj.gupta@nxp.com>,
+	Sahil Malhotra <sahil.malhotra@nxp.com>,
+	Ahmad Fatoum <a.fatoum@pengutronix.de>,
+	Richard Weinberger <richard@nod.at>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	Randy Dunlap <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+	linux-integrity@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+	linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Demi Marie Obenour <demiobenour@gmail.com>
+Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
+ never read
+Message-ID: <av8In0Xyd5iI9N7K@kernel.org>
+References: <20261118140421.584086-1-giometti@enneenne.com>
+ <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+ <av5EyVHnNzT27dyK@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,65 +91,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.17-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1425; i=broonie@kernel.org;
- h=from:subject:message-id; bh=UtT14b3aDsCNas90DxDGlsVK8Y57ng2BypyV6PRZCHg=;
- b=owGbwMvMwCWm/754w+YLFp2Mp9WSGLL+/fMRrl7HyBCzT+DPilnTpLq+neFTeisoHMuvoBfc5
- ef/rFa3o5SFQYyLQVZMkSUui/tlfcnrNXwHF7bBzGFlAhnCwMUpABMJkGH4p17w6/XxrQXvjNQM
- RCL3nJxXP1P76oaLX9c+mrT1OuvyA78ZGe5f3Gh26l923YKlh5q+eD3Zt1xiWm7ilaNpbH+LzoQ
- IsvABAA==
-X-Developer-Key: i=broonie@kernel.org; a=openpgp;
- fpr=3F2568AAC26998F9E813A1C5C3F436CA30F5D8EB
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DATE_IN_PAST_12_24,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <av5EyVHnNzT27dyK@kernel.org>
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, 18 Nov 2026 17:06:29 +0700, phucduc.bui@gmail.com wrote:
-> ASoC: fsl: lpc3xxx-i2s: Fix error handling and DMA configuration
+On Thu, Nov 19, 2026 at 02:37:33AM +0200, Jarkko Sakkinen wrote:
+> The exitential problem here is that KEYCTL_CRYPT_OPEN creates a circular
+> relationship between the keyrings API and a specific key type.
 > 
-> From: bui duc phuc <phucduc.bui@gmail.com>
+> At hardware level I did not see any support for TPM, which narrows down
+> the potential user base.
 > 
-> Hi all,
+> The remaining potential user base is further reduced by those that use
+> trusted keys; leaving out those who need to solve the assumed problem
+> that only this patch set can presumebly sort out.
 > 
-> This series simplifies error handling and fixes incorrect
-> DMA depth macro usage.
+> And we don't really know at this point that cut. This is pretty much
+> the break down of what is wrong here.
 > 
-> [...]
+> If there is/was a problem to sort out, it should be so constrained that
+> it should be as quick to describe as stepping over a nail really.
+> 
+> These are the main topics what I would focus on.
 
-Applied to
+I'm not disregarding that there might be something; and neither
+disregarding e.g., the use of Claude. Throwing a dice can apply as well
+human made code as for me code is just code. Perhaps using Claude,
+people just tend to have just a itchier trigger finger :-)
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-7.5
+The place where *in my personal opinion*  anyone who uses agents would
+be better to do manual work is the commit message. It enforces to use
+cognitive abilities even more so than writing code, if you with
+absolutely no self-deception, read it all through and write with your
+own words what the heck it does.
 
-Thanks!
+Usually when hitting the wall doing that leads into better code
+because of the healthy reality check. I'm not a medical doctor but
+I believe at least that thinking more stuff like this is also great
+for long-term health and cognitive abilities.
 
-[1/2] ASoC: fsl: lpc3xxx-i2s: Simplify error handling
-      https://git.kernel.org/broonie/sound/c/f8b9931f96c0
-[2/2] ASoC: fsl: lpc3xxx-i2s: Fix DMA depth configuration
-      https://git.kernel.org/broonie/sound/c/239eb443bf6c
+AI is for mental health as a car is for physical health; for better or
+worse.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Code quality is also over-rated although best effort should be done
+but that's all. If you get it, then it is done. It's harder than it
+sounds without self-deception part.
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+And yeah, we don't have projected problems. I.e. "no users" is always
+NAK. You have to step on the nail at first.
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+Just need to clear my thoughts on overall the topic :-) This is I guess
+where I stand now. Hope you find these helpful.
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
+Br, Jarkko
 
