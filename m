@@ -2,80 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8277606A325
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:25:23 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CBFBA60A2614
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:30:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T543qXNW
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kFOYsquu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVK4L4GQkz2xqh;
-	Thu, 19 Nov 2026 11:25:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795047922;
-	cv=none; b=NZMYTLNEEVPWmsN2sM+KMAlZ5wN44gEp6RnR5vBlVVcoJmB3bmaQCqQTSW82oxLP1kib0vII9gQWEbF9duanmjXLA2u7rdWclxdPNqzfFgNVU8vYK2gxhtwXf9uMQzhzsEF24ONttmLrIsh3or0r6+n+VWLaobKgk/HGTRXK+9Cw/mfIHG1cInQjNn5k1LOQxp+OFpjCAT80s8yYu7PWIAsPy93jQDdozMastDw7BxI7zvSNiiSGDCQf7buqQz0zskUedei0OELeTacfHiqwodC0bApD+t1jtic6+j6aeBHJvw2SE4ETBXnaPp64fkrf6VUHJ8VxaoXU2N945jBYYQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVK9y3mGwz2xnQ;
+	Thu, 19 Nov 2026 11:30:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795048214;
+	cv=none; b=MKsjvqo/abc7aRnaKr+LYarVBeeZFJc+0z7MAWE1gErObHZmdvrRM9DACccRpe7D0PpvDx6QsxG4z/FNpyJk3sUX9Vt36YuEvl3NcIMN9IpNDEucM92NAskkpN9appA6+5Rwa0jR3lcHTm9sfBD8Z6z/j19OIHsAI0kpzIuOgCV1aKZvUGIHa3htgYEfp1a4p/GvB3+6iwTdtoTHaFeMNyexTjI58/4tdIwdT+aVEp4bJegMPLFiN8xGUmWn9APUehcxDHEPU/YVJ7Qq88mWgnF8LTWdYq+0ZvAENQ4KuEFVZ45AwRBXCIsUEpP7HLhlz51PzoesK5yK7McLRODbhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795047922; c=relaxed/relaxed;
-	bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
+	t=1795048214; c=relaxed/relaxed;
+	bh=zxam1vrXM5B1VwWPDazyd+QQbZEkReFXIjKzqFoHM/U=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Vnq4yPG0d34dBx4wPmpLVXhVeYmhuRyR+2FIdquGCNIaKxS9Oq3NE2dZzkkJlhZ64mcaCuCQIGn7aA2ncluoI8syGrnMzhAn6v1q4Fb7xz3ZUahqBwYWuTsr8p0iY/v6Y2URk9j9AEjc8KUaqYn//dt9VOL4GmR0ELhc7T94zhwHK1DQ/pivmDjSQRUZ7DYOb0Ac/rhqx/kWlEMimNRq4IYk6TgnnL2p5xQ1GmSKv8r9WWyBDoMOHNRICxRIQmk4/IlmY76riXYqX4aqs9D8257ktpc78pe/fjz0YyRr5blWV9IN3e8pbLmuoGHJRcHPElG1KO1e9weHPFK3hzg01A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T543qXNW; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=demiobenour@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 In-Reply-To:Content-Type; b=LeUVCcdjrqFlVytm9xUe0eFHsMSne4ft9RLs294pe/q8At5O1jv2vAjXMnH0VXb36c705QpPH6cx6RnUP/X6MOuNJzxapfcOv4I0fRKMR5JBOb1eQN2MQFm4X+oCoBPm6ktnhS6tQsrVuAXd1CrnMtNZ9Ab4C8j2gQDzz6X0tlchuOu7zbtQnGjZe/p7oP8hFPd4lTiY3vKdFGWT6uxpiGlWgG8ZXsPjmwmEg7poaQ+FrZSdANNwF7bAu1yTjMdAwu98biYSme9oG1xfXmpWbOYYrqte+0nWpRjfShwjBTuWl5OzE3a1Ar9396K1ccvWbjQtkUjYj3ObbCedE136OA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kFOYsquu; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=T543qXNW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kFOYsquu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=demiobenour@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVK4K1Hntz2xlY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:25:20 +1100 (AEDT)
-Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-8b4cc793704so13665087b3.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 16:25:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795047918; x=1795652718; darn=lists.ozlabs.org;
-        h=content-type:in-reply-to:autocrypt:from:content-language:references
-         :cc:to:subject:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
-        b=T543qXNW/XqMD33OKHNe/f1zNBKE+sgplo9X6YuvCrTvy6BaO7rfa4zoX3H9v1K1s0
-         6JRrgYCHLLAsHbXHw/4SQmn5fRSgAMuJujunF87LMJ0FBb96WnhUJcKS3nosgF04vucc
-         Gtb4TsjlrCHM8CXUfSB48u7z/tFuJm4k108Rj6t2zY/oEFK0pTXE8uRwLKEDqJCAR3nZ
-         z/qaRKW+tidzXy6epx50bNFSwwjU5Biux7NOkw/o3k9Fp6wsBFX5e4dLQAQYg/+e2qd+
-         VFLaUpgBqCIyYuHp78pcKj4GGlP0I0CSRFBqBHwQfnJ96xqvtPRp/NJGR9JY9frlYeH4
-         o5Jg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795047918; x=1795652718;
-        h=content-type:in-reply-to:autocrypt:from:content-language:references
-         :cc:to:subject:user-agent:mime-version:date:message-id:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=rSVsA9fNi7kC5K1IDfWWLOQdUEB3auXl+KZsJESSywY=;
-        b=D11gEHhD+hBThrsrfMxn0EBeQwou8ozzpUkgropGGWVx8PJPPeSsejXILUuodNfNIE
-         a4WAUImwnIgLGZjoR1JIzWSlCosIfSmuoH0ImWgKh1q0+Go/aezOa1JdL9/+HAvHKShN
-         g4hz+V/jgY0Dzx1BWIljJbYGKP/X2TeFvxhWd2qrZH5FYvg61Ob8Y0jgjtf9sJVd7XlW
-         MDGFTJplRxVrFO1TuzOD5W7Xi9DwLABwq3WnKNBMTteBdiqQENPU9Bf7ivjVIEuW6O1A
-         11IDQ6ZfLUr/p//2n8oW+uZYKm7ubKfglabwGA1pE7GlaVBMYoInVoDBRKGR5mNMvhCT
-         cfzQ==
-X-Forwarded-Encrypted: i=1; AL+hErE6WgqFZtsxuiGsNDBqaxMZUeX6rx635nTyvTMs9pRnjG1gERTXw13/cJoxF1/R6i1x5MdrCbbdS1s+tb0=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/47AdyGqki6Wg+xE4NpghUrUBfk0DIS/7Y9D+Ew1pMpid4x8YT
-	QBw2GHN/iiZbWCvS+xElJrR4x9+nBpd8BYONAeg6qpQXKS7EjopHa+UQ
-X-Gm-Gg: AZFdTZcxeP5onxFkK/rvsnIyciGzSGboqtq6djMGCTzCY31aiUqTCXDHmdCwn4mcqIa
-	BXBxo2yH3LqKQPVsSQr5QDOAHKbD9ImeduNFDlfICYn8JjLPdkNrEZnOOLqdQnV8LLBZHK+6OTg
-	DpY+K+qOcxNlvZNJ6UG2PX495fOz7HjfdWukeJigqTXEfc15Cgkosh7i/iTOIcUDV9596wEli+I
-	JoypuAakixl6+FwpF8HBFmzypiNBkulxKGkM5yOC4XpXlKhbDz1AyFnSJI18659wOYK5tUHilD8
-	u7xf7+Z+J4oXoUii7ncicOho62CH+T6P66iEL+086vtvLMvrYw2uhKTtcKgAbGrg2fH/Bzk7MRN
-	H8cpPrum6zBz4UQv4boTQ46rVobtQF27VRSSbqrlvvdaAKNsMDJaAmBJKrmvRnDGK/389DtS+YM
-	h4BBsUrUuWQUB9UoJpIHGdTqz1+s+bntAos73SZmsKTRqQ4Kl15tdbaobGTIrge9i5skhuCJrXM
-	s1N0mKSW27KrbtJe1YgVqY4uH6EkHc4TssGlMykeYwryEwTKTY8CeiTMnCER8ai6hCoPIi6znBg
-	qv10PYyzuVdK4cQUbYdLj9ulWyKAeDHHTF8=
-X-Received: by 2002:a05:690c:79a:b0:8b4:f2bc:7c39 with SMTP id 00721157ae682-8b4fecfc697mr13290147b3.15.1795047918306;
-        Wed, 18 Nov 2026 16:25:18 -0800 (PST)
-Received: from [10.138.10.6] ([149.102.242.31])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b4fdf1d0desm25414957b3.1.2026.11.18.16.25.15
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 18 Nov 2026 16:25:17 -0800 (PST)
-Message-ID: <75946579-8335-4491-86da-fcda25ae9fd8@gmail.com>
-Date: Wed, 18 Nov 2026 19:25:09 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVK9w6DzRz2xkr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:30:12 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILQcPZ2240623;
+	Thu, 19 Nov 2026 00:29:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=zxam1v
+	rXM5B1VwWPDazyd+QQbZEkReFXIjKzqFoHM/U=; b=kFOYsquu6zCav1fN2Mrrv6
+	W1KEB6DzoQcVkqQCeZHBvoelML6z57vqXp3+cf5hqbfp7QnzRi9BA7kHr5utIrb3
+	oO079+ji3sePXsZkfTe3V38dCl17KOdosNE6pc2piX50ceAsKQiAKjeQ01dR6cBx
+	Yj7KJizhkvsjrJGTgwLAO1LKN4291SFbwuaAWqeUWq9RHNe3uYixq/NrR04/2KS1
+	US7/x3ub8yApVPQ2fonK0sDSnpEhLbjiQzp5hTQJ1SoxNtBbUaci4iKCStlnB94F
+	C3fG49UsHdWBOLOxzaoNCjyT1N9N3hdQsHnuTpzjUgG8P4fUKl0fxAU6KUdA7KDw
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105vn852-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 19 Nov 2026 00:29:59 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILbNRY3716181;
+	Thu, 19 Nov 2026 00:29:58 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1m3hrffw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 19 Nov 2026 00:29:58 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ0TuJN58917298
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 19 Nov 2026 00:29:56 GMT
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4E7A35805A;
+	Thu, 19 Nov 2026 00:29:56 +0000 (GMT)
+Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C7A5758051;
+	Thu, 19 Nov 2026 00:29:53 +0000 (GMT)
+Received: from [9.67.93.165] (unknown [9.67.93.165])
+	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 19 Nov 2026 00:29:53 +0000 (GMT)
+Message-ID: <6f0fa4c6-7b16-4561-ad9b-4dcd728e1aa1@linux.ibm.com>
+Date: Wed, 18 Nov 2026 16:29:53 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,227 +82,90 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 9/9] KEYS: keycrypt: Add the aes256-gcm-stream
- algorithm
-To: Rodolfo Giometti <giometti@enneenne.com>,
- David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
- keyrings@vger.kernel.org
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
- Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
- =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
- Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
- <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
- Richard Weinberger <richard@nod.at>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20261118140421.584086-1-giometti@enneenne.com>
- <20261118141257.627441-1-giometti@enneenne.com>
+Subject: Re: [PATCH net-next 0/2] ibmveth: two TX and reset fixes
+To: netdev-bot+sinfo@kernel.org
+Cc: netdev@vger.kernel.org, nnac123@linux.ibm.com, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com, andrew+netdev@lunn.ch,
+        davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org,
+        pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, horms@kernel.org,
+        davemarq@linux.ibm.com, haren@linux.ibm.com, ricklind@linux.ibm.com,
+        bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
+References: <20261119000235.15622-1-mmc@linux.ibm.com>
+ <179504684743.3291.10300720489651147627@kernel.org>
 Content-Language: en-US
-From: Demi Marie Obenour <demiobenour@gmail.com>
-Autocrypt: addr=demiobenour@gmail.com; keydata=
- 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
- +MYSfkEjBz0E8CLOcAw7JIwAaeBT
-In-Reply-To: <20261118141257.627441-1-giometti@enneenne.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------FHGxV8cRNdUiD6U0H5BD0N5M"
-X-Spam-Status: No, score=-4.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=4.0.1
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <179504684743.3291.10300720489651147627@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-GUID: DPoUV0YR8NOBFJ4MeZWsoCbaE4DT2Pvh
+X-Authority-Analysis: v=2.4 cv=HL9WhYtv c=1 sm=1 tr=0 ts=6afe4307 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=anQ5-TqrEUfaeNihTikA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: 56rBCxgIaW54lbrGYm1p13ShKgOnnMNI
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE5MDAwMSBTYWx0ZWRfXxeBHuqzOEkGy
+ CgxVcH/Scuge90Io1Lb1C2GT/dvJALAjB2XIM10r5rpmLxn5ka0FpOmogOBWu6tPvQ0GdGr/8xV
+ iTAJdb5sOAMfxLSg2FYBX0jhajscDBSeoyIs9y5rJ8j7YUxwlU5e4F02dezAxMyMhquRjh/X4i+
+ 7VtfVAKlqShQL/gpMkNAADjHA0UqiHNVv5fU/M8eevh+8lrTwzsqiZ4H0yFuKOMH8zrLXsaVNJ2
+ 0qQlPKsiHggWyeDCqNm6JhDmrLzOgntIfQpt5aO8J8FKqh0c02U70wjlklhMwlm36TwKMJIBnHr
+ PtHR1MF4RcUbBTzx9W9uxpUD6kCLurENRDUYieEvVph4ZW/nJv06yYp8SRsIIQDke2pL0N9na8z
+ bwqZcAlKHcJCO/mneLO8y9sCWCb0evPJ4Dkh0JuGYKuIti7zfCgARixRlahfqn5vKG0T31E2Noj
+ KpdvaMHCi9M3aVdypaA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE5MDAwMSBTYWx0ZWRfX0kdtqdIjDfSG
+ R1Emsdb8+Sm6Rg1CNhpmNkv512PnbaBt/rPAQyae6LzuOEZBmQCj29OlcjbfSWAlsEwbh5n3B5a
+ Wk6tINj9mFEf3h12ti3PqxOLpJ11JjA=
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-18_07,2026-11-16_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0 spamscore=0 priorityscore=1501 impostorscore=0
+ adultscore=0 clxscore=1011 lowpriorityscore=0 bulkscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611190001
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------FHGxV8cRNdUiD6U0H5BD0N5M
-Content-Type: multipart/mixed; boundary="------------5YUoLTrRSVm1eElT0Sq1GVMR";
- protected-headers="v1"; hp="clear"
-Message-ID: <75946579-8335-4491-86da-fcda25ae9fd8@gmail.com>
-Date: Wed, 18 Nov 2026 19:25:09 -0500
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 9/9] KEYS: keycrypt: Add the aes256-gcm-stream
- algorithm
-To: Rodolfo Giometti <giometti@enneenne.com>,
- David Howells <dhowells@redhat.com>, Jarkko Sakkinen <jarkko@kernel.org>,
- keyrings@vger.kernel.org
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
- Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
- =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
- Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
- <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
- Richard Weinberger <richard@nod.at>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20261118140421.584086-1-giometti@enneenne.com>
- <20261118141257.627441-1-giometti@enneenne.com>
-Content-Language: en-US
-From: Demi Marie Obenour <demiobenour@gmail.com>
-Autocrypt: addr=demiobenour@gmail.com; keydata=
- xsFNBFp+A0oBEADffj6anl9/BHhUSxGTICeVl2tob7hPDdhHNgPR4C8xlYt5q49yB+l2nipd
- aq+4Gk6FZfqC825TKl7eRpUjMriwle4r3R0ydSIGcy4M6eb0IcxmuPYfbWpr/si88QKgyGSV
- Z7GeNW1UnzTdhYHuFlk8dBSmB1fzhEYEk0RcJqg4AKoq6/3/UorR+FaSuVwT7rqzGrTlscnT
- DlPWgRzrQ3jssesI7sZLm82E3pJSgaUoCdCOlL7MMPCJwI8JpPlBedRpe9tfVyfu3euTPLPx
- wcV3L/cfWPGSL4PofBtB8NUU6QwYiQ9Hzx4xOyn67zW73/G0Q2vPPRst8LBDqlxLjbtx/WLR
- 6h3nBc3eyuZ+q62HS1pJ5EvUT1vjyJ1ySrqtUXWQ4XlZyoEFUfpJxJoN0A9HCxmHGVckzTRl
- 5FMWo8TCniHynNXsBtDQbabt7aNEOaAJdE7to0AH3T/Bvwzcp0ZJtBk0EM6YeMLtotUut7h2
- Bkg1b//r6bTBswMBXVJ5H44Qf0+eKeUg7whSC9qpYOzzrm7+0r9F5u3qF8ZTx55TJc2g656C
- 9a1P1MYVysLvkLvS4H+crmxA/i08Tc1h+x9RRvqba4lSzZ6/Tmt60DPM5Sc4R0nSm9BBff0N
- m0bSNRS8InXdO1Aq3362QKX2NOwcL5YaStwODNyZUqF7izjK4QARAQABzTxEZW1pIE1hcmll
- IE9iZW5vdXIgKGxvdmVyIG9mIGNvZGluZykgPGRlbWlvYmVub3VyQGdtYWlsLmNvbT7CwXgE
- EwECACIFAlp+A0oCGwMGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAAoJELKItV//nCLBhr8Q
- AK/xrb4wyi71xII2hkFBpT59ObLN+32FQT7R3lbZRjVFjc6yMUjOb1H/hJVxx+yo5gsSj5LS
- 9AwggioUSrcUKldfA/PKKai2mzTlUDxTcF3vKx6iMXKA6AqwAw4B57ZEJoMM6egm57TV19kz
- PMc879NV2nc6+elaKl+/kbVeD3qvBuEwsTe2Do3HAAdrfUG/j9erwIk6gha/Hp9yZlCnPTX+
- VK+xifQqt8RtMqS5R/S8z0msJMI/ajNU03kFjOpqrYziv6OZLJ5cuKb3bZU5aoaRQRDzkFIR
- 6aqtFLTohTo20QywXwRa39uFaOT/0YMpNyel0kdOszFOykTEGI2u+kja35g9TkH90kkBTG+a
- EWttIht0Hy6YFmwjcAxisSakBuHnHuMSOiyRQLu43ej2+mDWgItLZ48Mu0C3IG1seeQDjEYP
- tqvyZ6bGkf2Vj+L6wLoLLIhRZxQOedqArIk/Sb2SzQYuxN44IDRt+3ZcDqsPppoKcxSyd1Ny
- 2tpvjYJXlfKmOYLhTWs8nwlAlSHX/c/jz/ywwf7eSvGknToo1Y0VpRtoxMaKW1nvH0OeCSVJ
- itfRP7YbiRVc2aNqWPCSgtqHAuVraBRbAFLKh9d2rKFB3BmynTUpc1BQLJP8+D5oNyb8Ts4x
- Xd3iV/uD8JLGJfYZIR7oGWFLP4uZ3tkneDfYzsFNBFp+A0oBEAC9ynZI9LU+uJkMeEJeJyQ/
- 8VFkCJQPQZEsIGzOTlPnwvVna0AS86n2Z+rK7R/usYs5iJCZ55/JISWd8xD57ue0eB47bcJv
- VqGlObI2DEG8TwaW0O0duRhDgzMEL4t1KdRAepIESBEA/iPpI4gfUbVEIEQuqdqQyO4GAe+M
- kD0Hy5JH/0qgFmbaSegNTdQg5iqYjRZ3ttiswalql1/iSyv1WYeC1OAs+2BLOAT2NEggSiVO
- txEfgewsQtCWi8H1SoirakIfo45Hz0tk/Ad9ZWh2PvOGt97Ka85o4TLJxgJJqGEnqcFUZnJJ
- riwoaRIS8N2C8/nEM53jb1sH0gYddMU3QxY7dYNLIUrRKQeNkF30dK7V6JRH7pleRlf+wQcN
- fRAIUrNlatj9TxwivQrKnC9aIFFHEy/0mAgtrQShcMRmMgVlRoOA5B8RTulRLCmkafvwuhs6
- dCxN0GNAORIVVFxjx9Vn7OqYPgwiofZ6SbEl0hgPyWBQvE85klFLZLoj7p+joDY1XNQztmfA
- rnJ9x+YV4igjWImINAZSlmEcYtd+xy3Li/8oeYDAqrsnrOjb+WvGhCykJk4urBog2LNtcyCj
- kTs7F+WeXGUo0NDhbd3Z6AyFfqeF7uJ3D5hlpX2nI9no/ugPrrTVoVZAgrrnNz0iZG2DVx46
- x913pVKHl5mlYQARAQABwsFfBBgBAgAJBQJafgNKAhsMAAoJELKItV//nCLBwNIP/AiIHE8b
- oIqReFQyaMzxq6lE4YZCZNj65B/nkDOvodSiwfwjjVVE2V3iEzxMHbgyTCGA67+Bo/d5aQGj
- gn0TPtsGzelyQHipaUzEyrsceUGWYoKXYyVWKEfyh0cDfnd9diAm3VeNqchtcMpoehETH8fr
- RHnJdBcjf112PzQSdKC6kqU0Q196c4Vp5HDOQfNiDnTf7gZSj0BraHOByy9LEDCLhQiCmr+2
- E0rW4tBtDAn2HkT9uf32ZGqJCn1O+2uVfFhGu6vPE5qkqrbSE8TG+03H8ecU2q50zgHWPdHM
- OBvy3EhzfAh2VmOSTcRK+tSUe/u3wdLRDPwv/DTzGI36Kgky9MsDC5gpIwNbOJP2G/q1wT1o
- Gkw4IXfWv2ufWiXqJ+k7HEi2N1sree7Dy9KBCqb+ca1vFhYPDJfhP75I/VnzHVssZ/rYZ9+5
- 1yDoUABoNdJNSGUYl+Yh9Pw9pE3Kt4EFzUlFZWbE4xKL/NPno+z4J9aWemLLszcYz/u3XnbO
- vUSQHSrmfOzX3cV4yfmjM5lewgSstoxGyTx2M8enslgdXhPthZlDnTnOT+C+OTsh8+m5tos8
- HQjaPM01MKBiAqdPgksm1wu2DrrwUi6ChRVTUBcj6+/9IJ81H2P2gJk3Ls3AVIxIffLoY34E
- +MYSfkEjBz0E8CLOcAw7JIwAaeBT
-In-Reply-To: <20261118141257.627441-1-giometti@enneenne.com>
 
---------------5YUoLTrRSVm1eElT0Sq1GVMR
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On 11/18/26 4:07 PM, netdev-bot+sinfo@kernel.org wrote:
+> Hi!
+>
+> This is an automated message. This series looks like a fix, but its
+> commit messages seem to be missing some information:
+>
+>   - Whether the issue was actually triggered, or is only theoretical
+>     (e.g. found by LLM and not proven at runtime). If it was triggered
+>     please include the symptoms, like the stack trace or kernel messages.
+>
+> Please do not repost the series just to address the above. Instead,
+> reply to this email with the missing information, so that reviewers
+> can take it into account.
+Thanks.
 
-On 11/18/26 9:12 AM, Rodolfo Giometti wrote:
-> This patch is a proposal on its own: nothing before it needs it, so it
-> can be discussed, or left out, apart from the rest.
->=20
-> aes256-cbc does not authenticate what it decrypts, and a file or a
-> transfer longer than one call cannot be sealed with a single AES-GCM
-> invocation without buffering all of it, nor decrypted without
-> releasing plaintext before its tag is checked.
->=20
-> Add aes256-gcm-stream: the STREAM construction (Hoang, Reyhanitabar,
-> Rogaway, Vizar) over AES-256-GCM. A message is split into segments
-> of up to 64 KiB, each sealed with its own tag under a subkey derived
-> with HKDF-SHA256 from the key and a 16-byte salt drawn at
-> KEYCTL_CRYPT_OPEN; the nonce carries the segment's position and a
-> last-segment flag, and the counter lives in the kernel, so segments
-> can be neither reordered nor dropped from the end unnoticed. The
-> segments go through a new ioctl, KEYCRYPT_IOC_SEGMENT, and
-> KEYCRYPT_IOC_FINAL reports a stream whose last segment never came.
-> A tee or hsm backend draws the salt and keeps the counter in its
-> secure side; the sw and optee backends implement it.
+Some of this context was included in the cover letter, but for reviewers'
+convenience:
 
-Please use Cobblestone-128 or Cobblestone-256 instead.
-https://c2sp.org/chunked-encryption has the spec, and you can check
-against the implementation in pyca/cryptography or (for Cobblestone-128)
-the Go package filippo.io/cobblestone.  This assumes your CPU has AES
-and GCM instructions; if not, you should see about using one that does
-or work with a cryptographer to standardize an alternative that doesn't
-need them.
+Both issues were identified during development and review of the ibmveth
+multi-queue work. Patch 1 addresses a race when TX queues are reduced via
+ethtool -L while traffic is running. Patch 2 addresses a race where a queued
+reset can reopen a device that has already been administratively brought 
+down.
 
-Nonstandard constructions like this one are to be avoided.
---=20
-Sincerely,
-Demi Marie Obenour (she/her/hers)
+I could not reproduce either issue directly. The fixes are based on 
+analysis of
+the existing code paths and rare race conditions. I exercised the affected
+scenarios on a PowerVM LPAR, including TX queue reduction under traffic,
+ifdown/up during iperf3 traffic, and queued reset testing while the 
+device was
+being brought down, and observed no regressions with the proposed fixes.
 
---------------5YUoLTrRSVm1eElT0Sq1GVMR--
-
---------------FHGxV8cRNdUiD6U0H5BD0N5M
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEopQtqVJW1aeuo9/sszaHOrMp8lMFAmr+QeYACgkQszaHOrMp
-8lMKphAApmT7NKojxfNUv+4YED5wbkVa7lnarDk0nyp9M3Bt5hNIRlezPRWwnuNQ
-c3Fse2TSfDpwTAaL/pZ9bVoUW3FkLcIwnAAIe35/78qpOemxEF5XRd4CQ9OGoQkm
-MW429KUVHFxKjlSPCVrMIzW5PwLLvQVO/84lxA3BYJ503yK13kkEC2ja/5bOr2pq
-cNzlB0rvirBXLKv2LH9gyIWC3rvLI29QGgGdFocZwnV/EbsWXC+1cNqLGePQ4JW/
-X2W4CMomO+RvLWY+tfh/W+5hnUzxfaxn1oyCQbdEa+5KzWc+6oaPK9MU6x94SEhC
-qkvoS60vMTP46Q4AQT+zB918F09KoN5Gwb6kWkjYVdfoJhsq1JIToOMT4uWhxwJa
-zK5vgEPBWgvLDy5nRHf3l36sS0D8KibzPXtsQfxLrmH88Q8i8VHbMbHeuqQ3hfmi
-/7v8eSCrt2NDafwt1mKKM1s3ZhegKN+R8bDXcK9Ys9fQnVMptIcR/tlkBBf6NWes
-mdSBLNJSBR6q4Hm+kSz3+j8ah7qhuPVI9FIyKt9Lb60hrI8sHdotye0p5+Ne0iH6
-rUKkFHWYEv10C/ku2PdPBgLIc5qfhf/MPSbqH5vAcyc19JIg9xneQVTxoaFK8QD8
-aN6GKY3u02GADQHUdEuu26cEaKIBdN1yhWrjlPTIclUizw7Wppg=
-=ionq
------END PGP SIGNATURE-----
-
---------------FHGxV8cRNdUiD6U0H5BD0N5M--
+Thanks,
+Mingming
 
