@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7ABDE60A2616
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 03:41:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A681260A2621
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 03:41:26 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=H2V8fzMZ
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nVqLPv65
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVPPb47nMz3c3x;
-	Thu, 19 Nov 2026 14:40:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1334"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795059635;
-	cv=none; b=Ts1DZb1qKBYpzzqirP8b2sb8u3El/EvEuTy3cbICtqNvwVPlSLYuVf6k3ZQqN5GqXrrw+LKArTzDz4Bbcg1P+amoLYLGzwNu19XcH5DypMl0ZrezY9kWU2fhS8CGmyy6HQh5lHu/Ezq5XS3lJTm1A/n3iLr2gOFwJlvDnmvBgFoBX70vIp7uq245c0njWrod0tGqtC+mwJ58Tt38CuRod8hUrLfH/QkKwI4L4Kv5bCDjoA5meNpl4oBwjV0x61jU1cKHeE85Ec8vfWdrhCuIXmhTG64YooMx+JZ6hjNQRWe8ID6zqfGbhnJUoWHhqupHJUhUVXowDxEqfkND+Rd8GA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVPPg55F3z2yVd;
+	Thu, 19 Nov 2026 14:40:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795059639;
+	cv=none; b=W/LtU3Vo6DMbgx1g1bPJSwYMB9x25NP1Cj1YupWvvPCFjNObmxh6F2mxmmTxkNfJViH+u1LYbDl7yGnpslcuG8BZ0OR2uWomsrlwdk4eXtHSdTbjg8RGDChD1HreAmrAilGoNcuefI/QDmcUXs+9tNrKH9dZHVDC51mEiktZDCI9NvyjrJK9gH9FTsnoB4f7OJICYIkFPtIfUzMn5Iep3Xitxmk1M0QGzuHddu0Tyhv3FCV/cyKdRmZPFa5z4cjwdhCV+VY8LP0Gv/je6KpOhNUGyBO7FMPu/94/aTryZknbcEt5OtqUEuT8lKRA+a580FAn6EgB7diVt07Y5ZUk1Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795059635; c=relaxed/relaxed;
-	bh=aMXueYzEMSkafhBw0cZtNBrJpZvkeyJZqfF9NmIV6eo=;
+	t=1795059639; c=relaxed/relaxed;
+	bh=A0MBPJOKvnLE5rP9NIQzyUeRKGazCi9hDA+IfnK6LUo=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=F5JdYaLjYYsp1LmVqO7OZoijjuOuklpt+LawtLdc5qbDz1W+o9BaQa8tuqXUvFI7Q/WNvnBUFwR1AZTXV1Wyjuqv94QOy51WQzJv8EYQDxh5/Dl8dn/WbP3wdUPaK8NHBAHnuMs3IyEBUbSBvkT3Ra4GkH5mCBcxGtORvMZct5SB1QgNxdi78gTAPVju5sXeVgFdYCuojS5bBqpPm46t9Nxz8qZIm4tAEU/FXuKcgCWkkcxf++DZmpeoPx1bGATbTc06VV7vKj4VPE0x0MB0AWt6RfiXLcjqL+JxZXvyRcBRf5XNPTcBZ59huiGzxfrINtbv9vh1TR/lmhkwgvX+6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=H2V8fzMZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=SOpbl+WkyCxo/EQSa1CMaKA2SkwS9PudF/gYAOLkxGryZcQz6kSLYzVJ0Sm2q8r9uqta4i0F5SJFQZ9c1vZY2e5UT+pbFUZhOv8trW4f/acm4kLmcjmBnwq00w/AaBa535RNCAy48gjPGWGgqIe9ndnuyY4J8OKP2sl+K/udoE1hPWGhw8qBGEcBtq1tR0RNrt+9KTw8pa9zXaSGAVRUVzD/Uj9K/l5R4fq42mo872Ma+vDLXxA/8wZ5NjcQuMcFaEsAAoq9L8K38mFm71HDSgit9TNyTVY4gWr+eVezsdrjQP3Ork2bErmHSGOojTPESVOANFampVca6HzTtbi7Cw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nVqLPv65; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=H2V8fzMZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=nVqLPv65;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1334; helo=mail-dy1-x1334.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1334.google.com (mail-dy1-x1334.google.com [IPv6:2607:f8b0:4864:20::1334])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVPPZ6Dr4z2yVT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 14:40:34 +1100 (AEDT)
-Received: by mail-dy1-x1334.google.com with SMTP id 5a478bee46e88-372bdb942dbso2393408eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 19:40:34 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVPPg0CsXz2yVT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 14:40:39 +1100 (AEDT)
+Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-380c28f9e35so477883eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Nov 2026 19:40:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795059633; x=1795664433; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1795059637; x=1795664437; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=aMXueYzEMSkafhBw0cZtNBrJpZvkeyJZqfF9NmIV6eo=;
-        b=H2V8fzMZh3Vl+kuGg+OYwIAsqsZ4uEB0272ohIIaSqZeYsHvXuzXq5BeDSUXxwqATV
-         bqT+5qy9IEOHUyF2B4L6hF9I04cTfO3Dk827A0/4m5oQGT5wojs6BP3DWRRBskY6sGzY
-         wEujUX5s1/oSMAdOJSQVbTdvdXIDfw+LlYjIMcsTpKHAE4rxgH+Nbv7DggiMYDFG6ZoS
-         knRUMhj3iINe4b5jpO0vcjg9cem/8MjP4y0JnLUTpS1+wIdyhSLYc6kycJ6WpsS60Fyn
-         vi04sXsJm8+UWxlM3wMtYTlNJ8tqSXKiLZjyLx+5nl/IduRu6YAvvq5h+ebFcMMG+SWW
-         5npA==
+        bh=A0MBPJOKvnLE5rP9NIQzyUeRKGazCi9hDA+IfnK6LUo=;
+        b=nVqLPv65vNzeydnHHAlIQe9HgioDUr2EGcAE/nYITaceIUIkThUespDN3TuZk7tiZ4
+         MUBnfw0hZcrW/KUehexQknIQ2u8Kk3jyXS1UR96KWMvMCeI5Np3c6z5XUTx9wQeGQnbT
+         ctDQEwvK149RpYAwldbkMRPQa1jjTIlEyQnrpTmZ1FakokFIC7zG88Dt+S7RcZTHc4QB
+         xwJ4ZikPS8mn8cwtM9YCYhGN9duLB9DEOcwiHtGNzBAsmyNtrzsh3TzNmjG53Targ09l
+         fb6Vjo1GiYYWZCqyD8QKE6hna9IbqXljGcySp7v2wMpQQuGZzZ0OHzngWwb64xOlbZ3i
+         RsZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795059633; x=1795664433;
+        d=1e100.net; s=20260707; t=1795059637; x=1795664437;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=aMXueYzEMSkafhBw0cZtNBrJpZvkeyJZqfF9NmIV6eo=;
-        b=TrQ+/nIjyyTHqwZXC2ZMt5hXBKA+jb2rfbEwevmuWVBF1H1NPl5d03hbXgraceSKI4
-         gmxbkbOYRtxVbU4n4my4JOCGzfgDCiTQXSZImHtFy0vND7Red5nyBTzZFx13X95CIW9P
-         oHfUNFyA3WxXo4qOHx2H46UeH0Gz1x8QW/UG2HuwhBc8uzFxJNnRkDY7h/rpKPB8P+55
-         6TZCtBad9kenE2jSgFdnDe6KYuE7aGSuZMiup1Y5ILAXkK9d7kNZTAvyKj5+c9BQHdc3
-         iXJcq6wWkXHAzeFH7cHYvxGOaXJdGljbrj3VQjFPqn+PqT6HOBIZu3N376c0wdG32x2X
-         9oyg==
-X-Gm-Message-State: APuU4Z/+soRufddUDstzcDZv3Un8yHoT2pTXBvbLUazsiyI3IMV+FTNU
-	8rQsA1r2R0+/0qsJ2eQA3MwxGBQMm+1bIaGbJqO7y3UHzCR84iT98Hgj9MR2lQ==
-X-Gm-Gg: AZFdTZcTrhokRzGgCMxWMJfOijF6/NxYaxZcQh0ZjaBBhNCby8CMN4Os8Mnd8CL1cpk
-	DO+tkCMWF2bN8clu4mNxaFNcvL6m0OwlbUH+0lOcU5R2z4ZYu+y28IykKtQmBFNWYdw3/FK3zKc
-	Y8M8TsDtcQBPX2NDXDckkE67At2LKgi3S+sWclu+GWuQ/8Wi9kZ/5AnZTkrs4nb7P/r+8YlHNIb
-	VabH/9wsXI1Y1bDlgZsP5QWFpVenDtuzFpxT49uWkdZGkOESBOw1JkJExfePqkmK+d2+Nwcq4pi
-	QRRBZiscVIu7q8O/kTN0G+fe+wfzxcvMWnyyvBo9Fj8qEuLF0PdTENo/PeC85azobn6NC0Mk/Xc
-	1wZZLiScp+X+6ppf+F83QmySu+KZ9e2xsm93PDXS0RjWgWn65oJf9wP+kEbY44tFDkjpbmkt7OM
-	2DC1CfKfbbK5ModVGxgmllmu2zvbQxmGZSQ5XX/bl/QVQsoFA8XnCRin0REMLtzIRYHHMGAapw4
-	GBVvVSU8z7BsP9h+scp9oL8sYKGvHGmFD5mlyFJYxVIHXgswPay3egrsFKwdJFURUhxYRfgfi7A
-	uqGP7WWNB1lg+F/3ct4Upl4yPn1mmi2njA==
-X-Received: by 2002:a05:7300:ff43:b0:369:5583:bf4c with SMTP id 5a478bee46e88-382820de610mr3957455eec.28.1795059633028;
-        Wed, 18 Nov 2026 19:40:33 -0800 (PST)
+        bh=A0MBPJOKvnLE5rP9NIQzyUeRKGazCi9hDA+IfnK6LUo=;
+        b=sqeTt0TUCoc+v14BrVBkrfWTuXjw40sKgtgEW+TKi5dPjJEYqfiH1lQlsVLO3RPPu3
+         sC08JbeBhHF88bNY82b3QeigeOeaGHZSPJlkZcA0ikFo0mq/mZXMv8THgdiorIx0A0K+
+         K9iwlmdrZRsAvfMAlHkvRoDa2XvqKBGFz7GE+1udEYDdH3vtzq51HtNbTjp7+a7wCT8m
+         TwAZx7Xq9U8YLNRmsv2K/ELU4fUZyq8MsqKK7XjJbTvQxwnV3k4huz86UxvK4qdf9+bR
+         PTQcqz3zTAqNRYnouEgET0IzVY0Ypdol3PaPRuPJcCsBDQ9WdlM5S72Vl/ZMRBpheoyj
+         Dqrg==
+X-Gm-Message-State: APuU4Z9aYsGdbwkNo0q1ekvdmQ3nZ5gSGppZROV8eaMMtdMXoIB+6mrw
+	T6AT713Pnu398+C9ywuPaolXr3QXK4WBcsZmTEpFSqrXmflnoz5tFs7SJA6gIQ==
+X-Gm-Gg: AZFdTZcanEc/ZuzwtCu8O4ttwfN+RCC4s+S++pZiDaKvHZ/04ML+0Il1SOZvnFEikjU
+	pmQPVZh5uUOEbKyUbFvkzqbEh9sRkstd7UrhcJEgJCZIhedSxNxoxT4pwGZbgbEUIbS0F+tM6mb
+	16dMZ9miGEPsHawIRhS7N94OGiAGciE/RlKWXA3H2nPAChe5g927qnEIeNur87rgtszbVdU/BDA
+	XpNHd/v9TmA46BrrZj7Tn9YZaW8HYFXzFkFco1wGr6bNcurk1pZ4m33kw1Nxd2wfRvvJDmpXlJ0
+	S8VEPjf88MfN1Un0yd9rng3PhpMZcomKjF4C8vtdYP9pJNBFaKWkVKc0C/RoIEXOXGKEBm7IKHl
+	VQ4n1F5ebWuIdLrOpnTmLosPA5XwS8nZOu555MKMPFgOB2rPj8wehL0ZhdGo79ii9okelFL1I20
+	+tF8spm3A1hPNkL7GQs56hFke3ZJ7oELrfF8sN3lIEK57XjWIQ331vTbM3HXT6QTAsJqoGVbcSh
+	7J8uyfN2ardm8FXCKMRGRSY29uZvkGaWxK6ngTWjpGCkIXAsBr5bXp9rm6VpTCOlC2fnwjVtjFj
+	9PhXWlD477VeEzHEKgNe7avlk+oalfbKdg==
+X-Received: by 2002:a05:7300:da12:b0:36a:2473:9b2f with SMTP id 5a478bee46e88-38446cdd2b1mr694103eec.23.1795059637194;
+        Wed, 18 Nov 2026 19:40:37 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-382a4522829sm12699465eec.1.2026.11.18.19.40.29
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-382a4522829sm12699465eec.1.2026.11.18.19.40.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Nov 2026 19:40:32 -0800 (PST)
+        Wed, 18 Nov 2026 19:40:36 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -82,9 +82,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	linux-kernel@vger.kernel.org,
 	Marco Elver <elver@google.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv2 16/18] powerpc/pseries: Enable context analysis
-Date: Thu, 19 Nov 2026 09:09:11 +0530
-Message-Id: <57dd6459820b7c92907123a67659c8fb6a3e7fa0.1795058683.git.ritesh.list@gmail.com>
+Subject: [PATCHv2 17/18] powerpc/powernv: Rework OPAL console write to remove conditional locking
+Date: Thu, 19 Nov 2026 09:09:12 +0530
+Message-Id: <f7e4448a35cc9d9161b20661cc589c03d565680c.1795058683.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1795058683.git.ritesh.list@gmail.com>
 References: <cover.1795058683.git.ritesh.list@gmail.com>
@@ -110,28 +110,75 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-pseries objects now build with Clang context analysis enabled.
-Turn it on for the directory.
+Clang's context analysis reports:
+  opal.c:454:7: error: spinlock 'opal_write_lock' is not held on every path through here [-Werror,-Wthread-safety-analysis]
+  opal.c:493:3: error: releasing spinlock 'opal_write_lock' that was not held [-Werror,-Wthread-safety-analysis]
 
-This checks that each lock taken in this code is dropped on every path.
+This patch rework the OPAL console write function to remove this
+conditional locking to fix the reported build errors while enabling
+Clang context analysis. We could have marked __context_unsafe(),
+but this anyways simplifies the locking a bit.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/platforms/pseries/Makefile | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/powernv/opal.c | 30 ++++++++++++++++++---------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 3ced289a675b..d5f9beec33cc 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -1,4 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
-+
-+CONTEXT_ANALYSIS			:= y
-+
- ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 1946dbdc9fa1..aea83c4be76d 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -438,19 +438,13 @@ ssize_t opal_get_chars(uint32_t vtermno, u8 *buf, size_t count)
+ 	return 0;
+ }
  
- obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+-static ssize_t __opal_put_chars(uint32_t vtermno, const u8 *data,
+-				size_t total_len, bool atomic)
++static ssize_t __opal_put_chars_unlocked(uint32_t vtermno, const u8 *data,
++					 size_t total_len, bool atomic)
+ {
+-	unsigned long flags = 0 /* shut up gcc */;
+ 	ssize_t written;
+ 	__be64 olen;
+ 	s64 rc;
+ 
+-	if (!opal.entry)
+-		return -ENODEV;
+-
+-	if (atomic)
+-		spin_lock_irqsave(&opal_write_lock, flags);
+ 	rc = opal_console_write_buffer_space(vtermno, &olen);
+ 	if (rc || be64_to_cpu(olen) < total_len) {
+ 		/* Closed -> drop characters */
+@@ -489,10 +483,26 @@ static ssize_t __opal_put_chars(uint32_t vtermno, const u8 *data,
+ 	}
+ 
+ out:
+-	if (atomic)
++	return written;
++}
++
++static ssize_t __opal_put_chars(uint32_t vtermno, const u8 *data,
++				size_t total_len, bool atomic)
++{
++	unsigned long flags = 0;
++	ssize_t written;
++
++	if (!opal.entry)
++		return -ENODEV;
++
++	if (atomic) {
++		spin_lock_irqsave(&opal_write_lock, flags);
++		written = __opal_put_chars_unlocked(vtermno, data, total_len, true);
+ 		spin_unlock_irqrestore(&opal_write_lock, flags);
++		return written;
++	}
+ 
+-	return written;
++	return __opal_put_chars_unlocked(vtermno, data, total_len, false);
+ }
+ 
+ ssize_t opal_put_chars(uint32_t vtermno, const u8 *data, size_t total_len)
 -- 
 2.39.5
 
