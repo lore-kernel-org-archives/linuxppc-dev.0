@@ -2,47 +2,59 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9EF2E606A324
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 10:20:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F5CD606A320
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 10:35:01 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=YbUT/4nB
+	dkim=pass (1024-bit key) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=E3Ie1BHW
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVZH42m7jz2y8r;
-	Thu, 19 Nov 2026 21:20:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=62.149.156.116
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795083632;
-	cv=none; b=KWC58atFMf9rxgx/+egwtlnK0lD7o5Sv3m1jwy9Xrxs364NXgyTAFXjJmuPuRpN9F+P4vpR/0ks10rvYqgp8Fz4rmXgwItoJwwvkuCvNSoK2jtGdATacpqnKlop9qqsLac0N8ND0I8Bu8LDNBVqEFB9E7wva4rqjm1lvhTzTNIGlZ1luWB8Nrc4ZJWkNsk3orI8bxq6E8j9ZtOgcVN99PW87T03j0QU633gJ6frDsuzunfcDKlNoNZkNE/SnVlJqRBR2MRkBKdyGrRENVlKWYaWRsnSkTyKbvVzQTJa2m0optoO/OVyxzVw9J2EVLt650FbBYvrEqN10V1VTdDVZjQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVZbl4rf3z2xSF;
+	Thu, 19 Nov 2026 21:34:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.136.161.50
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795084499;
+	cv=none; b=VzEW91RVcJI8ZiuTW+ijTAj3LTWV/m1e1unNfgVYPvbajKciKMShUyFDZDGdxEQ2e7YXQ/5KUesWAytJ8xt+SfwtCw97VSx5suOhioNTHyyh9AfgYLUQcYcHO7f1qFobRSiyRML0BMlqXEEHZFMwp9TIzyUABkEC7GJXjvchy9m6irbu8ObB48jHSO2g+ZOWyyN6gqPWtU1A6rHNuTL19UtYzDrpyYdHMADUOI1T+gpdEF9I7xxN1BCjAhMUwqTZRhXlPQusaW5+oviJp3JXIPQA6RnHiZ4xnkhTVmLMzcCpLTZpPe9CKUZAHCjvQ7kKxQ7aWsLm4A6ybyigxf96hQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795083632; c=relaxed/relaxed;
-	bh=qoTfovvGGzpx6qWwGgUcp8ZrLCtEAOaZqm/XAVRtgu8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KqLkKplQ9ZAGjeunDb6ncfJx3TS0a/Mc1xzPwD7J2p4rmcxVV66GO/081TItctdoV5CdGyWZDs13Y2xOeinvRc5J6pSFSoVVux5b/dTJfQqOGSU6qVwA1GQajn5hRCVi1ED4vlhOQFT9IpvYP3KasBaqRPzCVQ2+9RroDhrf4QJ1RyMaWjtFlSOIKnhOhi46dJ9iDO1p+YaWv7jhbHKFGEG/l62gHTtE0bPbFGK+B+yWE7y94Fo9Da2+X0VFZDvRy6vEWxzLQP53KP3Doj0U/17l5E/y32qUJizqfF14ybq6Rxve6WvG/ICAmFOT9+zYBh1SGVYZkScmqMhPDF5kYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=enneenne.com; dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=YbUT/4nB; dkim-atps=neutral; spf=pass (client-ip=62.149.156.116; helo=smtpcmd11116.aruba.it; envelope-from=giometti@enneenne.com; receiver=lists.ozlabs.org) smtp.mailfrom=enneenne.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=enneenne.com
+	t=1795084499; c=relaxed/relaxed;
+	bh=aCKEnKdCSy+ImZs7Fr08y3Q1G1aahqToEeebZ+fmVxQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AXsV+P1EAuZYjDvCJo6xFx5C5wknR6dTlstzADW4vigGC+W11uWUaBuyqGZX6BUEIPuyvll7Z7n6pKUG1WJd1cs0YIl1hALdflUG3tZToZrUwflGJvBXaK0tqSIU8ai57NhfTSRsyUF0J/zDJAAdAK80pXxUKNwsyB4oXYGejT7afSKoNPqGiq8Z3l/x/p2CfSTyI/Opivi+gPV0cpfXs3m4BTV5XMNaC2KrQvh/H1gXy607mCzpOgV+tCGz6Yd1FrXAfwD1sDzi9B46FvguCRiEmXheo60t/udSKVbGN9SoNSlCuDzKFY0+sT9iJd9BlIvq5/JQ8JxDI39dKMfQvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it; dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=E3Ie1BHW; dkim-atps=neutral; spf=pass (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org) smtp.mailfrom=cs.unibo.it
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=cs.unibo.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=YbUT/4nB;
+	dkim=pass (1024-bit key; unprotected) header.d=cs.unibo.it header.i=@cs.unibo.it header.a=rsa-sha256 header.s=virtlab header.b=E3Ie1BHW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=enneenne.com (client-ip=62.149.156.116; helo=smtpcmd11116.aruba.it; envelope-from=giometti@enneenne.com; receiver=lists.ozlabs.org)
-Received: from smtpcmd11116.aruba.it (smtpcmd11116.aruba.it [62.149.156.116])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVZH32rJfz2xSS
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 21:20:31 +1100 (AEDT)
-Received: from [192.168.0.186] ([101.57.122.26])
-	by Aruba SMTP with ESMTPSA
-	id TzEoxCjbX6VShTzEoxQo8b; Thu, 19 Nov 2026 11:19:31 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aruba.it; s=a1;
-	t=1795083571; bh=xVDB/U48+KhBs5UAsVUdiYW+qscID3emDO8ims3vEAk=;
-	h=Date:MIME-Version:Subject:To:From:Content-Type;
-	b=YbUT/4nBgfoaIXJwrMhQeMlvt9sIO8ewa18oowgWvXyRXmLc2FHqa2uE+1ff4WSTf
-	 +SlwXjDXm5+E/qUhmEoIB20CoCnXl3yFBCAfguB9RFKweMi7UXcT5bvO6X6JzcKsVY
-	 YdpDu59seHkq9sF+x9RNqBAoaQVUMas1goxW3myB1EgiT3nhghCefk4/uA0S5tFFps
-	 TKVA8foIHclyKVCWFHy5lEMDBTPNoWtxVHid8dwSdINvi25UgNeSV0dcPqLyfphhGR
-	 kGKvJwZviyVJAXY+tsejDtlxxsZooEEM2WPMcXCcmF3vDQZeiDtSbhOPjEWtT1DFPA
-	 jFwJQ9Lcm3lfg==
-Message-ID: <6fc1eaee-3a60-49d9-a5a0-74b662f2232f@enneenne.com>
-Date: Thu, 19 Nov 2026 11:19:30 +0100
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cs.unibo.it (client-ip=130.136.161.50; helo=mail.virtlab.unibo.it; envelope-from=renzo@cs.unibo.it; receiver=lists.ozlabs.org)
+Received: from mail.virtlab.unibo.it (mail.virtlab.unibo.it [130.136.161.50])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVZbj17vvz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 21:34:55 +1100 (AEDT)
+Received: from cs.unibo.it (renzopb-wl.cs.unibo.it [130.136.2.252])
+	by mail.virtlab.unibo.it (Postfix) with ESMTPSA id D6B4E1C024A;
+	Thu, 19 Nov 2026 11:34:47 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=cs.unibo.it;
+	s=virtlab; t=1795084487;
+	bh=aCKEnKdCSy+ImZs7Fr08y3Q1G1aahqToEeebZ+fmVxQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=E3Ie1BHWc/V6b1bgdwtc+2v71pAz+kleKjlPIEJguRI1UeOerm0esQVsBjPfxVbb2
+	 3nNRPyNBUsItmS4wxnV7QW3nDFBfTMT8xhb6a0gxwRJuRsLbmfHdXhJwoMEmOJl7a0
+	 lRi+0pU0z6HbeHORs+j7+1RZlPZZSUE5dLPjJ8mI=
+Date: Thu, 19 Nov 2026 11:34:46 +0100
+From: Renzo Davoli <renzo@cs.unibo.it>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <chleroy@kernel.org>,
+	Ritesh Harjani <ritesh.list@gmail.com>,
+	Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>,
+	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Thomas Gleixner <tglx@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+	"Dmitry V . Levin" <ldv@strace.io>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/2] powerpc/syscall: Fix the return value of skipped
+ syscalls
+Message-ID: <av7Qxhc37BAA04mf@cs.unibo.it>
+References: <20261030084926.1068384-1-renzo@cs.unibo.it>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,106 +68,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
- never read
-Content-Language: en-US
-To: Jarkko Sakkinen <jarkko@kernel.org>,
- Demi Marie Obenour <demiobenour@gmail.com>
-Cc: David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
- Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
- =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
- Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
- <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
- Richard Weinberger <richard@nod.at>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
- Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
- <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
- linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20261118140421.584086-1-giometti@enneenne.com>
- <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
- <av5EyVHnNzT27dyK@kernel.org>
-From: Rodolfo Giometti <giometti@enneenne.com>
-In-Reply-To: <av5EyVHnNzT27dyK@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-CMAE-Envelope: MS4xfNmI1DIntSdZQogEw4CF+ExsMW52Dv4KVdQXYoEI2SlV11eEe+IxA80+xUydMG7wJYG2UEM6OiD9fNlRWY7iZyyfEynPQDNyEEdFhZWKfwj8abUd2CVm
- Lq49bpZ8Z2hgx71DU6sYhhPLl43jb2ht+KlVBI2Wws/GNH5B314G6kSkVXdUI0zRZd2gi9GuTGtx9GWmWncQRI4c/1+DT6GPQBX8WtlSvd+6+m3S0U28wDVb
- 9Hs0soZ49fsX6dkU30YublBd1jh16ccPykwFzi0QXARm/rgb+5uK/CGYB48nylkVg/Iou536TAACMpiIFEXZHeWUt50k8OfWaF0zaM+UpvSSdAus9yIAxvfo
- TN94jAoBEVnYhfDi4/82Wy353ZJ1o5Gj7OLddeLFkBJpl5Wzw5rMleizI45QkQxnhWD9ETOrQetS561qT7M5CxMYKxPdP2CZdtSrbjcXhI6YyhaQFk/VhuOD
- xGbNMNlUIo4efMC8Jcl4US1dtNwkfWg/BpgPT1zm36hQYfAnbrypJsoCkLgDERPLHDlxy3WHcdLrwjTHDhF152PUwUN3+0cXJP+rpQt4cnKrbJOd8mbnMBA5
- EMXx6ob9CMe6mj+soYJG99NcZl4tQ0l+s5hpHAPsuc526bT/lm5wQJkL1AqL3CRNSBp8R47j5nwfQayZ+tYMift/3GXo8dIjA1+x5Yvr6vMNcofIH7i/59ur
- Cr0sge9wRuaNCXPdPiwh8reCg0jcdmIDUSmDeezWJ/vVEu0ZRJk6A0sox8LZ4P6BOT1DZRkpwpiVSc8FzhApAGo7gQFx9BodEBr1xaKmgy0lQPUfofalbEII
- C6SljIGeSVkINsuuIJIc4xdBFC7WWD/A2Sc+c78UHrVkV0MV4yXYbaTvr9wNBVTgrAwp3+Y2tyceUQ++SVMYBYF0Ep10RMiXXsCHHx8Ag3zq5QoaPh3C5Ewb
- Xi3Ngl0pycbj6Q70Q43aVHp4xi3eUQlhWi1FOWVON921NfgQcZmZwXdeGWDCESlVLmbWInKcpIgUO2tNtllaYf9/CQP+sPgnyHv17dhDWbS3pxvLllfyiCb3
- ok3jS7JCxO6vaFDZQLPPhhR/83ZbJ2KLWnwLSR3vhTJoHsFu1MSbYvLxA49eoVbSM//x+PpbPS6efabzTOuqyXJypu2VSbiPywrJvlCcYgz8HkYiOp/KN/7w
- 5+vVhbHV+6327zrFt84ZC5MvsP6W7QnSoCxLdbTLlHwV7lXCyMgyzPaAh/4+68Unc1/0NALeZ2REnwOiT7xXoxkV85CK2tGeb5X9z7vGZH0Jh1i15QTOZRXm
- iZpFWF2L
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20261030084926.1068384-1-renzo@cs.unibo.it>
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 19/11/2026 01:37, Jarkko Sakkinen wrote:
+On Fri, Oct 30, 2026 at 09:49:23AM +0100, Renzo Davoli wrote:
+> When ptrace or seccomp skip a system call on powerpc, the return value
+> they set is lost or the tracer is affected:
 
-[snip]
+Hi Madhavan, Michael,
 
-> The exitential problem here is that KEYCTL_CRYPT_OPEN creates a circular
-> relationship between the keyrings API and a specific key type.
+gentle ping on this series.
 
-Agreed: it should be a key_type operation, dispatched the way
-KEYCTL_PKEY_* dispatches to asym_eds_op, so that keyctl knows no key
-type.
+It fixes a bug already present in mainline: on powerpc a return value
+set via PTRACE_SET_SYSCALL_INFO for a skipped system call is lost, and
+syscall_set_return_value() sets TIF_SYSCALL_RET on the tracer instead
+of the tracee. This currently breaks the set_syscall_info selftest
+and seccomp_bpf user_notification_basic on ppc64le.
 
-> At hardware level I did not see any support for TPM, which narrows down
-> the potential user base.
+The series still applies to current mainline. Please let me know if
+anything needs to be changed, or if I should resend it.
 
-On a TPM system the sw backend can take its master from a TPM-sealed
-trusted key, but there keycrypt adds little over a trusted key. The
-users are SoCs with a TEE and often no TPM, OP-TEE on i.MX for one.
-
-> The remaining potential user base is further reduced by those that use
-> trusted keys; leaving out those who need to solve the assumed problem
-> that only this patch set can presumebly sort out.
-> 
-> And we don't really know at this point that cut. This is pretty much
-> the break down of what is wrong here.
-> 
-> If there is/was a problem to sort out, it should be so constrained that
-> it should be as quick to describe as stepping over a nail really.
-
-The nail: a device must encrypt and decrypt its own files, also from
-a minimal initramfs, with a key that root or a kernel exploit can use
-on the device but never copy off it. Trusted keys hand their users the
-key's bytes (dm-crypt, encrypted keys and AF_ALG read them). CAAM's
-"pk" option is the one exception, but even there a new key is drawn
-in kernel memory before the CAAM wraps it, and user space reaches it
-only through AF_ALG, which the kernel calls insecure and deprecated
-(Documentation/crypto/userspace-if.rst, and "Userspace interface
-(deprecated)" in crypto/Kconfig), privileged by default, with no
-purpose bound to the key. The i.MX93 has no CAAM at all: there the key
-can live in OP-TEE, and keycrypt lets the keyring use it without it
-ever leaving the TA.
-
-The stream of patch 9 has no user yet and can go.
-
-Ciao,
-
-Rodolfo
-
--- 
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming
+Thanks,
+renzo
 
