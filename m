@@ -2,76 +2,78 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 459D3606A325
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 07:58:55 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D0504606A324
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 08:02:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JLxFFiFR
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwz66smE
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVW7d3wnQz2y0B;
-	Thu, 19 Nov 2026 18:58:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795075133;
-	cv=none; b=IAgSxrBMQjbon1JigbkVFZFGxv3i5t/ghXXTMJLQV0WQJMJ/ojsUjI2RkKz3q3/YSiqEUUbSHkF+fqUDZZPHN3b+4cgjpHCkcWmwSe6hT7dIQslcopNDJTu65feb6UtrtV73y+fgLGBZSQjed+kGcsFJZtJR6KKES4wE4Tc/+fxJrx3uyJS/h4CeqoCS+/bJEUfy29qtq5J59aS1HYzTWIGOhIYFUdQBPPZwHR3gY2RTzojVmtakD3+ufFPyAPcEgeScjmA3jrKrR7JsVDtd6eF3E1vKZP7/sL3Ee82SWy6yBceKs4LbemyoTiaAenc6NOXmJqrQ8yAt0QLrGoIyaw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVWCg3Z0Mz2y2R;
+	Thu, 19 Nov 2026 19:02:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795075343;
+	cv=none; b=VLCgTTEqF+uSIRXhkC/6g8xWIihCKKzA0tHKfKFJPH1BptXFtFjREB3XFh7iw7cxg2cK0nVCRJrGfF78ye845nWtNHZ153h11TJdNeQiFR2oHiAoRT8tR5viOIZNrZOotq4KyTj9yHbfYVLqujtjlBjCDQPy0sV1XBoNJc+Ff29Th0HSwjR/ODLlddy30iQXUq6IEX7LgLr6ggzL7gwseJsWFodCwgtSccHZ09TwLovkDuVWnAFfTRUpoqe0ldb1ZjSbQFEeHlJ2ibXB6qdzxWaM3c10yOepPxqBDBqUtfHI58VC85Zy5p4T/N1xRU8Fx6DrdkWg/C9jWN0vUHc8Dw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795075133; c=relaxed/relaxed;
-	bh=QRg3IAfY/gb2uCjRQtKhpGvavtxNYWqAbO6Z4z+vmCc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NAwmHn7KAFiZcSGQBduM0/b4AQBTlHtCRvb3G9nWCQXueM4Su7U/Yl+xLzXf/BHsugPvDCeZTjOW3Cq/xu0qlH8n6Ep0ed5a2b2reFBgGpyIuheK8U4KcSSmZYnhFejHrffs/6BJ/5E7ynTIjhECgPQDH8Jc8xfA2/77znJhyLYanbl8nCMC0+0dk8FbpHGABJJ6YpZUMqEqeMU+6M8hx1x+4asjnTZux+5ek3z5D0odzpX3LuXBYaaoWy//E5z+iVbfPimQRwskIlAn2ivOPiEjd3sJx05xxCIgXSrLMn3n6aa/K7trqjh3OyNoOa9sRDBddqW2m1VhUMQJETo0rQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JLxFFiFR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1795075343; c=relaxed/relaxed;
+	bh=31F7U1b2JCUbc/EUGQuyU9kXUCzxNLz6H16BEaMugW4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TZrrQ1tazcByl+9Z3EEoT4Vn1Cthl0Ecc4ws4y93tNyCuH2U7l8NwPUb8XZaXeSQ7quiocNI+ektfXqqyQNtoV+nxAt9hliRDcGM/dyFhw6VLYQfnwvUsrlQgMaUl07GY6tU7bgI2ed8YJnyLqNqs8Ec5pyKC0krPIA1fy0DSmss9xsauoF/GOyh429ih9i7zzKREE6VmVFJfNZepebW9XonECPhKFiBHzzkj5hKSsLROzuD3PVYuiB7IubEr0Em5LFDUkXXnjiFogYZEyr5edd1qZ55/jh5HR/XToZNKjbE/k/wepOYVOsdjzM8IutL5PVT8UubFOUShr9JVNu2wQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwz66smE; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JLxFFiFR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cwz66smE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=jyoti@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVW7c2prsz2xlk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 18:58:51 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ6uZk62236096;
-	Thu, 19 Nov 2026 07:58:40 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVWCf1fyKz2y0B
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 19:02:22 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ6v1v23437230;
+	Thu, 19 Nov 2026 08:02:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=QRg3IAfY/gb2uCjRQtKhpGvavtxNYWqAbO6Z4z+vm
-	Cc=; b=JLxFFiFR0DV/csFDY7PovnoQbt/OxFvTNZaOFmC90RUd5lU+99rS40b71
-	euUKokVoIjCcPVijgIGrS95ftr297Zvsp9ouBTTXokr6m98IuaipKeiS/VfM7w6g
-	PgR25xyaBvsEzr2kFiXYmTQfSbWpfzDoC6KML1mn8CscKYduvQlPZNh32YMKLoRi
-	85S4h/V7XiKGVMmNYHw2fRCpR3zf4vm+EwXZrjHScuWY31wlLbZOcVAnZ18lipH5
-	a5hL4aNnl80+yoILOEkyWHQZW56UC0+QPtraf3fqjAArYaGnHWqxh5V7j1Og66Fy
-	LqQmYn7cPtmdQzPrA1K/XNWqdGeJw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105vy736-1
+	:subject:to; s=pp1; bh=31F7U1b2JCUbc/EUGQuyU9kXUCzxNLz6H16BEaMug
+	W4=; b=cwz66smEQoKZEceylq3hBnY5ZYpaRKubIEFIgcntBRq8i1tSW3502gZHC
+	okmWaIaVwpvSoqFm682FiStBFr14jDg/TByiBqaEprkVU5xdoWdWAPhlKM/FtV0D
+	GpljSBSi4G8xj4hoTeQKaWiSBDn/g0ipO3bD9SkTIwwg8kLl75OLmbgkRQH4Keyj
+	NEZBrlnHLZNoTe4TumeynBJ6Et+F6NK1MB7kEb8lsovkFt1OF1uCPTZBYmqZTniN
+	pxtqCIgeTZO1aZf02SkuMVPgu9kJJKE03DpOmN5KCogfT9HOfZJ+93NtMjTooL9C
+	MapFlFuvYPghgcT9kUdohc50IVOSA==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105t7g37-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 07:58:39 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ75Bg63327265;
-	Thu, 19 Nov 2026 07:58:39 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j1bb5cc9x-1
+	Thu, 19 Nov 2026 08:02:17 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AJ7561T2161163;
+	Thu, 19 Nov 2026 08:02:16 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j1v9x89ym-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 07:58:39 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ7wYkn51839292
+	Thu, 19 Nov 2026 08:02:16 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ82CvC30802444
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Nov 2026 07:58:35 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B7E1920040;
-	Thu, 19 Nov 2026 07:58:34 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D42C02004B;
-	Thu, 19 Nov 2026 07:58:30 +0000 (GMT)
+	Thu, 19 Nov 2026 08:02:12 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8AA1A20065;
+	Thu, 19 Nov 2026 08:02:12 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8A22B2004E;
+	Thu, 19 Nov 2026 08:02:08 +0000 (GMT)
 Received: from li-4c4c4544-0042-3610-8056-b8c04f473234.ibmuc.com (unknown [9.67.189.13])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 19 Nov 2026 07:58:30 +0000 (GMT)
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 19 Nov 2026 08:02:08 +0000 (GMT)
 From: Jyoti Gupta <jyoti@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: maddy@linux.ibm.com, npiggin@gmail.com, chleroy@kernel.org,
-        ritesh.list@gmail.com, sshegde@linux.ibm.com, oss@buserror.net,
-        Sourabh Jain <sourabhjain@linux.ibm.com>
-Subject: [PATCH v2] powerpc: Fix missing of_node_put() calls
-Date: Thu, 19 Nov 2026 13:28:27 +0530
-Message-ID: <20261119075827.45823-1-jyoti@linux.ibm.com>
+        ritesh.list@gmail.com, sshegde@linux.ibm.com,
+        Sourabh Jain <sourabhjain@linux.ibm.com>,
+        "Mukesh Kumar Chaurasiya (IBM)" <mkchauras@gmail.com>,
+        Amit Machhiwal <amachhiw@linux.ibm.com>
+Subject: [PATCH v4] powerpc/mpic: Fix memory leak of mpic on error paths
+Date: Thu, 19 Nov 2026 13:31:18 +0530
+Message-ID: <20261119080118.48688-1-jyoti@linux.ibm.com>
 X-Mailer: git-send-email 2.55.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -89,32 +91,33 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: mf6LIfeMcoyRap1Vhkc4_SCVVhgoDrHB
-X-Authority-Analysis: v=2.4 cv=Z8x5j3RA c=1 sm=1 tr=0 ts=6afeac30 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Authority-Analysis: v=2.4 cv=IouL47/g c=1 sm=1 tr=0 ts=6afead09 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=BbdIejFhxMrvHznRc9oA:9
-X-Proofpoint-ORIG-GUID: LQX2FtGkBLjQee61M-VYezkSEFJBV5HL
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfX8XoiVyIIkEKs
- ZUr0C9DRfM9Z/FujgoShxR+Nj3Rlmk2X/+GRC6acd2R+hMtfUsCSARVUOpzv0tg1uMtdUP2spEv
- VmFs2ce5es46slFJt+tMXBnsbFSa/Qc=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfX8G3k/Sf4/WUd
- 0IUUGbkznd5ncdh2SlqtgnktK947LewWk5hjUpLLrmyAkJLvdel+cqBX6PESe8BZt1Rw7Jo1kIR
- D+CkynQCqlQXK9ETZA7fx7//Y8uZwku12bUhd8JVgkOcK9OuB8H5nNRxRDt5hTPEOOEWgpme1mD
- f3opwrXRfWVKXym2AIR8egg6HKpXkajK1u7iD8xT3MfDF1ALN+rAmQyf6dsoX6kQ683EAVPRSsz
- vyeGfMVT93aZKpxkG5+GzvZSXfj5pX6Rxoh/YeNRV+n6s1nW02Hr1cqqYOovpAM/cgj6aJcqQY9
- 7Ac/GL67O9jL/i55qIzH20/aNLrNKXvurGXLbEa4URsRi/rRmQkveq6O8zR1y2pvq/ZlDJuKRNK
- Y3vHfkjpS+zzelxyFGR04FEH1omFj/4PizPYQAayT/pvELEtR5OVprPPoQeXlo8df16uqZi6Qeo
- DykGyTUx27EvM5qyUDA==
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8
+ a=rRvahzxraNLFjGORCMYA:9
+X-Proofpoint-ORIG-GUID: hp7CSNxdv2RSDV6YrnxB75-C-PWsPX8O
+X-Proofpoint-GUID: Eazu0D4U2q2mVgim0ovRhR9VcWCyCTgf
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfXxHnRtsGQZDS1
+ 8W9bav8SUlaNmCyO0ufJlYgI0yiVgabzjotFBWuciPe7DUYdFj9AHZMZvN/7XcohZ4wPT3p76ND
+ tOht2YsYtlOL52jZfTKqSk0ucTz2arUrU7MFAr7VpDTrB0da6ufkaQXuECfCzh5mSaGobIfL9zt
+ ci0HbSX69g5E0STJnhpWq8f6d2TzVcaTwkmbhSU/5eFuTTzpy0r406meFew4NYfnZ9xEuzcmtxe
+ n4w9+7EkeCUW12nsokTiXxtbtWnY4SQIu63XFcBNBzEly70wVoN6yhXy4waeQBBSjlI2oRhRX5P
+ /0nitcXEyIsloyx0CI3pqIhth5lDM/uYWdTmJXR1KfxODr0iSXRfHpM5DuJpb8QmzrO4t2Xg5gZ
+ ZwE2BNdt+CTnuXqCUhQobvbysbKVqKGnKhmUK8syuS/DbEQRi3dXpZ8pSQ83ONaXuFQ8CzZ1Ouw
+ nNKyAMG8CbeKZu2SXuA==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE5MDAzMSBTYWx0ZWRfX3rgHTVATmmRf
+ 0tcCYIEmTHNO4mX28HY9vRp3jVkXTd22csMzDuhEOXyKTpo4CUxf8rl5MvBcI1TqdFxKP4Hoa5h
+ lllhCwlcz6jD2IgrKcS2UGQIHORPu5w=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-19_02,2026-11-16_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0 malwarescore=0
- adultscore=0 bulkscore=0 clxscore=1011 impostorscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611190031
+ impostorscore=0 spamscore=0 adultscore=0 priorityscore=1501
+ lowpriorityscore=0 suspectscore=0 phishscore=0 clxscore=1015 malwarescore=0
+ bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611190031
 X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
@@ -122,145 +125,73 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Several PowerPC code paths acquire device tree node references but fail
-to drop them on error paths, early exits.
+mpic_alloc() allocates struct mpic (and optionally the protected
+sources bitmap) but does not free them when mpic_setup_error_int() or
+irq_domain_create_linear() fails, leaking the memory.
 
-Add the missing of_node_put() calls across PowerPC platform to ensure
-proper device node reference counting.
+Free the bitmap and the mpic in the common error path before
+dropping the device node reference.
 
-These changes prevent device node reference leaks and improve overall
-resource management in PowerPC code.
-
+Fixes: 996983b75ceb ("powerpc/mpic: Search for open-pic device-tree node if NULL")
 Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+Reviewed-by: Amit Machhiwal <amachhiw@linux.ibm.com>
 ---
 Changelog:
-v1 -> v2:
- - Rebased onto latest upstream.
- - Dropped the powermac/smp.c hunk: there is no leak there. The loop
-  iterator drops cc on continue/advance and the existing code puts it
-  before the break, so the added of_node_put() calls were a double put.
+v3->v4:
+ - Retain the FIXME comment about the leaked MPIC mappings (they are not
+   fixed for !CONFIG_PPC_DCR / !MPIC_USES_DCR), per Ritesh's feedback.
  - Added Suggested-by tag.
- - Link to v1 - https://lore.kernel.org/all/20260930182304.341123-1-jyoti@linux.ibm.com/
----
- arch/powerpc/kexec/file_load_64.c            | 1 +
- arch/powerpc/platforms/44x/iss4xx.c          | 2 ++
- arch/powerpc/platforms/44x/warp.c            | 1 +
- arch/powerpc/platforms/85xx/mpc85xx_8259.c   | 1 +
- arch/powerpc/platforms/86xx/pic.c            | 1 +
- arch/powerpc/platforms/pasemi/setup.c        | 1 +
- arch/powerpc/platforms/powermac/pci.c        | 1 +
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 4 ++--
- 8 files changed, 10 insertions(+), 2 deletions(-)
+ - Collect Reviewed-by tags from Ritesh, Mukesh and Amit.
+ - Link to v3: https://lore.kernel.org/all/20261006065945.391637-1-jyoti@linux.ibm.com/
 
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index bd80c5fb1b1f..8d4d6a51c046 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -204,6 +204,7 @@ static int add_usable_mem_property(void *fdt, struct device_node *dn,
- 	if (snprintf(path, NODE_PATH_LEN, "%pOF", dn) > (NODE_PATH_LEN - 1)) {
- 		pr_err("Buffer (%d) too small for memory node: %pOF\n",
- 		       NODE_PATH_LEN, dn);
-+		of_node_put(dn);
- 		return -EOVERFLOW;
+v2->v3:
+ - Introduce 'err_free_mpic' unwind label to cleanly free mpic and mpic->protected.
+ - Link to v2: https://lore.kernel.org/all/20260930180919.335930-1-jyoti@linux.ibm.com/
+---
+ arch/powerpc/sysdev/mpic.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 257886ec3f70..ab33992a8698 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1389,7 +1389,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 		if (fsl_version >= 0x401) {
+ 			ret = mpic_setup_error_int(mpic, intvec_top - 13);
+ 			if (ret)
+-				return NULL;
++				goto err_free_mpic;
+ 		}
+ 
  	}
- 	kexec_dprintk("Memory node path: %s\n", path);
-diff --git a/arch/powerpc/platforms/44x/iss4xx.c b/arch/powerpc/platforms/44x/iss4xx.c
-index ef883d97fe15..ef92b4656d17 100644
---- a/arch/powerpc/platforms/44x/iss4xx.c
-+++ b/arch/powerpc/platforms/44x/iss4xx.c
-@@ -74,6 +74,8 @@ static void __init iss4xx_init_irq(void)
- #endif
- 	} else
- 		panic("Unrecognized top level interrupt controller");
-+
-+	of_node_put(np);
- }
+@@ -1489,11 +1489,11 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 						 &mpic_host_ops, mpic);
  
- #ifdef CONFIG_SMP
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index 6f674f86dc85..49afd60b1c30 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -183,6 +183,7 @@ static int pika_setup_leds(void)
- 				printk(KERN_ERR __FILE__ ": Failed to get %s led gpio: %d\n",
- 				       led->name, error);
- 				of_node_put(child);
-+				of_node_put(np);
- 				goto err_cleanup_pins;
- 			}
+ 	/*
+-	 * FIXME: The code leaks the MPIC object and mappings here; this
+-	 * is very unlikely to fail but it ought to be fixed anyways.
++	 * FIXME: The code leaks the MPIC mappings here; this is very unlikely
++	 * to fail but it ought to be fixed anyways.
+ 	 */
+ 	if (mpic->irqhost == NULL)
+-		return NULL;
++		goto err_free_mpic;
  
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_8259.c b/arch/powerpc/platforms/85xx/mpc85xx_8259.c
-index cb00d596ad80..9b7283038892 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_8259.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_8259.c
-@@ -52,6 +52,7 @@ void __init mpc85xx_8259_init(void)
- 	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
- 	if (!cascade_irq) {
- 		pr_err("i8259: Failed to map cascade interrupt\n");
-+		of_node_put(cascade_node);
- 		return;
- 	}
+ 	/* Display version */
+ 	switch (greg_feature & MPIC_GREG_FEATURE_VERSION_MASK) {
+@@ -1526,6 +1526,9 @@ struct mpic * __init mpic_alloc(struct device_node *node,
  
-diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
-index 9ca36de23532..4cbcc16b1009 100644
---- a/arch/powerpc/platforms/86xx/pic.c
-+++ b/arch/powerpc/platforms/86xx/pic.c
-@@ -58,6 +58,7 @@ void __init mpc86xx_init_irq(void)
- 	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
- 	if (!cascade_irq) {
- 		printk(KERN_ERR "Failed to map cascade interrupt\n");
-+		of_node_put(cascade_node);
- 		return;
- 	}
+ 	return mpic;
  
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 7a961f2a228f..a82855752e58 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -272,6 +272,7 @@ static __init void pas_init_IRQ(void)
- 	opprop = of_get_property(root, "platform-open-pic", &opplen);
- 	if (!opprop) {
- 		pr_err("No platform-open-pic property.\n");
-+		of_node_put(mpic_node);
- 		of_node_put(root);
- 		return;
- 	}
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index d71359b5331c..8bc56a70b4c8 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -938,6 +938,7 @@ void __init pmac_pci_init(void)
- 	/* pmac_check_ht_link(); */
- 
- #else /* CONFIG_PPC64 */
-+	of_node_put(ht);
- 	init_p2pbridge();
- 	init_second_ohare();
- 	fixup_nec_usb2();
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index bc6926dbf148..c4f7348aa035 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -637,16 +637,16 @@ static unsigned int pseries_cpuhp_cache_use_count(const struct device_node *cach
- 
- 	for_each_of_cpu_node(dn) {
- 		tn = of_find_next_cache_node(dn);
--		of_node_put(tn);
- 		if (tn == cachedn)
- 			use_count++;
-+		of_node_put(tn);
- 	}
- 
- 	for_each_node_by_type(dn, "cache") {
- 		tn = of_find_next_cache_node(dn);
--		of_node_put(tn);
- 		if (tn == cachedn)
- 			use_count++;
-+		of_node_put(tn);
- 	}
- 
- 	return use_count;
++err_free_mpic:
++	bitmap_free(mpic->protected);
++	kfree(mpic);
+ err_of_node_put:
+ 	of_node_put(node);
+ 	return NULL;
 -- 
 2.55.0
 
