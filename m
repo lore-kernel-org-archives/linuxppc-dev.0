@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 69CD9606A331
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 06:17:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82637606A331
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 06:17:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QPur/Mce
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I4RsFvpp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVStL5dC9z2y2R;
-	Thu, 19 Nov 2026 17:17:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795069034;
-	cv=none; b=iw5DndJDZ+bUsS7FupNYg8Z/DQO3fWat7b6n3nDfpwJMS6avU2gI/5hgSf3MTSqwwaT1cEzcCPHErGFIwI1NrGfdUd8hJ0pZir7Ga0LtCGhHrhI8QoAlzmG3f8njLiYm1hqurFCwXnZgN42PbQo5cIJNSzjQyDazOdap891viNh+wGSJiLYuIPYFDy53HB0SaluF4cFUSk6CPBlqAX7FwI7sz4EvI3MProNiLSO5gFbwSp+zoPBV1Rz8/AVFydjwY4VxjdJF4Ft5TgK/DSUqallAWyCZ2fuSTTz6UWkwpoK8CVllrZTqpCEWO5RoHk0YpLlLmoM6RFd3YKHldneN3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVStZ1typz2y2R;
+	Thu, 19 Nov 2026 17:17:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795069046;
+	cv=none; b=R+F2MWVsYOH3r3smvTh3lWdBifN5AXWyjRYLYd7JwdXTXchP8CZmCVYLSPrKq7+8MAUD1lrHvGya9iW/xA/RaPjzTAO1FADmDaCEv/otdEXKi6GzooBZ0AE30wD8hj3x5R/0Qpri8bt1T35QnX7ChxcF0oQmRj3xVtS2ASMrKWbIOuz/umc1IKcb1cjuou4+b0X37Qv4gcp7fBg5liRR5jntw3C84HlZ2nnFE2wmLOchbiSsWoM0E5HqKHEgJPncwUrDvK0lfS9FC3iGau1kT9zsCn9P/HHhU4bmMU0XdMe1i661LCuD5Z4oqcN979XMvMVOfWS/CJON5aK7k6Z3vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795069034; c=relaxed/relaxed;
-	bh=jAZ3SnNAJjB6kTaL5eHDhSogy8KQgK6+JZEcWaMgZsQ=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=UCJpIc/GAWytxBo0695uYv3z1Gsi7rmJUcQyBwHvcet2DVz8oUVNXwpaQBUBYI3h/UMR82xAP49VZCBWiGqQt05Q0EZBGeX8zvQGVPs8PyNU/9bGLUxyCBJtBVIW8lry14Sytiwblnnpj7SSOPRjuSsuKHfU/7S20i4B73TbfwEd9lMH0IPebN3bdeRP1I2Ab+Xt68VF/SA6a+Sao3vKj3g67r7ngqfCU1+wbiAJykz1bRTNoMo+qgfCD0BidD/Z0fZ1QY16nBjDyxAxPyHkQN/1V08am2WvfwvRuInQavFbNfqox7I/NcOoPnkbXdosJXK1wXa4ulYxp4KvXVR2BQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QPur/Mce; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1795069046; c=relaxed/relaxed;
+	bh=RCALj7r6ipQ65VvrYt8UYoxBLY7ziLYM55JY1qfnc/M=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=bbmuz44FWmelvajgP6ortq7UregbtaOPyptUY9Xc4QrH8X1wqH0wFJOJPdfVLBRYVUeAxiFcPQI6SqjbG4A58WZ7iNX+z0vo1jgZVFuFELi5Sqyt2XxoV21tJn6buvbwJr/laBWKystNXe5aiImdikn3nDSLHnmmyIrEaw2CFMPoI1k7oTZXoZcqiCcBIBk/vRbFL0/Mnka44EmNFFsdKBQRsWPPO9TBVHNzk+LuEn0mJktmVCB2YdHPQD0Bo1jfzblWlHkyB/zCi9+9LFiKDHNMKQnhTeovdy2TWySWb2ky/MgF/tG1ZfoD1e1vNT0xUwHgE03ZTcR8Vkx6IFtkHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I4RsFvpp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QPur/Mce;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=I4RsFvpp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVStK5XzSz2xlk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 17:17:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVStY4L83z2xlk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 17:17:25 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3342B43CA0;
+	by tor.source.kernel.org (Postfix) with ESMTP id 42FC861F63;
+	Thu, 19 Nov 2026 06:17:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D6BC1F000C5;
 	Thu, 19 Nov 2026 06:17:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4CBD1F000C4;
-	Thu, 19 Nov 2026 06:17:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795069031;
-	bh=jAZ3SnNAJjB6kTaL5eHDhSogy8KQgK6+JZEcWaMgZsQ=;
-	h=From:Subject:Date:To:Cc;
-	b=QPur/Mced9X4RWzkGAt/MsAw+bqXt6yVON5lBH/7OyoiOaTbtzFItUhDCUIBWDdre
-	 ZGouoE1rykai0wUQlOVqCf0GlA7TrbLaI2Mqs8gYX/JQ9Oo2Wv4yYD/dlpAaTFIAXX
-	 7IftOiVoRagY/2JtvK8msJVyzyhR0zNeTTJ24nH7TIsTApifHRXe0eKDJ6rYh/TTub
-	 jmzTR3ax1PmxnZG5lGOM7weBavns02NIAauS40hYqQBCpuwRdocLfEJkR7ay2DzFMT
-	 sD7YpoQ9CvRkXi7y5T0RyOjL3xyq6FU+Kn1gekCcdzIt/umGs5YWm5g7jWFh3p4MWR
-	 YpdheBZ8DOQsw==
+	s=k20260515; t=1795069042;
+	bh=RCALj7r6ipQ65VvrYt8UYoxBLY7ziLYM55JY1qfnc/M=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc;
+	b=I4RsFvpp42re8uGBqIQQaz0PqGBIw37xPLwUslFEUgkmtfZ+L4DJ5tF9O6rwFB/pv
+	 oTwcMalP+8YPREtTdZ/mO/uTE4CmQs2HCIVDtU9aDm0/l6ErDkOsAtNCDy3Owc2dfw
+	 NhTWj7mEPGBVVIEkqz/SNG4/lnaJ1Ckq1d9I080njZAAP4lOXWETkMzicnDdMGwSZa
+	 IuzwpjwfJJm/EsTZ1ALj7RxDfmTdqZwGJkhENJAdmNDATjggpuNt1CBYTdf69f4D4y
+	 gn7NwSaO9QjgPGJeNtc+ljTmnnsG4TxH+MTkTbIp9qZ3L4/OYHNVJr062yUMTDzgJT
+	 te95/HcZEQPRQ==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Subject: [PATCH 0/2] arch, kexec: declare kexec and crash capabilities in
- Kconfig.kexec
-Date: Thu, 19 Nov 2026 08:16:56 +0200
-Message-Id: <20261119-arch-kconfig-v1-0-37c276fe4d26@kernel.org>
+Date: Thu, 19 Nov 2026 08:16:57 +0200
+Subject: [PATCH 1/2] MAINTAINERS: add kernel/Kconfig.kexec to KEXEC
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,10 +62,9 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yWMSw7CMAwFr1J5TURTlfK5CmKRGDcxiKSyC6pU9
- e4ksJynN7OCkjApXJoVhD6snFMBu2sAo0uBDN8LQ9d2g7X2bJxgNE/MaeRg/BF7b1s84WGAokx
- CIy+/3PX2Z337B+FcG/XhnZLx4hLGOmXhwGn/cjqTwLZ9AUFdywKQAAAA
-X-Change-ID: 20261119-arch-kconfig-b7c4b10c8c56
+Message-Id: <20261119-arch-kconfig-v1-1-37c276fe4d26@kernel.org>
+References: <20261119-arch-kconfig-v1-0-37c276fe4d26@kernel.org>
+In-Reply-To: <20261119-arch-kconfig-v1-0-37c276fe4d26@kernel.org>
 To: Albert Ou <aou@eecs.berkeley.edu>, 
  Alexander Gordeev <agordeev@linux.ibm.com>, 
  Andrew Morton <akpm@linux-foundation.org>, 
@@ -103,40 +101,39 @@ Cc: Alexandre Ghiti <alex@ghiti.fr>,
  linux-sh@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  loongarch@lists.linux.dev
 X-Mailer: b4 0.16.1-dev
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-23.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The intention is to take it via kexec tree.
+kernel/Kconfig.kexec is not matched by the KEXEC entry, so
+get_maintainer.pl does not report kexec maintainers for changes in that
+file.
 
+Add it to the KEXEC entry.
+
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
-Mike Rapoport (Microsoft) (2):
-      MAINTAINERS: add kernel/Kconfig.kexec to KEXEC
-      arch, kexec: declare kexec and crash capabilities in Kconfig.kexec
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
- MAINTAINERS            |  1 +
- arch/arm/Kconfig       | 12 +++---------
- arch/arm64/Kconfig     | 36 +++++++++---------------------------
- arch/loongarch/Kconfig | 20 +++++---------------
- arch/m68k/Kconfig      |  4 +---
- arch/mips/Kconfig      | 12 +++---------
- arch/parisc/Kconfig    |  8 ++------
- arch/powerpc/Kconfig   | 30 +++++++-----------------------
- arch/riscv/Kconfig     | 28 +++++++---------------------
- arch/s390/Kconfig      | 28 ++++++----------------------
- arch/sh/Kconfig        | 16 ++++------------
- arch/x86/Kconfig       | 48 ++++++++++++------------------------------------
- kernel/Kconfig.kexec   | 42 ++++++++++++++++++++++++++++++++++++++++++
- 13 files changed, 102 insertions(+), 183 deletions(-)
----
-base-commit: 666539eecdf4db623f5e3c3e55cf9f2dfad24aa4
-change-id: 20261119-arch-kconfig-b7c4b10c8c56
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d738990161bd0..c61a1f0ad330e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14782,6 +14782,7 @@ W:	http://kernel.org/pub/linux/utils/kernel/kexec/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/liveupdate/linux.git
+ F:	include/linux/kexec.h
+ F:	include/uapi/linux/kexec.h
++F:	kernel/Kconfig.kexec
+ F:	kernel/kexec*
+ 
+ KEXEC HANDOVER (KHO)
 
---
-Sincerely yours,
-Mike.
+-- 
+2.53.0
 
 
