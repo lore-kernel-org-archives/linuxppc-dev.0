@@ -2,84 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F0700606A320
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:08:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8815860A260D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 00:13:35 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dn54Yenp
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AvGFILY7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVJhJ71Q0z2xnQ;
-	Thu, 19 Nov 2026 11:08:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVJpk1Lpnz2xjQ;
+	Thu, 19 Nov 2026 11:13:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795046880;
-	cv=none; b=obh1mKdVsCUqN9vik7mLzPF/r1mMDCHmgFXfA+1PugWqjqrLwtCoQYSfSq/O82QmBZLHV9hrj0iiu5ketEX++xoJ3H5QuLAM5osNLwffADI7SlmXRR28ARYPHSOALw3GhrG/Y0evCThC4MEalGWujss8+rhBNHThum2N0JFgSBGsBjYkfl/HrROhQF85KfhMRG8baos4e/P5mimlAKB0tkgcQjKgybl1KeIzr7CbgS6PHiWvmEJ1BYar67lRN2uYXqrYBmQozQcHw7z5fOIZxMKT2e4UV4Bu9CDLUEFW2OEW22UPIn/ofldxvnUAQc6mtgAxcM++Vr5nK4hgkxJIPw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795047214;
+	cv=none; b=GhDiDlSwmwh09sWyem+oaeFKu621oNX8PF2/5cLEaE4MNu0bWF8jpr7h5zGo71GJD5sgyAYj9ZrQQnmNofSStz6lLQxeAPAC5nUxh57bszPPB23Dv5BIeRtLH323bci6AYj/NxmpnUndEMvXPnx7QOxm2UP3yoZLkqSNe1MbarKGTz1RNwCOKH0PA14+Ymw/U1KeVj6smMgXP8LCqj2XaRX4Jsa/UADMEPXX/rqNdKg3Ov9EZVgWU/HtIC5ZKD/mqSmxRkLBPCfIM4Wx5F88mM0d7kFfakzmWZw3c3Hw/qWFdRR6Vit/7rqZ5gXqnJAA5G8XDdMNzwSVjHL1Jt5Bqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795046880; c=relaxed/relaxed;
-	bh=D49qK1qsI5OKwfXnbMp/fXJeWlU0W8V6GQpVpknaQLY=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=gkJ7lA7iOdCKEFjmfhLmqPuGBAz/LKCaqJ6JvGRM3N3tOrQ11QkFLJ18OORVBQn9W4Mx0/PqNDnSItTOB1/fMMC5gc7+QaD5m8LNYzWxUmtQkCianmdruvVqsxteGX34wvKWg9fhBVwecqBoHymqTG5r1zRwjleJyFNt8C1uIwWNhD3zO1RrCXZ0XBWNQaYf80czYSr1EWyZNwlgp9MD1TtYHfEJBma3ksRF20iBvWCvHTd41q7JsJEIiH8K23MzTImbj6UJbvmNZOWsF9Vno/vyPk2yj9lbP+vz7oC6ycXd9rlg4jfYUsMo5mHJ7YBd1vhLbJgYw5DU8WtX6D2Whw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dn54Yenp; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1795047214; c=relaxed/relaxed;
+	bh=NFPTZDpy4IbSNt3TV97Dwy/7fuW90Df56zvQ2rQKtt8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Od7MDGCiEl/vibj4DAZFrVD5he1iMTjGCg6SRs0HNnQ5GrE2lrvlecnlQMycE+4l8N/YKZZ66kK9LWhDKOALC4h11kRl0vukYkyqjlWklhFC438WFIFuZXsxVkWnwdsYs4r8XDt4ST+ZPldA0C1f3RPZz0NE54TUnhBS2bJE6Lqe29UPUPJJ/uX75QMg11iYzh3RqxNkCHgyd/e00qre0tn8C29srzgWLbsJtmVveJgKFTlni5C1n33+5UYg/6FRq0PAcUKHdwfjVX/KzeX8TIHpA3aQaGHTVkRZknT3HIWrFY5195/cnDPxI/5rYAldExhGZO+BmHiFwg0PlXF1vg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AvGFILY7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dn54Yenp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AvGFILY7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVJhH6Lttz2yQl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:07:59 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILQL0o583347;
-	Thu, 19 Nov 2026 00:07:50 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVJpj2jlBz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 11:13:33 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILQOYx2376600;
+	Thu, 19 Nov 2026 00:13:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=D49qK1qsI5OKwfXnb
-	Mp/fXJeWlU0W8V6GQpVpknaQLY=; b=dn54YenpF5n0HRkvm7pWbOFpl+WHOjcIl
-	TujpMO9vGchbbWyVL8b4j6q8o9lsee9NR+84t8dVH59l8CA0fVFctYingj4eBPE3
-	pea0tI6oMw6pY6qTQhvikZj1Kqu4RyfPKr1xzeEGodtUqxYI5kyqpwa71KRoqyd9
-	lnKU1OQu0zHDBalqw3mPsgnxYWl6kaLmVscgvDZbLhIoM2qO2nz354HDlgZDnNlA
-	5Xhw8jZ2PrC543vXuJFzzqDG1QglATWWDTOryEWgaTWKTO5l5FCYplhbtavGMWmh
-	SRN8LW8KC0WmzBLtKirCoT+h6YhGVpzrpr9QP7+lpvbjQjRjw3YLQ==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105rn9ns-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=NFPTZD
+	py4IbSNt3TV97Dwy/7fuW90Df56zvQ2rQKtt8=; b=AvGFILY7IwxZsypkSDlbII
+	nJXjRNv3gQIx0CmTxY5nMKhfzPPexoRAQDHSZOBGt4Jkxc93KDNeCuMa0Uzn6zOX
+	FBUd+l+2PUb1AGXB1DAw5dZfOGa9lwACDRLo6+4chATy+1LQBkxyf87wyJiPRoiA
+	fg3RpUYfyVymwdNgQZRMA1vjF2YS0CGS14Eg5D1YqhQ9pM1TOc4LtSeH8ULXkPyL
+	GjPUbRcbp0E17CtV2YRtahlNmybqRr/3eLxYLMKq7GDYdfrGuGZCc7CWfQA/uaAM
+	9SQ7xq41PjocvpNRhcZ338iuNPLfxxYx4/kP0ofb2EwDhAHGIFTP+/ggN6tC9eKw
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105ndafd-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 00:07:49 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILK5ef3990099;
-	Thu, 19 Nov 2026 00:07:48 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1hd6s17n-1
+	Thu, 19 Nov 2026 00:13:23 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AILK7kC1490557;
+	Thu, 19 Nov 2026 00:13:22 GMT
+Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j067nj200-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 19 Nov 2026 00:07:48 +0000 (GMT)
+	Thu, 19 Nov 2026 00:13:22 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ07lWl28705302
+	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AJ0DKGU62259672
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 19 Nov 2026 00:07:47 GMT
+	Thu, 19 Nov 2026 00:13:20 GMT
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0F90658051;
-	Thu, 19 Nov 2026 00:07:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 0593B58051;
+	Thu, 19 Nov 2026 00:13:20 +0000 (GMT)
 Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7232F5805A;
-	Thu, 19 Nov 2026 00:07:44 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.67.93.165])
+	by IMSVA (Postfix) with ESMTP id 8B4255805C;
+	Thu, 19 Nov 2026 00:13:17 +0000 (GMT)
+Received: from [9.67.93.165] (unknown [9.67.93.165])
 	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 19 Nov 2026 00:07:44 +0000 (GMT)
-From: Mingming Cao <mmc@linux.ibm.com>
-To: netdev@vger.kernel.org
-Cc: Mingming Cao <mmc@linux.ibm.com>, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
-        sshegde@linux.ibm.com, nnac123@linux.ibm.com, andrew+netdev@lunn.ch,
-        davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org,
-        pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, horms@kernel.org,
-        davemarq@linux.ibm.com, haren@linux.ibm.com, ricklind@linux.ibm.com,
-        bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
-Subject: [PATCH net-next 8/8] ibmveth: Split RX poll into per-slot helpers for MQ
-Date: Wed, 18 Nov 2026 16:07:11 -0800
-Message-Id: <20261119000711.18093-9-mmc@linux.ibm.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
-In-Reply-To: <20261119000711.18093-1-mmc@linux.ibm.com>
-References: <20261119000711.18093-1-mmc@linux.ibm.com>
+	Thu, 19 Nov 2026 00:13:17 +0000 (GMT)
+Message-ID: <e6475827-673e-4584-afbf-2bcd76f3c289@linux.ibm.com>
+Date: Wed, 18 Nov 2026 16:13:16 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,351 +81,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v8 07/15] ibmveth: Add RX queue register helpers
+ for MQ
+To: Jakub Kicinski <kuba@kernel.org>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, horms@kernel.org,
+        edumazet@kernel.org, pabeni@redhat.com, andrew+netdev@lunn.ch,
+        nnac123@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, chleroy@kernel.org,
+        ritesh.list@gmail.com, sshegde@linux.ibm.com, haren@linux.ibm.com,
+        ricklind@linux.ibm.com, davemarq@linux.ibm.com, bjking1@linux.ibm.com,
+        shaik.abdulla1@ibm.com
+References: <20261109235556.60604-1-mmc@linux.ibm.com>
+ <20261109235556.60604-8-mmc@linux.ibm.com>
+ <20261116173455.325fbf0b@kernel.org>
+Content-Language: en-US
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <20261116173455.325fbf0b@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: Qh9uUwBeAn2AZSKtIE-J0mJYoNR01MEG
-X-Authority-Analysis: v=2.4 cv=e8uT2qp/ c=1 sm=1 tr=0 ts=6afe3dd6 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8 a=MGlliSgDEa_joRyuWpQA:9
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX8HVQlLUJvVgT
- FoH4Uf2pTnc6jEAM/ZDm70Pn5GvknwgCtZM8svIM8KxgViw8CbaUWH7C98tARe0Fy1TsSHWN0S/
- 5+Sd6YRNOcAwwTkD0X4GpITJvapc47A=
-X-Proofpoint-ORIG-GUID: 9dx9Qi1qvsh5xm1vnJZB8GUrcx6Wo7Fx
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX0/qvRt7RjRe7
- eutQLzaDQ05/+PycK9ektoJJay+lgxeYC07Uq4lhwCCp7e6IkKwQmmJkiGuz6Gggrf7eBJBhCio
- 1PNW8BpYISkoO8/Ytf13T95lbUw59H+irqd+LtSN3AIFEHwFvPnkDikCrPRXOw2GNIkJhu7tTno
- YcPf8i8ZPeGQOBcWQAoX4jECdkEusosNwnX8Va0ZydFuxbhTOi6sTdoD5jZxz6iqsBklXrYLO7D
- NDULKPCNyXnAKPjdvyznO9hwhdCpO10iGFFag+Pf3xSJbEEdz/i4Zwk1seUbOCnEqhWQeRgMaK1
- hTFtCGg2CtaMwWkUPWbsk8CTSuRwgLNg36aal9GUpFn6kHUU2pvLgEnwv+R+eCOYsF09dJAb32d
- WnV3aDg4h5iMVssC5c8cds4Kdityo9++kbnV6P6ofwKCQ6OZEaeBtB+4xm7oTLDXDZKiQ7SqiOx
- +4At0iwjZfxzQJeqAyg==
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX0eNBRuW2dYAF
+ ynqwm9XtS2Y56ZXz3PDqeh3ZU+WUGMD+fU0ztzk3SQZCbzdY9h4lnOEgwpmVLKO5i/K5KmgPbNf
+ QgXK4eg2Kpi5nwuNtkRuNKneqUl3cWk0HgZ5hNbb5eoKBb3LDFYui3A0nP5PC/ca1yJu68FE48Y
+ uUvrMKQrApMmLZXGvLipCq/VuwYV4w1bcBVE6duVSSIqfeIDOAJLBAuUyDkYH9QaQwrTGjY6BbR
+ +80VchW5cVF6ahhg8AjrANBfhLTxA00hHmK6KSyKIfb4hfEN4IIyzjfQt+iUUdJijmZLapSVLiA
+ orDgGdiGcRwTGmjn6fSzvVXnEF6+xuao8u1/WC5/ADzWQ5/ZqpQtbHez2te25nk8Fgc4Za6ljs/
+ au7TOlztSjfRgtyc5pKWk+Vy9pcdWse/1JHnje7y+8tD9yLoLknAV/+8xpxiSC8ysOS/OOwjG5P
+ 6SrzKRXoUNdiRWuZBfw==
+X-Authority-Analysis: v=2.4 cv=HN9WhYtv c=1 sm=1 tr=0 ts=6afe3f23 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22 a=NMVmCS7tOBbRudw9hzYA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: zopTLp6TxzjumrpfD2LNt3zJfHRSyyKM
+X-Proofpoint-ORIG-GUID: AWJSCgSP_A6xrZtOWX2aKVCwF4kY2AE4
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTE4MDA4OCBTYWx0ZWRfX6kSrbreA/hwM
+ 48f2cpuLgT+YERQRrb/zXvCoX4vuLaN0ZajECUWM/dBiqSZc7+2CyOmY3PYvWaXf3tooJn/YsKu
+ lDs/+cnsEkWYbTwIgHc2Y6vBpWV2pFA=
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-18_07,2026-11-16_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 suspectscore=0 phishscore=0
- lowpriorityscore=0 adultscore=0 spamscore=0 bulkscore=0 malwarescore=0
- impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611180088
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+ bulkscore=0 priorityscore=1501 impostorscore=0 suspectscore=0 malwarescore=0
+ adultscore=0 phishscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611180088
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Move the invalid-slot recycle, the oversize-frame drop and frame
-delivery out of ibmveth_poll() into helpers. The bad-frame message now
-names the queue. Otherwise no behavior change.
 
-Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
----
- drivers/net/ethernet/ibm/ibmveth.c | 272 ++++++++++++++++-------------
- 1 file changed, 147 insertions(+), 125 deletions(-)
+On 11/16/26 5:34 PM, Jakub Kicinski wrote:
+> On Mon,  9 Nov 2026 15:55:48 -0800 Mingming Cao wrote:
+>> +	rc = ibmveth_alloc_buffer_pools(adapter);
+>> +	if (rc) {
+>> +		unsigned long ua = adapter->vdev->unit_address;
+>> +		unsigned long lpar_rc;
+>>   
+>> -	if (lpar_rc != H_SUCCESS) {
+>> -		netdev_err(netdev, "h_register_logical_lan failed with %ld\n",
+>> -			   lpar_rc);
+>> -		netdev_err(netdev, "buffer TCE:0x%llx filter TCE:0x%llx rxq "
+>> -			   "desc:0x%llx MAC:0x%llx\n",
+>> -				     adapter->buffer_list_dma[0],
+>> -				     adapter->filter_list_dma,
+>> -				     rxq_desc.desc,
+>> -				     mac_address);
+>> -		rc = -ENONET;
+>> +		/* A kexec can leave the LAN registered by the old kernel
+>> +		 * (see ibmveth_register_logical_lan()); do not leave its
+>> +		 * buffers live in PHYP. H_PARAMETER if none is registered.
+>> +		 */
+>> +		do {
+>> +			lpar_rc = h_free_logical_lan(ua);
+>> +		} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+> This loop is repeated in a number of places, you should probably factor
+> it out.
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index a40d9a6abf51..a36dafb8e893 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1995,6 +1995,148 @@ static void ibmveth_rx_csum_helper(struct sk_buff *skb,
- 	skb->ip_summed = CHECKSUM_NONE;
- }
- 
-+/* Returns true if the slot could not be recycled; poll then counts it
-+ * against the budget.
-+ */
-+static bool ibmveth_poll_recycle_invalid(struct net_device *netdev,
-+					 struct ibmveth_adapter *adapter,
-+					 int queue_index, u64 correlator)
-+{
-+	int rc;
-+
-+	adapter->rx_invalid_buffer++;
-+	netdev_dbg(netdev, "recycling invalid buffer\n");
-+	rc = ibmveth_rxq_harvest_buffer(adapter, queue_index, correlator,
-+					true);
-+	if (unlikely(rc))
-+		netdev->stats.rx_dropped++;
-+	return rc;
-+}
-+
-+static void ibmveth_poll_drop_oversize(struct net_device *netdev,
-+				       struct ibmveth_adapter *adapter,
-+				       int queue_index, unsigned int off,
-+				       unsigned int len, unsigned int room,
-+				       u64 correlator)
-+{
-+	if (net_ratelimit())
-+		netdev_err(netdev,
-+			   "bad RX frame offset %u length %u (buffer %u) on queue %d, dropping\n",
-+			   off, len, room, queue_index);
-+	ibmveth_rxq_harvest_buffer(adapter, queue_index, correlator, true);
-+	netdev->stats.rx_dropped++;
-+}
-+
-+/**
-+ * ibmveth_poll_deliver_frame - Build SKB from one valid RX slot and GRO it
-+ * @napi: NAPI context for this RX queue
-+ * @adapter: ibmveth adapter
-+ * @netdev: net_device for @adapter
-+ * @queue_index: RX queue index
-+ * @correlator: correlator of the current rx queue entry, as read by poll
-+ */
-+static void ibmveth_poll_deliver_frame(struct napi_struct *napi,
-+				       struct ibmveth_adapter *adapter,
-+				       struct net_device *netdev,
-+				       int queue_index, u64 correlator)
-+{
-+	int length = ibmveth_rxq_frame_length(adapter, queue_index);
-+	int offset = ibmveth_rxq_frame_offset(adapter, queue_index);
-+	int csum_good = ibmveth_rxq_csum_good(adapter, queue_index);
-+	int lrg_pkt = ibmveth_rxq_large_packet(adapter, queue_index);
-+	unsigned int pool, room, off, len;
-+	struct ibmveth_buff_pool *bpool;
-+	struct sk_buff *skb, *new_skb;
-+	__sum16 iph_check = 0;
-+	u16 mss = 0;
-+	int rc;
-+
-+	skb = ibmveth_rxq_get_buffer(adapter, queue_index, correlator);
-+	if (unlikely(!skb)) {
-+		ibmveth_rxq_advance(adapter, queue_index);
-+		netdev->stats.rx_dropped++;
-+		return;
-+	}
-+
-+	pool = correlator >> 32;
-+	bpool = &adapter->rx_buff_pool[queue_index][pool];
-+	room = min_t(unsigned int, skb_tailroom(skb), bpool->buff_size);
-+	off = offset;
-+	len = length;
-+	if (unlikely(len < ETH_HLEN || off >= room || len > room - off)) {
-+		ibmveth_poll_drop_oversize(netdev, adapter, queue_index,
-+					   off, len, room, correlator);
-+		return;
-+	}
-+
-+	/* if the large packet bit is set in the rx queue
-+	 * descriptor, the mss will be written by PHYP eight
-+	 * bytes from the start of the rx buffer, which is
-+	 * skb->data at this stage
-+	 */
-+	if (lrg_pkt) {
-+		__be64 *rxmss = (__be64 *)(skb->data + 8);
-+
-+		mss = (u16)be64_to_cpu(*rxmss);
-+	}
-+
-+	new_skb = NULL;
-+	if (length < rx_copybreak)
-+		new_skb = netdev_alloc_skb(netdev, length);
-+
-+	if (new_skb) {
-+		skb_copy_to_linear_data(new_skb, skb->data + offset, length);
-+		if (rx_flush)
-+			ibmveth_flush_buffer(skb->data, length + offset);
-+		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
-+						correlator, true);
-+		if (unlikely(rc)) {
-+			dev_kfree_skb_any(new_skb);
-+			netdev->stats.rx_dropped++;
-+			return;
-+		}
-+		skb = new_skb;
-+	} else {
-+		rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
-+						correlator, false);
-+		if (unlikely(rc)) {
-+			netdev->stats.rx_dropped++;
-+			return;
-+		}
-+		skb_reserve(skb, offset);
-+	}
-+
-+	skb_put(skb, length);
-+	skb->protocol = eth_type_trans(skb, netdev);
-+
-+	/* PHYP without PLSO support places a -1 in the ip
-+	 * checksum for large send frames.
-+	 */
-+	if (skb->protocol == cpu_to_be16(ETH_P_IP) &&
-+	    skb_headlen(skb) >= sizeof(struct iphdr)) {
-+		struct iphdr *iph = (struct iphdr *)skb->data;
-+
-+		iph_check = iph->check;
-+	}
-+
-+	if ((length > netdev->mtu + ETH_HLEN) ||
-+	    lrg_pkt || iph_check == 0xffff) {
-+		if (!ibmveth_rx_mss_helper(skb, mss, lrg_pkt))
-+			csum_good = 0;
-+		adapter->rx_large_packets++;
-+	}
-+
-+	if (csum_good) {
-+		skb->ip_summed = CHECKSUM_UNNECESSARY;
-+		ibmveth_rx_csum_helper(skb, adapter);
-+	}
-+
-+	napi_gro_receive(napi, skb);	/* send it up */
-+
-+	netdev->stats.rx_packets++;
-+	netdev->stats.rx_bytes += length;
-+}
-+
- static int ibmveth_poll(struct napi_struct *napi, int budget)
- {
- 	struct net_device *netdev = napi->dev;
-@@ -2002,7 +2144,6 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	int frames_processed = 0;
- 	int queue_index;
- 	u64 correlator;
--	u16 mss = 0;
- 	int rc;
- 
- 	queue_index = napi - adapter->napi;
-@@ -2015,132 +2156,13 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 		correlator = ibmveth_rxq_correlator(adapter, queue_index);
- 		if (!ibmveth_rxq_buffer_valid(adapter, queue_index)) {
- 			wmb(); /* suggested by larson1 */
--			adapter->rx_invalid_buffer++;
--			netdev_dbg(netdev, "recycling invalid buffer\n");
--			rc = ibmveth_rxq_harvest_buffer(adapter, queue_index,
--							correlator, true);
--			if (unlikely(rc)) {
--				netdev->stats.rx_dropped++;
-+			if (ibmveth_poll_recycle_invalid(netdev, adapter,
-+							 queue_index,
-+							 correlator))
- 				frames_processed++;
--				continue;
--			}
- 		} else {
--			struct sk_buff *skb, *new_skb;
--			int length = ibmveth_rxq_frame_length(adapter,
--							      queue_index);
--			int offset = ibmveth_rxq_frame_offset(adapter,
--							      queue_index);
--			int csum_good = ibmveth_rxq_csum_good(adapter,
--							      queue_index);
--			int lrg_pkt = ibmveth_rxq_large_packet(adapter,
--							       queue_index);
--			unsigned int pool, room, off, len;
--			struct ibmveth_buff_pool *bpool;
--			__sum16 iph_check = 0;
--
--			skb = ibmveth_rxq_get_buffer(adapter, queue_index,
--						     correlator);
--			if (unlikely(!skb)) {
--				ibmveth_rxq_advance(adapter, queue_index);
--				netdev->stats.rx_dropped++;
--				frames_processed++;
--				continue;
--			}
--
--			pool = correlator >> 32;
--			bpool = &adapter->rx_buff_pool[queue_index][pool];
--			room = min_t(unsigned int, skb_tailroom(skb),
--				     bpool->buff_size);
--			off = offset;
--			len = length;
--			if (unlikely(len < ETH_HLEN || off >= room ||
--				     len > room - off)) {
--				if (net_ratelimit())
--					netdev_err(netdev,
--						   "bad RX frame offset %u length %u (buffer %u), dropping\n",
--						   off, len, room);
--				ibmveth_rxq_harvest_buffer(adapter, queue_index,
--							   correlator, true);
--				netdev->stats.rx_dropped++;
--				frames_processed++;
--				continue;
--			}
--
--			/* if the large packet bit is set in the rx queue
--			 * descriptor, the mss will be written by PHYP eight
--			 * bytes from the start of the rx buffer, which is
--			 * skb->data at this stage
--			 */
--			if (lrg_pkt) {
--				__be64 *rxmss = (__be64 *)(skb->data + 8);
--
--				mss = (u16)be64_to_cpu(*rxmss);
--			}
--
--			new_skb = NULL;
--			if (length < rx_copybreak)
--				new_skb = netdev_alloc_skb(netdev, length);
--
--			if (new_skb) {
--				skb_copy_to_linear_data(new_skb,
--							skb->data + offset,
--							length);
--				if (rx_flush)
--					ibmveth_flush_buffer(skb->data,
--						length + offset);
--				rc = ibmveth_rxq_harvest_buffer(adapter,
--								queue_index,
--								correlator,
--								true);
--				if (unlikely(rc)) {
--					dev_kfree_skb_any(new_skb);
--					netdev->stats.rx_dropped++;
--					frames_processed++;
--					continue;
--				}
--				skb = new_skb;
--			} else {
--				rc = ibmveth_rxq_harvest_buffer(adapter,
--								queue_index,
--								correlator,
--								false);
--				if (unlikely(rc)) {
--					netdev->stats.rx_dropped++;
--					frames_processed++;
--					continue;
--				}
--				skb_reserve(skb, offset);
--			}
--
--			skb_put(skb, length);
--			skb->protocol = eth_type_trans(skb, netdev);
--
--			/* PHYP without PLSO support places a -1 in the ip
--			 * checksum for large send frames.
--			 */
--			if (skb->protocol == cpu_to_be16(ETH_P_IP) &&
--			    skb_headlen(skb) >= sizeof(struct iphdr)) {
--				struct iphdr *iph = (struct iphdr *)skb->data;
--
--				iph_check = iph->check;
--			}
--
--			if ((length > netdev->mtu + ETH_HLEN) ||
--			    lrg_pkt || iph_check == 0xffff) {
--				if (!ibmveth_rx_mss_helper(skb, mss, lrg_pkt))
--					csum_good = 0;
--				adapter->rx_large_packets++;
--			}
--
--			if (csum_good) {
--				skb->ip_summed = CHECKSUM_UNNECESSARY;
--				ibmveth_rx_csum_helper(skb, adapter);
--			}
--
--			napi_gro_receive(napi, skb);	/* send it up */
--
--			netdev->stats.rx_packets++;
--			netdev->stats.rx_bytes += length;
-+			ibmveth_poll_deliver_frame(napi, adapter, netdev,
-+						   queue_index, correlator);
- 			frames_processed++;
- 		}
- 	}
--- 
-2.50.1 (Apple Git-155)
+
+Done,  in the split prepare series.
+
+Thanks,
+
+Mingming
 
 
