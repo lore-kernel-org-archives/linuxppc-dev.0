@@ -2,69 +2,47 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CE1D760A261B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 18:32:19 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA4AE606A330
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 18:34:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=I51Wzs14
+	dkim=pass (2048-bit key) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=iMCz4c4v
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVnBV33bdz2xLF;
-	Fri, 20 Nov 2026 05:32:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795113138;
-	cv=none; b=P67M0wt4s2Yyav7cJUaHwHd6zexrULgWHsjehb/GDVC7lTe8QYvFH/YOxbq/52geN6y7yXjHvBFTKMSuN05c8rdZLOhYAK2U6JYKovnvIoGyv/4C16gl2/Td7vd9GXINgrx8HMbU733s4/ZW+HJX2ulb3Ze7i5Ar8iy+2UCV0HKn5W2hJ+OVZNdgrUbiVVDCej77gqZZp2y/0ykgH311/weWHS66CfruB29HiG9HmfvZec2zGDUQP7+xKTvz3QddsGsj9XWnZVC8vJBHo2c4HoUwOOoAX73o8ch1oiIpSjlkN7gH9JaQV84+1nJ+kcrE4+NJaeyurHCJ6yYLRLrIkg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVnF44Jg7z2xLF;
+	Fri, 20 Nov 2026 05:34:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=62.149.156.176
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795113272;
+	cv=none; b=LZfOQEbcNzTxzLzFhVYyQCkZdQQn/E0h+zduNRN7xYOXUwwdLFkk+TGeuC4WZnhFgh4O3fs50g+BMDLZy12DVnelP7+4Uiy0IJ3b9u9RpgueAqfKwhoVFZZk/+3tgInvB0WOFZZ3fOqdXoVQo1vWyVo6gfUBXkBB/RX31+goaIZSGxzOyoWzVIq9grgLQYrCMhijVuSbMPGCmLuoJO+DS5faS1FY1tUny8yWDlZCxD4qCfkEBEHSj1cqQMFqXIlNcwGosCu2EeEoX4zG2L1ucDt7hFkr5NJwUcS54rfYuB5uRzhgcr34Z3PAwYt6CYT1BOIGWx2+HwThvtBYLNNVRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795113138; c=relaxed/relaxed;
-	bh=rnpSKrnFQmYg+ietBlmwBi39cYR0OhHgd0OQTIatyVs=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=FXGqXzul+a4JCwBBvq6Nm9b3tVSJZ5ENqAhcqcfy7jQDfU/tN8hS9spmLwLfG5qsfXgMjQFGFMCRwIaIqGiEv4RBMiZ34IQ/lfSPWisfl98Q5ev/k5xGHEjBMUtjVR1KXOIfGNe4YZiPzAT4HCFoNHsg/KRCMCnw2bHTE8SYPNEZpPzk1uJzFje+1cX8/G6LnzT6cqeTtCQULfNaVIXVRrLZOHdlbi85CPEZceLgTFb5M45dSrFg6TnvoOff2F/7s0vFknjvRKwiRTrcx4KmIULuvMSAwjte/4VSaw0hlBS2PQCIKkd2RKN1hHKZYqcXo0FukuBNhLGfxxuUqoJwXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=I51Wzs14; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1795113272; c=relaxed/relaxed;
+	bh=2TwysOH3jFptJLl7Zh65O6ibU0W1pO9RKYiZ6XUEe4o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QN13Ufl42WE2Aag0TJ2H02S435KW/YbcBC9ZuXLNmeEowJ4BOUHWOMK1QL2oWtiVv32PYMQNHZ0yiLoUU4w6yJ7ykKFwyeeoWeN3xZ7iViCYVgLrPtsYKhnTPyf3p0Bs1DNPN3k9ryhv7/qaJTyy83usNgwA44ibNq0aVsW8YVVS+j2E4rY4+v7aXuvPvK5Y5m4JDovi2ry2owlJ/v7WkDP2nKqfKx9l3j6+wLMybhSZcbMcdrNyhQpQKqnMmOEpZK1T+t2X0pYeLDxWlsjnjNyGdFo9t16aX4Gg10tMsNpBbkypBCWiCRbmh+9+jgOkiXwwJYOpz1af+XfaNxXpCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=enneenne.com; dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=iMCz4c4v; dkim-atps=neutral; spf=pass (client-ip=62.149.156.176; helo=smtpcmd15176.aruba.it; envelope-from=giometti@enneenne.com; receiver=lists.ozlabs.org) smtp.mailfrom=enneenne.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=enneenne.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=I51Wzs14;
+	dkim=pass (2048-bit key; unprotected) header.d=aruba.it header.i=@aruba.it header.a=rsa-sha256 header.s=a1 header.b=iMCz4c4v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=enneenne.com (client-ip=62.149.156.176; helo=smtpcmd15176.aruba.it; envelope-from=giometti@enneenne.com; receiver=lists.ozlabs.org)
+Received: from smtpcmd15176.aruba.it (smtpcmd15176.aruba.it [62.149.156.176])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVnBS4vL7z2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 05:32:15 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8599E61810;
-	Thu, 19 Nov 2026 18:32:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6DB8F1F000C6;
-	Thu, 19 Nov 2026 18:32:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux-foundation.org; s=korg; t=1795113132;
-	bh=rnpSKrnFQmYg+ietBlmwBi39cYR0OhHgd0OQTIatyVs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References;
-	b=I51Wzs14XbAG4qsckU/kwl6HJ858CxkZd8Rp3hB5PXisfTLMvM35ZoKvjH++juonX
-	 AL35Xk4tz1hhVpn9MtlJe0CUC+dxBvx6wMLVyxPSbVNqCySeMu/oKGY6gfD+0PY32E
-	 Ko4FR8GzYJBzLWe5QJX14zKR7S65A6HAY0c6Ypaw=
-Date: Thu, 19 Nov 2026 10:32:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Konstantin Khorenko <khorenko@virtuozzo.com>
-Cc: "David Hildenbrand (Arm)" <david@kernel.org>, Zi Yan <ziy@nvidia.com>,
- Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R. Howlett"
- <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>, Ryan Roberts
- <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song
- <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>, Usama Arif
- <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>, Peter Xu
- <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>,
- kvm@vger.kernel.org, =?ISO-8859-1?Q?Lo=EFc?= Molinari
- <loic.molinari@collabora.com>, Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan
- <shuah@kernel.org>, linux-kselftest@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, Yeoreum Yun
- <yeoreum.yun@arm.com>
-Subject: Re: [PATCH v6 4/4] selftests/mm: test fork of PMD-mapped shmem THPs
-Message-Id: <20261119103210.24a7612ee26c3ffc3db49451@linux-foundation.org>
-In-Reply-To: <20261119-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v6-4-efa7817a2bb3@virtuozzo.com>
-References: <20261119-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v6-0-efa7817a2bb3@virtuozzo.com>
-	<20261119-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v6-4-efa7817a2bb3@virtuozzo.com>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVnF14jQCz2xGr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 05:34:27 +1100 (AEDT)
+Received: from [192.168.0.186] ([101.57.122.26])
+	by Aruba SMTP with ESMTPSA
+	id U6wix2IW175O9U6wix0Oma; Thu, 19 Nov 2026 19:33:23 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aruba.it; s=a1;
+	t=1795113203; bh=2t8AtcRowxFNGYE8HteZpHIn9jAWUm8DVCWA8vMMYBE=;
+	h=Date:MIME-Version:Subject:To:From:Content-Type;
+	b=iMCz4c4vXgNfjaVsNwvBuMF7tZY4Yy54lPGmuAGKY6P71MLCV/srwMTceBQ/GAt34
+	 IwJr1uqnf/dmNjlMZQB9cLgUTxbIw6iVRuT9buaKQVDbz3kaNVFEIoEpXvAkCgmyEI
+	 PSFVCiHj3v8SvBzh912x32zMoFnRUAiLuKuPzH9wjTX7qSHSKg+cusdAEfdyhakn6U
+	 MDZ+sXbJbEnEXvAx8A/4DselQVxkwI8uuu0bk6VUSPoq8UUhqONY29s9ATTEIL13dy
+	 Cw/3hrysPCKNiLyF9KsJstL/jDdfxcyJ3j39BP5mlGiBGtXHINn2jlUD38UGg+FRMw
+	 xxp9/W63RlIFw==
+Message-ID: <4ad95ed5-26b6-4871-bcb6-cfebfe73917a@enneenne.com>
+Date: Thu, 19 Nov 2026 19:33:20 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,107 +55,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC PATCH 0/9] KEYS: keycrypt: keys that user space can use but
+ never read
+Content-Language: en-US
+To: Jarkko Sakkinen <jarkko@kernel.org>
+Cc: David Howells <dhowells@redhat.com>, keyrings@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Jens Wiklander <jenswi@kernel.org>,
+ Sumit Garg <sumit.garg@kernel.org>, op-tee@lists.trustedfirmware.org,
+ =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@nxp.com>,
+ Pankaj Gupta <pankaj.gupta@nxp.com>, Sahil Malhotra
+ <sahil.malhotra@nxp.com>, Ahmad Fatoum <a.fatoum@pengutronix.de>,
+ Richard Weinberger <richard@nod.at>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Eric Biggers <ebiggers@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>,
+ Shuah Khan <skhan@linuxfoundation.org>, Randy Dunlap
+ <rdunlap@infradead.org>, linux-crypto@vger.kernel.org,
+ linux-integrity@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-kselftest@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Demi Marie Obenour <demiobenour@gmail.com>
+References: <20261118140421.584086-1-giometti@enneenne.com>
+ <650f89ef-9745-4f75-b254-80fa5ac4773d@gmail.com>
+ <av5EyVHnNzT27dyK@kernel.org> <av8In0Xyd5iI9N7K@kernel.org>
+From: Rodolfo Giometti <giometti@enneenne.com>
+In-Reply-To: <av8In0Xyd5iI9N7K@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+X-CMAE-Envelope: MS4xfDXtWOlFTYpyTg35cFi8NKxn6M8tXvqRpaK6Te9d9LP538qpRWPqyhYCRUO7FN90zeUALjH4Pv0kc5qTXvx9JqFIICyIFmy8AMREg/ZL7rPvrVR8BOUd
+ cLloYWy2etZ8Iz2Dj35VuyDIDq5OJcXlqCU0GxFuELT2Ll0+SMmq0xT0b1NQ/mGJ1DRr6EgGHmwb1jcrz7jDiFyXggFkpjEOVUfCxm33Z+AP0WZg8zgrFJ0n
+ ffHu26kwKFVQdawAYFWmaAXnHN1p0WPTc2eQub+iUcKYdh/LB+1TMtCynW4g+PFuL/Ox/uZYSQ3twHUYmoc0NljKoPOQdr9z82B634PV+Tl5rFaczqEJswvL
+ RMT75ziH1aZFGiT3YGWODPXE3kKUfWeYw2ky9PgD86fbcUKc9YG7O6O4C555MM8R18YgP7zwMiMpC0MPLWUV4TYOFHuGzRI3nAMUWf2OAvcXsYsO9EJVC1dZ
+ /CJBXkFCk64KKzxL3y8DwpvUb58jZOH5wiXqHdVhVBx7moWR2O7fcnAGvb0ROFigOOWFyNifYgQAUKvRx0Gjo0aKANKYhIDOo9FoNc3nTrLMB+wllSvU908i
+ ZvkuwtX35joO+/L82trX60+HcodZHev58cbR0wIdppW64faoXjrD2ty6e3+iNo1wzj4r1WV6hSakPGcj+ITxJAyi+jIfJwOIVZnMMjwKHWWd276ZqiyPHgzR
+ tHcGBXPnD0+Y4FdwbDCkcDNcPihbMtNcarY0ckxuc2T0QuwtA6V5JI+qd+13NzNwBNaSBd9q0vR4Houfn0O1tVDSLHjYJhYnCW1hfd8zibQ4R4JUQeDCsiso
+ hDRhfUPbEdA73rTyHioYeBE2HST4BYaYzwzPHgFSowkALmKiOo3P6Y+sT2OdjUa1mi5YmmKKNIRc5pqRvd/Poq1X6e5PtLi+bMEeLu/tD0VuL3zYOGxE+sHW
+ BTqxG0WyQtxpY++s7NY1cpcH0qqhtrXP08lJaeDotFcKwlEQgSTkroRSzbXG9NMpu/BmvKQiIhI/dqa4MxRp7JEEFN/QNVR7WEj2UU0vqJswExy2aYWzzdw+
+ FkBYKTSapeFo97Im9jOUDeTGL1gcFhA/aHSIiD07c4PP/74NLMye+4RTaOnZlsrMaXjbB2/jn6s9k9AKtJfRSJPMFnBj3YyvI3YYi+xduehbptXY4hxkqo3D
+ c5x2hRhHNjhs0zg+GpmJGknXwvGaK4l4a6zTOKWmfv7xMtgIZ/Vn9d4GsOJdkemp7e3WX6RGITrcgwSghHENodqP2MvCkuvhyBHE4/kY7pUMNCMYz3xNrYgX
+ 6PdBjdKe
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, 19 Nov 2026 14:44:05 +0100 Konstantin Khorenko <khorenko@virtuozzo.com> wrote:
+On 19/11/2026 15:33, Jarkko Sakkinen wrote:
 
-> Fork a process that maps shmem THPs with PMDs, in a VMA whose page
-> tables fork copies: a private mapping with an anon_vma, and a shared
-> one with a guard region. The child must find the PMDs before it
-> touches the mapping, and its exit must leave the parent's mapping and
-> the system-wide ShmemPmdMapped counter as they were.
-> 
-> With folio_dup_file_rmap_pmd() adding PTE mappings, the child's exit
-> takes the parent's share off ShmemPmdMapped while the parent still maps
-> the folios. Unmapping them drops it once more, so every mapping stays
-> until exit, where the kernel reports "Bad page cache", or hits a
-> VM_BUG_ON with CONFIG_DEBUG_VM. A kernel that leaves file THPs to a
-> refault in the child skips the test.
-> 
-> ShmemPmdMapped is system-wide, and reclaim or NUMA balancing can take a
-> PMD from the parent while the test runs. So the test makes up to three
-> attempts, each on a fresh file, and fails only if all of them see the
-> counter drop by exactly the parent's share: the bug does that on every
-> fork, other processes only by chance. It passes on the first clean
-> attempt and skips when none is clean.
-> 
-> The test mounts a tmpfs with huge=always over /tmp in a private mount
-> namespace, so it leaves the THP settings and the host's mounts and
-> files alone.
-> 
-> ...
->
-> +static void test_fork(bool shared)
-> +{
-> +	const char *desc = shared ? "shared mapping with a guard region" :
-> +				    "private mapping with an anon_vma";
-> +	long before = 0, after = 0;
-> +	enum result res = NO_THP;
-> +	int i, drops = 0;
-> +	char *mem;
-> +
-> +	for (i = 0; i < ATTEMPTS; i++) {
-> +		mem = map_file(shared);
-> +		/* Make fork copy the page tables; the last PMD gets zapped. */
-> +		if (shared) {
-> +			if (madvise(mem + size - pagesize, pagesize,
-> +				    MADV_GUARD_INSTALL)) {
-> +				ksft_test_result_skip("%s: MADV_GUARD_INSTALL: %s\n",
-> +						      desc, strerror(errno));
-> +				return;
-> +			}
-> +		} else {
-> +			mem[size - pagesize] = 'p';
-> +		}
-> +
-> +		res = pmds_ok(mem) ? fork_once(mem, shared, &before, &after) :
-> +				     res == NO_THP ? NO_THP : LOST_PMDS;
-> +		/* Later children get only their own mapping. */
-> +		madvise(mem, size, MADV_DONTFORK);
+[snip]
 
-autobot want the return value checked:
+> And yeah, we don't have projected problems. I.e. "no users" is always
+> NAK. You have to step on the nail at first.
 
-: If this fails, the next child inherits an earlier test mapping too. 
-: Its exit can then change ShmemPmdMapped by more than the expected
-: amount, causing the test to skip a real failure.
+A customer of mine stepped on it. Their product, on i.MX6, encrypts its
+rootfs with dm-crypt and a CAAM black key, never in clear. Its backups,
+though, are encrypted in user space with a key kept as a CAAM blob; to
+use it, the blob is opened and the key handed to user space in clear.
 
-which seems ignorable - MADV_DONTFORK failures are super unlikely at present.
+The next generation is on i.MX93, and the customer now wants the
+backups and other encrypted archives protected like the rootfs: the key
+must never be in clear outside a secure world. The i.MX93 has no CAAM.
+OP-TEE can hold the key, but every way the mainline keyring offers to
+use it (a trusted key, through dm-crypt or AF_ALG) unseals its bytes
+into kernel memory, and AF_ALG no longer reaches hardware drivers.
+keycrypt's OP-TEE backend does not unseal it: a key it generates leaves
+the TA only sealed.
 
->
-> ...
->
-> +int main(void)
-> +{
-> +	ksft_print_header();
-> +	pagesize = getpagesize();
-> +	pmdsize = read_pmd_pagesize();
+Ciao,
 
-This is going to ruin Mark's day again, thanks to "kselftest: mm:
-rename read_pmd_pagesize() to pmd_psize()".
+Rodolfo
 
-I think I'll alter Yeoreum's above patch like this (presently untested):
-
---- a/tools/testing/selftests/mm/vm_util.h~kselftest-mm-rename-read_pmd_pagesize-to-pmd_psize-fix
-+++ a/tools/testing/selftests/mm/vm_util.h
-@@ -93,6 +93,8 @@ unsigned long pagemap_get_pfn(int fd, ch
- void clear_softdirty(void);
- bool check_for_pattern(FILE *fp, const char *pattern, char *buf, size_t len);
- uint64_t pmd_psize(void);
-+/* temporary cross-tree compatibility thing: */
-+#define read_pmd_pagesize() pmd_psize()
- unsigned long rss_anon(void);
- bool check_huge_anon(void *addr, size_t len, int nr_hpages, uint64_t hpage_size);
- bool check_huge_file(void *addr, size_t len, int nr_hpages, uint64_t hpage_size);
-_
-
-and we can clean that up later.
-
+-- 
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming
 
