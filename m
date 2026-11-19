@@ -1,45 +1,93 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0FD47606A33A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 16:18:02 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 03B91606A324
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 17:15:25 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0XGHWrx5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVkCX2m7nz2xH7;
-	Fri, 20 Nov 2026 03:18:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=37.157.195.192
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795105080;
-	cv=none; b=WMuCEzsBP8SlnG4xeubvxThHqgMX4DY0vW8Vr0mJNV1nBm36rbE55c0cBCZ+AJXUDWZfTuPh/1n96h2NpLlR5OS9Uxq+TsiRkO3JsLha50QK2pj0zTO2AcQctkK7d8MbOAVZHq+/r6Du3Wj5l1K+b+MwXC5OC5GG+5g++XJO1w1Hldx/phZmYdgLeHuk3nF8Ah25gqp1/o1ujCB/9skorxb9MWoMSmA172GeO/e9Su+SDKylVmmT/aXM+XJKZkUvj3+U8pmOb730B/qLa9WzdRqAEwt+WwMHKw78pbehhip7DDZrIbP59HAmOkAyHgSLJt6Hye48ZsREoWJ+eDGzow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jVlTl09Rmz2xLF;
+	Fri, 20 Nov 2026 04:15:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795108522;
+	cv=none; b=ZnK9FlqMI5A73Nzjxtc9bLF9+6aEVems6SkkxzpiSwxdmP/j0+94Su1Uys7PXIS0OYwQM0wzcXE9WDOQtOH4+Fb0DVzOT6ZuO40LhBuRMEzA0FcIsbZ5IIlQga/lOH8mpdt4gt1jYuzMuxNrk+5Ki6neJLO54TWNy3/DoWGOXQwh3MQazJtBE6hGEyBZgALyIsbVF4lNRBtoKZQq80UDfzG3kHGlXAn2qJ0JO1ncnXopPY1brYepkpc7R/DVCGlX2noJ+x4lHY5+VTMiPNHyRcR4IetwFfNEiGJgJjMjhbSziSrWODzav+v/132p4LeLpRGzO7u8WXgIzE7bywhdvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795105080; c=relaxed/relaxed;
-	bh=4HNCrNhLNHDk75H36/a1/Y0v6HUk6DdKnxxYSjc/BiM=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=LOkn72YrFK2wA56ObxLYHpwzzcSiIGe7qheonjodItsH14fCRmZgSR9XMPIOpleiHjfWqN/m1jGqZ80kTU4TgGGmfbbN8uc2w5FCkCHLI88XbjKOpCqQVm7kJErKf1x6mk8Apv3uoByl6ITDSEiXpJRB7quuWJpHRGby3Cx9yi5DdpKjxTZa/bCpPGgMPjK8uF/6/TTplpkg+W8m75R4TZ/4mURioSoozfWfnfrvx7UM+NAy4uhyPLb/s91oXh6bxvRcbB9bOD2voOhSmYk2g8t64UXs/tKAI5V5KT46qmaalpptk2tGO5oy8LhJuFhYQ2LXEeGxb8NjgU5gOU3Ogg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz; spf=pass (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org) smtp.mailfrom=danny.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=danny.cz
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=danny.cz (client-ip=37.157.195.192; helo=redcrew.org; envelope-from=dan@danny.cz; receiver=lists.ozlabs.org)
-Received: from redcrew.org (redcrew.org [37.157.195.192])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1795108522; c=relaxed/relaxed;
+	bh=QLlAlF6sccc/yijrm/66Ncx3qXiAKuk+bopz8N9+Jgs=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=N6Z22kXVW5zs5yz3qZ0NmbSPa5OC0MIFk96aCwh1wSA8JX2JdVW68raLsbvXsXLqjWWAukeJ/JgYQS9v98sbbPMkcdfjJBhu+wbonXbFGRLs/VE7o+m+PMU4uw129Z+KdSev4M5W3uC2yZigxtEqL5hW4KXiHBXSrG913bqdr9UQBheuIM2LmtLCDMbemRrXgGOwSlntMQOFqSbp3yoLfnVb72ss8VPi0uldkYDe1Tc7TyKL7pBXdaFR13BBZJjHiKgWxyWk1dRfrB/GDbPoxNMHAIA2g9v0LzMBZ81Tg0ZALKCQ10Sia33mgm3lNGGvUjTLw9Lf243pOfI4ZNw44w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0XGHWrx5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102d; helo=mail-pj1-x102d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=0XGHWrx5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102d; helo=mail-pj1-x102d.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVkCV5dmhz2xGr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 03:17:58 +1100 (AEDT)
-Received: from server.danny.cz (85-71-161-19.rce.o2.cz [85.71.161.19])
-	by redcrew.org (Postfix) with ESMTP id 7C625E8;
-	Thu, 19 Nov 2026 17:17:54 +0100 (CET)
-DKIM-Filter: OpenDKIM Filter v2.11.0 redcrew.org 7C625E8
-Received: from talos.danny.cz (talos [IPv6:2001:470:5c11:160:47df:83f6:718e:218])
-	by server.danny.cz (Postfix) with SMTP id F391819A005;
-	Thu, 19 Nov 2026 17:17:53 +0100 (CET)
-Date: Thu, 19 Nov 2026 17:17:53 +0100
-From: Dan =?UTF-8?B?SG9yw6Fr?= <dan@danny.cz>
-To: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: WARNING: mm/slub.c:5459 at ___kmalloc_large_node in 7.4-rc3
-Message-Id: <20261119171753.f69a07d6dd21c0c484237762@danny.cz>
-In-Reply-To: <7bi9kllm.ritesh.list@gmail.com>
-References: <20261119132833.cf48ab8d95a8be3b900332e2@danny.cz>
-	<7bi9kllm.ritesh.list@gmail.com>
-X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; powerpc64le-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVlTj56v6z2xL1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 04:15:20 +1100 (AEDT)
+Received: by mail-pj1-x102d.google.com with SMTP id 98e67ed59e1d1-3b3a9a4a765so43522a91.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 09:15:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795108517; x=1795713317; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=QLlAlF6sccc/yijrm/66Ncx3qXiAKuk+bopz8N9+Jgs=;
+        b=0XGHWrx5IExO3js7ZbL0Uajne7B6AAk5soGxO6H35kEHIn1optkmcgFylUpaVueaop
+         mBzv2XL5czwjlTaYb+9I03A5ihqOGzn2Q/RP0N87d2er935pWwA+NfzzNuHN+zBDqmMu
+         H/BnJmyAAt4WoJe1pLU7tiVAUenaasoRl+NWc2Tsi2rbpTaneLLJL5id3qQNuzRCocxx
+         MmzWQUlCbqybRpEaGxTAZTYbHwzqVEMWRt6JQkhP9OLT3p0gG/x3NyACLp2LFV9WnCRS
+         oWv2rpXYUzufwTDq8dnb3ccMbgdGwRVRdNDfINRUc5UQQk+yTZNjY6LYSMd5CwQlH2Jm
+         UgSg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795108517; x=1795713317;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=QLlAlF6sccc/yijrm/66Ncx3qXiAKuk+bopz8N9+Jgs=;
+        b=iMkNUZFHWPKHLftrY/sTO52RB5q7IfTKqLHJs+mwqFnFN0OrZ/6oQFkUTwFMywVKc4
+         29kFtvzlPajR6ExXsDEsCN0oR31tw1EkN4ZsNIwxJSKX9si7s4tpitqSXTjlmfQaeaCr
+         kZBOLxndAbjzf/235OvyMVdVLwdTziQkO1q9hJpZKjfH31Kb0bl+X2tLFR8pc//veBcK
+         gXATKzGpQBicgwqUFKRTg1SjGlOz0ea62MvBtIQnvXTAbt9dJq1x0xhWrNCNmsXqG0Wy
+         HQLUjVfyxLdifLmc7Zw3dFgkHaw693NlVUuoEfhKd0xi2xysxVnsMMX0Rs+BKJZmMnlp
+         BDSw==
+X-Forwarded-Encrypted: i=1; AL+hErHWHebQ9z7iQqFyuUc2DvaHjH1r3yoNt1whGmTocKZwAQU2V3wY2Y5vbJYV51HMR19fOLqzUKRE238INm8=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+VwNbkXsk/r+AS47VGUw2LZQ+zFfLyvCuQv84CnkRXc9J3hjiQ
+	krIZi+cSYx5grakTjr+cGSMzyOy1Au2I+/AJ2f28SGfa3t+kPT3EqL/M
+X-Gm-Gg: AZFdTZd5h6zVjE3MHdIhxt9O62sppt9H+GjKdo3NGWaLBxmDgi9ercDSzPUutWgtMw7
+	qis3oqKuqqSGHzm+34c+Hiq1MbTGnvxxqFv0JjtUnuPAk/NjGivp2Q0WxnQizuVY3yGJcexp9/u
+	8Bb58A8BqHYaikdj6ZjXOJdW9dPgqK3/nMvoCXN7rDyp0c3V76rv0Bd8fileYCOOL9J27Eg0VMC
+	FS/IOPlnxfv+Qcm7kGhKaXeyIyhIDVQgb9S/yhGDkO0swYlWR4PlWS7Ddw2ORHuCjNsQnbGdohR
+	xPaWfgulKbK4OX0TUyJl+2eWPI07A9qbFACbleueHo9sb8JehjXOvyXdaqHuL9fRRY8Di3jBo4f
+	ie4GgQXJ3csxNzkFyHFsOxFXvPsdXitDJsIoJpA7DW7TmsHvFH9EO2wuI2/qXl6SJLQclfhFsTy
+	1JbtkqMz6iidDRYq87A2JgdWRM1cGvtFzSwyHIdDNtHGTeg3yKxD0bGl64oiRV0DP52eAs9ZLhH
+	kNjI4JACwvRn3bCY4DPMwCVyl2sN6QGVUMXl/LFkh4SDGhUWR1xgiOHQ+a8O5tgPgRBZLN9Rlxc
+	VzV9L3MwZpZSpGbqItPEpVlp1Mo=
+X-Received: by 2002:a17:90b:288e:b0:3b3:ec88:72a6 with SMTP id 98e67ed59e1d1-3b41c85284amr34574a91.3.1795108517546;
+        Thu, 19 Nov 2026 09:15:17 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b405d96bd3sm3418882a91.12.2026.11.19.09.15.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 19 Nov 2026 09:15:16 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev, linux-kernel@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@infradead.org>, Thomas
+	Bogendoerfer <tsbogend@alpha.franken.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
+	Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Shrikanth Hegde <sshegde@linux.ibm.com>, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>
+Subject: Re: [PATCH v3 4/8] powerpc/mm: skip kmap for lowmem pages in __dma_sync_page()
+In-Reply-To: <20261119151520.2383226-5-m.szyprowski@samsung.com>
+Date: Thu, 19 Nov 2026 22:43:30 +0530
+Message-ID: <4idclp6t.ritesh.list@gmail.com>
+References: <20261119151520.2383226-1-m.szyprowski@samsung.com> <CGME20261119151530eucas1p1724ca5c2a4cb0e5a7d9ad91c936a2c6f@eucas1p1.samsung.com> <20261119151520.2383226-5-m.szyprowski@samsung.com>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,39 +100,25 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	NICE_REPLY_A,SPF_HELO_PASS,SPF_PASS autolearn=ham autolearn_force=no
-	version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Ritesh,
+Marek Szyprowski <m.szyprowski@samsung.com> writes:
 
-On Thu, 19 Nov 2026 18:46:21 +0530
-Ritesh Harjani (IBM) <ritesh.list@gmail.com> wrote:
+> With CONFIG_HIGHMEM enabled, __dma_sync_page() unconditionally goes
+> through __dma_sync_page_highmem(), which disables interrupts and
+> kmaps the buffer one page at a time. This adds needless per-page
+> overhead to every streaming DMA sync on such kernels.
+>
+> Use the per-page kmap path only when the buffer reaches into highmem
+> and do a single __dma_sync() on the linear mapping otherwise.
+>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  arch/powerpc/mm/dma-noncoherent.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
 
-> Dan Horák <dan@danny.cz> writes:
-> 
-> > Hi,
-> >
-> > I am seeing "WARNING: mm/slub.c:5459 at ___kmalloc_large_node" when
-> > booting 7.4-rc3 on my Power9 based Talos system. The warning wasn't
-> > present in 7.4-rc1. Is it something known or should I try bisecting?
-> >
-> > lis 19 08:02:43 talos.danny.cz kernel: WARNING: mm/slub.c:5459 at ___kmalloc_large_node+0x1a4/0x200, CPU#60: swapper/60/1
-> 
-> I think this patch should fix it.
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=126b47221b7b98d83c118781ce724c0515d86d9c
-> 
-> Could you give it a try?
+Thanks for taking care of this. LGTM.
 
-thanks for the pointer, the warning went away with fix applied.
+Feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
-
-		Dan
 
