@@ -2,78 +2,80 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E36CB60A2629
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 18:47:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00BE3606A6FA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 19:33:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PpgYdGcL
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pojyfn1r
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jWPTY00gTz2xqJ;
-	Sat, 21 Nov 2026 05:47:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795200448;
-	cv=none; b=gV30PmVq8w6K7WySW3/tc1AW7pUua380hrpmFmq+6lq3D04oqjEUdG3hgcqSgLt/fTSKWPRdQvfgo+tXQ2VlI4V2waSpfQYj/0hobce94u0VIoXRFDGYQXqmdScAOz2Lw9NdFH8DUN9KitTCtl74uqvaebqr/mBSdnNo9A2SkAmp/wt+DKIpNuBJmY+/h68s8SD8Rx7Kh8/9keQonheob22pPctOKbH5LQ8puX844cIUEKxIiKNrVIkKdPyqn3M721FkimsCxgIi3WRtPBOWiaP3DlIkbM2VqkzD1rhKGLdfZft6ROBQcwBKOkCRYdySsZQhWTtVGPKxqmkkk/PSGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jWQVz3y7Gz2xwN;
+	Sat, 21 Nov 2026 06:33:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b134"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795203227;
+	cv=none; b=BsaExR5TGw+xk+ERbdcrn0ucK+H1FeGlQFCfHQjeWoCfWAJpSqRGYMbycJ+ymzKr76unLcarrw5jaaFQE+xXj3sfauG0WIDRTyvn+38asnS1LRp9gbX04roKlOBeu8vJRKL4Vu/c7/xf73UnG0mCs0lNZyy0AjazNEwdXKJ1eG7UDdCwgypnIFt09aiXdpZWgUQg3iJRerCLyx0CMmu5iEx6WHUttyFF7vp6XMZkICiy2thUOvmWIzxAj/pTAlZFIGuX3zdhOX/uY/19ok4AEUIwVkii7Vgz3vkQ3DgmlmohXQtsDu5Mt4Obfp3eWBQdXIodvDw4yfHj7km2raB/wQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795200448; c=relaxed/relaxed;
-	bh=ZHO6E2DPbIDlG+X+FjAHiNjh+cdkCt7toF72Fd/sJgE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aEYMtPjecTX8C1DMA0AAIv6e4IoywRr0xwlVGXOO/DWdicoYK+3cuziKX8idDVm9AvfQfcF7houkc4opoISJBVpjefukz8h0AQrXemTuMbq0dQlScCnxw03XzFwiM5BKRO1D8V1vEW2tmoXDDk8U6La/kUWXGZ3DQzwK5ac5a3eVQtTG46mP1Zne45sAHa2cxdiTQtIo6HiHOm+8LUWAJ4t9v0XRlv+4Q0W232SonEGJwmeTGu4khvvtK84EnALq7uUtMdkYksfrUIwhRHDxbxKtdtZq3FjUlJdmX7RNeX4lMBMImVQf5fXDKxi99DNcy2MaFY/OrvHZ0QcLFAfb8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PpgYdGcL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795203227; c=relaxed/relaxed;
+	bh=fxCNuWQvzJYmgA8gn7P/jRBw4XZXA/JTp0X0Bgf58pM=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=hEuQgNOKMHMl/j+Z0eEQJ0Cm4fMb0yDf63apXKcop0kfGuun+58weol726hyLNWVpxMuZsra8gtV1AtYJi4WzKx3KEZjBjPnKLkq3yGIcrlb8ZuXvhyO7ulaZikh20aWptwDoYQF+qo+GwYqHx6Cnl6YOZKUDuyK98i6JtN0gB/87k9yQ2rxNqCGgDXPGfwPU3acymZzcvuPKfpUZLZFlyuTdos1lraSjGmXTDFWnHhwBN5mpKbE615Q0qVxpt/5TFuYagJl/17NVXyiC1rYMgK57pnPlyx/6j5plF4M5xmFMxgBtfwDE3TKyV0UlRu3hBHN+YGNP0sjFYGB2Nm/ag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pojyfn1r; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PpgYdGcL;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pojyfn1r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb134.google.com (mail-yx1-xb134.google.com [IPv6:2607:f8b0:4864:20::b134])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWPTW5gCPz2xly
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 05:47:26 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AKEuJZJ3369764;
-	Fri, 20 Nov 2026 18:47:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=ZHO6E2DPbIDlG+X+FjAHiNjh+cdkCt7toF72Fd/sJ
-	gE=; b=PpgYdGcL9RqFr85zsyFWNxixQVVhRTtE3oqY+0omAIxJXBPzY3qLp003S
-	F0lTdUFjsqbWtuu97J/7Pl/RWF/qG2/InST6HSJATcswJncr/TtRcx2lbzuJLvol
-	EbTLneCOXTXrsDT+r5PkJFhBAXutrOq29YH7PhJ0ugQnWzGZ0Hy7aNHdUlu9MiqS
-	KqBvprilpatGeEZFQSvKNz7jSV+W7qYYvCSGBaQgv77WazAICbbTfeeb9cr/5gUX
-	MZiKY7HSzh9BujwKIcewprU9Uay6FCEmGpoKikF5xOu275QR70S26/40F2o0gm96
-	zyAnxkizrDymC9juF2fySum+Kvm+Q==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105xa3uy-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 20 Nov 2026 18:47:01 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AKHsA6s1314009;
-	Fri, 20 Nov 2026 18:47:01 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j2q5nhgn2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Nov 2026 18:47:00 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AKIkxon25494034
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 20 Nov 2026 18:46:59 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6961E58055;
-	Fri, 20 Nov 2026 18:46:59 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 778855804E;
-	Fri, 20 Nov 2026 18:46:58 +0000 (GMT)
-Received: from ltcden12-lp4.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 20 Nov 2026 18:46:58 +0000 (GMT)
-From: Danny Tsen <dtsen@linux.ibm.com>
-To: linux-crypto@vger.kernel.org
-Cc: stable@vger.kernel.org, herbert@gondor.apana.org.au, leitao@debian.org,
-        nayna@linux.ibm.com, appro@cryptogams.org,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        mpe@ellerman.id.au, ltcgcw@linux.vnet.ibm.com, dtsen@us.ibm.com
-Subject: [PATCH v2] crypto: powerpc/p10-aes-gcm - Fix IPsec stall on bond failover
-Date: Fri, 20 Nov 2026 13:16:57 -0500
-Message-ID: <20261120181657.6396-1-dtsen@linux.ibm.com>
-X-Mailer: git-send-email 2.47.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWQVx6QjBz2xpt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 06:33:44 +1100 (AEDT)
+Received: by mail-yx1-xb134.google.com with SMTP id 956f58d0204a3-67db0791748so1481645d50.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 11:33:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795203222; x=1795808022; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:from:to:cc:subject:date:message-id
+         :reply-to:content-type;
+        bh=fxCNuWQvzJYmgA8gn7P/jRBw4XZXA/JTp0X0Bgf58pM=;
+        b=Pojyfn1rmNtNgAB//ingPI36PFXHk6X3gPcYJcOVeopbR5KpfGBV2kuoW34Pxb1nIr
+         GpJdKe+oYwmRqOZYsNpy31oD31JnLaL7V4FNvW7TenONlS+zNjpZKNt8Vm1o2U++GgRC
+         0W3YXnb0BTVFjPaooIo6O7nuNb530kEvJrUOS3TO6BWQbXEVbZXJpMITBflZ3xr0ogWp
+         Z96dUD4C5m8/D7XuoQrfISZPTkYbKie45ZHYSxeYVCrrLF6g1V/njeUwFnO56b3DnZi3
+         mwdjybRWgmWxkoRczeyczDWog6vgDI7G8dw7i2v2AHDEZkufdH3JNRYpeL+CuSoQ+3x4
+         cRzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795203222; x=1795808022;
+        h=cc:to:content-transfer-encoding:content-type:mime-version
+         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=fxCNuWQvzJYmgA8gn7P/jRBw4XZXA/JTp0X0Bgf58pM=;
+        b=nkV+tK6cMQDtIRp1PJTUqBXIaScGUL1aInHbwK8FW6Lq7/fcYBxpUNm0A+FW0ckJVb
+         NNezJoySGqgpxK8V6HEqUoIP62m3IalPu3/kQ67F6sI24lWoV0oEl023pjyrZxeDmkM3
+         w5cFgGihCSTUiH4EvpYJyfs/h0t4qeMnxF7zYq0XcPoCvVyfNfymJP+efKi3tgzf0QB8
+         zs14n32WTlaVZGtnpF+Fk654JNto/WGj4dYk6CAQ1Eu9KYDNJAeUGaX/LWuTIFFvptdQ
+         EVfgzIGLBf+LnL59B3IGDB/8XrJmIjC+4cN9OKNiHKusT1cI6/0lP/EOF7PS5BaAHgDc
+         SSSA==
+X-Gm-Message-State: APuU4Z9Q5hQ6H2Wxg3LAWB/pAoSGLBRWNLyeZDQxpo7SFQoCC2JoOCRY
+	Jiti6xJF8WrVZ8Ibz6s54bLYv4siJiIUluf+SLPLrpIzB35H3MbO/XWa
+X-Gm-Gg: AZFdTZfKioNC1cT2ujyyexo2WyZwIfcWr9NeLWmyCHAYFG+R07CHMpbD6SSShagD7ZY
+	9rOXn8dYjzCya+pihFGa1UfUxsk+PWgacIfQ3n5sOW1nU0nCsxPF57pM18+hzHTCU1FZLOiGjDd
+	j1fIphznDUTPQWITnwYreRaWL4Yedd6XnlkTX4y9lIkhVmaTKUS2nFFleveGuLkGA6R39ywva2J
+	INfzMZz20gQMUmbLbQy9aq2+MAsSErhrlfoWyEsXE2XBGD/O1nqp9zJQkq7MaSyN0XJaSiGHZqz
+	ABR6KaUAi9IHeuI4nhRg/hxk+AHMd+9vfhEw6ae7j5kM88YQ2uVrGiZy+qKDDzViXyupOP+DfrP
+	suWktmBDDyZcLCTNFONvD4zmylTy7nba8bMPZyr4zgv7bMvdzdQKTPuy8aZRJSeT0VB0HgfcIh+
+	7esLQ2pvxOuQCM0RaJAQTdLxvH/Wmua8dKSff+QY8n0WUjtxRDA8SiXaIIp9h2wn3lAMX8yR0oF
+	HQ428pGN8Y+N5eyYGnwReJZ/6OqCZBNUHg1CgPU+Bfp3S9wh+5m18l58v6k+TjcjSSCChjYLssX
+	a3YDlqq1YjqBgr7ur2RSMo0PIxyXah26m/nq2l8NbTZolBmi/VSHOUTX3LjpIH7I7iL34hMBJFR
+	n20/jaQuLXpBwycajiyxBIK6qZE4wSf/PVLFCLxjD5ZR9fre64Q7LmMmQ60xuknQ=
+X-Received: by 2002:a05:690e:d49:b0:67d:ebad:8cbc with SMTP id 956f58d0204a3-67df448e14amr1534819d50.99.1795203222177;
+        Fri, 20 Nov 2026 11:33:42 -0800 (PST)
+Received: from localhost ([2600:1702:7a90:6f9f:66f3:d5d6:2d12:d460])
+        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67df337bfd7sm2146401d50.15.2026.11.20.11.33.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Nov 2026 11:33:41 -0800 (PST)
+From: Matt Turner <mattst88@gmail.com>
+Subject: [PATCH 0/4] powerpc/32: Report MPC7448 L2 cache errors
+Date: Fri, 20 Nov 2026 14:33:39 -0500
+Message-Id: <20261120-ppc32-l2-ecc-v1-0-98fc8e6e0a32@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,397 +89,105 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: o_wQzfLkxvVon09-hyCEFmo67pJ7JPCD
-X-Proofpoint-GUID: o_wQzfLkxvVon09-hyCEFmo67pJ7JPCD
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDA3MyBTYWx0ZWRfX9qa86B8SXCX3
- nfpdPLAHrSbxBIy2HQFjw1BPTAUCrFpeprVFvjYW2c6szRpZKFmy/fK0vDnc4fNDNHtCPmm22B3
- 6FdVilW2YpKG+q5n78bgFxmz9/vyViCsiIUIFte73PruDMdWNIIDgrvpv4PR0XSojP/vYIZLB3N
- 45sXE7/rHrEamM0TXfKPe5jATB7VPXYM6cidoWsBqrIVBTHe1gORqEqZcIUtOM/L4t5cvhW1T6k
- 1u2nEAAQRqHn5Zpp9IO7vHi0PoLxL240/wbw+JEuplvf6XKOeCijjMya5/8Wa5P/sH4Yu0bufKy
- pTmWn+OWiMerpHADVvfjffQf8feUjHMdSGRUqHWwPI9ta/Q54KoBBjr7CTJZp525RWWnVJ1AZNV
- /RbhgrqTJ/MPv0YZHyKBiPJkF1QgKPOAa2Kt+fH4mmt7oAXg2AybXJyuvsIwEIbYpEg6BIVCYec
- zlgT2Uj9Qu7caRB+BsA==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDA3MyBTYWx0ZWRfXwIOYEdwCZuUN
- LWdb8hbOMinb2Hbf+6wV4kAOstGCVE5AYXfH+9PgVuPl8Xc4GorKuaxctP8w6usjtKHqOgdOr1c
- RqQ7pZS7L8ZRJG+KM/MCZvGzM37QoFQ=
-X-Authority-Analysis: v=2.4 cv=K+m3jCWI c=1 sm=1 tr=0 ts=6b0095a5 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=VnNF1IyMAAAA:8 a=GNyWvEEFRfobykiQUNcA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-20_05,2026-11-19_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0 spamscore=0
- priorityscore=1501 impostorscore=0 phishscore=0 lowpriorityscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611200073
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MMQqAMAxA0atIZgNNBKVeRRwkphqQWloQQby7x
+ fEN/z9QNJsWGJsHsl5W7IwV1DYg+xI3RVurgR33RM5jStIxHowqgp5pUBIJqzqoScoa7P530/y
+ +H9+5jD1eAAAA
+X-Change-ID: 20261109-ppc32-l2-ecc-9217e1ccfde0
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Borislav Petkov <bp@alien8.de>, 
+ Tony Luck <tony.luck@intel.com>, Matt Turner <mattst88@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ linux-edac@vger.kernel.org
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3209; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=z9yjhfg1WB5tn8m2imu7WOYSvv7f5xJsD5QGreVFmFo=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLIZFkyJ6DuQ2XZd79L9ug/9jRPeM614HLNnuVtQYre4z
+ 0G5vaw3Oz6yMIhxMcwUU2SJW6/IMqttx1Kf09K/YOawMoEMkRZpYAACFga+3MS8UiMdIz1TbUM9
+ QyBDxygeIqfHoJFZXFyaWqSbVlDkkJdfkliSmZ9XrJdfkJpXkF6gl5aZVpKRkV9UnAo0Qi8vtcT
+ U1dHNyNDAxNLRwszJwtHUxNnZydDJzdHR2dXJyNLcxMDZ0tHE1dKcgYtTAOaaFUUM/5P6VVTF3L
+ IO3zP5J7Sie1F2SZbnietPS89qz+jcXRdsns3wP5eh/cNWWSkXmec54mFcS1IeJT/58fr0Yo2nc
+ i8YmpZHMgAA
+X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
+ fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The Power10 AES-GCM driver registers its gcm(aes) and
-rfc4106(gcm(aes)) algorithms through the crypto SIMD helper. When
-crypto_simd_usable() is false, for example in softirq context, the
-helper defers requests to cryptd and completes them asynchronously
-with -EINPROGRESS.
+The MPC7448 has ECC on its L2 cache, but Linux never enables or reads
+the L2 error registers. L2ERRINTEN resets to 0, so multi-bit errors go
+unreported, and the single-bit error counter is never read.
 
-This breaks IPsec traffic during a bond failover. With the crypto
-offload device active, traffic is switched to a passive device that
-has only software encryption, and the ESP requests then go through
-aes_gcm_p10_crypto. Under heavy load, some or all of the TCP streams
-drop to zero throughput and do not recover. The stack is seen to drop
-the ACKs as invalid, which points to the cryptd queueing delaying or
-reordering the packets.
+Patch 1 decodes MSSSR0 for L2 and L3 cache machine checks on all 745x
+parts, which are currently all reported as "L2 data cache parity
+error". Patch 2 enables machine checks for multi-bit ECC and tag parity
+errors on the 7448 and adds the L2 error registers to the decode.
+Patch 3 adds an EDAC driver that reports the single-bit count, the
+machine checks, and uncorrectable errors latched without one. Patch 4
+adds error injection to the driver; it is separate because it is the
+part most likely to need changes.
 
-Fix this by registering the algorithms directly as aead_alg with
-CRYPTO_ALG_NEED_FALLBACK, and allocating a "gcm(aes)" or
-"rfc4106(gcm(aes))" fallback tfm in ->init(). When VSX cannot be used
-(!crypto_simd_usable()), the key was not set up for SIMD, or
-cryptlen < 64, the request is handed to the fallback and completed
-synchronously in the caller's context. The driver no longer defers
-work to cryptd.
+L2 machine checks clear SRR1[RI], so they are never recoverable. The
+injection code masks reporting while it runs and reads the errors back
+itself. Tag injection hung the machine, so it is not offered.
 
-Remove Kconfig option CRYPTO_SIMD and add CRYPTO_AES and CRYPTO_GCM.
+Tested on an iMac G4 (PowerMac6,1) with a 7448 (PVR 0x80040202):
 
-Fixes: c954b252dee9 ("crypto: powerpc/p10-aes-gcm - Register modules as SIMD")
+- L2ERRINTEN is 0x18 after boot.
+- An injected single-bit error is corrected and reported as CEs.
+- An injected multi-bit error is reported as a UE at the target address,
+  without a machine check.
+- With the injection's masking removed, a multi-bit error raises a
+  machine check, decoded as in patch 2, and the writing task oopses. The
+  error in the target line raised a second machine check while the first
+  oops was being printed, and the driver then reported both as UEs.
 
-Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
+Suspend to RAM and resume were tested: L2ERRINTEN is still 0x18 after
+resume, and injection still works. With CONFIG_STRICT_KERNEL_RWX enabled,
+PMU sleep oopses in low_sleep_handler with or without this series; that
+was tested with "powerpc/powermac: Fix low_sleep_handler with
+STRICT_KERNEL_RWX", which is sent separately. No other 745x part was
+tested.
+
+Patches 3 and 4 use symbols exported by patch 2, so I'd suggest the
+series goes through the powerpc tree with an ack from the EDAC
+maintainers.
+
 ---
-Tested with tcrypt.ko (including the self-tests) and with IPsec traffic
-across a bond failover. TCP throughput no longer drops to zero.
+Matt Turner (4):
+      powerpc/32: Decode MPC745x L2 and L3 cache machine checks
+      powerpc/32: Enable and decode MPC7448 L2 ECC machine checks
+      EDAC/mpc7448_l2: Add a driver for the MPC7448 L2 cache
+      EDAC/mpc7448_l2: Add error injection
 
- arch/powerpc/crypto/Kconfig            |   3 +-
- arch/powerpc/crypto/aes-gcm-p10-glue.c | 155 +++++++++++++++++++------
- 2 files changed, 119 insertions(+), 39 deletions(-)
+ MAINTAINERS                               |   9 +
+ arch/powerpc/include/asm/cpu_setup.h      |   1 +
+ arch/powerpc/include/asm/cputable.h       |   2 +
+ arch/powerpc/include/asm/mpc7448_l2.h     |  31 +++
+ arch/powerpc/include/asm/reg.h            |  38 +++
+ arch/powerpc/kernel/Makefile              |   3 +-
+ arch/powerpc/kernel/cpu_setup_6xx.S       |  38 ++-
+ arch/powerpc/kernel/cpu_specs_book3s_32.h |  24 +-
+ arch/powerpc/kernel/mpc7448_l2.c          | 124 +++++++++
+ arch/powerpc/kernel/traps.c               |  28 ++
+ drivers/edac/Kconfig                      |   9 +
+ drivers/edac/Makefile                     |   1 +
+ drivers/edac/mpc7448_l2_edac.c            | 442 ++++++++++++++++++++++++++++++
+ 13 files changed, 736 insertions(+), 14 deletions(-)
+---
+base-commit: d68ce4e71248e1ff5af9654b407541d9260b3ba5
+change-id: 20261109-ppc32-l2-ecc-9217e1ccfde0
 
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index b247f7ed973e..3a20bd98f0e7 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -31,7 +31,8 @@ config CRYPTO_AES_GCM_P10
- 	select CRYPTO_ALGAPI
- 	select CRYPTO_AEAD
- 	select CRYPTO_SKCIPHER
--	select CRYPTO_SIMD
-+	select CRYPTO_AES
-+	select CRYPTO_GCM
- 	help
- 	  AEAD cipher: AES cipher algorithms (FIPS-197)
- 	  GCM (Galois/Counter Mode) authenticated encryption mode (NIST SP800-38D)
-diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-index f3417436d3f7..ca39ff991ae9 100644
---- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
-+++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-@@ -2,7 +2,7 @@
- /*
-  * Glue code for accelerated AES-GCM stitched implementation for ppc64le.
-  *
-- * Copyright 2022- IBM Inc. All rights reserved
-+ * Copyright IBM Corp. 2022, 2023, 2024, 2025, 2026
-  */
- 
- #include <linux/unaligned.h>
-@@ -63,8 +63,10 @@ struct Hash_ctx {
- };
- 
- struct p10_aes_gcm_ctx {
-+	struct crypto_aead *fallback_tfm;
- 	struct p10_aes_key enc_key;
--	u8 nonce[RFC4106_NONCE_SIZE];
-+	u8 nonce[RFC4106_NONCE_SIZE] __aligned(16);
-+	unsigned int simd_set_key;
- };
- 
- static void vsx_begin(void)
-@@ -173,8 +175,48 @@ static void finish_tag(struct gcm_ctx *gctx, struct Hash_ctx *hash, int len)
- 		hash->Htable[i] ^= gctx->ivtag[i];
- }
- 
-+static int p10_aead_init(struct crypto_aead *tfm)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
-+	ctx->fallback_tfm = crypto_alloc_aead("gcm(aes)", 0,
-+					      CRYPTO_ALG_NEED_FALLBACK |
-+					      CRYPTO_ALG_ASYNC);
-+	if (IS_ERR(ctx->fallback_tfm))
-+		return PTR_ERR(ctx->fallback_tfm);
-+
-+	crypto_aead_set_reqsize(tfm, sizeof(struct aead_request) +
-+				crypto_aead_reqsize(ctx->fallback_tfm));
-+	return 0;
-+}
-+
-+static int rfc4106_init(struct crypto_aead *tfm)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
-+	ctx->fallback_tfm = crypto_alloc_aead("rfc4106(gcm(aes))", 0,
-+					      CRYPTO_ALG_NEED_FALLBACK |
-+					      CRYPTO_ALG_ASYNC);
-+	if (IS_ERR(ctx->fallback_tfm))
-+		return PTR_ERR(ctx->fallback_tfm);
-+
-+	crypto_aead_set_reqsize(tfm, sizeof(struct aead_request) +
-+				crypto_aead_reqsize(ctx->fallback_tfm));
-+	return 0;
-+}
-+
-+static void p10_aead_exit(struct crypto_aead *tfm)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
-+	if (ctx->fallback_tfm)
-+		crypto_free_aead(ctx->fallback_tfm);
-+}
-+
- static int set_authsize(struct crypto_aead *tfm, unsigned int authsize)
- {
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
- 	switch (authsize) {
- 	case 4:
- 	case 8:
-@@ -188,19 +230,35 @@ static int set_authsize(struct crypto_aead *tfm, unsigned int authsize)
- 		return -EINVAL;
- 	}
- 
--	return 0;
-+	return crypto_aead_setauthsize(ctx->fallback_tfm, authsize);
- }
- 
- static int p10_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
- 			      unsigned int keylen)
- {
--	struct crypto_tfm *tfm = crypto_aead_tfm(aead);
--	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(aead);
-+	int ret = 0;
-+
-+	ctx->simd_set_key = 0;
-+	if (crypto_simd_usable()) {
-+		vsx_begin();
-+		ret = aes_p10_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
-+		vsx_end();
-+		ctx->simd_set_key = !ret;
-+	}
-+
-+	return ret ? -EINVAL : 0;
-+}
-+
-+static int gcm_setkey(struct crypto_aead *aead, const u8 *key,
-+		      unsigned int keylen)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(aead);
- 	int ret;
- 
--	vsx_begin();
--	ret = aes_p10_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
--	vsx_end();
-+	ret = p10_aes_gcm_setkey(aead, key, keylen);
-+
-+	ret |= crypto_aead_setkey(ctx->fallback_tfm, key, keylen);
- 
- 	return ret ? -EINVAL : 0;
- }
-@@ -208,8 +266,8 @@ static int p10_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
- static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 			     int assoclen, int enc)
- {
--	struct crypto_tfm *tfm = req->base.tfm;
--	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct crypto_aead *tfm = crypto_aead_reqtfm(req);
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
- 	u8 databuf[sizeof(struct gcm_ctx) + PPC_ALIGN];
- 	struct gcm_ctx *gctx = PTR_ALIGN((void *)databuf, PPC_ALIGN);
- 	u8 hashbuf[sizeof(struct Hash_ctx) + PPC_ALIGN];
-@@ -220,12 +278,26 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 	unsigned int cryptlen = req->cryptlen;
- 	unsigned char ivbuf[AES_BLOCK_SIZE+PPC_ALIGN];
- 	unsigned char *iv = PTR_ALIGN((void *)ivbuf, PPC_ALIGN);
--	int ret;
--	unsigned long auth_tag_len = crypto_aead_authsize(__crypto_aead_cast(tfm));
-+	int ret = 0;
-+	unsigned long auth_tag_len = crypto_aead_authsize(tfm);
- 	u8 otag[16];
- 	int total_processed = 0;
- 	int nbytes;
- 
-+	if (!crypto_simd_usable() || !ctx->simd_set_key || req->cryptlen < 64) {
-+		struct aead_request *subreq = aead_request_ctx(req);
-+
-+		aead_request_set_tfm(subreq, ctx->fallback_tfm);
-+		aead_request_set_callback(subreq, req->base.flags,
-+					  req->base.complete, req->base.data);
-+		aead_request_set_crypt(subreq, req->src, req->dst,
-+					req->cryptlen, req->iv);
-+		aead_request_set_ad(subreq, req->assoclen);
-+
-+		return enc ? crypto_aead_encrypt(subreq) :
-+			     crypto_aead_decrypt(subreq);
-+	}
-+
- 	memset(databuf, 0, sizeof(databuf));
- 	memset(hashbuf, 0, sizeof(hashbuf));
- 	memset(ivbuf, 0, sizeof(ivbuf));
-@@ -260,6 +332,7 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 	if (ret)
- 		return ret;
- 
-+	vsx_begin();
- 	while ((nbytes = walk.nbytes) > 0 && ret == 0) {
- 		const u8 *src = walk.src.virt.addr;
- 		u8 *dst = walk.dst.virt.addr;
-@@ -268,7 +341,6 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 		if (unlikely(nbytes > 0 && nbytes < AES_BLOCK_SIZE))
- 			src = dst = memcpy(buf, src, nbytes);
- 
--		vsx_begin();
- 		if (enc)
- 			aes_p10_gcm_encrypt(src, dst, nbytes,
- 					    &ctx->enc_key, gctx->iv, hash->Htable);
-@@ -283,13 +355,13 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 
- 		total_processed += walk.nbytes;
- 		ret = skcipher_walk_done(&walk, 0);
--	}
-+		if (ret)
-+			return ret;
- 
--	if (ret)
--		return ret;
-+		vsx_begin();
-+	}
- 
- 	/* Finalize hash */
--	vsx_begin();
- 	gcm_update(gctx->iv, hash->Htable);
- 	finish_tag(gctx, hash, total_processed);
- 	vsx_end();
-@@ -305,11 +377,11 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 
- 		if (crypto_memneq(otag, hash->Htable, auth_tag_len)) {
- 			memzero_explicit(hash->Htable, 16);
--			return -EBADMSG;
-+			ret = -EBADMSG;
- 		}
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- static int rfc4106_setkey(struct crypto_aead *tfm, const u8 *inkey,
-@@ -318,6 +390,10 @@ static int rfc4106_setkey(struct crypto_aead *tfm, const u8 *inkey,
- 	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
- 	int err;
- 
-+	err = crypto_aead_setkey(ctx->fallback_tfm, inkey, keylen);
-+	if (err)
-+		return err;
-+
- 	keylen -= RFC4106_NONCE_SIZE;
- 	err = p10_aes_gcm_setkey(tfm, inkey, keylen);
- 	if (err)
-@@ -329,7 +405,14 @@ static int rfc4106_setkey(struct crypto_aead *tfm, const u8 *inkey,
- 
- static int rfc4106_setauthsize(struct crypto_aead *tfm, unsigned int authsize)
- {
--	return crypto_rfc4106_check_authsize(authsize);
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+	int err;
-+
-+	err = crypto_rfc4106_check_authsize(authsize);
-+	if (err)
-+		return err;
-+
-+	return crypto_aead_setauthsize(ctx->fallback_tfm, authsize);
- }
- 
- static int rfc4106_encrypt(struct aead_request *req)
-@@ -373,18 +456,20 @@ static struct aead_alg gcm_aes_algs[] = {{
- 	.maxauthsize		= 16,
- 
- 	.setauthsize		= set_authsize,
--	.setkey			= p10_aes_gcm_setkey,
-+	.setkey			= gcm_setkey,
- 	.encrypt		= p10_aes_gcm_encrypt,
- 	.decrypt		= p10_aes_gcm_decrypt,
-+	.init			= p10_aead_init,
-+	.exit			= p10_aead_exit,
- 
--	.base.cra_name		= "__gcm(aes)",
--	.base.cra_driver_name	= "__aes_gcm_p10",
-+	.base.cra_name		= "gcm(aes)",
-+	.base.cra_driver_name	= "aes_gcm_p10",
- 	.base.cra_priority	= 2100,
- 	.base.cra_blocksize	= 1,
- 	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx)+
- 				  4 * sizeof(u64[2]),
- 	.base.cra_module	= THIS_MODULE,
--	.base.cra_flags		= CRYPTO_ALG_INTERNAL,
-+	.base.cra_flags		= CRYPTO_ALG_NEED_FALLBACK,
- }, {
- 	.ivsize			= GCM_RFC4106_IV_SIZE,
- 	.maxauthsize		= 16,
-@@ -392,19 +477,19 @@ static struct aead_alg gcm_aes_algs[] = {{
- 	.setauthsize		= rfc4106_setauthsize,
- 	.encrypt		= rfc4106_encrypt,
- 	.decrypt		= rfc4106_decrypt,
-+	.init			= rfc4106_init,
-+	.exit			= p10_aead_exit,
- 
--	.base.cra_name		= "__rfc4106(gcm(aes))",
--	.base.cra_driver_name	= "__rfc4106_aes_gcm_p10",
-+	.base.cra_name		= "rfc4106(gcm(aes))",
-+	.base.cra_driver_name	= "rfc4106_aes_gcm_p10",
- 	.base.cra_priority	= 2100,
- 	.base.cra_blocksize	= 1,
- 	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx) +
- 				  4 * sizeof(u64[2]),
- 	.base.cra_module	= THIS_MODULE,
--	.base.cra_flags		= CRYPTO_ALG_INTERNAL,
-+	.base.cra_flags		= CRYPTO_ALG_NEED_FALLBACK,
- }};
- 
--static struct simd_aead_alg *p10_simd_aeads[ARRAY_SIZE(gcm_aes_algs)];
--
- static int __init p10_init(void)
- {
- 	int ret;
-@@ -412,21 +497,15 @@ static int __init p10_init(void)
- 	if (!cpu_has_feature(CPU_FTR_ARCH_31))
- 		return 0;
- 
--	ret = simd_register_aeads_compat(gcm_aes_algs,
--					 ARRAY_SIZE(gcm_aes_algs),
--					 p10_simd_aeads);
--	if (ret) {
--		simd_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs),
--				      p10_simd_aeads);
-+	ret = crypto_register_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs));
-+	if (ret)
- 		return ret;
--	}
- 	return 0;
- }
- 
- static void __exit p10_exit(void)
- {
--	simd_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs),
--			      p10_simd_aeads);
-+	crypto_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs));
- }
- 
- module_init(p10_init);
--- 
-2.47.1
+Best regards,
+--  
+Matt Turner <mattst88@gmail.com>
 
 
