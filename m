@@ -1,79 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5EDCC606A339
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 15:39:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 34A30606A333
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 15:57:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nY6nxmWD
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=p+/Yau80
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jWKJR3KjVz2xpt;
-	Sat, 21 Nov 2026 02:39:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795189159;
-	cv=none; b=NjSm2KZwJrZjLabnuw1cVSa0cYr10XjdHPeYzDigtMvVevHW0Bnjaj7kuD8APBAN2PjKH/25kPNN3TKUDc3Rl/JgIu4UdZ5OzxbvW4ADc+rymix6Hb3fG2aDWj6xxcdvs7uDVm8ndctzUEt1cY9vmtPD0o2iThzn43LmZOcjJfftROaMuFWRMqwfEHeWPZT6/TIMSjw6ol5EiO1+IG7a994jRZSgLLzNs9CKKOHtkIN2WamuC0k99DBKxYbXMXwiOkP7JqoJeaZp4KqPkmn83F12dEODxmHL37utTzGJyLz4i2Y7XJNUA6kUXA+jlL6HHRORS0oS8lA1IEqD3hw8sw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jWKhr3b9Zz2xqJ;
+	Sat, 21 Nov 2026 02:57:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795190220;
+	cv=none; b=iRH3jc10qpDve6LFzSXgQ1oYGwoQheS1SpmUFd38chm4EEhFo6ck0IQx0uQ8r50ag4WhPfN1CLdmhW960xPuhek4EW0QROayfusYz5zc0xjMzzAFYJGEkssd1cr/KjjYS3HZ4a05oUToMBhZoIae0JGoeX89srigGRuPw7S+M/DaySlVUKsex+MI9hGjjWq0un04rQFdQoD3Diyzl+WUtbfTijUBBFcKbUFxDkw4o6rY4vtJ0+cQvwHp9pQbOQTbk1QJ6Xcv6yoMHa60v1Tvvuol3PJcQc5bi9EIv/5UfLzoyTETB1mRiDQBCQUhZ1cFdbyiBILMBQWE1LdnERN0Ig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795189159; c=relaxed/relaxed;
-	bh=w76addurpn2wtfLB+4uKHNexN3ZTDY39p20Lfkff1Lg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lOx0GZbrAeMQ+eGmw7CFBFmhRpNnM8FMcBGoDWjcJd/N3YBek49wPsJVzVomlsMmB33xV+MirIO/8wm7zRUoQbKgx6UKBDTXQf5aHwcDowpVMKt9Nvcz0V2f6WPUS1qrd2eyTq7FjJPBpi2W0gWVHNG3A704FNNs2kDSg1Nn5kLZF8ri0ugv9tHVe84zyazin6Dp7pHhXS8JBryRGfRVFDeDq6snfMGuHByIFNfdfaxSL2o8deH2evYFTgh0N40qgx7eW8bUBjx++Z7WPCxRbv32PZzKxWFb+N04CcT4e6FXgorAeherbQ+fyUhjCxRgZI4/Sub8gnhKERRc95s1YA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nY6nxmWD; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795190220; c=relaxed/relaxed;
+	bh=XA6joGP5vLeK1TouEaq2G5Nj77T00m7V/e6BxV7FEhA=;
+	h=Message-ID:Subject:From:To:Cc:Date:in-reply-to:references:
+	 Content-Type:MIME-Version; b=hiT1KoSkLw7cxV35qKIYt4Vv9gmvALp5Rmb45Iho6WLi4/tQ3MytQU/Vmk0XXYeNCqA2mJ7aUReulsCH3ybdFSDBCzP+eqN3ZtPCy0ikF/c/b9lciD61kyPJuFrpfcOjLu6QYvexWSuTeojj4vd9cczsGb1rETBiQg0lfIl/9+d1k0HnILIkvLmIoQXaun67iaJiN9fDVuo3Hwi8nrsYOSgstWEmAIF33vv90YjTM3fXS/8VlUfJ/+SstKsBx5LcdjbT6EMPjtMYs123ncE3m8Ry1pYPCTDeIpczPj4T59rBHwSZtyQEWx6LmdXSBRlRqWRFqmMs0UfazccNgi9ACw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=p+/Yau80; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+771941f21b31318f2b3e+8489+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=casper.srs.infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nY6nxmWD;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=p+/Yau80;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=dtsen@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=casper.srs.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=batv+771941f21b31318f2b3e+8489+infradead.org+dwmw2@casper.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWKJQ0cGxz2xmh
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 02:39:17 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AKEuFP43386308;
-	Fri, 20 Nov 2026 15:39:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=w76addurpn2wtfLB+4uKHNexN3ZTDY39p20Lfkff1
-	Lg=; b=nY6nxmWDmcCiGy5X9ZT1yEj7CgUWY46rXgbwWqWP9vB8+0WeyWRVQANjZ
-	0sXSfkyFVINlgmnBHHTcwKOMyh2mE11OiH0iB4V/CMkZUo22mwrE99RSf3OJiVkL
-	q6hEm+l0R6yFmglPIuvwbksFjiYmKx42knuaHuaNmX/cmYeeerDQ9+pS1Sn1n43H
-	fqPlEhxVrxUAw2PaotsG+1glbfjSw7zd1I0RYbV6cVusBVr+KkhwkO5OjWXueARY
-	h4x1258DBMIkmqoER/4aSCenPvHojn9Z9OH7xhsjY1r0LmRBms8n+nMaxUSGQco/
-	QEEZvek90KP7B46NApd4fDteRrmFw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105thdxv-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 20 Nov 2026 15:38:59 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AKEo2jA1389309;
-	Fri, 20 Nov 2026 15:38:59 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j1bb5mws7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Nov 2026 15:38:59 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AKFc6UM26673850
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 20 Nov 2026 15:38:06 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3AA1158056;
-	Fri, 20 Nov 2026 15:38:57 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9EDE058052;
-	Fri, 20 Nov 2026 15:38:56 +0000 (GMT)
-Received: from ltcden12-lp4.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 20 Nov 2026 15:38:56 +0000 (GMT)
-From: Danny Tsen <dtsen@linux.ibm.com>
-To: linux-crypto@vger.kernel.org
-Cc: stable@vger.kernel.org, herbert@gondor.apana.org.au, leitao@debian.org,
-        nayna@linux.ibm.com, appro@cryptogams.org,
-        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        mpe@ellerman.id.au, ltcgcw@linux.vnet.ibm.com, dtsen@us.ibm.com
-Subject: [PATCH] crypto: powerpc/p10-aes-gcm - Fix IPsec stall on bond failover
-Date: Fri, 20 Nov 2026 10:08:56 -0500
-Message-ID: <20261120150856.7039-1-dtsen@linux.ibm.com>
-X-Mailer: git-send-email 2.47.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWKhl0b2Qz2xpt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 02:56:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=MIME-Version:Content-Type:references:
+	in-reply-to:Date:Cc:To:From:Subject:Message-ID:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=XA6joGP5vLeK1TouEaq2G5Nj77T00m7V/e6BxV7FEhA=; b=p+/Yau80iiZl8UxuM2xM+XjUyn
+	xGBd/mwyFqoOV/fhbk/GYOt1YvlWeTP3tkIgns5nY8KhNqrIula9XyK2przoVdmdXp0wQvwMeSgKP
+	rae98v3mPNXVaLq22odBfBzFyZa4QtZl2FwLUtL5xVr4QSOGGPKOiHBxcxJr7SHh9a/L0VDbuz41L
+	qLFJhjWTgC8n1wAj3osqv5G8v1Kn1vYIT5S5gKt+1i/ZGJ3UzY2o1HZfgnfPtbfPnM9v90yl8m2yR
+	tTz5qxkvdLsQA2+B8TGfxpt3a2CgvA1FvVBXjii33BMgIubjcpwdrUR6ineio8wkhch1q3xJC40uw
+	9XfQBeAA==;
+Received: from 54-240-197-234.amazon.com ([54.240.197.234] helo=u09cd745991455d.ant.amazon.com)
+	by casper.infradead.org with esmtpsa (Exim 4.100.1 #2 (Red Hat Linux))
+	id 1xUQyl-00000007NcN-1Wd1;
+	Fri, 20 Nov 2026 15:56:47 +0000
+Message-ID: <64542ea2860f4f13394bf1e95accf32aae17aac2.camel@infradead.org>
+Subject: Re: [PATCH 06/16] KVM: x86: Widen the plane vCPU fd ioctl allowlist
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paolo Bonzini <pbonzini@redhat.com>, =?ISO-8859-1?Q?J=F6rg_R=F6del?=
+	 <joro@8bytes.org>
+Cc: Sean Christopherson <seanjc@google.com>, Tom Lendacky	
+ <thomas.lendacky@amd.com>, ashish.kalra@amd.com, michael.roth@amd.com, 
+	nsaenz@amazon.com, anelkz@amazon.de, James.Bottomley@HansenPartnership.com,
+  Melody Wang <huibo.wang@amd.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev, 
+	loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org,
+ x86@kernel.org, 	coconut-svsm@lists.linux.dev, joerg.roedel@amd.com,
+ Mushahid Hussain	 <hmushi@amazon.co.uk>, Sriram Nambakam
+ <snambakam@linux.microsoft.com>,  David Woodhouse <dwmw@amazon.co.uk>
+Date: Fri, 20 Nov 2026 15:56:46 +0000
+in-reply-to: <D0EE54A9-3FF3-4005-875B-A9AF04EB1341@infradead.org>
+references: <20260608144252.351443-1-joro@8bytes.org>
+	 <20261111222911.477-1-dwmw2@infradead.org>
+	 <20261111222911.477-7-dwmw2@infradead.org>
+	 <4e4fb011-9171-42c1-b499-27b0333a2fd6@redhat.com>
+	 <D0EE54A9-3FF3-4005-875B-A9AF04EB1341@infradead.org>
+Content-Type: multipart/signed; micalg="sha-256"; protocol="application/pkcs7-signature";
+	boundary="=-TZUhmNKuaI9sTewVZwmq"
+User-Agent: Evolution 3.62.0-0ubuntu1~ppa1~24.04 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,354 +81,223 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=IouL47/g c=1 sm=1 tr=0 ts=6b006993 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=vHEsa_ci47n734hVdoYA:9
-X-Proofpoint-ORIG-GUID: Sep--9Vz2DZV9Y1AemP9mTMl0g57JzDC
-X-Proofpoint-GUID: Sep--9Vz2DZV9Y1AemP9mTMl0g57JzDC
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDA2MSBTYWx0ZWRfX6kHqno09eSCA
- NhhvdSYYAZ7nY3TpfgBJp4iEWpSQsA8BiYISwlEpKQATpSoAsA2KrJuLeCiNxf0EaKPynMs0zlY
- /KnyWu5GZ78tTM7oxzoCMJTz9ZyHMntaXuCNRuxY4NaCvseJVkKpXNWkauGEUWYlNJ2E7e7841T
- GBlIE2UJfClmpys6uIVQKakJTyGICvCkn/bE1z6J5L+pO+EyY3ezg3viuj1v54XqcncO0aTuHyH
- tyFupTHIAkPuqzGwRO+tHeilhDT/WZbTY5ErZaHXkJ3VHMEToERZ7QaQ1MvRoMdHtyLpFyvOZjG
- gvy7XbdpCVqReI/FI57cdG3+gX1QLq3o5L7ddSXpFFwgFbGRt6/8PxSsmdWfuA7S75KzsnCN2qi
- GvBmtpTV0TEgg+e3BrhjH1CDUPCC766vhkZLco8hCLrdY8X/UKMUSmw2d01IaI5qEGO6rBD7b6C
- TqQxY/PJHqScGnbwB4g==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDA2MSBTYWx0ZWRfX//zq61Xz1gIy
- HBl1mv87UjlqsLP/Lq9lCN3aSTcWQbNXNFutdGnRCXH2t5fI+sO3oLDhEV7rffrZsxEINCCqjff
- dG+68dyNXKj7QnOiQH6qXvzYD7Uap80=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-20_05,2026-11-19_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 spamscore=0 adultscore=0 priorityscore=1501
- lowpriorityscore=0 suspectscore=0 phishscore=0 clxscore=1011 malwarescore=0
- bulkscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611200061
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The Power10 AES-GCM driver registers its gcm(aes) and
-rfc4106(gcm(aes)) algorithms through the crypto SIMD helper. When
-crypto_simd_usable() is false, for example in softirq context, the
-helper defers requests to cryptd and completes them asynchronously
-with -EINPROGRESS.
 
-This breaks IPsec traffic during a bond failover. With the crypto
-offload device active, traffic is switched to a passive device that
-has only software encryption, and the ESP requests then go through
-aes_gcm_p10_crypto. Under heavy load, some or all of the TCP streams
-drop to zero throughput and do not recover. The stack is seen to drop
-the ACKs as invalid, which points to the cryptd queueing delaying or
-reordering the packets.
+--=-TZUhmNKuaI9sTewVZwmq
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Fix this by registering the algorithms directly as aead_alg with
-CRYPTO_ALG_NEED_FALLBACK, and allocating a "gcm(aes)" or
-"rfc4106(gcm(aes))" fallback tfm in ->init(). When VSX cannot be used
-(!crypto_simd_usable()), the key was not set up for SIMD, or
-cryptlen < 64, the request is handed to the fallback and completed
-synchronously in the caller's context. The driver no longer defers
-work to cryptd.
+On Wed, 2026-11-18 at 19:10 +0000, David Woodhouse wrote:
+> I've also been looking harder at the completion thing. We *can't*
+> (well, I don't want to) enter another plane while there's still a
+> completion waiting on the first plane.
+>
+> Which means any control register or MSR interception which needs to
+> be handed to another plane has to completed first.
 
-Fixes: c954b252dee9 ("crypto: powerpc/p10-aes-gcm - Register modules as SIMD")
+Aside other things which have been catching fire, I've been playing
+with that a little.
 
-Signed-off-by: Danny Tsen <dtsen@linux.ibm.com>
----
-Tested with tcrypt.ko (including the self-tests) and with IPsec traffic
-across a bond failover. TCP throughput no longer drops to zero.
+I really don't want to mess with user completions remaining pending for
+one (or more!) plane while another plane runs.
 
- arch/powerpc/crypto/aes-gcm-p10-glue.c | 143 ++++++++++++++++++-------
- 1 file changed, 107 insertions(+), 36 deletions(-)
+So in the case where we take an interception in VTL0 and then let VTL1
+decide what to do, we need the completion to be done *before* running
+VTL1. Which is why my idea of a cancel flag in KVM_SET_VCPU_EVENTS
+doesn't actually work once I build it into the full VSM stack. It works
+out OK if the VMM is making the decision, but not if we have to run
+VTL1.
 
-diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-index f3417436d3f7..13352b838432 100644
---- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
-+++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-@@ -2,7 +2,7 @@
- /*
-  * Glue code for accelerated AES-GCM stitched implementation for ppc64le.
-  *
-- * Copyright 2022- IBM Inc. All rights reserved
-+ * Copyright IBM Corp. 2022, 2023, 2024, 2025, 2026
-  */
- 
- #include <linux/unaligned.h>
-@@ -63,8 +63,12 @@ struct Hash_ctx {
- };
- 
- struct p10_aes_gcm_ctx {
-+	struct crypto_aead *fallback_tfm;
- 	struct p10_aes_key enc_key;
--	u8 nonce[RFC4106_NONCE_SIZE];
-+	u8 nonce[RFC4106_NONCE_SIZE] __aligned(16);
-+	unsigned int keylen;
-+	u8 key[AES_MAX_KEYLENGTH] __aligned(16);
-+	unsigned int simd_set_key;
- };
- 
- static void vsx_begin(void)
-@@ -173,6 +177,40 @@ static void finish_tag(struct gcm_ctx *gctx, struct Hash_ctx *hash, int len)
- 		hash->Htable[i] ^= gctx->ivtag[i];
- }
- 
-+static int p10_aead_init(struct crypto_aead *tfm)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
-+	ctx->fallback_tfm = crypto_alloc_aead("gcm(aes)", 0, CRYPTO_ALG_NEED_FALLBACK);
-+	if (IS_ERR(ctx->fallback_tfm))
-+		return PTR_ERR(ctx->fallback_tfm);
-+
-+	crypto_aead_set_reqsize(tfm, sizeof(struct aead_request) +
-+				crypto_aead_reqsize(ctx->fallback_tfm));
-+	return 0;
-+}
-+
-+static int rfc4106_init(struct crypto_aead *tfm)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
-+	ctx->fallback_tfm = crypto_alloc_aead("rfc4106(gcm(aes))", 0, CRYPTO_ALG_NEED_FALLBACK);
-+	if (IS_ERR(ctx->fallback_tfm))
-+		return PTR_ERR(ctx->fallback_tfm);
-+
-+	crypto_aead_set_reqsize(tfm, sizeof(struct aead_request) +
-+				crypto_aead_reqsize(ctx->fallback_tfm));
-+	return 0;
-+}
-+
-+static void p10_aead_exit(struct crypto_aead *tfm)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
-+
-+	if (ctx->fallback_tfm)
-+		crypto_free_aead(ctx->fallback_tfm);
-+}
-+
- static int set_authsize(struct crypto_aead *tfm, unsigned int authsize)
- {
- 	switch (authsize) {
-@@ -194,13 +232,34 @@ static int set_authsize(struct crypto_aead *tfm, unsigned int authsize)
- static int p10_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
- 			      unsigned int keylen)
- {
--	struct crypto_tfm *tfm = crypto_aead_tfm(aead);
--	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(aead);
-+	int ret = 0;
-+
-+	ctx->simd_set_key = 0;
-+	if (crypto_simd_usable()) {
-+		vsx_begin();
-+		ret = aes_p10_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
-+		vsx_end();
-+		ctx->simd_set_key = 1;
-+		if (ret)
-+			ctx->simd_set_key = 0;
-+	}
-+
-+	ctx->keylen = keylen;
-+	memcpy(ctx->key, key, keylen);
-+
-+	return ret ? -EINVAL : 0;
-+}
-+
-+static int gcm_setkey(struct crypto_aead *aead, const u8 *key,
-+		      unsigned int keylen)
-+{
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(aead);
- 	int ret;
- 
--	vsx_begin();
--	ret = aes_p10_set_encrypt_key(key, keylen * 8, &ctx->enc_key);
--	vsx_end();
-+	ret = p10_aes_gcm_setkey(aead, key, keylen);
-+
-+	ret |= crypto_aead_setkey(ctx->fallback_tfm, key, keylen);
- 
- 	return ret ? -EINVAL : 0;
- }
-@@ -208,8 +267,8 @@ static int p10_aes_gcm_setkey(struct crypto_aead *aead, const u8 *key,
- static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 			     int assoclen, int enc)
- {
--	struct crypto_tfm *tfm = req->base.tfm;
--	struct p10_aes_gcm_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct crypto_aead *tfm = crypto_aead_reqtfm(req);
-+	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
- 	u8 databuf[sizeof(struct gcm_ctx) + PPC_ALIGN];
- 	struct gcm_ctx *gctx = PTR_ALIGN((void *)databuf, PPC_ALIGN);
- 	u8 hashbuf[sizeof(struct Hash_ctx) + PPC_ALIGN];
-@@ -220,12 +279,24 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 	unsigned int cryptlen = req->cryptlen;
- 	unsigned char ivbuf[AES_BLOCK_SIZE+PPC_ALIGN];
- 	unsigned char *iv = PTR_ALIGN((void *)ivbuf, PPC_ALIGN);
--	int ret;
--	unsigned long auth_tag_len = crypto_aead_authsize(__crypto_aead_cast(tfm));
-+	int ret = 0;
-+	unsigned long auth_tag_len = crypto_aead_authsize(tfm);
- 	u8 otag[16];
- 	int total_processed = 0;
- 	int nbytes;
- 
-+	if (!crypto_simd_usable() || !ctx->simd_set_key || req->cryptlen < 64) {
-+		struct aead_request *subreq = aead_request_ctx(req);
-+
-+		aead_request_set_tfm(subreq, ctx->fallback_tfm);
-+		aead_request_set_crypt(subreq, req->src, req->dst,
-+					req->cryptlen, req->iv);
-+		aead_request_set_ad(subreq, req->assoclen);
-+
-+		return enc ? crypto_aead_encrypt(subreq) :
-+			     crypto_aead_decrypt(subreq);
-+	}
-+
- 	memset(databuf, 0, sizeof(databuf));
- 	memset(hashbuf, 0, sizeof(hashbuf));
- 	memset(ivbuf, 0, sizeof(ivbuf));
-@@ -260,6 +331,7 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 	if (ret)
- 		return ret;
- 
-+	vsx_begin();
- 	while ((nbytes = walk.nbytes) > 0 && ret == 0) {
- 		const u8 *src = walk.src.virt.addr;
- 		u8 *dst = walk.dst.virt.addr;
-@@ -268,7 +340,6 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 		if (unlikely(nbytes > 0 && nbytes < AES_BLOCK_SIZE))
- 			src = dst = memcpy(buf, src, nbytes);
- 
--		vsx_begin();
- 		if (enc)
- 			aes_p10_gcm_encrypt(src, dst, nbytes,
- 					    &ctx->enc_key, gctx->iv, hash->Htable);
-@@ -283,13 +354,13 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 
- 		total_processed += walk.nbytes;
- 		ret = skcipher_walk_done(&walk, 0);
--	}
-+		if (ret)
-+			return ret;
- 
--	if (ret)
--		return ret;
-+		vsx_begin();
-+	}
- 
- 	/* Finalize hash */
--	vsx_begin();
- 	gcm_update(gctx->iv, hash->Htable);
- 	finish_tag(gctx, hash, total_processed);
- 	vsx_end();
-@@ -305,11 +376,11 @@ static int p10_aes_gcm_crypt(struct aead_request *req, u8 *riv,
- 
- 		if (crypto_memneq(otag, hash->Htable, auth_tag_len)) {
- 			memzero_explicit(hash->Htable, 16);
--			return -EBADMSG;
-+			ret = -EBADMSG;
- 		}
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- static int rfc4106_setkey(struct crypto_aead *tfm, const u8 *inkey,
-@@ -318,6 +389,10 @@ static int rfc4106_setkey(struct crypto_aead *tfm, const u8 *inkey,
- 	struct p10_aes_gcm_ctx *ctx = crypto_aead_ctx(tfm);
- 	int err;
- 
-+	err = crypto_aead_setkey(ctx->fallback_tfm, inkey, keylen);
-+	if (err)
-+		return err;
-+
- 	keylen -= RFC4106_NONCE_SIZE;
- 	err = p10_aes_gcm_setkey(tfm, inkey, keylen);
- 	if (err)
-@@ -373,18 +448,20 @@ static struct aead_alg gcm_aes_algs[] = {{
- 	.maxauthsize		= 16,
- 
- 	.setauthsize		= set_authsize,
--	.setkey			= p10_aes_gcm_setkey,
-+	.setkey			= gcm_setkey,
- 	.encrypt		= p10_aes_gcm_encrypt,
- 	.decrypt		= p10_aes_gcm_decrypt,
-+	.init			= p10_aead_init,
-+	.exit			= p10_aead_exit,
- 
--	.base.cra_name		= "__gcm(aes)",
--	.base.cra_driver_name	= "__aes_gcm_p10",
-+	.base.cra_name		= "gcm(aes)",
-+	.base.cra_driver_name	= "aes_gcm_p10",
- 	.base.cra_priority	= 2100,
- 	.base.cra_blocksize	= 1,
- 	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx)+
- 				  4 * sizeof(u64[2]),
- 	.base.cra_module	= THIS_MODULE,
--	.base.cra_flags		= CRYPTO_ALG_INTERNAL,
-+	.base.cra_flags		= CRYPTO_ALG_NEED_FALLBACK,
- }, {
- 	.ivsize			= GCM_RFC4106_IV_SIZE,
- 	.maxauthsize		= 16,
-@@ -392,19 +469,19 @@ static struct aead_alg gcm_aes_algs[] = {{
- 	.setauthsize		= rfc4106_setauthsize,
- 	.encrypt		= rfc4106_encrypt,
- 	.decrypt		= rfc4106_decrypt,
-+	.init			= rfc4106_init,
-+	.exit			= p10_aead_exit,
- 
--	.base.cra_name		= "__rfc4106(gcm(aes))",
--	.base.cra_driver_name	= "__rfc4106_aes_gcm_p10",
-+	.base.cra_name		= "rfc4106(gcm(aes))",
-+	.base.cra_driver_name	= "rfc4106_aes_gcm_p10",
- 	.base.cra_priority	= 2100,
- 	.base.cra_blocksize	= 1,
- 	.base.cra_ctxsize	= sizeof(struct p10_aes_gcm_ctx) +
- 				  4 * sizeof(u64[2]),
- 	.base.cra_module	= THIS_MODULE,
--	.base.cra_flags		= CRYPTO_ALG_INTERNAL,
-+	.base.cra_flags		= CRYPTO_ALG_NEED_FALLBACK,
- }};
- 
--static struct simd_aead_alg *p10_simd_aeads[ARRAY_SIZE(gcm_aes_algs)];
--
- static int __init p10_init(void)
- {
- 	int ret;
-@@ -412,21 +489,15 @@ static int __init p10_init(void)
- 	if (!cpu_has_feature(CPU_FTR_ARCH_31))
- 		return 0;
- 
--	ret = simd_register_aeads_compat(gcm_aes_algs,
--					 ARRAY_SIZE(gcm_aes_algs),
--					 p10_simd_aeads);
--	if (ret) {
--		simd_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs),
--				      p10_simd_aeads);
-+	ret = crypto_register_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs));
-+	if (ret)
- 		return ret;
--	}
- 	return 0;
- }
- 
- static void __exit p10_exit(void)
- {
--	simd_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs),
--			      p10_simd_aeads);
-+	crypto_unregister_aeads(gcm_aes_algs, ARRAY_SIZE(gcm_aes_algs));
- }
- 
- module_init(p10_init);
--- 
-2.47.1
+So Sean was right=C2=B9 and we end up with a per-exit field much as he was
+asking for.
 
+For the various exits with completions that are affected (RDMSR, WRMSR
+plus the new register write filter and forwarded Hyper-V hypercalls) we
+therefore want these options as the 'ret' action:
+
+ =E2=80=A2 KVM_INSN_COMPLETE: finish it, as now
+ =E2=80=A2 KVM_INSN_GP:       inject #GP
+ =E2=80=A2 KVM_INSN_UD:       inject #UD
+ =E2=80=A2 KVM_INSN_RESUME:   do nothing; RIP and everything else stay as
+                      userspace left them
+
+So the relatively common cases #GP and #UD are trivial to inject, and
+any other exception can be injected by using KVM_SET_VCPU_EVENTS and
+then setting KVM_INSN_RESUME to let the exception take its course. The
+new VMware hypercall handling could do the same.
+
+Entering KVM_RUN for a new plane would still process the completion for
+the previously-running plane.
+
+I'd quite like the UAPI to be consistent, and since the MSR exits
+already use a u8 field for 'error', we can retcon this enum into that
+field when enabled by the appropriate CAP. (Without the CAP enabled,
+all non-zero values cause #GP as they do today.)
+
+None of that depends on planes, so I'm building it in independent
+branches which I can post separately.
+
+What planes does add is two bytes in the kvm_run header, on any VM
+which enabled KVM_CAP_PLANES:
+
+ =E2=80=A2 the plane which took the exit, on every exit
+ =E2=80=A2 the instruction length, for MSR and register write exits
+
+The first means I can drop the 'plane' field I was adding to each new
+exit, and makes the existing ones (MSR, PIO, MMIO) usable from any
+plane.
+
+The length is always valid for those two. On SVM without NextRIP the
+access goes through the emulator, which was going to have to decode it
+to skip it anyway. Not sure about SEV; not sure if these exits should
+even be enabled there? I also toyed with exposing the insn_length as a
+CAP which could then be absent in those cases (and on the ancient AMD
+CPUs without NextRIP).
+
+I haven't changed the PIO or MMIO completions. At least in VSM those
+are never handed to another plane; what a higher VTL intercepts there
+is a memory access, which is a fault before the instruction has done
+anything. We could expand those later, if there's a need to.
+
+So for VSM, the VMM answers RESUME and runs VTL1. VTL1 either injects
+the fault into VTL0, or does the write and advances VTL0's RIP itself,
+which is why it wanted the length.
+
+That boots Windows with VBS on both Intel and AMD, with the VTL switch
+in the kernel or in userspace.
+
+The whole stack is in my tree=C2=B2. The planes part is in
+vsm3v/planes-uapi; the parts which don't need planes are the
+vsm3/exit-insn-v2, vsm3/msr-exit-ret-v4, vsm3/hcall-exit-v7 and
+vsm3/regwr-filter-v10 branches there.
+
+=C2=B9 https://lore.kernel.org/kvm/avuDUNAU_a933zvp@seanjc-mac.roam.interna=
+l/
+=C2=B2 https://git.infradead.org/?p=3Dusers/dwmw2/linux.git;a=3Dshortlog;h=
+=3Drefs/heads/vsm3v/p4-startup
+
+--=-TZUhmNKuaI9sTewVZwmq
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCE8Ew
+ggWvMIIEl6ADAgECAhANkOKMSmGXhF5eMl0rsRhvMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYT
+AlVTMRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAi
+BgNVBAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBHMjAeFw0yNDAzMTMwMDAwMDBaFw0zNDAz
+MTIyMzU5NTlaMGIxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE6MDgGA1UE
+AxMxRGlnaUNlcnQgQXNzdXJlZCBHMiBTTUlNRSBSU0E0MDk2IFNIQTM4NCAyMDI0IENBMTCCAiIw
+DQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAOfSIeC0vv1xPQ+dgSxbIIrkaru6skAWJYaGFzmv
+q4Kq+2wU2jxhcWlJg/JeP5jEkq/LM3pn5aaLao79j+XRmS7J1ZpJKUODJVoM4s9MQJhTMvo4qS5Z
+S64g6QR7Obkz3I1Lr3aWeSBmDDEyzue+NKtuWZ1Cxy3RdXo/w5HgRc3l2AercOM3Gt1XonTzEtTb
+Z/Hwc0Sn9Gz8RmGRK6Ka4hVDl8q/2l110KaV233Kh5etP0csXS8MIMdVRfRu3sc5hp13DG7lCKzK
+72a2GEpI8Wpl26G6I1/LMzz/98T+FqjTqxsdquk7Cj7m2vKGLW1BorpQH7WFGPdJQXJe1hfbfiZA
+CcVdCtl4nAacFacmsiArZBfX7AQGL7isvHUwwYFEtcApyGW4p2Lt+t8nvU0CANA6BHOpOz1xOP8W
+mAESbUriIjyuTUf3fJ9oDNCurVqhASMJCDaWI3lYX/QAoiAzt6akqbbZxo2ujW7mGGqc0KxqE2cs
+h2T79v7pC8aUtHBfwNrTR19GnZVxE0eQ7ViIQhR6mpSaUQFA9sG+cmD2G8TnCgYsLa0q8De6F61a
+CBevQGHNzrbZ3JAMneveYg/Jy1XxQHDRcvrMfWKe0jjcWbdKYlaGVPm5V1ILwYz7Yv5ewo3NUrxI
+GJiywe9qPhuJSDZs7VehTuI0FxGIsgKzVjgbAgMBAAGjggFcMIIBWDASBgNVHRMBAf8ECDAGAQH/
+AgEAMB0GA1UdDgQWBBT3m6JO05fF9DQPQw6Bhc6RkzKv+TAfBgNVHSMEGDAWgBTOw0q5mVXyuNtg
+v6l+vVa1lzan1jAOBgNVHQ8BAf8EBAMCAYYwHQYDVR0lBBYwFAYIKwYBBQUHAwQGCCsGAQUFBwMC
+MHkGCCsGAQUFBwEBBG0wazAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQuY29tMEMG
+CCsGAQUFBzAChjdodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkSURS
+b290RzIuY3J0MEUGA1UdHwQ+MDwwOqA4oDaGNGh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdp
+Q2VydEFzc3VyZWRJRFJvb3RHMi5jcmwwEQYDVR0gBAowCDAGBgRVHSAAMA0GCSqGSIb3DQEBDAUA
+A4IBAQA+b8Uw53sDspdZgukU+qzLyyHkcjlxGGhHlP+zrmDLKm1wEFvCRS2pili3Hy67i8N4N5NU
+vw5Rg6kv3lxb9S9Rktxk43k+tvm68pl7OxQE55ZjVY87P0lUPGwEqOOwLLyH02ZQcsfq5p5LrOH9
+0JvmvZ1yy73HS+VpDAqOlytE0NSvTIRqFFkKQGQwfjvtql9YflujuNNvJztjBaHKYZsnNSg+J38o
+jYq4TP3pSg3UdVH0PncVjPQyqxC9xef5Xae92Kbkzol3x7Nel3A1bwAkalrDMspvTHvey6LfiBks
+FIqviTnoy7fgjaRAJgHS+RXx/cmuRd3rUAclSVVrYu8RMIIHAzCCBOugAwIBAgIQAzUotrsybJHx
+HTjKOIVdIDANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQs
+IEluYy4xOjA4BgNVBAMTMURpZ2lDZXJ0IEFzc3VyZWQgRzIgU01JTUUgUlNBNDA5NiBTSEEzODQg
+MjAyNCBDQTEwHhcNMjYwNzE4MDAwMDAwWhcNMjgwMTA0MjM1OTU5WjAeMRwwGgYDVQQDDBNkd213
+MkBpbmZyYWRlYWQub3JnMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2pYux73kdbYX
+sWF8f1u6DJP91qcqaZetsyfPkZk0B+MmXmAEv0kVes5n15V2mbDThOnpoPFly0UugQO9JYqLfrtD
+tKD5yL58fgrDB9Dw+LQikgrHafl6YSCds5AvUu/8hw2J6noKrcOLJpKlKn9Fl/4IB9Q3JIdLx5aa
+EtTqMalIPqHFOlgrJ7s+aua8xbB8YQ9ahqYBXWRJNv3P/2b1DYtdrz1oqZPE3CcB8Pc6Gf2a1Tcm
+6TAgtEx7Cf1BFcrsrMz7TWHmGQITieNb2r9UYWSc2Gp+GtYFNJCgT0JJXKUBIauPMKBLteYrL8Fo
+ff/uY44dC/mDWjdCP/5x0qelPQjlBvWdHL5zvBTOj06rJ0m3HNI/hnIcDh0Qu2j9reb9rLVcdym6
+bWmBM4uDEB8Zv9Ph0KTBFSy1IosyakuD1j1Os30EzjGfbi0EUXIvnOcYbTBAbM5UAzrxEHMhBvoX
+Pvnx+OyvjJmc9tWxTX6AcSz+m40esbT17URBeZS18afgieiikm5TynlUYP1LciR3hSgGVzvGXnKO
+02VDFR5itGWdRKZ2W5wIShNfWfhSa0D0K5UdIDt5Qc7sjzwK1Yb1sY5Tu0uA5mhIS82q1ov83uxB
+sFkriNnhGv/M1NCDVLBiOMsHu73qUM+yKmgKLwF9Hfn9WI25glbAMI4S5r3hYzcCAwEAAaOCAfcw
+ggHzMB8GA1UdIwQYMBaAFPebok7Tl8X0NA9DDoGFzpGTMq/5MB0GA1UdDgQWBBRcYhqbcGzn1jrT
+JOZaB8O7qllDpzAwBgNVHREEKTAngRNkd213MkBpbmZyYWRlYWQub3JngRBkYXZpZEB3b29kaG91
+LnNlMBQGA1UdIAQNMAswCQYHZ4EMAQUBAjAOBgNVHQ8BAf8EBAMCBeAwHQYDVR0lBBYwFAYIKwYB
+BQUHAwIGCCsGAQUFBwMEMIGpBgNVHR8EgaEwgZ4wTaBLoEmGR2h0dHA6Ly9jcmwzLmRpZ2ljZXJ0
+LmNvbS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNBNDA5NlNIQTM4NDIwMjRDQTEuY3JsME2gS6BJ
+hkdodHRwOi8vY3JsNC5kaWdpY2VydC5jb20vRGlnaUNlcnRBc3N1cmVkRzJTTUlNRVJTQTQwOTZT
+SEEzODQyMDI0Q0ExLmNybDCBjQYIKwYBBQUHAQEEgYAwfjAkBggrBgEFBQcwAYYYaHR0cDovL29j
+c3AuZGlnaWNlcnQuY29tMFYGCCsGAQUFBzAChkpodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20v
+RGlnaUNlcnRBc3N1cmVkRzJTTUlNRVJTQTQwOTZTSEEzODQyMDI0Q0ExLmNydDANBgkqhkiG9w0B
+AQsFAAOCAgEAocabrh1cPd5s3vY5rnlBVQSTc7zs2ZWs67dAIltR+05WELrYClVzzUhMs/LOJPlr
+EUo45UDDomXq38DxFepaPd9+iNLjXfn33EX/IG44j04lU/oF/Rg9VeQILkYLbCZ/x9wOjNHZc4SN
+ydY7Dhvf/sT5aBz88u7D5+azZJ7Qf1U57wYseCH1Mt0nDrtr5y19IJ8D9xJJ33RFL6vfpHZBBAQ8
++3RqkKNxLoV2aFvQhxdhjNLDqTv3LjUIdicwPraN7JkxEu7CV2Lka7eRqJgkWL7SK0YmBjGpRafs
++icP/ON5RCCKTTb6VlX8eTG2sJJfsFhvJNCCt6xexbWzWtIrfP7NvPBvwBB737AyEGBZkS5aNizT
+McURJGTv9UKvBh1LF/+tNhYtLvPCN7oecGzhCHht9jcwSkygTo3Y6YlK3QgOu+ncmiBbfeuwlLZ1
+LxbYvG6hgNqXv7u6YyADbYajAQJXJ2OQen39pm3Q/AQSyLYG+B8lDglWsM8tYXPlEdrYJcksGK6F
+nqIX6Bumn43rBooLJdiZp4WmfWdL2pxe+LxRDjprmqu1WprixDxULSTOKJZoqTlugs6y3Bc+if+s
+gHnBBtz9WQ6MtPHkh7zONDAFIKcBmv8OqPQCx0F3Wv3OEybwMpXx0OsKgK8wLldaX1pXcMuyDgTL
+Sqs0AV0OHUgwggcDMIIE66ADAgECAhADNSi2uzJskfEdOMo4hV0gMA0GCSqGSIb3DQEBCwUAMGIx
+CzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE6MDgGA1UEAxMxRGlnaUNlcnQg
+QXNzdXJlZCBHMiBTTUlNRSBSU0E0MDk2IFNIQTM4NCAyMDI0IENBMTAeFw0yNjA3MTgwMDAwMDBa
+Fw0yODAxMDQyMzU5NTlaMB4xHDAaBgNVBAMME2R3bXcyQGluZnJhZGVhZC5vcmcwggIiMA0GCSqG
+SIb3DQEBAQUAA4ICDwAwggIKAoICAQDali7HveR1thexYXx/W7oMk/3Wpyppl62zJ8+RmTQH4yZe
+YAS/SRV6zmfXlXaZsNOE6emg8WXLRS6BA70liot+u0O0oPnIvnx+CsMH0PD4tCKSCsdp+XphIJ2z
+kC9S7/yHDYnqegqtw4smkqUqf0WX/ggH1Dckh0vHlpoS1OoxqUg+ocU6WCsnuz5q5rzFsHxhD1qG
+pgFdZEk2/c//ZvUNi12vPWipk8TcJwHw9zoZ/ZrVNybpMCC0THsJ/UEVyuyszPtNYeYZAhOJ41va
+v1RhZJzYan4a1gU0kKBPQklcpQEhq48woEu15isvwWh9/+5jjh0L+YNaN0I//nHSp6U9COUG9Z0c
+vnO8FM6PTqsnSbcc0j+GchwOHRC7aP2t5v2stVx3KbptaYEzi4MQHxm/0+HQpMEVLLUiizJqS4PW
+PU6zfQTOMZ9uLQRRci+c5xhtMEBszlQDOvEQcyEG+hc++fH47K+MmZz21bFNfoBxLP6bjR6xtPXt
+REF5lLXxp+CJ6KKSblPKeVRg/UtyJHeFKAZXO8Zeco7TZUMVHmK0ZZ1EpnZbnAhKE19Z+FJrQPQr
+lR0gO3lBzuyPPArVhvWxjlO7S4DmaEhLzarWi/ze7EGwWSuI2eEa/8zU0INUsGI4ywe7vepQz7Iq
+aAovAX0d+f1YjbmCVsAwjhLmveFjNwIDAQABo4IB9zCCAfMwHwYDVR0jBBgwFoAU95uiTtOXxfQ0
+D0MOgYXOkZMyr/kwHQYDVR0OBBYEFFxiGptwbOfWOtMk5loHw7uqWUOnMDAGA1UdEQQpMCeBE2R3
+bXcyQGluZnJhZGVhZC5vcmeBEGRhdmlkQHdvb2Rob3Uuc2UwFAYDVR0gBA0wCzAJBgdngQwBBQEC
+MA4GA1UdDwEB/wQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwgakGA1UdHwSB
+oTCBnjBNoEugSYZHaHR0cDovL2NybDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0QXNzdXJlZEcyU01J
+TUVSU0E0MDk2U0hBMzg0MjAyNENBMS5jcmwwTaBLoEmGR2h0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNv
+bS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNBNDA5NlNIQTM4NDIwMjRDQTEuY3JsMIGNBggrBgEF
+BQcBAQSBgDB+MCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wVgYIKwYBBQUH
+MAKGSmh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydEFzc3VyZWRHMlNNSU1FUlNB
+NDA5NlNIQTM4NDIwMjRDQTEuY3J0MA0GCSqGSIb3DQEBCwUAA4ICAQChxpuuHVw93mze9jmueUFV
+BJNzvOzZlazrt0AiW1H7TlYQutgKVXPNSEyz8s4k+WsRSjjlQMOiZerfwPEV6lo9336I0uNd+ffc
+Rf8gbjiPTiVT+gX9GD1V5AguRgtsJn/H3A6M0dlzhI3J1jsOG9/+xPloHPzy7sPn5rNkntB/VTnv
+Bix4IfUy3ScOu2vnLX0gnwP3EknfdEUvq9+kdkEEBDz7dGqQo3EuhXZoW9CHF2GM0sOpO/cuNQh2
+JzA+to3smTES7sJXYuRrt5GomCRYvtIrRiYGMalFp+z6Jw/843lEIIpNNvpWVfx5Mbawkl+wWG8k
+0IK3rF7FtbNa0it8/s288G/AEHvfsDIQYFmRLlo2LNMxxREkZO/1Qq8GHUsX/602Fi0u88I3uh5w
+bOEIeG32NzBKTKBOjdjpiUrdCA676dyaIFt967CUtnUvFti8bqGA2pe/u7pjIANthqMBAlcnY5B6
+ff2mbdD8BBLItgb4HyUOCVawzy1hc+UR2tglySwYroWeohfoG6afjesGigsl2JmnhaZ9Z0vanF74
+vFEOOmuaq7VamuLEPFQtJM4olmipOW6CzrLcFz6J/6yAecEG3P1ZDoy08eSHvM40MAUgpwGa/w6o
+9ALHQXda/c4TJvAylfHQ6wqArzAuV1pfWldwy7IOBMtKqzQBXQ4dSDGCBCAwggQcAgEBMHYwYjEL
+MAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMTowOAYDVQQDEzFEaWdpQ2VydCBB
+c3N1cmVkIEcyIFNNSU1FIFJTQTQwOTYgU0hBMzg0IDIwMjQgQ0ExAhADNSi2uzJskfEdOMo4hV0g
+MA0GCWCGSAFlAwQCAQUAoIIBezAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJ
+BTEPFw0yNjExMjAxNTU2NDZaMC8GCSqGSIb3DQEJBDEiBCC0tHzX54oyD5h1jt7bxuJP77tV/XkV
+L7atXbFEya+jijCBhQYJKwYBBAGCNxAEMXgwdjBiMQswCQYDVQQGEwJVUzEXMBUGA1UEChMORGln
+aUNlcnQsIEluYy4xOjA4BgNVBAMTMURpZ2lDZXJ0IEFzc3VyZWQgRzIgU01JTUUgUlNBNDA5NiBT
+SEEzODQgMjAyNCBDQTECEAM1KLa7MmyR8R04yjiFXSAwgYcGCyqGSIb3DQEJEAILMXigdjBiMQsw
+CQYDVQQGEwJVUzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xOjA4BgNVBAMTMURpZ2lDZXJ0IEFz
+c3VyZWQgRzIgU01JTUUgUlNBNDA5NiBTSEEzODQgMjAyNCBDQTECEAM1KLa7MmyR8R04yjiFXSAw
+DQYJKoZIhvcNAQEBBQAEggIADL4TZ2AVNhjM3CzKmLkx8lihn8qX6Ly7cPHS3rXZ0EjRhGCKaanR
+kmBwpeSj0cXdZVMO7QN/W8s4EVHAVvLsBM57Wi18fbfrJlQL5vxKLtoqdlA17zC/1IA5oG3O/4MT
+t2Re3jOs04XWwvByyIus5rXraoPPnZo6QIcN2GINLYSmwxt0+pBDpvxuXcOUinf4EHORtz+06r57
+7KMJi2/aNdc1+JFrDplm6W2BUIpX+lbKtP/In4bK4Nvrr39djvDImWQCgQeGy5lWK3F5nzINQryx
+735eiXWYiV/Y13aqlwpoJWxQcIm35/hnNxL8YXXPhLvFWun80U+ci5sMo89LZNrlab0UU+wUFPMH
+Vr4LDGeX/IWEka6WqNCaMa4+9eGiycwZYVsKN6zYhUj3jECVuGtRtxA6S577dCp+LnwKNotO4l4H
+q3QTiocfY+hADunRPGBFQ2fM3Cy1Xj16vigZEkVl+oZiP72JFxLYSX9dPAwUeDLmpXFEad89J/dx
+bfIpjbVV2TXLDUyOUwpCSo+hsu3/i87cVb0JBUZz2nhcdAcNxTWAAikgSi7FYvNQ1uwH3oG8BNIT
+D2o/9jHibBpDowJjplkeMZIkb5Ash7JR3mMc/gvu07mReC4pI76gz0BSc43nwBYZ2Ww1ERXh9ICp
+QoDoHMn6Y2bMuxqP/qpH55oAAAAAAAA=
+
+
+--=-TZUhmNKuaI9sTewVZwmq--
 
