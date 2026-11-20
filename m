@@ -2,95 +2,95 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DBEA606A6AB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 22:06:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EC770606A699
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 22:13:27 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=p/WgAm6W
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=DWZNXxaX
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jWTvF14FBz2xLm;
-	Sat, 21 Nov 2026 09:06:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::534" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795212393;
-	cv=pass; b=XALs6mOXach7m4OG7symbUEqRhWinV63rK/eQUecSb9MSgEeQYKR8KwNH8t4dbxzNHTkPk+Gl7CawgVbyDWYYpEM5W+gSdKHUhP2NhqLOjofUj8FHYOqiUyjR+7IHNbgYkt43VRyEdkTjpLrWydMveNgxiVcFWpy7iBUWR5ZZWVdkoyl9RwVCAyfrH/eeOHn25tKpVO3yq+D2WFoypzZcI6hZILGa9+Nc+rcJ+4/i+OhUdDxgDrWWB4gn8csEQEztDypUMeih1o4+lNeIX/MVd24zODwAd6qnhLicNY0b3TwxkEkTgRCMX7RmmVRFRKWmVVqZ2KKlCy1bezA7GWzhg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jWV3B1vlKz2xnZ;
+	Sat, 21 Nov 2026 09:13:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::835" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795212806;
+	cv=pass; b=imFY4srRQzDOgKUGsY0EteRcKt7L0u1XHMh2BkrnYm2Gvgb7AYqLSNtyWsREats9Br01vidBQ5eC3dCqZWmZ6ZfpAJe+qkbSjGgA4utF55kK6htyEyP22DQTj3XwqmjSUlSPrtGEfg4qoBp0eQvO0tEvtgIDJo2J3tr8u2tldxlLgM9QAaUW+9LodJiM13zCpFvIoPIVUxlGYsStShopuvteRO2eDcXPg9E4cJaK19tO+iBG7IL69ljpPW0G4WsSjwEXCX4w+ZdGXCEw31SbmZgx9LY6UtDdreq/1/yBcybhOVU+cX3rrT+3ZOr3B3wwgI+X1Ii7Xyggq9YieeGH3A==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795212393; c=relaxed/relaxed;
-	bh=Qp2BTPut4j9BWLU7kp/9R3u9IW0btPsFhc2WZOxCd1o=;
+	t=1795212806; c=relaxed/relaxed;
+	bh=rOA0kle+ETDmz8eQFgvwrDcZAmSvRA8CUZ0yI4t+KI8=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NnkXkr1Vez58qtb9FeHS+0VbLWwKNErk5y5VFSVqiw5k6I4BPU4l9Zwie8L+68s1dgoytC6m/Q454xi26D/s80F2+zJYcC9v5CPHKdS9ycgXbB3yDvizPPLLPnIxWKPSOJgdEcL/bKs3Tc6+GAyn0K5YagGn7NIp19JLoyGeGhnKYp3Sn8WztbwbRcxLE3nASMGnARLnZR7WQmHZd97GiGp0xffzoVfy1yRAi4xJrpDM65+zVm4eU40GwV7M5M7DUhB7txjYZAm0YXIZjskPnebN5eeo4aZDo9MiN2zxJGM/PQ9zQsB1Aql/8m+BU8vi0aiFhrmxbBRbBb/q66f7SQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=p/WgAm6W; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+	 To:Cc:Content-Type; b=keJGjQ5zcJi80XKDp1khuAfsWkUAMI9SlsTVcoTCHxY/SetXqcVEtgepQ9qq6cOhCJryhX/kSattJ6UbQwywb2keCNsGV3lz+OWG61TqodO15lXWIONnQxDavd/f19C83emu+PaDihwKdVsPNCoeM30AD9I60w21vSy1LuQ0sxwHHbWpDeHlTI8jv6fyCQsdkvSfWnriTVDYH8fnMC1KbGYxSofeiO9S/VRlwo9h3RuUI8hb3Cc2u0P7ZkLtii75G1WuNkFIma+H+T+MCCo6t+KnJUxcwLat+prmVCPEo1N0wdgxoCk8JkPl5Rr+BZPh9vNNZ3xV5+QYaF7dBSqPMQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=DWZNXxaX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=p/WgAm6W;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=DWZNXxaX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::835; helo=mail-qt1-x835.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x835.google.com (mail-qt1-x835.google.com [IPv6:2607:f8b0:4864:20::835])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWTvC3Kh8z2xB1
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 09:06:30 +1100 (AEDT)
-Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-6ba2bd43dd8so1304a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 14:06:30 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795212387; cv=none;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWV384WT2z2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 09:13:24 +1100 (AEDT)
+Received: by mail-qt1-x835.google.com with SMTP id d75a77b69052e-533202fe429so86681cf.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 14:13:24 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795212801; cv=none;
         d=google.com; s=arc-20260327;
-        b=o4cMxRSgMFJnMArMbvXmX11AEZFBike37UbrJYmmOIlygVAYkjMlDtkczhNX4GqjKh
-         Vk5xStBJ5uG/eWFiKIDoH3dJ3mzgXspyT2zaa6tLZ0rJlWdBvhAID+Jrt/t+6nZKVpOj
-         P67C2Pg0/xw9z61bHpX+xQOzyiQAfniQI6BkRSbtc5tddVwe4EDpGrDVNEPlomE3kYYq
-         qn+py/5FDQlrNrmIZ4IsOUd490AccqNYj1dD99UcII4mVAEkwhrIqc7VVVFkSr1//XQh
-         Ltms1s5jRQIIvnrtxT1yux64+gtkqxZG0TNYsYfyQQSC7qp5miZkmhrtctvp5Q6a4Di1
-         rrOg==
+        b=ndyoZjXhGt8SCLuMretZ/wo3ILYx4h759x/HxcWUqIlZaUGWoykdxUqJmLmPhotBrR
+         T11d521nx4zn0PfjR0w0wahK/me+KxP/N+cLOFc2KNUMDIFYMOnMYcP6/hxgVm5JWzrO
+         jyZCgx2kOFrGlIdsoThNeEbBAEfAQCFv3ipBAradmZawfXGj7cmffJ50B62Bwt6XBNaA
+         qSNhnqp/LHR5hCxEiTrQMQbFiDz4ZGbLVDIrJthpkbNbLkIw+++0qjdvaQB8MfP4fJpV
+         Nrt2W5pC5U0k82spQ3fkwkqXbDC1QQnHMqPiX0TROFl3/Y5KrygTO3/qxEt4Z7PKULCK
+         JILQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:dkim-signature;
-        bh=Qp2BTPut4j9BWLU7kp/9R3u9IW0btPsFhc2WZOxCd1o=;
-        fh=Wr2aVZhQmJwo679LpS198mjyo9JqJWuMBvnRBF9f1iE=;
-        b=nHPUIbsxjW9cgYybsIUpxQEyPRfpkuikE+FaEIRKvGGmt8gf++1AKYTWh7ta1dKIOd
-         70r2XuchXm0UDhKIl7aejLN8DSwQWtvAQjqYw+qB09sKd7HWlCBvOokYp20/MaaKnfQm
-         nq8RrQyKPGQeRhJ2BjFz7UtddTjgJZqAP8P+lrvTqX4VmGBYzzzke7LGQyWdFHcgf/kL
-         QbZdCyGyfXvByFURNisHn7DdIVgt+692s/SZpx7ErZx/cSuKbx2XNSJtZMWISNmBtUxl
-         4F1sOarn5NK8F51ayIErtxjTcnXMIhdKJDkVaPujaIItFZH75i5I5Y4Kv45soKwdAZP1
-         4gdg==;
+        bh=rOA0kle+ETDmz8eQFgvwrDcZAmSvRA8CUZ0yI4t+KI8=;
+        fh=dmZ7TZ1xZWKxoEsD4ibWYFCYh/1YPGBzUVhwHi2xBok=;
+        b=tCutQLDEh2mOizIFBZNDV4inE2a/8S2+IJjRiH0FwyBXoWJGCrbuluUE8WSdxFjCkc
+         Bc0IUtZj2KicbPql4n6mQmtvT5Qi00WlgMVhPJ0o5qt2Qbnh7SXlvZwNtSOUE2oQpRMp
+         PIrJMcIf+84N8UlYhSy8WiZPqRnzLqZJugxVrK8uoc59XPEQ8Zxl1YdejLOtfsenRX3V
+         d3ed8LA+FPopOQKHaLkZcz8fIvBliXO6ns9TMUZqcOli9rIZGsB6K5IX+Idpz2+gOkG0
+         oRvL1YuofsisSz3Dpc4SKE0Sg+0nnK7+SIlfR4P3wxbNq/etXv9V0ZpdY5CU5/waNTI5
+         2hXw==;
         darn=lists.ozlabs.org
 ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20260707; t=1795212387; x=1795817187; darn=lists.ozlabs.org;
+        d=google.com; s=20260707; t=1795212801; x=1795817601; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=Qp2BTPut4j9BWLU7kp/9R3u9IW0btPsFhc2WZOxCd1o=;
-        b=p/WgAm6WRz6W2qCYa+25wz+lnMjq9h1fkYrYCdAhNHvzBsCBj4rfSnQQOqC983QV6z
-         A6ObeG92Bit1ANfACCFrRRhRziDJANCkrD3K1No/SdB8DLxPK/ZAM0YlNWX8h2ULHQ2v
-         C+YTF+81QmgOR7WxssGxNiSc+fpSw/bKQwOw92nu0B07BDYnFRKAEXFXRVl9FwqqFBY5
-         gItCFr7n5yLDT2NliHzTKIMFoby96b0cr7qm9ojV2bNM0ByaPZU6p8eXE6NDa5Hj3KhS
-         tPgiPu7WR/yOt9pL2uJuBpDEXSovyrdR6RPxWmHRdSLWcs7ay8pmjr1WDZU9IcU0sk9b
-         ITZQ==
+        bh=rOA0kle+ETDmz8eQFgvwrDcZAmSvRA8CUZ0yI4t+KI8=;
+        b=DWZNXxaXwt9HE8WcW6SdhA/J/I94exXRiyseX0nbtutQXPHxmiduZwkX7tkDhZczkE
+         pLEoxm4gKS1ehJJR9y0CTWPUJlwCtsHPk37wJFmO/2aA8uI7bx59LEH92GlfAMGeIL8J
+         eT8PeFlpZ63OLYYKB/+I8zGZjCuBoiYDZUKo2/whSYPbNZFJMcmOymT8tkih3C2/jiaV
+         u1BPhXLtQsMDsQU801sIzgseVVdZjGo79gi+z+BlIzrk9uOWfnMCBoAt3zAmh8PXX/E/
+         nE2zfd33C/4aUgECcOJVvutcozUuakJJ+K0mp5uu0nW0qkwYjMCs23cWSDxAfqfSqz8V
+         bsBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795212387; x=1795817187;
+        d=1e100.net; s=20260707; t=1795212801; x=1795817601;
         h=content-transfer-encoding:content-type:cc:to:subject:message-id
          :date:from:in-reply-to:references:mime-version:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=Qp2BTPut4j9BWLU7kp/9R3u9IW0btPsFhc2WZOxCd1o=;
-        b=TWmaDbZWaLuuGUPdCuJhqgRcPaYAvXlHqeeiRGvr+4SrOOhZc3YtNlSMXoQkmL7fK6
-         vbsIM4U1zsJVyniGwg3bjeJeTbuPCI9v5GKIyYbjmByVWgPgblkxviV3BbTO6iepoOBr
-         ZHYaNPrBT1S7C0sA8Cafr4nkJPuUZYj90M3zKwKJVvoPZp0vDo/B5+auXEdzkVz4Crr1
-         v4tZWiAj59wc9+nfsUJDqdQ2wmLxGnGxFAnKFaMACfWBGZJmjts6UdPeccWxVtrVE8nC
-         aO1/1PayikqH1fqa/Zp5c9+56ZzkXRlK0f/0B6X1cCvu/DkU9OJ+9bRGHApHsEx+Fe0r
-         16hg==
-X-Forwarded-Encrypted: i=1; AL+hErHLpiohzF7s0NsFnVqTx8bWaHprmwTrYr42J0aANusWX+vKSYQuEHo9qpbuAlziVHAPaR6hza+g0UhhKWM=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z9WY27gZ5Gnvj8xh2iSnkfh++E2bx6eDpM6mY+SwyLcRXDXrsuC
-	3ehnFsZvKlLGNOlkHdcy/Fy48sZWV78TUGqD1OrmLPD9b1HVoPcRlff+ZL9z94YMvPMdDqjglEE
-	XHSX9Kqz0+Gaz9m8dyQG1P5S00ZHk+862tCZ626Ps
-X-Gm-Gg: AZFdTZdX87AOCRXgJYFnBxcH9YvlWLVI2njvRzLTQfDyFC9Koxr70NJ2ZEJ5S1j3ABZ
-	d0XViH/uO3G3TDPxmJmE3Mgo21L0mgJWq+gSU+TBA6S54vFHcJQg8/CAeh0BHuKYaChrYia6dy+
-	Y9KjiGSfy7F+qoovqxGc+xjimQwGeAHdo4MrmpdVUf+flh4Me/QGo+r/OlZAKiX/JuHtmQpZvfK
-	pW6HoNKKdKt283+iqhEYaLMFHlldkrjN73tZd9d1MrCtcLA3lMhjY8jbqaa5Ae8BSKWg3ZzNreW
-	DKYQ77MmUOtaMaQlHl0YCG4xGLfzPtF8i8RhsK3xM0tmb2uIis8ybw3BoXrvp+trvZ4FYdF5lvu
-	dOW8Nk7xeOACmqLbQ1j7F6aEse1qLWwaPY+7X6/N0Rcz5fJdyxYuu7pbLqdGXo7ISfKlD+62HL8
-	cgtrmvHOjSI8PbjQwUWId3hq7bqR2+z+Ho+HHKS/hq75HpRw==
-X-Received: by 2002:a05:6402:548c:b0:6ba:12d7:69a8 with SMTP id
- 4fb4d7f45d1cf-6ba65a76fffmr24683a12.1.1795212386808; Fri, 20 Nov 2026
- 14:06:26 -0800 (PST)
+        bh=rOA0kle+ETDmz8eQFgvwrDcZAmSvRA8CUZ0yI4t+KI8=;
+        b=2f7EXVeLW+/UzH1ChUUVDWICsCnbPEZg26Lv2YGEDQDbgwKFmhS3e3nnANDs2P7g2g
+         buScGlO/2vmwlq9F8hpcx9jeY3EqhfV73q2R55i0gwd1pitn41kBsUrKRckiYXxb+7w9
+         bAk8vtz1ZQwDRnoPzEDXKlNgBYILxspy0sMgxucY/mT79nyjt/Tw4vsguxDM4++IE407
+         XytcQ+wnymemuyWY4wxI27xslYwGEj43slwSXQ70Y2OTdwnUCvFgwUI3E9IaEDKuR1Jf
+         jedMjmIQW+JMH+8GjifPHXj1PmjWdCDURb2CnkohyduuJhKssPqg6Kq1xN8N+oIXh1qt
+         p9QA==
+X-Forwarded-Encrypted: i=1; AL+hErEWlrKw0Hep/9OF006NYep0FmK2mrWpLM+kchRcWH8Fp/Z4Xv+/ZWBj/uFUN52lMXewM5NEGDqnVmJrP5M=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/KejZg6Vjs1wMQ7ejGUF9avzYabjdSSdnHtIdM0UhS3BzvP4l3
+	gtDa8xzo1hVyqznanZijmNFyGPgGi7Kdmt1wVx4nBtsVrT4jtlVi12upMNIVeCWXfswRB/ahR0V
+	bfZP3xcpUO/tSuAeZ1MFvtX4S5NA+bQ6vqpPrOuOb
+X-Gm-Gg: AYBFou0rTHTDIkhQJBD2q63tqQ8ewFXPRWxVMEOMx7+q8dbWmfTQX5g7bzbm0/SNNzS
+	DWsWRFaQ7RUnyH9RnIk2utzbcQMUaCXD/9DT1yTEgINpvZL/jcMn/igRvwIwPHl/76+vlictXa1
+	Qid7UeWqw9oEcNKq1eqFaUXpBsP17LG31No1IHoyyIet8jIp3tXbPMjNSdKR5U7spKJSxpkVxPK
+	C7UBut8nXC7qPt+rejPXdmOQMit0E61d+QvzVc+HqBWiNIU1pfBtZy780gC+xpeNK9vfnUNXpPU
+	CEyjhw20XD3oAyCFPGgUk96sr13EKDTueo0Yyhhp5wJ7xLGqJbFYp1f0OKSa9O8nNK4ejKlb6c8
+	tgzbUi5dYYx4RZ7pY7gBcaASzBa2mFCi2a4g2POgao9HipRbQ4lx4IAuNl16R2Tr1xETD7wNYOk
+	zRwoj/QVgJ8skjwIakYY84L/V4EOuJaqp7Y6h/iVvzS7wAuA==
+X-Received: by 2002:a05:622a:5a12:b0:536:6ea4:e6a0 with SMTP id
+ d75a77b69052e-55d89047301mr1602591cf.11.1795212800722; Fri, 20 Nov 2026
+ 14:13:20 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,23 +104,24 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261116071325.263682-1-hao.ge@linux.dev> <20261116071325.263682-4-hao.ge@linux.dev>
- <av34JPIcIOVdF0kL@milan>
-In-Reply-To: <av34JPIcIOVdF0kL@milan>
+References: <20261116071325.263682-1-hao.ge@linux.dev> <20261116071325.263682-5-hao.ge@linux.dev>
+ <4c233641-15ad-4e5a-a106-423bc31f357c@arm.com>
+In-Reply-To: <4c233641-15ad-4e5a-a106-423bc31f357c@arm.com>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Fri, 20 Nov 2026 22:06:13 +0000
-X-Gm-Features: Aa3M54pvZs5QUyjUwxPZUYW951y-yto_861ekfXrLaBmJJ2Uwz172HO5VdEMhNg
-Message-ID: <CAJuCfpHOTq5OAQtWnYjtFqUL58nn1GxCXp-DtoK4MsfeLPcwMQ@mail.gmail.com>
-Subject: Re: [PATCH v5 03/11] mm/vmalloc: reject an unaligned range in vmap_page_range()
-To: Uladzislau Rezki <urezki@gmail.com>
-Cc: Hao Ge <hao.ge@linux.dev>, Dev Jain <dev.jain@arm.com>, 
+Date: Fri, 20 Nov 2026 22:13:09 +0000
+X-Gm-Features: Aa3M54o8iPUi5c4eBLmIEsreudNlx9QkbSDoAuhcBwsY9KLGNvEMLlfilGXZ-DY
+Message-ID: <CAJuCfpG5shRGvjHJyEOveSxkPE=x7nGTo4xmy0XLabV7NutrMQ@mail.gmail.com>
+Subject: Re: [PATCH v5 04/11] mm/vmalloc: reject an unaligned range in __vunmap_range_noflush()
+To: Dev Jain <dev.jain@arm.com>
+Cc: Hao Ge <hao.ge@linux.dev>, Uladzislau Rezki <urezki@gmail.com>, 
 	Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
 	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
 	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
 	Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Potapenko <glider@google.com>, 
 	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>, 
 	Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org, 
+	Sashiko <sashiko-bot@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
@@ -131,68 +132,64 @@ X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, Nov 18, 2026 at 7:10=E2=80=AFPM Uladzislau Rezki <urezki@gmail.com>=
- wrote:
+On Tue, Nov 17, 2026 at 6:05=E2=80=AFAM Dev Jain <dev.jain@arm.com> wrote:
 >
-> On Mon, Nov 16, 2026 at 03:13:17PM +0800, Hao Ge wrote:
-> > commit a739e6b557af ("mm: vmalloc: WARN_ON if mapping size is not
-> > PAGE_SIZE aligned") put the check in vmap_pte_range(), which is too
-> > late, because the upper levels may already have installed page tables
-> > for a range that is rejected anyway.
+>
+>
+> On 16/11/26 12:43 pm, Hao Ge wrote:
+> > The PTE loop stops only at addr =3D=3D end. An unaligned end is never
+> > reached, so the loop keeps clearing past the range. An unaligned
+> > start clears the page below the range first. Both are caller bugs,
+> > and the damage is hard to attribute afterwards.
 > >
-> > The pte loop maps whole pages and stops only when addr lands exactly
-> > on end. An unaligned end lets addr jump over it and the loop keeps
-> > mapping past the range. An unaligned start maps the page below the
-> > range and usually misses end too. Such a range is never a legitimate
-> > request.
+> > vmap only installs page aligned mappings, so an unaligned unmap
+> > request is never a legitimate teardown. Warn and bail out at the
+> > entry of __vunmap_range_noflush(), before any PTE is cleared.
 > >
-> > vmap_range_noflush() has a single caller, vmap_page_range(). Warn on
-> > addr and end there and bail out with -EINVAL before any page table is
-> > installed, and drop the check from vmap_pte_range().
-> >
-> > Suggested-by: Suren Baghdasaryan <surenb@google.com>
-> > Suggested-by: Dev Jain <dev.jain@arm.com>
+> > Reported-by: Sashiko <sashiko-bot@kernel.org>
+> > Closes: https://lore.kernel.org/all/sashiko-outbox-178439@kernel.org/
 > > Signed-off-by: Hao Ge <hao.ge@linux.dev>
 > > ---
-> >  mm/vmalloc.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >  mm/vmalloc.c | 3 +++
+> >  1 file changed, 3 insertions(+)
 > >
 > > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> > index 3c0d9e69b886..a168f6f20f4f 100644
+> > index a168f6f20f4f..e2b63cb1592b 100644
 > > --- a/mm/vmalloc.c
 > > +++ b/mm/vmalloc.c
-> > @@ -125,9 +125,6 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long=
- addr, unsigned long end,
-> >       unsigned long size;
-> >       unsigned int nr_pages;
+> > @@ -523,6 +523,9 @@ void __vunmap_range_noflush(unsigned long start, un=
+signed long end,
+> >       pgtbl_mod_mask mask =3D 0;
 > >
-> > -     if (WARN_ON_ONCE(!PAGE_ALIGNED(end - addr)))
-> > -             return -EINVAL;
-> > -
-> >       pfn =3D phys_addr >> PAGE_SHIFT;
-> >       pte =3D pte_alloc_kernel_track(pmd, addr, mask);
-> >       if (!pte)
-> > @@ -369,6 +366,9 @@ int vmap_page_range(unsigned long addr, unsigned lo=
-ng end,
-> >  {
-> >       int err;
-> >
-> > +     if (WARN_ON_ONCE(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end)))
-> > +             return -EINVAL;
-> > +
-> >       err =3D vmap_range_noflush(addr, end, phys_addr, pgprot_nx(prot),
-> >                                ioremap_max_page_shift);
-> >       flush_cache_vmap(addr, end);
-> > --
-> > 2.25.1
-> >
-> LGTM,
+> >       BUG_ON(addr >=3D end);
 >
-> Reviewed-by: Uladzislau Rezki (Sony) <urezki@gmail.com>
+> Nit: It is usually a practice to change the existing BUG_ON's to
+> WARN_ON's too, if you are changing around that part.
+>
+>
+> > +     if (WARN_ON_ONCE(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end)))
+> > +             return;
+
+nit: It's also better not to combine multiple conditions into one
+warning so that the generated report clearly shows which condition
+(code line) caused the warning. IOW:
+
+if (WARN_ON_ONCE(!PAGE_ALIGNED(addr))
+        return;
+
+if (WARN_ON_ONCE(!PAGE_ALIGNED(end))
+        return;
+
+
+>
+> Reviewed-by: Dev Jain <dev.jain@arm.com>
 
 Reviewed-by: Suren Baghdasaryan <surenb@google.com>
 
 >
-> --
-> Uladzislau Rezki
+> > +
+> >       pgd =3D pgd_offset_k(addr);
+> >       do {
+> >               next =3D pgd_addr_end(addr, end);
+>
 
