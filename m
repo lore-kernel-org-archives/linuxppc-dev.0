@@ -1,90 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5D867606A33E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 04:11:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 01384606A335
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 04:37:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q8/SWDf+
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ccf9VyTp
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jW22g0pF1z2xdR;
-	Fri, 20 Nov 2026 15:11:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795147883;
-	cv=none; b=J/532KTErp9XLGfpP5JcWmQZ3/lejohAi0+gqD1WHST64HG6Swgdop6dW0WqGEVh1sehcSOIzIJUZMD0PFc/DTvLdQeyErPTuUdzWqQS/mpEDB5R8ss9XJsgubu2pVQuM5+1+nAyfcezJBgUUji8gOVXxdEaEzh0c37aJL/RSgqN1vS6a3/ZjfUoJBtz7UPtYxi2PDbus0Jm7Biw2mf+bmNalFKVm6tfNVgBzkwRJWnIyuDiQTy9PDSRdnOxNqGNytPQJ9rF5wm0jn3PLLwr3BYCvS5+tcjm7q603fsju11nh36ZVbMvsGH/e18ULK0QQVB4Y/H4YPCDYwOLu/5btw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jW2cG2kr3z2xmh;
+	Fri, 20 Nov 2026 15:37:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795149422;
+	cv=none; b=JO3iWnZcOlwozk1pGoZXpOAkm7oV1hkUwJSaGkYqmg+soQHjux/vCC8k8iqmxcSfANHh8bvn++8Rs4s41gp4VgswTVN4eERlbW3Vtrsa6G1eAdqpn+a13gvbeXl+9OwB77qMrm3tPTLSx7hi9jHZTelH9If5TDhZaVF3UnwatsS4xNj3j4+JZdAgl/wq5Cn+KbJjES5VhBpJmVZpitwzIojqFj8F6fzxuJy19sOKsievUN+xwU2MwokettsdP1DB5DItVfFuuFGNQVPpmWCmIZL4uGbHamkGhJar7V+2ZCOum+YOhEIL8p1FZzw54kbkn60kU1b4MuV0d2C+0k6utA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795147883; c=relaxed/relaxed;
-	bh=Pj003ayJ7Nhn8ncb6ekHETw8t8DvYn5mtqcaYdxA9gY=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=L1pDbZS5ltvtSfSSviZEgIJO9zWeuknNkKlZM4ZDV8nkftdk9Iu8820UZ6jEYANkHv793JKDVE++z7/8DuBiXSOGDnV0dvBg57j+putH8wTHqvRaTOo6S4INl44p+ZvmCxASt+dIi1dwRPSVf+TMMFUTjxnQUdszp+wXUbg3hL6XBFFXhTifsISumqnMBeg/RI+lW8jr9WPeL+Yi+QxrausT6kOmbTTog/Tf8n9SMihwnfpFKyMsxcXs3QHW4K/JuNZCeR6OC0WBjmUeB2NTi8hobo43Ef7lAdHVjNBol73zBKmMKfg965vEy+rRjvzBd0VBTVwHkyEWp03Ibpo81A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q8/SWDf+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795149422; c=relaxed/relaxed;
+	bh=kmfn6Jpbn2u+si0e53LG1Wq3zSw1RBKGHEshvmQ2JGo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QM13ukAJnhymBEWwKYfLIUbGFJHUsPdVFhanQSoWR9rGQTy1ejbN5/nyam3ANNbTMJOwmbyEvsfJ2xsWa7S7KI05qbj0SE5y6lYr1KlLqjnQobirp1f/sr1cgy8C/4ea6ff0coOmwvbv+4Bmb68p/g6BpU7pjDmJjav8mqZo4tfv1yHcKTik/lijJ8F01oWrQpOPpNsuFJS/Pi1d1va3kyp7vAxVGi3NecJwRZYLAl4+/CN1xKODVrYF1sZFMkai/JmsHgCH1dXRk0AgzW293sL/gWHskKCcZEPYPG3/CqxyL4KiFK2VsmOvhFU/3uZe/uxh0silfBmubRFi/0CIBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ccf9VyTp; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=q8/SWDf+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ccf9VyTp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW22f2k8xz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 15:11:22 +1100 (AEDT)
-Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-38564b4b017so491264eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 20:11:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795147880; x=1795752680; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=Pj003ayJ7Nhn8ncb6ekHETw8t8DvYn5mtqcaYdxA9gY=;
-        b=q8/SWDf+lFSkmSWLAE2gyp9D1wFzA8V9YkSR0t49H5wxcu/EiYMgv0S6DFlLyaBC25
-         BnAsaTR1Nq0FDqhd1gKiLpjaKtA8TLBLgDX03JOaOyrZkxOGX0u+i3jjATkAuJLInUMM
-         r3b1BCe9Er74fhICwNGnYnYJtV90KT1k96KZLeijPUsSaqm9YM8PNF/jjmHbxWQpeEcW
-         UrPLhS8tM6zTAKvWzasV9XG0PJu+NTpArngLsoN3YGjMtyWn09eKf4PzlUGnbyWjVokv
-         qoXM21DYQUGOpZmfU3sKa4noa0FBwSE6l28Gs9j5aGwiJb/k6BXMGhY2Wn42UmYtF20t
-         fjbg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795147880; x=1795752680;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Pj003ayJ7Nhn8ncb6ekHETw8t8DvYn5mtqcaYdxA9gY=;
-        b=NsW+pyyidz86jsvNx4OwTrCgX3HuEFgoDvzeiF5kMUxu5WGcvyWrvHT5ELUmSLlG62
-         S2jhFbXh98OmalxlCVB+Il+mHZ1Jkz6hySexuk3SRE4U6X+kRRXG+TdsodRERSbyuoEX
-         3+gpTu5Hyo7lkgLMDmw0Kd4auFNbjCce+tSLH/ixVfITKkmqbuhYafMIYW5u2KW9n4TU
-         jXIiJLZDLU+Wo6xzVScyscPzqJAdMqUUi1M93c/iSAFKFNH+oBtgOQ8NEeD4n/66m+uh
-         hrUM7tfCKc+d+AXc2+7wNThNU9uVHYC/Lfoh20xxAf3mEc46xEoN8FtMhp6vedizM+eC
-         Iepw==
-X-Forwarded-Encrypted: i=1; AL+hErFFjFUM+A/PaWICeAupHXC0f+HxLvY6uMr92OYK/5C3ZvDk085vRD4I+UEcRIyJQ1Ah2gsEaYfuWKB53yw=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+AUW64TxW6J6wNrKYeut/ZemqeGKmIoPLOZz/Num7eLMx+X5/D
-	rZuE6TvTc8fRsJ6hIAbkEjm616agfVt1jbW3lG+63n0xvq26+md4bbP9
-X-Gm-Gg: AZFdTZc0lNU7Rj5KsxQo/+6AiqcWEuG/wz+jkGzbe3cHdW8g2/4YNj93guu+AJJpWwZ
-	RWgCu2ApcGb06YOCR+TNBqtfPXjoKoL5ShG9wus7jHW7wJN8xz78X3oo39qbgqjN+B45iF5iw9X
-	bqqBc9iBN1XJc5x3BMGQEjqgrKe1nUg2mAoOgajri+OvVtLTOYIyDodx/b9/E9/0XLWwtwR7p5Y
-	9NCK4V4PDT6xAN6nENii/Kjm5iiJZ2odby8tr059IpVF2oBMthTIogOmU7Sa8UtsOTq5IOimpym
-	B2HCp/GuXe7SiRH2ppF1QlymRFr9GJ1Vccg4RuMrjBrnOPuETBUClhIWJbVcu6oi5SsYl9OooIR
-	jOjz9a1pSzPv5WzS2iaZXQh9J8J+wg76BkgAs3K2GB8JyAmvPFn7QJeXfDRS6kOtlY/l3cKDVir
-	DV59X1/2MSzOkFTa93nbYx0wNZqWxus4Tupm9XFTIhypSlSlwQyTuAD1G9NdHWkKUb8pJvvmTi+
-	k8T0dQxDf/I3nwMf68rQt8Ks083aQqGD4NlEOb09Mj/QsY5Q0k34O+pQb6kQBy1KAXNFshlipo0
-	rgcJ9vOyWkJjCDfw+TnhejTsyCE=
-X-Received: by 2002:a05:693c:25cc:b0:369:f17d:efb with SMTP id 5a478bee46e88-384b3e77699mr4201476eec.10.1795147880077;
-        Thu, 19 Nov 2026 20:11:20 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385646632b9sm3322697eec.1.2026.11.19.20.11.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 20:11:19 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Hyunjung Ko <hj351016@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Hyunjung Ko <hj351016@gmail.com>
-Subject: Re: [PATCH] powerpc/papr_scm: initialise metadata_size before reading it
-In-Reply-To: <20261119034745.1460361-1-hj351016@gmail.com>
-Date: Fri, 20 Nov 2026 09:39:33 +0530
-Message-ID: <zev4jg8y.ritesh.list@gmail.com>
-References: <20261119034745.1460361-1-hj351016@gmail.com>
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW2cD69nkz2xdR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 15:37:00 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK3ufwH1965793;
+	Fri, 20 Nov 2026 04:36:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=kmfn6J
+	pbn2u+si0e53LG1Wq3zSw1RBKGHEshvmQ2JGo=; b=ccf9VyTpA74TJeMYOQuq1i
+	oqKDob6Urz0+swI4vMwtXu0E4WThQobIS48Zp/XWlFoOcze3RwwVtkFIKWppJ4UW
+	3ayC5OrrMHssnPKyncYsGcoy647z6Kole9UWovQnXGi7coYIHAM4bJZBXjGF5VAb
+	udpzv7kld4k85FmkFHENHWzVc8nfMBoRlGyZAWKrF3h4L9VcOUw99HSb8lrz48WG
+	DtGL1QsM+AOgjm5q8N2kfUVv+6OwTrC6IfjII60mnQoSzzHrFfU3YOvFkudcMdMa
+	V898IBDqLl9NOF1r8c6pvAyd3mLrHEeQYMVsnLKHB6uiXdo8WAbhmlC65CNBsdHA
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105x5sfu-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 20 Nov 2026 04:36:41 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK3YsKG3627107;
+	Fri, 20 Nov 2026 04:36:40 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j1v9xe1r3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 20 Nov 2026 04:36:40 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AK4abma36700622
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 20 Nov 2026 04:36:37 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E514520040;
+	Fri, 20 Nov 2026 04:36:36 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AE37A20043;
+	Fri, 20 Nov 2026 04:36:33 +0000 (GMT)
+Received: from [9.124.218.70] (unknown [9.124.218.70])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 20 Nov 2026 04:36:33 +0000 (GMT)
+Message-ID: <b4f81254-26e7-436d-9688-8b9d457436eb@linux.ibm.com>
+Date: Fri, 20 Nov 2026 10:06:32 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,29 +80,293 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/5] powerpc/rtas: Handle ibm,open-errinjct return
+ format
+To: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        "Oliver O'Halloran" <oohall@gmail.com>,
+        Timothy Pearson <tpearson@raptorengineering.com>,
+        Alex Williamson <alex@shazbot.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin
+ <npiggin@gmail.com>,
+        Christophe Leroy <chleroy@kernel.org>,
+        Ritesh Harjani <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org, sbhat@linux.ibm.com,
+        harshpb@linux.ibm.com
+References: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
+ <20261023073642.59657-2-nnmlinux@linux.ibm.com>
+ <67d2b322-9a6b-41d5-9920-33acb36cb76a@linux.ibm.com>
+Content-Language: en-US
+From: Narayana Murty N <nnmlinux@linux.ibm.com>
+In-Reply-To: <67d2b322-9a6b-41d5-9920-33acb36cb76a@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: JnzMgZrHY0X2MHbBhEnfMmWcD7ChQ37L
+X-Proofpoint-GUID: zSLf6-HV1q9QayUWhMrzOE3mONuEx4JA
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDAxNyBTYWx0ZWRfX+OnRGDWC+N4b
+ xNuSlqZSkb2WScGNVX47An9dQknV16Yh3vvnEWQSWjGmgCQiwYWqPPDSqAkcIzjPOl34NVyeXIX
+ CceipFAnwsnvKTUdb7qep/dguD76WPGzAIvJdZl3UwxzRA5YKMh9qhIQ1mRqRnm4mZc7VobuljV
+ r+F5TACTDJVR1QMhqzY1Dzqa3c/SnkntpmMP+feAJvBgvpWsMAXNbDrvYrjdd0hmcncWYssgoSK
+ /MeBc0lfKWonBXQAd1zVyUDbSztvN4OWkVVedwLtg47C2hZg7P3GoqZEGTjjD6x+IA4p8NkNhFc
+ 3b5v5ag4MEE4b37aU9ahh95+65xiaFLglC8NL94HGf8rWE6jR7HG9qkj+iwAu1cIEofX+hvLMBY
+ wfhICnxYRDEipCY6P7/pWpt7p6KOMf+5QLgerhmbFDK72mdwfLwEAEMgFCjCsQKn1VoJ0/M89gM
+ a/wtignIDVt567HhG/A==
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDAxNyBTYWx0ZWRfXw4MIUloQ9GV6
+ hSR/L2h6wgbym8VxB5fEzHyPzhZl54K714qAdjK2PriKTpb/FE0o0pAVlue7EK67m/LyYSxXvLQ
+ wvLD0RFVCidYFoueevowLIrf8qMmBFM=
+X-Authority-Analysis: v=2.4 cv=K+m3jCWI c=1 sm=1 tr=0 ts=6affce59 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=Y2IxJ9c9Rs8Kov3niI8_:22 a=1mVJ_uiqAAAA:8
+ a=VnNF1IyMAAAA:8 a=FTTUi5KaBWCru4Fr2KsA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=h67g7WpEjx8dfGT80pje:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-20_02,2026-11-19_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 bulkscore=0 clxscore=1015 adultscore=0 spamscore=0
+ priorityscore=1501 impostorscore=0 phishscore=0 lowpriorityscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611200017
+X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-Hyunjung Ko <hj351016@gmail.com> writes:
+Hi Sourabh,
+thank you reviewing the patch series.
 
-> papr_scm_probe() reads "ibm,metadata-size" into metadata_size without
-> checking the return value, and the property is optional, as the comment
-> right above the call says.  of_property_read_u32() only writes the output
-> when it can decode a value, so for a device tree without that property
-> p->metadata_size is set from an uninitialised stack value.
->
-> p->metadata_size is the bound for the metadata get/set commands:
->
-> 	if ((hdr->in_offset + hdr->in_length) > p->metadata_size)
->
-> so a garbage value decides which metadata accesses are accepted.
-> Initialise it to zero, which makes those commands reject every access
-> when the platform does not advertise a metadata area.
->
-> Signed-off-by: Hyunjung Ko <hj351016@gmail.com>
-> Cc: stable@vger.kernel.org
-
-Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
-
-With that LGTM, feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+On 18/11/26 4:43 PM, Sourabh Jain wrote:
+> 
+> 
+> On 23/10/26 13:06, Narayana Murty N wrote:
+>> ibm,open-errinjct uses a non-standard RTAS return layout:
+>>
+>>    rets[0] = session token  (output parameter)
+>>    rets[1] = status code
+>>
+>> Unlike all other RTAS functions which use:
+>>
+>>    rets[0] = status code
+>>    rets[1..] = output parameters
+>>
+>> Add rtas_token_is_open_errinjct() to identify this call, and
+>> rtas_status_from_args() to extract status from the correct position.
+>>
+>> Add an early guard in rtas_call() that rejects ibm,open-errinjct
+>> invocations where nret < 2, since reading rets[1] would be out of
+>> bounds.  This is a kernel-side call-convention error, so -EINVAL is
+>> returned rather than an RTAS firmware status code:
+>>
+>>    if (rtas_token_is_open_errinjct(token) && nret < 2) {
+>>            WARN_ON_ONCE(1);
+>>            return -EINVAL;
+>>    }
+>>
+>> Adjust the output-copy loop so that for ibm,open-errinjct:
+>>
+>>    return value = rets[1]   (status)
+>>    outputs[0]   = rets[0]   (session token)
+>>
+>> For all other functions the existing convention is preserved:
+>>
+>>    return value = rets[0]   (status)
+>>    outputs[0..] = rets[1..] (non-status outputs)
+>>
+>> Move the "/* A -1 return code... */" comment immediately before the
+>> ret == -1 check so it documents the check it guards.
+> 
+> Nit: I think we should not documenting a minor comment movement
+> in the commit message.
+> 
+Agree, I will remove.
+>> Also fix sys_rtas() last-error status detection: add the same early
+>> nret < 2 validation at the syscall boundary (returning -EINVAL) to
+>> avoid entering RTAS with an invalid ibm,open-errinjct return layout.
+>> After that guard, use rtas_status_from_args() to obtain the RTAS
+>> status for last-error handling.
+>> The prominent user librtas already passes nret = 2 for this function
+>> as required by PAPR, so well-formed callers are unaffected.
+>>
+>> Reference: OpenPOWER PAPR documentation
+>>             https://files.openpower.foundation/s/XFgfMaqLMD5Bcm8
+>> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+>> ---
+>>   arch/powerpc/kernel/rtas.c | 78 +++++++++++++++++++++++++++++++++-----
+>>   1 file changed, 69 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+>> index 8d81c1e7a8db..38f3d08d4228 100644
+>> --- a/arch/powerpc/kernel/rtas.c
+>> +++ b/arch/powerpc/kernel/rtas.c
+>> @@ -1117,6 +1117,28 @@ static bool token_is_restricted_errinjct(s32 
+>> token)
+>>              token == rtas_function_token(RTAS_FN_IBM_ERRINJCT);
+>>   }
+>> +/*
+>> + * ibm,open-errinjct uses a non-standard return layout:
+>> + *   rets[0] = session token  (output parameter)
+>> + *   rets[1] = status code
+>> + *
+>> + * All other RTAS functions use the standard layout:
+>> + *   rets[0] = status code
+>> + *   rets[1..] = output parameters
+>> + */
+> 
+> Nit: this comment describes rtas_status_from_args(), not 
+> rtas_token_is_open_errinjct().
+> Please move it down.
+> 
+Agreed. I'll move the comment above rtas_status_from_args().
+>> +static inline bool rtas_token_is_open_errinjct(int token)
+>> +{
+>> +    return token == rtas_function_token(RTAS_FN_IBM_OPEN_ERRINJCT);
+>> +}
+>> +
+>> +static int rtas_status_from_args(int token, struct rtas_args *args, 
+>> int nret)
+>> +{
+>> +    if (rtas_token_is_open_errinjct(token))
+>> +        return be32_to_cpu(args->rets[1]);
+>> +
+>> +    return nret > 0 ? be32_to_cpu(args->rets[0]) : 0;
+>> +}
+>> +
+>>   /**
+>>    * rtas_call() - Invoke an RTAS firmware function.
+>>    * @token: Identifies the function being invoked.
+>> @@ -1198,6 +1220,16 @@ int rtas_call(int token, int nargs, int nret, 
+>> int *outputs, ...)
+>>               return -1;
+>>       }
+>> +    /*
+>> +     * ibm,open-errinjct returns rets[0]=session_token, rets[1]=status.
+>> +     * We need nret >= 2 to read status from rets[1].  Reject early if
+>> +     * the caller forgot to account for the extra return cell.
+>> +     */
+>> +    if (rtas_token_is_open_errinjct(token) && nret < 2) {
+>> +        WARN_ON_ONCE(1);
+> 
+> Nit: please switch WARN_ON_ONCE(1) to a WARN_ONCE() with a message, so 
+> the log
+> says what the caller got wrong. For example:
+> 
+> WARN_ONCE(1, "rtas: ibm,open-errinjct needs nret >= 2 (got %d)\n", nret);
+> 
+Makes sense. I'll use WARN_ONCE() with the suggested message.
+>> +        return -EINVAL;
+>> +    }
+>> +
+>>       if ((mfmsr() & (MSR_IR|MSR_DR)) != (MSR_IR|MSR_DR)) {
+>>           WARN_ON_ONCE(1);
+>>           return -1;
+>> @@ -1213,15 +1245,33 @@ int rtas_call(int token, int nargs, int nret, 
+>> int *outputs, ...)
+>>       va_rtas_call_unlocked(args, token, nargs, nret, list);
+>>       va_end(list);
+>> +    ret = rtas_status_from_args(token, args, nret);
+>> +
+>>       /* A -1 return code indicates that the last command couldn't
+>> -       be completed due to a hardware error. */
+>> -    if (be32_to_cpu(args->rets[0]) == -1)
+>> +     * be completed due to a hardware error.
+>> +     */
+>> +    if (ret == -1)
+>>           buff_copy = __fetch_rtas_last_error(NULL);
+> [...]
+>> -    if (nret > 1 && outputs != NULL)
+>> -        for (i = 0; i < nret-1; ++i)
+>> -            outputs[i] = be32_to_cpu(args->rets[i + 1]);
+>> -    ret = (nret > 0) ? be32_to_cpu(args->rets[0]) : 0;
+>> +    /*
+>> +     * Copy non-status outputs to the caller's buffer.
+>> +     *
+>> +     * For ibm,open-errinjct the layout is:
+>> +     *   rets[0] = session token  -> outputs[0]
+>> +     *   rets[1] = status         (returned, not copied)
+>> +     *
+>> +     * For all other RTAS functions:
+>> +     *   rets[0] = status         (returned, not copied)
+>> +     *   rets[1..nret-1] -> outputs[0..nret-2]
+>> +     */
+>> +    if (outputs) {
+>> +        if (rtas_token_is_open_errinjct(token)) {
+>> +            outputs[0] = be32_to_cpu(args->rets[0]);
+>> +        } else if (nret > 1) {
+>> +            for (i = 0; i < nret - 1; ++i)
+>> +                outputs[i] = be32_to_cpu(args->rets[i + 1]);
+>> +        }
+>> +    }
+> 
+> Just wondering, what is the need to copy the outputs when RTAS returns 
+> -1 (hardware error)?
+> 
+> However, since it has always been this way, I have no concerns regarding 
+> this aspect of the patch.
+> 
+Yes, the intention here is to preserve the existing behavior of
+rtas_call() while handling the non-standard return layout of
+ibm,open-errinjct.
+>>       lockdep_unpin_lock(&rtas_lock, cookie);
+>>       raw_spin_unlock_irqrestore(&rtas_lock, flags);
+>> @@ -1896,6 +1946,14 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user 
+>> *, uargs)
+>>       if (block_rtas_call(func, nargs, &args))
+>>           return -EINVAL;
+>> +    /*
+>> +     * ibm,open-errinjct places status at rets[1]; reject calls with
+>> +     * fewer than 2 return cells before entering RTAS, since reading
+>> +     * rets[1] for the -1 sentinel would be out of bounds.
+>> +     */
+>> +    if (rtas_token_is_open_errinjct(token) && nret < 2)
+>> +        return -EINVAL;
+>> +
+> 
+> I think it makes sense to perform this check after the security lockdown 
+> check.
+> 
+> Otherwise, it would look confusing if the kernel first reports that the 
+> argument is
+> less than expected, and then, when the user passes the correct argument, 
+> kernel
+> reports that the operation cannot be executed because it is blocked by 
+> lockdown.
+> 
+> So, let's move this check below the security lockdown check.
+> 
+Agreed. I'll move the nret validation below the security lockdown
+check.
+> 
+> - Sourabh Jain
+> 
+> 
+Thanks,
+Narayana Murty.
+>>       if (token_is_restricted_errinjct(token)) {
+>>           int err;
+>> @@ -1942,9 +2000,11 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user 
+>> *, uargs)
+>>       do_enter_rtas(&rtas_args);
+>>       args = rtas_args;
+>> -    /* A -1 return code indicates that the last command couldn't
+>> -       be completed due to a hardware error. */
+>> -    if (be32_to_cpu(args.rets[0]) == -1)
+>> +    /*
+>> +     * A -1 return code indicates that the last command couldn't
+>> +     * be completed due to a hardware error.
+>> +     */
+>> +    if (rtas_status_from_args(token, &args, nret) == -1)
+>>           errbuf = __fetch_rtas_last_error(buff_copy);
+>>       lockdep_unpin_lock(&rtas_lock, cookie);
+> 
 
 
