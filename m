@@ -1,81 +1,83 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00BE3606A6FA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 19:33:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BA71D606A6CA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 19:33:56 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pojyfn1r
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HLhrYcxi
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jWQVz3y7Gz2xwN;
-	Sat, 21 Nov 2026 06:33:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b134"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795203227;
-	cv=none; b=BsaExR5TGw+xk+ERbdcrn0ucK+H1FeGlQFCfHQjeWoCfWAJpSqRGYMbycJ+ymzKr76unLcarrw5jaaFQE+xXj3sfauG0WIDRTyvn+38asnS1LRp9gbX04roKlOBeu8vJRKL4Vu/c7/xf73UnG0mCs0lNZyy0AjazNEwdXKJ1eG7UDdCwgypnIFt09aiXdpZWgUQg3iJRerCLyx0CMmu5iEx6WHUttyFF7vp6XMZkICiy2thUOvmWIzxAj/pTAlZFIGuX3zdhOX/uY/19ok4AEUIwVkii7Vgz3vkQ3DgmlmohXQtsDu5Mt4Obfp3eWBQdXIodvDw4yfHj7km2raB/wQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jWQW11YxCz2xpt;
+	Sat, 21 Nov 2026 06:33:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795203229;
+	cv=none; b=nytGwsZ7OKSQwEAQHpOSHA8NH1422D7CUFM0D0OXq3c7xNq3+be++h8pcw4oROHUfqUuy//oi9dDAgOfpgnSx8HrtKpcsc1nTf+oCKPpK5ubdYlTrGACJzz4MK/436f84ffe57wyHkIXjt2GLJsIhNfFhniy9cGLwujpEeAFLWLqjNWkf6fXu/alNYKm5EyL5BaZ1qwCVewqGhfObLt/50HBTJauXwDvXpc/8nM2SWN9lvCng/ovU8+YbBJqdmifkeSUOHSGuiLXUjkCDaJq62/ZmBoDci4kz6ZbNtmFHvpMS0FhosqUtANHXpte6imegiab1ZDdBiJ9ix11TcSh+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795203227; c=relaxed/relaxed;
-	bh=fxCNuWQvzJYmgA8gn7P/jRBw4XZXA/JTp0X0Bgf58pM=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=hEuQgNOKMHMl/j+Z0eEQJ0Cm4fMb0yDf63apXKcop0kfGuun+58weol726hyLNWVpxMuZsra8gtV1AtYJi4WzKx3KEZjBjPnKLkq3yGIcrlb8ZuXvhyO7ulaZikh20aWptwDoYQF+qo+GwYqHx6Cnl6YOZKUDuyK98i6JtN0gB/87k9yQ2rxNqCGgDXPGfwPU3acymZzcvuPKfpUZLZFlyuTdos1lraSjGmXTDFWnHhwBN5mpKbE615Q0qVxpt/5TFuYagJl/17NVXyiC1rYMgK57pnPlyx/6j5plF4M5xmFMxgBtfwDE3TKyV0UlRu3hBHN+YGNP0sjFYGB2Nm/ag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pojyfn1r; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1795203229; c=relaxed/relaxed;
+	bh=CbEMQyFndEQPpa9CfnVe3JHR8goha/OLm3NFkyD+X70=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=IQYagCRec+eFgPLyh+PSjtIOsnDp/hbMshhKwypM1xI4Pr13PPIYuCNv8vK0VXjcAIRIJwrKYIDGUOHUnO8GhvTRw2H8W/bWHZzsGG9x6EY49+YZC+K/jFnSrDjclBPFN5szCu2Y3XIdDQV7x1XSD0ygcLBq8cMAECOpCzekmVTonRIwoNUtecH7qkaIQ3QTi7+P3udgIedN2oCPTHr3N/oCM4uY3BV53+SJLMAhXalHQ2BqoXPATyVO/9oyFuxNIJVP0uiW/QHD9RWvpv3HjDoYooFwpgZLjp8DnspE1Y/YhFo9QPExxZL2qG5wFG0XjcKeDGlh33duf3PV8AnLmQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HLhrYcxi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112a; helo=mail-yw1-x112a.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Pojyfn1r;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=HLhrYcxi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b134; helo=mail-yx1-xb134.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb134.google.com (mail-yx1-xb134.google.com [IPv6:2607:f8b0:4864:20::b134])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112a; helo=mail-yw1-x112a.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com [IPv6:2607:f8b0:4864:20::112a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWQVx6QjBz2xpt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 06:33:44 +1100 (AEDT)
-Received: by mail-yx1-xb134.google.com with SMTP id 956f58d0204a3-67db0791748so1481645d50.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 11:33:44 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jWQVz3W0Qz2xqJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 06:33:47 +1100 (AEDT)
+Received: by mail-yw1-x112a.google.com with SMTP id 00721157ae682-8b4d6981c67so8571217b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 11:33:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795203222; x=1795808022; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=fxCNuWQvzJYmgA8gn7P/jRBw4XZXA/JTp0X0Bgf58pM=;
-        b=Pojyfn1rmNtNgAB//ingPI36PFXHk6X3gPcYJcOVeopbR5KpfGBV2kuoW34Pxb1nIr
-         GpJdKe+oYwmRqOZYsNpy31oD31JnLaL7V4FNvW7TenONlS+zNjpZKNt8Vm1o2U++GgRC
-         0W3YXnb0BTVFjPaooIo6O7nuNb530kEvJrUOS3TO6BWQbXEVbZXJpMITBflZ3xr0ogWp
-         Z96dUD4C5m8/D7XuoQrfISZPTkYbKie45ZHYSxeYVCrrLF6g1V/njeUwFnO56b3DnZi3
-         mwdjybRWgmWxkoRczeyczDWog6vgDI7G8dw7i2v2AHDEZkufdH3JNRYpeL+CuSoQ+3x4
-         cRzQ==
+        d=gmail.com; s=20260707; t=1795203225; x=1795808025; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=CbEMQyFndEQPpa9CfnVe3JHR8goha/OLm3NFkyD+X70=;
+        b=HLhrYcxiQ27bKuiX6H6leWLEDYIGDiABjAeJKWwoMhE4ZvirS+jzbTXpwS/0CJaYPZ
+         tHO691joEaoxd6JBvNBZFhzfGGgyuJjdWdkub1BtO1xdXbZEW/c0I0zOvs3Seaq5pm0a
+         SxzsVENe4aHlryaWkEUgZQR4PbVBtyhu3O9SeZW99XRe2iL2QVckPGo9xUl85S2KYKYc
+         YkOHqj4ka27ZGNrR7ZurqvJCp9OCQpy4n625hSyzTw7H/HdZhZFimKadGv+m14FxXiCk
+         PFnV5J9qk9ntUI1gtk4gtFWJH5NTA75Ws762U0iMZzyxtMTBEzYXM8xSiCuGbfQ7ShDc
+         dnDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795203222; x=1795808022;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=fxCNuWQvzJYmgA8gn7P/jRBw4XZXA/JTp0X0Bgf58pM=;
-        b=nkV+tK6cMQDtIRp1PJTUqBXIaScGUL1aInHbwK8FW6Lq7/fcYBxpUNm0A+FW0ckJVb
-         NNezJoySGqgpxK8V6HEqUoIP62m3IalPu3/kQ67F6sI24lWoV0oEl023pjyrZxeDmkM3
-         w5cFgGihCSTUiH4EvpYJyfs/h0t4qeMnxF7zYq0XcPoCvVyfNfymJP+efKi3tgzf0QB8
-         zs14n32WTlaVZGtnpF+Fk654JNto/WGj4dYk6CAQ1Eu9KYDNJAeUGaX/LWuTIFFvptdQ
-         EVfgzIGLBf+LnL59B3IGDB/8XrJmIjC+4cN9OKNiHKusT1cI6/0lP/EOF7PS5BaAHgDc
-         SSSA==
-X-Gm-Message-State: APuU4Z9Q5hQ6H2Wxg3LAWB/pAoSGLBRWNLyeZDQxpo7SFQoCC2JoOCRY
-	Jiti6xJF8WrVZ8Ibz6s54bLYv4siJiIUluf+SLPLrpIzB35H3MbO/XWa
-X-Gm-Gg: AZFdTZfKioNC1cT2ujyyexo2WyZwIfcWr9NeLWmyCHAYFG+R07CHMpbD6SSShagD7ZY
-	9rOXn8dYjzCya+pihFGa1UfUxsk+PWgacIfQ3n5sOW1nU0nCsxPF57pM18+hzHTCU1FZLOiGjDd
-	j1fIphznDUTPQWITnwYreRaWL4Yedd6XnlkTX4y9lIkhVmaTKUS2nFFleveGuLkGA6R39ywva2J
-	INfzMZz20gQMUmbLbQy9aq2+MAsSErhrlfoWyEsXE2XBGD/O1nqp9zJQkq7MaSyN0XJaSiGHZqz
-	ABR6KaUAi9IHeuI4nhRg/hxk+AHMd+9vfhEw6ae7j5kM88YQ2uVrGiZy+qKDDzViXyupOP+DfrP
-	suWktmBDDyZcLCTNFONvD4zmylTy7nba8bMPZyr4zgv7bMvdzdQKTPuy8aZRJSeT0VB0HgfcIh+
-	7esLQ2pvxOuQCM0RaJAQTdLxvH/Wmua8dKSff+QY8n0WUjtxRDA8SiXaIIp9h2wn3lAMX8yR0oF
-	HQ428pGN8Y+N5eyYGnwReJZ/6OqCZBNUHg1CgPU+Bfp3S9wh+5m18l58v6k+TjcjSSCChjYLssX
-	a3YDlqq1YjqBgr7ur2RSMo0PIxyXah26m/nq2l8NbTZolBmi/VSHOUTX3LjpIH7I7iL34hMBJFR
-	n20/jaQuLXpBwycajiyxBIK6qZE4wSf/PVLFCLxjD5ZR9fre64Q7LmMmQ60xuknQ=
-X-Received: by 2002:a05:690e:d49:b0:67d:ebad:8cbc with SMTP id 956f58d0204a3-67df448e14amr1534819d50.99.1795203222177;
-        Fri, 20 Nov 2026 11:33:42 -0800 (PST)
+        d=1e100.net; s=20260707; t=1795203225; x=1795808025;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=CbEMQyFndEQPpa9CfnVe3JHR8goha/OLm3NFkyD+X70=;
+        b=s2WN4cQCgXEq8Ndu/BaYS4Xq5NARK4mQB7LVwVT3WeD9CJ8F1H4+erK2SUB6drSAGB
+         YNY0xvc4i24CwEoEXQhbaLaUb40tRn4CfX8Pa0jsMDQnzt2CiW1Uu3P4AHHt/5A2BZo/
+         AU6nvnDQohHHdgVEDbgAcETnWEtGuzWjWtlW0Sp0rDUt2uwpP3wQvqhjfGgdsyO3mSPu
+         gdPBqz/iWbOJYU5Sf+ntURIG4mZGDMIj9z/oyySSjhFNq3dhMsTf6i+yDPSGWOT/BRhv
+         6GJyRz/FNUtyS0ZOANCyz0fudB05EMuntBVIAQdXVuB0yxoBumw/qxaqgXq7K4M9gYM8
+         DEFw==
+X-Gm-Message-State: APuU4Z8SWWQ1bbk8sJ81tM32VfBV6yBtQgyp/LwsUSv5CKpPELvtRMJi
+	U1E/jnulzlbYwt1sSxeBpPxF28kpyVxE+UPL/ve2XQ2ipvuFKwXYFv9R
+X-Gm-Gg: AZFdTZe2FIhQ85HUD/Y4hap1nq0qiJZSWr3Wh0FY55RzvDVCTLUcBQN3LB0dFnQlxFC
+	PyL75CvH/lft/pj1yj92cyBaVkrmdMUetFa1hGiiWcDv0dQLnrIrFtBMSWTdFAy6duz7FlXnP9F
+	s1N4VkpLLbQqN0e47St3gckWEFYO1EAFSRC0IMtGJCEj0+f3vYbH3GTyMFl3eIY8uc78SuXbRc0
+	C0ca78L9Dq5eI0ptIL65o8+frFc1Shce8PWxbKq2El8WDBUkpPfeDQfzQ4MnaYdiI3N+4jTXKT/
+	uV6gmgG07jc0GsYX+F/B8L0f/6KqFpVjH7kMahYD6PzAbBU2b6PtPuBOINIh3lOU8xSiQsAPK0m
+	yESixDIFHPA4Y/5poAkuU3I/94BT/hu2GL83pPZuWARBP/6KonGyj6KkDjvv9U103zY0FPLz8SL
+	jYcpbCPCGqdhXuSyoUOJZQyXcKTjzRPmp07AkaPEK51mwrXOTotP1IQSaYiOoBAYX9pQ9cBWxgJ
+	Gkee8WB0Ck0wJT7jo1hRWQieLzFwYMd41ll6km7dCRUF3HIJoiaMyjuzpNg3MptvH0hZVuTbpz1
+	GcpgkXU4sSzpdauYWXstEcBo6628uBelWhINTCGqY0oR0no6MGTDkXP9IGb23uUOTjxlW+aX09i
+	BMvpkBPSqyyyDESXoUVZvP+9iCxBH+V9ePRJapXYYFg==
+X-Received: by 2002:a05:690c:dc5:b0:8b3:4122:f464 with SMTP id 00721157ae682-8b5204f191bmr23190407b3.55.1795203224695;
+        Fri, 20 Nov 2026 11:33:44 -0800 (PST)
 Received: from localhost ([2600:1702:7a90:6f9f:66f3:d5d6:2d12:d460])
-        by smtp.gmail.com with ESMTPSA id 956f58d0204a3-67df337bfd7sm2146401d50.15.2026.11.20.11.33.41
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b5202b085bsm17631997b3.16.2026.11.20.11.33.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 20 Nov 2026 11:33:41 -0800 (PST)
+        Fri, 20 Nov 2026 11:33:43 -0800 (PST)
 From: Matt Turner <mattst88@gmail.com>
-Subject: [PATCH 0/4] powerpc/32: Report MPC7448 L2 cache errors
-Date: Fri, 20 Nov 2026 14:33:39 -0500
-Message-Id: <20261120-ppc32-l2-ecc-v1-0-98fc8e6e0a32@gmail.com>
+Date: Fri, 20 Nov 2026 14:33:40 -0500
+Subject: [PATCH 1/4] powerpc/32: Decode MPC745x L2 and L3 cache machine
+ checks
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,10 +93,9 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MMQqAMAxA0atIZgNNBKVeRRwkphqQWloQQby7x
- fEN/z9QNJsWGJsHsl5W7IwV1DYg+xI3RVurgR33RM5jStIxHowqgp5pUBIJqzqoScoa7P530/y
- +H9+5jD1eAAAA
-X-Change-ID: 20261109-ppc32-l2-ecc-9217e1ccfde0
+Message-Id: <20261120-ppc32-l2-ecc-v1-1-98fc8e6e0a32@gmail.com>
+References: <20261120-ppc32-l2-ecc-v1-0-98fc8e6e0a32@gmail.com>
+In-Reply-To: <20261120-ppc32-l2-ecc-v1-0-98fc8e6e0a32@gmail.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
  "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
@@ -104,90 +105,220 @@ To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  linux-edac@vger.kernel.org
 X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3209; i=mattst88@gmail.com;
- h=from:subject:message-id; bh=z9yjhfg1WB5tn8m2imu7WOYSvv7f5xJsD5QGreVFmFo=;
- b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLIZFkyJ6DuQ2XZd79L9ug/9jRPeM614HLNnuVtQYre4z
- 0G5vaw3Oz6yMIhxMcwUU2SJW6/IMqttx1Kf09K/YOawMoEMkRZpYAACFga+3MS8UiMdIz1TbUM9
- QyBDxygeIqfHoJFZXFyaWqSbVlDkkJdfkliSmZ9XrJdfkJpXkF6gl5aZVpKRkV9UnAo0Qi8vtcT
- U1dHNyNDAxNLRwszJwtHUxNnZydDJzdHR2dXJyNLcxMDZ0tHE1dKcgYtTAOaaFUUM/5P6VVTF3L
- IO3zP5J7Sie1F2SZbnietPS89qz+jcXRdsns3wP5eh/cNWWSkXmec54mFcS1IeJT/58fr0Yo2nc
- i8YmpZHMgAA
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7638; i=mattst88@gmail.com;
+ h=from:subject:message-id; bh=VRO/XG2kWpmnUT7mAvBKhs8RiHjgk1isVl1A350JWDY=;
+ b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLIZFkyxdpOVVbIvCupavdxTcu6K5KtLb2x/29Fn/HK9q
+ iN7j1ZuxwcWBjEuhpliiixx6xVZZrXtWOpzWvoXzBxWJpAh0iINDEDAwsCXm5hXaqRjpGeqbahn
+ CGToGMVD5PQYNDKLi0tTi3TTCooc8vJLEksy8/OK9fILUvMK0gv00jLTSjIy8ouKU4FG6OWllpi
+ 6OroZGRqYWDpamDlZOJqaODs7GTq5OTo6uzoZWZqbGDhbOpq4WpozcHEKwFwTf4uR4eSC4yvlz7
+ 591b5m+dPbm+dsz3YWzDla9mnOxl1T36qvXfeJ4ceGt511zyKV2yJMnVZsCmTffXRX8go/Dr4ya
+ b286B0v2AA=
 X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
  fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The MPC7448 has ECC on its L2 cache, but Linux never enables or reads
-the L2 error registers. L2ERRINTEN resets to 0, so multi-bit errors go
-unreported, and the single-bit error counter is never read.
+On the 745x, SRR1[MSS] means the memory subsystem detected an error, and
+MSSSR0 says which: L2 tag or data parity, MPC7448 L2 ECC, or L3 tag or
+data parity.  machine_check_generic() reports these cache errors as "L2
+data cache parity error" and never clears MSSSR0, whose bits are sticky.
 
-Patch 1 decodes MSSSR0 for L2 and L3 cache machine checks on all 745x
-parts, which are currently all reported as "L2 data cache parity
-error". Patch 2 enables machine checks for multi-bit ECC and tag parity
-errors on the 7448 and adds the L2 error registers to the decode.
-Patch 3 adds an EDAC driver that reports the single-bit count, the
-machine checks, and uncorrectable errors latched without one. Patch 4
-adds error injection to the driver; it is separate because it is the
-part most likely to need changes.
+Add machine_check_745x(), which decodes and clears the MSSSR0 cache
+error bits, and use it for every 745x.  Machine checks without one of
+those bits still go to machine_check_generic().
 
-L2 machine checks clear SRR1[RI], so they are never recoverable. The
-injection code masks reporting while it runs and reads the errors back
-itself. Tag injection hung the machine, so it is not offered.
-
-Tested on an iMac G4 (PowerMac6,1) with a 7448 (PVR 0x80040202):
-
-- L2ERRINTEN is 0x18 after boot.
-- An injected single-bit error is corrected and reported as CEs.
-- An injected multi-bit error is reported as a UE at the target address,
-  without a machine check.
-- With the injection's masking removed, a multi-bit error raises a
-  machine check, decoded as in patch 2, and the writing task oopses. The
-  error in the target line raised a second machine check while the first
-  oops was being printed, and the driver then reported both as UEs.
-
-Suspend to RAM and resume were tested: L2ERRINTEN is still 0x18 after
-resume, and injection still works. With CONFIG_STRICT_KERNEL_RWX enabled,
-PMU sleep oopses in low_sleep_handler with or without this series; that
-was tested with "powerpc/powermac: Fix low_sleep_handler with
-STRICT_KERNEL_RWX", which is sent separately. No other 745x part was
-tested.
-
-Patches 3 and 4 use symbols exported by patch 2, so I'd suggest the
-series goes through the powerpc tree with an ack from the EDAC
-maintainers.
-
+Signed-off-by: Matt Turner <mattst88@gmail.com>
 ---
-Matt Turner (4):
-      powerpc/32: Decode MPC745x L2 and L3 cache machine checks
-      powerpc/32: Enable and decode MPC7448 L2 ECC machine checks
-      EDAC/mpc7448_l2: Add a driver for the MPC7448 L2 cache
-      EDAC/mpc7448_l2: Add error injection
+ arch/powerpc/include/asm/cputable.h       |  1 +
+ arch/powerpc/include/asm/reg.h            |  5 +++++
+ arch/powerpc/kernel/cpu_specs_book3s_32.h | 22 +++++++++++-----------
+ arch/powerpc/kernel/traps.c               | 28 ++++++++++++++++++++++++++++
+ 4 files changed, 45 insertions(+), 11 deletions(-)
 
- MAINTAINERS                               |   9 +
- arch/powerpc/include/asm/cpu_setup.h      |   1 +
- arch/powerpc/include/asm/cputable.h       |   2 +
- arch/powerpc/include/asm/mpc7448_l2.h     |  31 +++
- arch/powerpc/include/asm/reg.h            |  38 +++
- arch/powerpc/kernel/Makefile              |   3 +-
- arch/powerpc/kernel/cpu_setup_6xx.S       |  38 ++-
- arch/powerpc/kernel/cpu_specs_book3s_32.h |  24 +-
- arch/powerpc/kernel/mpc7448_l2.c          | 124 +++++++++
- arch/powerpc/kernel/traps.c               |  28 ++
- drivers/edac/Kconfig                      |   9 +
- drivers/edac/Makefile                     |   1 +
- drivers/edac/mpc7448_l2_edac.c            | 442 ++++++++++++++++++++++++++++++
- 13 files changed, 736 insertions(+), 14 deletions(-)
----
-base-commit: d68ce4e71248e1ff5af9654b407541d9260b3ba5
-change-id: 20261109-ppc32-l2-ecc-9217e1ccfde0
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index a3be81c47df3..8445533c946b 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -34,6 +34,7 @@ extern int machine_check_e500(struct pt_regs *regs);
+ extern int machine_check_47x(struct pt_regs *regs);
+ int machine_check_8xx(struct pt_regs *regs);
+ int machine_check_83xx(struct pt_regs *regs);
++int machine_check_745x(struct pt_regs *regs);
+ 
+ extern void cpu_down_flush_e500v2(void);
+ extern void cpu_down_flush_e500mc(void);
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 541a493e13bf..82a85d44776e 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -729,6 +729,10 @@
+ 
+ #define SPRN_MSSCR0	0x3f6	/* Memory Subsystem Control Register 0 */
+ #define SPRN_MSSSR0	0x3f7	/* Memory Subsystem Status Register 1 */
++#define   MSSSR0_L2TAG	0x00040000	/* L2 tag parity error */
++#define   MSSSR0_L2DAT	0x00020000	/* L2 data parity/ECC error */
++#define   MSSSR0_L3TAG	0x00010000	/* L3 tag parity error */
++#define   MSSSR0_L3DAT	0x00008000	/* L3 data parity error */
+ #define SPRN_LDSTCR	0x3f8	/* Load/Store control register */
+ #define SPRN_LDSTDB	0x3f4	/* */
+ #define SPRN_LR		0x008	/* Link Register */
+@@ -801,6 +805,7 @@
+ #define   SRR1_PROGTRAP		0x00020000 /* Trap */
+ #define   SRR1_PROGADDR		0x00010000 /* SRR0 contains subsequent addr */
+ 
++#define   SRR1_MCE_MSS		0x00100000 /* 745x memory subsystem error (MSSSR0) */
+ #define   SRR1_MCE_MCP		0x00080000 /* Machine check signal caused interrupt */
+ #define   SRR1_BOUNDARY		0x10000000 /* Prefixed instruction crosses 64-byte boundary */
+ #define   SRR1_PREFIXED		0x20000000 /* Exception caused by prefixed instruction */
+diff --git a/arch/powerpc/kernel/cpu_specs_book3s_32.h b/arch/powerpc/kernel/cpu_specs_book3s_32.h
+index 3714634d194a..90ca26405c1d 100644
+--- a/arch/powerpc/kernel/cpu_specs_book3s_32.h
++++ b/arch/powerpc/kernel/cpu_specs_book3s_32.h
+@@ -426,7 +426,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7450 2.1 */
+@@ -442,7 +442,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7450 2.3 and newer */
+@@ -458,7 +458,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7455 rev 1.x */
+@@ -474,7 +474,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7455 rev 2.0 */
+@@ -490,7 +490,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7455 others */
+@@ -506,7 +506,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7447/7457 Rev 1.0 */
+@@ -522,7 +522,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7447/7457 Rev 1.1 */
+@@ -538,7 +538,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7447/7457 Rev 1.2 and later */
+@@ -554,7 +554,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7447A */
+@@ -570,7 +570,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* 7448 */
+@@ -586,7 +586,7 @@ static struct cpu_spec cpu_specs[] __initdata = {
+ 		.num_pmcs		= 6,
+ 		.pmc_type		= PPC_PMC_G4,
+ 		.cpu_setup		= __setup_cpu_745x,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_745x,
+ 		.platform		= "ppc7450",
+ 	},
+ 	{	/* default match, we assume split I/D cache & TB (non-601)... */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 3a8f5416e3f6..4fb1610baa51 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -788,6 +788,34 @@ int machine_check_generic(struct pt_regs *regs)
+ 	}
+ 	return 0;
+ }
++
++#ifdef CONFIG_PPC_BOOK3S_32
++#define MSSSR0_CACHE_ERR	(MSSSR0_L2TAG | MSSSR0_L2DAT | MSSSR0_L3TAG | MSSSR0_L3DAT)
++
++/*
++ * On the 745x, SRR1[MSS] means the memory subsystem detected an error, and
++ * MSSSR0 says which.  The MSSSR0 bits are sticky, so clear them.
++ */
++int machine_check_745x(struct pt_regs *regs)
++{
++	unsigned long reason = regs->msr;
++	unsigned long msssr0 = mfspr(SPRN_MSSSR0);
++
++	if (!(reason & SRR1_MCE_MSS) || !(msssr0 & MSSSR0_CACHE_ERR))
++		return machine_check_generic(regs);
++
++	mtspr(SPRN_MSSSR0, msssr0 & ~MSSSR0_CACHE_ERR);
++
++	pr_err("Machine check in kernel mode.\n");
++	pr_err("Caused by (from SRR1=%lx, MSSSR0=%lx):%s%s%s%s\n",
++	       reason, msssr0,
++	       msssr0 & MSSSR0_L2TAG ? " [L2 tag parity]" : "",
++	       msssr0 & MSSSR0_L2DAT ? " [L2 data parity/ECC]" : "",
++	       msssr0 & MSSSR0_L3TAG ? " [L3 tag parity]" : "",
++	       msssr0 & MSSSR0_L3DAT ? " [L3 data parity]" : "");
++	return 0;
++}
++#endif
+ #endif /* everything else */
+ 
+ void die_mce(const char *str, struct pt_regs *regs, long err)
 
-Best regards,
---  
-Matt Turner <mattst88@gmail.com>
+-- 
+2.56.1
 
 
