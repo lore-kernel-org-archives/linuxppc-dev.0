@@ -2,72 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 17086606A325
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 07:33:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EF58A606A325
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 07:36:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CNJV33AV
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i9BFe3Nu
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jW6WY5s5Gz2yDm;
-	Fri, 20 Nov 2026 18:33:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jW6bY54DWz2xdR;
+	Fri, 20 Nov 2026 18:36:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795159993;
-	cv=none; b=nDDSfuXmHCw1OM3Ckh4D2cr3xYpdvgNX+Kc1n2XCTUDvewvTeyEFndxpdWYZKUMV19MfOC+Y3FkUqDBLC8GKJMMZ0r5fEHZhZJdzUpTzCno2Y3asW0NX0yfgQayxlrtRTUMsH36Vb6Eg9WWB2j1+9JMcp3spTKhRaVwePcelZeq+x9JC5am9p70BnMtuYpTxxqNH/VplFtrKDdi8mmGo1Tmserem+gSOTpHzfR4QSS1Eg2GUT98saOVhfF6PGS29J/HYr0hQfl1M1G0xyHJ5ft9oCTpVk/RurjEiM+XZO7NOmw4zeA1k5zWIgs2YEp0TpMmaJvmnHPwJtopXl5qv2A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795160201;
+	cv=none; b=k0/uWeWCoE2Tlsk5UIhaUmheSeeGfGd4oDyvyma9bP14q6s7IgqRH4EuR4YGc3070F96PXdmCvIjLJBPQeU4q0spmEhE41NaZdvNvYiBVdLac7ePnNX0XoaTKqTRSxGk4HTbFnFtjWwZAdzWzahNJQeLmdu8eZ3aBNGESdGoHiUHn+OoS+mFBmILyC8e6WBm7FlV2GnUDcyKBpgwMrnh2kX2ONHHP8cKzsw1WtoFzYZGT4UK0lViklNaX61l7tZjhtUblYvIxt21Ufy1H2du3VfWHZlybDyniekoMgf0aaWldTtvAJyNiSdhQwOKsEh3rMgr4ioxU2bT5Fz/jtoRTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795159993; c=relaxed/relaxed;
-	bh=mN2KE2tS3vEVnu+nbzMDijiaMlZjTilrGn7PlXzVxpI=;
+	t=1795160201; c=relaxed/relaxed;
+	bh=Gf79QGlo4p/BT892f1cWSXKitqVR068o7afdf18RiRw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fDpUNHJ3wDDGd0ewIaLgg6OsFb2G9F7fQOXcE5scEVU+czD2To1TdiUU8/IUYadk5B0vEBS5WJ+WaxYQNV6axIM7clhSwQf3nKbbPF0Uq8lRrYetPFiqdUSRXVGf7hXVbhXl8fdMzxaJpf8H/DmMBUxe462FjptbUnLGzCf31sbMz5xOOX4XSRl1MronMH6bCyUGJna7CvBYDL8FU3CSOHVfwA3VEXgAPVPwTyPn3e4fOy9bOmpi9WkcqQts5D49baEGFqErH4rZ+v2qz+ISuk273Uro1DO7hp0kr9WAGujVeuOeDeyyD+CIqo0wb8ndGCAXB1eU8DkG7QPPkT3bzA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CNJV33AV; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 In-Reply-To:Content-Type; b=bLbwseXg9xa+zI422oa4nhS9rE6JNB2eGzOpS0YQBkGABLU2NlOzGMC2QXVrSIewvy8eMSwC+95HYm7CapFsRkrkWOMtZPjxFM5TkJkYZ7GYPDmRqQmPt/Fb+oWRBkTh2sj60Q9A6BTQ48f1fjV3l7/3GuoPi5MaR4UygAePC/BUYjgi+af4k2HxziBSR6aMu4PQ3rKxjop52mRJ9sMOqeh9xRWmkMz1J+aGLt25Y/r7w3kwVjvBRoDjIdVuP//yEk0vGEAk05GI2V9gsftszaIf7VWXrT9E0axSpAC+Dos3DaBedRUWsgw9hQRLz4wyww7mZhSnE1iiXYkTkGtWSg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i9BFe3Nu; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CNJV33AV;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i9BFe3Nu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW6WX42kzz2xdR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 18:33:12 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK3uc2I2015615;
-	Fri, 20 Nov 2026 07:33:00 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW6bX2P0pz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 18:36:40 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK3uL80775758;
+	Fri, 20 Nov 2026 07:36:28 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=mN2KE2
-	tS3vEVnu+nbzMDijiaMlZjTilrGn7PlXzVxpI=; b=CNJV33AVxsrpHbV8tl8YaK
-	pVxLlOYzM53S4yybWedlowwRQCcHGHxfx99HtFx+VfLvtmJIEdnQG4MpPFenOjYG
-	53pmpAQDQGPalkEE1E8VjXln3EsSyFov8oHQwBC1f2NgNGHLqkxugzOb3R/IYppe
-	2tRe0zm8NhHg6CHZ0Ew4MsxdqD5GCi5dkG9Ll0FKMVy+IiWIV3zFRXPpl5wCQklp
-	mk0vbk5HeRUgja6bnmOhMmbzAfDNyCBPMjzcyPp90CXwB4jhqu1YdTcKCA7X4g6D
-	qghLyc6PGcTfDjIrHtAa17CSLYDXJulJhEbDNsdoa3497VVVriWbFPEhq2eWbmhw
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Gf79QG
+	lo4p/BT892f1cWSXKitqVR068o7afdf18RiRw=; b=i9BFe3Nu3epmndzVYOz/nQ
+	XROa2C/vCm5xt0rUK8fDuICLmSPYwXwF9Y9Pe/7TB9+H0iqN7Id541gnCYUHYSLO
+	XOj7u5udwdbwfYURs+W3KafRME71fkx83uByl0WFwgthq8TwCoGVLtscvReJA5Hg
+	6HbEmS06Dgno5jnB90sAjgQHa+GqAzpQHnMKNM4mtKUZ3QcQ2juo8VDaOyI6zSg2
+	8BHjVBvsvrsEKRile6345gq4R6+OPzgR5vZUC19EmegDEJ52N9LPzPEb/aP1kdkI
+	oDQLY02Q1w9tdYbOX8jZXxc0epsUyz0OqDd42CBLMnl69GaPKdSjsnKlr3jqdCiQ
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105vxktx-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j105w6g3s-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 20 Nov 2026 07:32:59 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK7FQSb528800;
-	Fri, 20 Nov 2026 07:32:59 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j17c53hmm-1
+	Fri, 20 Nov 2026 07:36:27 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AK7FTGN1655863;
+	Fri, 20 Nov 2026 07:36:27 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j1m3j0ur1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Nov 2026 07:32:59 +0000 (GMT)
+	Fri, 20 Nov 2026 07:36:26 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AK7WtRF41091380
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AK7aNHc51970426
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 20 Nov 2026 07:32:55 GMT
+	Fri, 20 Nov 2026 07:36:23 GMT
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6E53820043;
-	Fri, 20 Nov 2026 07:32:55 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 051132004E;
+	Fri, 20 Nov 2026 07:36:23 +0000 (GMT)
 Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B97DE2004D;
-	Fri, 20 Nov 2026 07:32:51 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 7331920040;
+	Fri, 20 Nov 2026 07:36:19 +0000 (GMT)
 Received: from [9.124.218.70] (unknown [9.124.218.70])
 	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 20 Nov 2026 07:32:51 +0000 (GMT)
-Message-ID: <cc2e7244-e2d3-419e-a732-9440d6f89cc3@linux.ibm.com>
-Date: Fri, 20 Nov 2026 13:02:50 +0530
+	Fri, 20 Nov 2026 07:36:19 +0000 (GMT)
+Message-ID: <1b52c142-116c-4a9e-af19-578a9a71e3f3@linux.ibm.com>
+Date: Fri, 20 Nov 2026 13:06:18 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,8 +82,8 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 3/5] powerpc/pseries/eeh: Implement RTAS-based EEH
- error injection
+Subject: Re: [PATCH v6 4/5] vfio/spapr_tce: Normalize EEH IOA error injection
+ addresses
 To: Sourabh Jain <sourabhjain@linux.ibm.com>,
         Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -99,39 +99,39 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
         linux-kernel@vger.kernel.org, kvm@vger.kernel.org, sbhat@linux.ibm.com,
         harshpb@linux.ibm.com
 References: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
- <20261023073642.59657-4-nnmlinux@linux.ibm.com>
- <9b19c777-e48c-42b4-95da-bfc1a377b3da@linux.ibm.com>
+ <20261023073642.59657-5-nnmlinux@linux.ibm.com>
+ <518b5813-ab4e-413e-9820-556888216090@linux.ibm.com>
 Content-Language: en-US
 From: Narayana Murty N <nnmlinux@linux.ibm.com>
-In-Reply-To: <9b19c777-e48c-42b4-95da-bfc1a377b3da@linux.ibm.com>
+In-Reply-To: <518b5813-ab4e-413e-9820-556888216090@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-GUID: G8adjlTj9EiZAXWBoaqCQ4l1nKvpVz86
-X-Authority-Analysis: v=2.4 cv=HL9WhYtv c=1 sm=1 tr=0 ts=6afff7ac cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-GUID: 1wb5r0GhykOK8MUtHIbS02RWLI06OP1g
+X-Authority-Analysis: v=2.4 cv=Z8x5j3RA c=1 sm=1 tr=0 ts=6afff87b cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=VnNF1IyMAAAA:8 a=QkT65XhYD60mJHlUIBAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: KpcL_oCtc00o-pDWzENo4d_CCZgirdpN
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDAyOSBTYWx0ZWRfXz2A83EwehFKu
- fFmZPpD2ow2lXceNUlipy4c1PaL1K7xqzc5e/p7YL4nvtB2EGnqmhlQwbZhOixC7c1bhliaxPqa
- x1ik4SICMEknIoE6Zn9QKQ6wxJsyEl+njGxJrj4aInacMHGA1nOLwWelnKOmOSo8Fj95bIwRmDg
- EJ1BeuVv7J9Dd7Vn+Zi3k3pfiwHE+/5QzVOjGYPE3Rv8x5DnzgEp7klTExO2wdM1vcIOohpceyH
- xBHcPHV5I6+nvo7YTODyxDDIA4La8mQq1TZOk8GvcojXdS44J8rLZEKFfgiTG3eeobF7DJLLC32
- eC2HQa/6kPG9nW9zTogE5iGXIniGD1tcCxpAAAo/7+Y+aQ8ShPZcY+3GFbr7IsfEQ/CcX/tzJ31
- QGmVFBb4A61gKDuZFYF/2L/zU7pnS20bAchHRihF+ViZXckbm3t2cxYAjW5xCxmIYSGvWgxkUN4
- a0lFafqwCjv2XA9OdRQ==
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDAyOSBTYWx0ZWRfXxlR6ZqW8LF7k
- dIx3dMiQ1MGFvwm7Ucl2Gu9nX2skKA4p8Murca/DJ920MK8wmo0Y+KO7WNcRKjoLoaG9hP5nOaq
- sAErw/iY0o9ahRsQAMyzGCOhHvju0Ts=
+ a=RnoormkPH1_aCDwRdu11:22 a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8
+ a=ndujvMo2dnuvSWxAOzYA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: R-JrSAq6i-WJxETjsmm3DTGCViBCCz3_
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIwMDAyOSBTYWx0ZWRfX8Udd4yTQanuo
+ 5pnjkbTLXBZmK6gXnC+N2/a2nuS6egSl+S0EPQz2LzY8Nk3K1E0ffcwUk4NdikbIENDyh6P7rMZ
+ bLFqNNkx0TXEKDXE4qEk/fvyQcKt/cA=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIwMDAyOSBTYWx0ZWRfXxFWqblhip4bs
+ gPw3iWEf3DDgY/sHrBuy6Esjx0yYb1XSIhK73i5+Cq1Iq2dBuiFBkIWL8s05wND2T2ZRGp5GARP
+ FKpJp0mr4lv7ys5TYzxBXSRjwsEhcWOFU5Y33czQGtyKr4EOpA9NFnJ/z61AUcSL2qBnOV1UgcA
+ jGQZ5CkFakt8PUBp0Kzv6p79t9JSN6IM+g+E4joN7wFm99xaBq2lqv5ih8+u/N2GtdAIl05f8VC
+ qabHH7cmcpbTB5Cn1ZwcoV47O6aogoMKPv8+rhjbKib0D/BPaXJ2lAi1CISFKI93mIz/uFE2wrb
+ CLwNOHyO6j+xKjG8JTmGwRKLvfU0nHijYpReKDTZz/6tWBlYLawgwPrez07PLjEmS0YsxrPp2KA
+ +EAQLh2KeAY4/t5fixuHzAJVwlwVFTCSXDNHE6zWV7lyvmxJmCwcWKPHLHoPOmATIXMSv33vaWh
+ MOoUt95pA55J8x4g16g==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-20_02,2026-11-19_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 malwarescore=0 spamscore=0 priorityscore=1501 impostorscore=0
- adultscore=0 clxscore=1015 lowpriorityscore=0 bulkscore=0 phishscore=0
+ suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0 malwarescore=0
+ adultscore=0 bulkscore=0 clxscore=1015 impostorscore=0 priorityscore=1501
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611200029
 X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -141,265 +141,100 @@ X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Sourah,
 
-On 19/11/26 12:44 AM, Sourabh Jain wrote:
-> Similar to 2/5, I'm finding this commit message a bit difficult to follow.
+
+On 19/11/26 1:05 AM, Sourabh Jain wrote:
+>   I'm finding this commit message a bit difficult to follow.
 > Could you please rework it to make the changes and their purpose clearer?
 > 
-> 
-Agreed. I'll merge 2/5 and 3/5 and rework the commit message.
+Agreed. I'll rework the commit message to focus on why address
+translation is needed in the VFIO EEH path.
 > On 23/10/26 13:06, Narayana Murty N wrote:
->> Replace the legacy MMIO stub in pseries_eeh_err_inject() with a full
->> PAPR-compliant RTAS error injection path.
+>> VFIO_EEH_PE_INJECT_ERR receives a target address from userspace.  For
+>> userspace such as QEMU, this address may be derived from the host Linux
+>> BAR resource.  The platform EEH backends, however, expect the PCI/IOA
+>> bus address used by firmware error-injection interfaces.
 >>
->> Serialize each ibm,open-errinjct / ibm,errinjct / ibm,close-errinjct
->> session with errinjct_mutex because RTAS maintains state between these
->> calls.
-> I don't quite understand this point. What RTAS state are we referring to
-> here? Also, could you clarify how keeping all three calls under a lock 
-> helps
-> maintain the RTAS state mentioned above?
+>> Normalize IOA/MMIO error-injection addresses in the sPAPR VFIO EEH
+>> ioctl path before dispatching to eeh_pe_inject_err().  If the supplied
+>> address is already a PCI bus BAR address it is left unchanged.  If it is
+>> a Linux resource address, translate it to the corresponding PCI bus
+>> address using the BAR-relative offset.
+>>
+>> Normalization applies only to EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 error
+>> types whose error function targets a memory or IO BAR (load/store memory
+>> and load/store IO functions, func 0-3 and 6-9).  Config-space functions
+>> carry PCI config register offsets and DMA functions carry IOVA/TCE
+>> addresses; these address domains are not PCI BAR addresses and must not
+>> be translated.  Applying BAR normalization to them would incorrectly
+>> return -EINVAL, blocking injection entirely for those function codes.
+>>
+>> An address and mask pair of zero represents a no-address injection
+>> (e.g. a function-level error with no specific IOA target) and is passed
+>> through without BAR translation.
+>>
+>> Only standard BARs (BAR0..BAR5) are searched; ROM and bridge resources
+>> are not IOA bus-error targets.  Unassigned or disabled BARs are skipped:
+>> pci_resource_len() returns 0 for zero-initialized BARs, and the
+>> IORESOURCE_UNSET and IORESOURCE_DISABLED flags are checked explicitly to
+>> avoid false matches against unassigned resources.  Hold
+>> pci_rescan_remove_lock while traversing PE devices and their BAR
+>> resources to prevent PCI device removal from racing the lookup.
+>>
+>> A pr_debug() is emitted if the address cannot be matched to any BAR, to
+>> aid debugging without producing noise in the normal path.
+> Which address are you referring to?
 > 
-I was referring to the error injection session established by
-ibm,open-errinjct and identified by the returned session token.
+The target address supplied by userspace through
+VFIO_EEH_PE_INJECT_ERR, which may be a Linux resource address or
+a PCI bus address.
 
-The RTAS lock serializes individual RTAS calls, but not the complete
-open/inject/close sequence. The intention of errinjct_mutex is to
-prevent concurrent EEH injection requests from interleaving their
-sessions.
+I'll make this explicit in the commit message.
+> 
+>>
+>> Keep the helper local to VFIO so the address semantics of other
+>> in-kernel EEH callers remain unchanged.
+> 
+> Which helper are you referring to?
+> 
+I was referring to vfio_spapr_eeh_normalize_addr().
 
-I'll recheck the PAPR session ownership requirements to determine
-whether this additional serialization is necessary.
->>
->> Once ibm,open-errinjct succeeds, ibm,close-errinjct is attempted
->> after parameter preparation or ibm,errinjct failures.  The RTAS work
->> area is allocated after a successful open to avoid holding it while
->> waiting for the mutex or if open fails.
-> RTAS work area is mentioned here, but the next paragraph discusses
-> something else. The details about the RTAS work area only appear in a
-> later paragraph. I think the flow could be improved by keeping related
-> information together.
-> 
-Agreed. I'll keep the work-area allocation and lifetime details
-together in the revised commit message.
-> 
->> VFIO EEH error injection exposes a generic userspace ABI.  pSeries maps
->> the generic EEH error types to RTAS ibm,errinjct encodings via
->> pseries_eeh_type_to_rtas().  EEH_ERR_TYPE_32 and EEH_ERR_TYPE_64 are
->> unchanged; their values are defined in arch/powerpc/include/uapi/asm/ 
->> eeh.h
->> and are not renumbered.
->>
->> The RTAS work-area allocator guarantees that returned memory is within
->> the range accessible by RTAS (below min(ppc64_rma_size,
->> RTAS_INSTANTIATE_MAX), which is at most RTAS_INSTANTIATE_MAX = 1 GiB),
->> so the physical address fits in the 32-bit RTAS argument without
->> truncation.
->>
->> Remove eeh_pe_inject_mmio_error() and its declaration; this patch
->> removes its only caller.  The only remaining caller of
->> eeh_break_device() is eeh_dev_break_write() inside CONFIG_DEBUG_FS,
->> so move eeh_break_device() back inside the CONFIG_DEBUG_FS block to
->> avoid an unused-function warning when CONFIG_DEBUG_FS=n.
->>
->> Also introduce validate_errinjct_args() and prepare_errinjct_buffer()
->> here alongside their callers, so each intermediate commit builds
->> cleanly with CONFIG_WERROR.
-> 
-> Could you clarify what this intermediate commit is for?
-> 
-The intention was to separate the helper infrastructure from the
-RTAS implementation. However, given the unused static helpers
-and the additional complexity introduced by the split, I'll merge
-the two patches.
-> 
->> The addr argument to ibm,errinjct is function-dependent.  Memory and IO
->> load/store functions (EEH_ERR_FUNC_LD/ST_MEM_* and EEH_ERR_FUNC_LD/ 
->> ST_IO_*)
->> target BAR-backed PCI bus addresses; these are validated against the PE
->> via validate_addr_mask_in_pe().  Config-space functions carry PCI config
->> register offsets and DMA functions carry IOVA/TCE addresses; addr for
->> these functions is passed directly to RTAS without BAR membership
->> validation.
->>
->> For the 32-bit RTAS encoding (RTAS_ERR_TYPE_IOA_BUS_ERROR), addr and
->> mask are checked to fit in 32 bits before buffer encoding.  This is an
->> RTAS format constraint independent of function type.
->>
->> Tested with corresponding QEMU patches:
->> https://lore.kernel.org/all/20251029150618.186803-1- 
->> nnmlinux@linux.ibm.com/
-> 
-> Wouldn't this be better suited for the cover letter?
-> 
-Agreed. I'll move the reference to the corresponding QEMU series
-to the cover letter.
+The intention is to keep the resource-to-bus address translation
+local to the VFIO path without changing the address semantics of
+other EEH callers.
 > 
 >>
 >> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
 >> ---
->>   arch/powerpc/include/asm/eeh.h               |   2 -
->>   arch/powerpc/kernel/eeh.c                    |  10 +-
->>   arch/powerpc/platforms/pseries/eeh_pseries.c | 246 +++++++++++++++++--
->>   3 files changed, 228 insertions(+), 30 deletions(-)
+>>   drivers/vfio/vfio_iommu_spapr_tce.c | 140 ++++++++++++++++++++++++++++
+>>   1 file changed, 140 insertions(+)
 >>
->> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/ 
->> asm/eeh.h
->> index b7ebb4ac2c71..083ac58e7eb7 100644
->> --- a/arch/powerpc/include/asm/eeh.h
->> +++ b/arch/powerpc/include/asm/eeh.h
->> @@ -310,8 +310,6 @@ int eeh_pe_reset(struct eeh_pe *pe, int option, 
->> bool include_passed);
->>   int eeh_pe_configure(struct eeh_pe *pe);
->>   int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
->>                 unsigned long addr, unsigned long mask);
->> -int eeh_pe_inject_mmio_error(struct pci_dev *pdev);
->> -
->>   /**
->>    * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
->>    *
->> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->> index bb836f02101c..bae7ca2bd399 100644
->> --- a/arch/powerpc/kernel/eeh.c
->> +++ b/arch/powerpc/kernel/eeh.c
-> [...]
->> @@ -1571,6 +1571,8 @@ static int proc_eeh_show(struct seq_file *m, 
->> void *v)
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/ 
+>> vfio_iommu_spapr_tce.c
+>> index 1c0eec228cc6..d831adaa69fb 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -774,6 +774,131 @@ static long 
+>> tce_iommu_create_default_window(struct tce_container *container)
+>>       return ret;
 >>   }
->>   #endif /* CONFIG_PROC_FS */
->> +#ifdef CONFIG_DEBUG_FS
->> +
->>   static int eeh_break_device(struct pci_dev *pdev)
->>   {
->>       struct resource *bar = NULL;
->> @@ -1664,14 +1666,6 @@ static int eeh_break_device(struct pci_dev *pdev)
->>       return 0;
->>   }
->> -int eeh_pe_inject_mmio_error(struct pci_dev *pdev)
->> -{
->> -    return eeh_break_device(pdev);
->> -}
->> -
->> -#ifdef CONFIG_DEBUG_FS
->> -
->> -
->>   static struct pci_dev *eeh_debug_lookup_pdev(struct file *filp,
->>                            const char __user *user_buf,
->>                            size_t count, loff_t *ppos)
->> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/ 
->> powerpc/platforms/pseries/eeh_pseries.c
->> index 28b1fd19e8bc..2a2ec1a237e6 100644
->> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
->> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> [...]
->> @@ -35,6 +35,7 @@
->>   #include <asm/machdep.h>
->>   #include <asm/ppc-pci.h>
->>   #include <asm/rtas.h>
->> +#include <asm/rtas-work-area.h>
->>   /* RTAS tokens */
->>   static int ibm_set_eeh_option;
->> @@ -915,48 +916,253 @@ static int validate_addr_mask_in_pe(struct 
->> eeh_pe *pe, unsigned long addr,
->>       pci_unlock_rescan_remove();
->>       if (!found)
->> -        pr_err("addr=0x%lx mask=0x%lx not within any PCI bus BAR of 
->> any device in PE\n",
->> -               addr, mask);
->> +        pr_debug("addr=0x%lx mask=0x%lx not within any PCI bus BAR of 
->> any device in PE\n",
->> +             addr, mask);
-> 
-> IIUC, the previous patch adds pr_err(), and this patch changes it to 
-> pr_debug().
-> Could we avoid this intermediate change?
-> 
-Yes. I'll introduce pr_debug() directly in the merged patch.
-
->>       return found ? 0 : -EINVAL;
->>   }
->>   /**
->> - * pseries_eeh_err_inject - Inject specified error to the indicated PE
->> - * @pe: the indicated PE
->> - * @type: error type
->> - * @func: specific error type
->> - * @addr: address
->> - * @mask: address mask
->> - * The routine is called to inject specified error, which is
->> - * determined by @type and @func, to the indicated PE
->> + * validate_errinjct_args - Top-level validation for RTAS error 
->> injection arguments
->> + * @pe:   EEH PE for the target device
->> + * @type: generic EEH error type
->> + * @func: error function selector
->> + * @addr: address argument (type-dependent, may be zero)
->> + * @mask: mask argument (type-dependent, may be zero)
-> Are addr and mask really needed as function arguments?
-> 
-No, they are not used by validate_errinjct_args().
-I'll simplify the validation and avoid the duplicate error-type
-mapping.
->> + *
->> + * Validates all parameters before opening an RTAS injection session.
->> + * Returns Linux errno values; does not return raw RTAS status codes.
-> 
-> Wouldn't it be better for the function comment to describe what the
-> function does, rather than how an RTAS injection session should be opened?
-> 
-Agreed. I will shorten the comment.
->> + *
->> + * Return: 0 if all parameters are valid, negative errno otherwise.
->>    */
->> -static int pseries_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->> +static int validate_errinjct_args(struct eeh_pe *pe, int type, int func,
->>                     unsigned long addr, unsigned long mask)
->>   {
->> -    struct    eeh_dev    *pdev;
->> +    if (!pe || !pe->phb)
->> +        return -EINVAL;
->> +
->> +    if (pseries_eeh_type_to_rtas(type) < 0)
->> +        return -EINVAL;
->> -    /* Check on PCI error type */
->> -    if (type != EEH_ERR_TYPE_32 && type != EEH_ERR_TYPE_64)
->> +    if (func < EEH_ERR_FUNC_MIN || func > EEH_ERR_FUNC_MAX)
->>           return -EINVAL;
->> +    return 0;
->> +}
->> +
 >> +/*
->> + * pseries_eeh_func_needs_bar_addr - return true for error functions 
->> whose
->> + * addr argument is a BAR-backed PCI MMIO or IO address.
+>> + * eeh_func_needs_bar_addr - return true for error functions whose addr
+>> + * argument is a PCI MMIO or IO BAR address.
 >> + *
->> + * Memory and IO load/store functions target specific BAR addresses and
->> + * require PCI bus address validation against the PE.  Config-space
->> + * functions carry PCI config register offsets and DMA functions carry
->> + * IOVA/TCE addresses; neither is a BAR address.
-> 
-> This seems like useful information, but perhaps it belongs elsewhere.
-> The function itself looks fairly simple, and the comment conveys quite a
-> bit of information that I’m not sure how to relate to what the function 
-> actually does.
-> 
-Agreed. I'll keep the helper comment focused.
-> 
+>> + * Memory and IO load/store functions target specific BAR addresses.
+>> + * Config-space functions carry PCI config register offsets, and DMA
+>> + * functions carry IOVA/TCE addresses; neither requires BAR translation.
 >> + */
->> +static bool pseries_eeh_func_needs_bar_addr(int func)
+>> +static bool eeh_func_needs_bar_addr(int func)
 >> +{
->>       switch (func) {
->>       case EEH_ERR_FUNC_LD_MEM_ADDR:
->>       case EEH_ERR_FUNC_LD_MEM_DATA:
+>> +    switch (func) {
+>> +    case EEH_ERR_FUNC_LD_MEM_ADDR:
+>> +    case EEH_ERR_FUNC_LD_MEM_DATA:
 >> +    case EEH_ERR_FUNC_LD_IO_ADDR:
 >> +    case EEH_ERR_FUNC_LD_IO_DATA:
->>       case EEH_ERR_FUNC_ST_MEM_ADDR:
->>       case EEH_ERR_FUNC_ST_MEM_DATA:
->> -        /* injects a MMIO error for all pdev's belonging to PE */
->> -        pci_lock_rescan_remove();
->> -        list_for_each_entry(pdev, &pe->edevs, entry)
->> -            eeh_pe_inject_mmio_error(pdev->pdev);
->> -        pci_unlock_rescan_remove();
+>> +    case EEH_ERR_FUNC_ST_MEM_ADDR:
+>> +    case EEH_ERR_FUNC_ST_MEM_DATA:
 >> +    case EEH_ERR_FUNC_ST_IO_ADDR:
 >> +    case EEH_ERR_FUNC_ST_IO_DATA:
 >> +        return true;
@@ -408,228 +243,152 @@ Agreed. I'll keep the helper comment focused.
 >> +    }
 >> +}
 >> +
->> +/**
->> + * prepare_errinjct_buffer() - Build ibm,errinjct work buffer
->> + * @buf: RTAS error-injection work buffer
->> + * @pe: EEH PE associated with the injection target
->> + * @rtas_err_type: RTAS firmware error-injection type
->> + * @func: Error function selector
->> + * @addr: Address argument interpreted according to @func:
->> + *        MEM/IO functions: BAR-backed PCI bus address;
->> + *        CFG functions: PCI configuration-space offset;
->> + *        DMA functions: DMA/IOVA/TCE address.
->> + * @mask: Address mask passed to firmware
->> + *
->> + * Zeroes @buf and populates it according to the PAPR layout for the
->> + * selected IOA bus-error injection type.
->> + *
->> + * BAR membership validation is performed only for MEM/IO functions
->> + * whose @addr is a BAR-backed PCI bus address.  CFG and DMA function
->> + * addresses are encoded directly without BAR lookup.
->> + *
->> + * The caller provides an exclusive per-call RTAS work-area buffer.
->> + * Firmware session serialization is handled by 
->> pseries_eeh_err_inject().
-> Wouldn't this be better documented elsewhere? This function only populates
-> the given work area; it doesn't make the RTAS call.
+>> +static int vfio_spapr_eeh_normalize_addr(struct eeh_pe *pe,
+>> +                     unsigned long addr,
+>> +                     unsigned long mask,
+> Do we really need mask argument?
 > 
-Agreed. I'll keep the comment focused on encoding the RTAS
-parameter buffer and move the session-related details to the caller.
->> + *
->> + * Return: 0 on success or a negative errno on invalid input.
->> + */
->> +static int prepare_errinjct_buffer(void *buf, struct eeh_pe *pe,
->> +                   int rtas_err_type, int func,
->> +                   unsigned long addr, unsigned long mask)
->> +{
->> +    __be64 *buf64 = (__be64 *)buf;
->> +    __be32 *buf32 = (__be32 *)buf;
->> +    int rc;
->> +
->> +    if (!buf || !pe || !pe->phb)
->> +        return -EINVAL;
->> +
->> +    memset(buf, 0, RTAS_ERRINJCT_BUF_SIZE);
->> +
->> +    switch (rtas_err_type) {
->> +    case RTAS_ERR_TYPE_IOA_BUS_ERROR:
->> +        /*
->> +         * 32-bit RTAS format: addr and mask must fit in 32 bits.
->> +         * This is an RTAS encoding constraint, not BAR validation.
->> +         */
->> +        if (upper_32_bits(addr) || upper_32_bits(mask))
->> +            return -EINVAL;
->> +
-> [...]
->> +        if (pseries_eeh_func_needs_bar_addr(func)) {
->> +            rc = validate_addr_mask_in_pe(pe, addr, mask);
->> +            if (rc)
->> +                return rc;
->> +        }
->> +
->> +        buf32[0] = cpu_to_be32((u32)addr);
->> +        buf32[1] = cpu_to_be32((u32)mask);
->> +        buf32[2] = cpu_to_be32(pe->addr);
->> +        buf32[3] = cpu_to_be32(BUID_HI(pe->phb->buid));
->> +        buf32[4] = cpu_to_be32(BUID_LO(pe->phb->buid));
->> +        buf32[5] = cpu_to_be32(func);
->> +        break;
->> +
->> +    case RTAS_ERR_TYPE_IOA_BUS_ERROR_64:
->> +        if (pseries_eeh_func_needs_bar_addr(func)) {
->> +            rc = validate_addr_mask_in_pe(pe, addr, mask);
->> +            if (rc)
->> +                return rc;
->> +        }
->> +
->> +        buf64[0] = cpu_to_be64(addr);
->> +        buf64[1] = cpu_to_be64(mask);
->> +        buf32[4] = cpu_to_be32(pe->addr);
->> +        buf32[5] = cpu_to_be32(BUID_HI(pe->phb->buid));
->> +        buf32[6] = cpu_to_be32(BUID_LO(pe->phb->buid));
->> +        buf32[7] = cpu_to_be32(func);
->>           break;
->> +
->>       default:
->> -        return -ERANGE;
->> +        pr_err("unsupported RTAS error injection type 0x%x\n", 
->> rtas_err_type);
->> +        return -EINVAL;
->>       }
-> [...]
->> +    pr_debug("errinjct buffer ready: rtas_err_type=0x%x func=%d 
->> addr=0x%lx mask=0x%lx\n",
->> +         rtas_err_type, func, addr, mask);
->>       return 0;
->>   }
->> +/* Serializes the open/inject/close RTAS error injection session */
->> +static DEFINE_MUTEX(errinjct_mutex);
->> +
->> +/**
->> + * pseries_eeh_err_inject - Inject specified error to the indicated PE
->> + * @pe: the indicated PE
->> + * @type: generic EEH error type (EEH_ERR_TYPE_32 or EEH_ERR_TYPE_64)
->> + * @func: specific error function
->> + * @addr: address argument (type-dependent, may be zero)
->> + * @mask: address mask (type-dependent, may be zero)
->> + *
->> + * Implements PAPR-compliant error injection using:
->> + *   ibm,open-errinjct -> ibm,errinjct -> ibm,close-errinjct
->> + *
->> + * errinjct_mutex serializes the open/inject/close session sequence
->> + * because RTAS maintains state between these calls.  A short-lived
->> + * RTAS work area is allocated after a successful open and freed before
->> + * close.
->> + *
->> + * Return: 0 on success, negative errno on failure.
->> + */
->> +static int pseries_eeh_err_inject(struct eeh_pe *pe, int type, int func,
->> +                  unsigned long addr, unsigned long mask)
->> +{
->> +    struct rtas_work_area *area;
->> +    phys_addr_t area_phys;
->> +    void *buf;
->> +    int open_token, errinjct_token, close_token;
->> +    int session_token;
->> +    int rtas_err_type;
-> 
-> The name rtas_err_type seems a bit confusing for the error injection class.
-> Would err_injct_class or errinjct_class be clearer?
-> 
-Agreed. I'll use errinjct_class.
->> +    int close_rc;
->> +    int rc;
->> +
->> +    rc = validate_errinjct_args(pe, type, func, addr, mask);
->> +    if (rc)
->> +        return rc;
->> +
->> +    rtas_err_type = pseries_eeh_type_to_rtas(type);
->> +    if (rtas_err_type < 0)
->> +        return -EINVAL;
->> +
->> +    open_token = rtas_function_token(RTAS_FN_IBM_OPEN_ERRINJCT);
->> +    errinjct_token = rtas_function_token(RTAS_FN_IBM_ERRINJCT);
->> +    close_token = rtas_function_token(RTAS_FN_IBM_CLOSE_ERRINJCT);
->> +
->> +    if (open_token == RTAS_UNKNOWN_SERVICE ||
->> +        errinjct_token == RTAS_UNKNOWN_SERVICE ||
->> +        close_token == RTAS_UNKNOWN_SERVICE)
->> +        return -ENODEV;
->> +
->> +    mutex_lock(&errinjct_mutex);
-> Is this lock really necessary?
-> 
-As mentioned above, the intention is to serialize complete error
-injection sessions initiated through the EEH backend rather than
-individual RTAS calls.
 
-However, this mutex does not serialize direct userspace RTAS
-callers. I'll verify the firmware session ownership semantics
-before deciding whether to retain it.
+The mask argument is currently used only to identify the no-address
+injection case where both addr and mask are zero.
+
+I'll move that check to the ioctl caller and remove the mask
+argument from the normalization helper.
+
+>> +                     unsigned long *normalized)
+> 
+> Too much in a single function. Can you split this function as suggested
+> for validate_addr_mask_in_pe() in 2/5.
+> 
+Agreed. I'll separate the per-device BAR matching and address.
 
 > - Sourabh Jain
 > 
+>> +{
+>> +    struct pci_bus_region region;
+>> +    struct eeh_dev *edev, *tmp;
+>> +    struct pci_dev *pdev;
+>> +    struct resource *res;
+>> +    resource_size_t pci_start, pci_len;
+>> +    resource_size_t res_start, res_len;
+>> +    resource_size_t offset;
+>> +    int bar, rc = -EINVAL;
 >> +
->> +    do {
->> +        rc = rtas_call(open_token, 0, 2, &session_token);
->> +    } while (rtas_busy_delay(rc));
->> +
->> +    if (rc) {
->> +        pr_err("ibm,open-errinjct failed: status=%d\n", rc);
->> +        rc = rtas_error_rc(rc);
->> +        goto out_unlock;
->> +    }
->> +
->> +    area = rtas_work_area_alloc(RTAS_ERRINJCT_BUF_SIZE);
->> +    buf = rtas_work_area_raw_buf(area);
->> +    area_phys = rtas_work_area_phys(area);
->> +
->> +    rc = prepare_errinjct_buffer(buf, pe, rtas_err_type, func, addr, 
->> mask);
->> +    if (rc)
->> +        goto out_free_area;
+>> +    if (!pe || !normalized)
+>> +        return -EINVAL;
 >> +
 >> +    /*
->> +     * RTAS work areas are allocated below RTAS_INSTANTIATE_MAX, so
->> +     * area_phys fits in the 32-bit RTAS argument.
+>> +     * addr == 0 and mask == 0 indicates a no-address injection (e.g.
+>> +     * function-level error with no specific IOA target).  No BAR
+>> +     * translation needed.
 >> +     */
->> +    do {
->> +        rc = rtas_call(errinjct_token, 3, 1, NULL,
->> +                   rtas_err_type, session_token,
->> +                   (u32)area_phys);
->> +    } while (rtas_busy_delay(rc));
->> +
->> +    if (rc) {
->> +        pr_err("ibm,errinjct failed: status=%d\n", rc);
->> +        rc = rtas_error_rc(rc);
+>> +    if (!addr && !mask) {
+>> +        *normalized = addr;
+>> +        return 0;
 >> +    }
 >> +
->> +out_free_area:
->> +    rtas_work_area_free(area);
+>> +    /*
+>> +     * Walk standard BARs (BAR0..BAR5) of all devices in the PE.
+>> +     * Hold pci_rescan_remove_lock to protect pdev lifetime during the
+>> +     * traversal: pci_stop_and_remove_bus_device() requires this lock.
+>> +     * ROM and bridge resources are not IOA bus-error targets, so the
+>> +     * search is limited to PCI_STD_NUM_BARS.
+>> +     */
+>> +    pci_lock_rescan_remove();
+>> +    eeh_pe_for_each_dev(pe, edev, tmp) {
+>> +        pdev = eeh_dev_to_pci_dev(edev);
+>> +        if (!pdev)
+>> +            continue;
 >> +
->> +    do {
->> +        close_rc = rtas_call(close_token, 1, 1, NULL, session_token);
->> +    } while (rtas_busy_delay(close_rc));
+>> +        for (bar = 0; bar < PCI_STD_NUM_BARS; bar++) {
+>> +            res = &pdev->resource[bar];
 >> +
->> +    if (close_rc) {
->> +        pr_warn("ibm,close-errinjct failed: status=%d\n", close_rc);
->> +        if (!rc)
->> +            rc = rtas_error_rc(close_rc);
+>> +            /*
+>> +             * Skip unassigned or disabled BARs.  On pseries,
+>> +             * pcibios_fixup_resources() zero-bases unassigned BARs
+>> +             * (start=0, end=size-1) and sets IORESOURCE_UNSET.
+>> +             * Use pci_resource_len() which returns 0 when end==0.
+>> +             */
+>> +            if (!pci_resource_len(pdev, bar))
+>> +                continue;
+>> +
+>> +            if (!(res->flags & (IORESOURCE_MEM | IORESOURCE_IO)))
+>> +                continue;
+>> +
+>> +            if (res->flags & (IORESOURCE_UNSET | IORESOURCE_DISABLED))
+>> +                continue;
+>> +
+>> +            pcibios_resource_to_bus(pdev->bus, &region, res);
+>> +
+>> +            pci_start = region.start;
+>> +            pci_len = pci_resource_len(pdev, bar);
+>> +
+>> +            /*
+>> +             * Case 1: userspace already supplied PCI/IOA
+>> +             * bus address.
+>> +             */
+>> +            if ((resource_size_t)addr >= pci_start &&
+>> +                ((resource_size_t)addr - pci_start) < pci_len) {
+>> +                *normalized = addr;
+>> +                rc = 0;
+>> +                goto done;
+>> +            }
+>> +
+>> +            /*
+>> +             * Case 2: userspace supplied Linux resource/CPU
+>> +             * address.  Convert it back to PCI/IOA bus address
+>> +             * before calling the platform EEH backend.
+>> +             */
+>> +            res_start = res->start;
+>> +            res_len = pci_resource_len(pdev, bar);
+>> +
+>> +            if ((resource_size_t)addr >= res_start &&
+>> +                ((resource_size_t)addr - res_start) < res_len) {
+>> +                offset = (resource_size_t)addr - res_start;
+>> +                *normalized = region.start + offset;
+>> +                rc = 0;
+>> +                goto done;
+>> +            }
+>> +        }
 >> +    }
+>> +done:
+>> +    pci_unlock_rescan_remove();
 >> +
->> +out_unlock:
->> +    mutex_unlock(&errinjct_mutex);
+>> +    if (rc)
+>> +        pr_debug("vfio EEH: addr=0x%lx not found in any PCI bus BAR 
+>> of PE\n",
+>> +             addr);
 >> +    return rc;
 >> +}
 >> +
->>   static struct eeh_ops pseries_eeh_ops = {
->>       .name            = "pseries",
->>       .probe            = pseries_eeh_probe,
+>>   static long vfio_spapr_ioctl_eeh_pe_op(struct iommu_group *group,
+>>                          unsigned long arg)
+>>   {
+>> @@ -818,6 +943,21 @@ static long vfio_spapr_ioctl_eeh_pe_op(struct 
+>> iommu_group *group,
+>>           if (copy_from_user(&op, (void __user *)arg, minsz))
+>>               return -EFAULT;
+>> +        if ((op.err.type == EEH_ERR_TYPE_32 ||
+>> +             op.err.type == EEH_ERR_TYPE_64) &&
+>> +            eeh_func_needs_bar_addr(op.err.func)) {
+>> +            unsigned long normalized;
+>> +            int ret;
+>> +
+>> +            ret = vfio_spapr_eeh_normalize_addr(pe, op.err.addr,
+>> +                                op.err.mask,
+>> +                                &normalized);
+>> +            if (ret)
+>> +                return ret;
+>> +
+>> +            op.err.addr = normalized;
+>> +        }
+>> +
+>>           return eeh_pe_inject_err(pe, op.err.type, op.err.func,
+>>                        op.err.addr, op.err.mask);
+>>       default:
 
 Thanks,
 Narayana Murty.
-
 > 
 
 
