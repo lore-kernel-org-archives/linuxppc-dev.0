@@ -2,82 +2,90 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 60C31606A320
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Nov 2026 21:26:53 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2848D606A325
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 03:46:17 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Mlw4DkzA
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ySw2+zVY
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jVs3k0wQSz2yr7;
-	Fri, 20 Nov 2026 08:26:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795123602;
-	cv=none; b=iB9Fst6kxEYmKlkpVNrsTnce8Swj62BpbKSFTdh2ZO6BcLDqQSWU6HhUmmP2RlZ567KyND6gUAozRm5fUEk/lrRiWHK5ebdh4aqdZV9J6nBQZJQX7TIexwOojxQ4IuVkC1yjR8ZdEdoxPptv7mcf0xGL54M0/KuZHJ59khfhNo9nEZliIl+R0/PeGFbyi7Exag3ixOsawHUr5qjK4P5xo637z+wD3v5gjey5iI2gvC/Gs1Ox90C4j3uqXR0B+ERYD/PTB7mpC0Fmo7GxSY5V1staU3953N6RebxBdbneRSuXiVVYcIfx0OSfn2NafZ1i1J/b38JKvD3XEy59QqsOCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jW1Tg2GxCz2xmh;
+	Fri, 20 Nov 2026 14:46:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795146375;
+	cv=none; b=LEDqq2L6H6jU0RMSIKCtjVLb9C4cXXxsMiPbJpZqt9z/2X5gGqfsbVNBlII2e+4g0LR8Oqz1wZTzDxMJGRPdb7xRlI2hIMgVsoTuPHye07OA+shSqqJEXmsMHCSV8X8dlGjCcPy77HGpuyUOHoYmJMaDA9junrufa6vyOTV378NJIN8/6QneQzXNrSaX79tLjgZrOfOcfc5qSI3HHnwyuASoIEZ0CM4bAF5t/J40FJ8qKtu6sVd7BGox9q002DgeNz2x9mxc7RTOw3HzONvm6yjEz8KGtTsiNnpsSpjtjL/Bxj3/Z3luo2Guqup6PgCl7OtpPphhncRgAPR3xjhiyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795123602; c=relaxed/relaxed;
-	bh=vY24YozXGGsZy0MbrhPHZ+OQZbKbtp3K5o/Zm2P/mac=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PmGHn8mpbP3sMn99JdeEQogY9plCNClH2uvUXVQjn8vuwg7HK6fwS6qmtwfapyHVeEcXfQbARFNPO9DitcxpxgJDrXUcBlcwWgLQBnqWK/Nv46y/spDWNrlQoW3s+X9xrSpIf7h0b6Zys6kOnppQT0DB+taMzgsOv9PFdJtI5kDzQ9z6ErWI3ms/GBcVW8Y03whrzAKZ5ESnX5y8h1wO6lfCDT1IqSJQ22SyoBuTG19AuoMfY8MevsjuKC6mfMG+IK8zW48f5w0i8AslkP/J2MJj2rbMmWz9U2RXNq0pmDQbMS8vixRpYvWeIEDB95utGATUH68mYnr/K+SGuhDz4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Mlw4DkzA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1795146375; c=relaxed/relaxed;
+	bh=BLOg8atkDopv8yRViq7RL0BP5AVfcru44tPtNuP8ip0=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=E+4jI3I1mUpugh/zvDuxh15xoGY6enUzj4WyYAB5CFyUy9mbVANvPPxnjgwMFbVAaEtrAMdsAiDjl07TETBjuA91mtYfJhPlm3UgVNk/2cKbJB/LgEwL3LjBLh+EbIQcjGBirzPh4Tvh1VLrnB+eY9NTcIUjqm3eusaxlEt2AHSeyfsLLk0kFE78aYShBbuyi+umcF/7ujlJ9Em2dNQjWMZ6r3ApLiCVWgO760Ow8uFFUtFJTOudvAyB2/8S5EIV2EDtf1Nf5xFQPCS69d75wf8u5MMob+w485ysMgMpfNFhW1+7EoBPSfDb3QQcPIFtLZ+s4WS1guQOywf/3EFrBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ySw2+zVY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Mlw4DkzA;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ySw2+zVY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=mattst88@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jVs3j2X1gz2xH7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 08:26:41 +1100 (AEDT)
-Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-8b4c2da74c0so1600037b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 13:26:41 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW1Td6xGwz2xHX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 14:46:12 +1100 (AEDT)
+Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-382c3c9671fso592814eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 19:46:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795123599; x=1795728399; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=vY24YozXGGsZy0MbrhPHZ+OQZbKbtp3K5o/Zm2P/mac=;
-        b=Mlw4DkzAyynuXUyNuhgteD1rysDLPHmw8PQO0roMSsflT1enM9tYzHVeVVkXiT6DpZ
-         WM0ZahTGXRb3A6jJS+KPuxE2Oo1nFuXkA8adPWmdjLyFF6njxklgObJ4sHtfM40uo2rY
-         rPIECTAtB7au5MHPXnhLcen/VwncH2cheoppGDm94JmErWbfr9eITBURZgihdxWWX9xG
-         J7ccsfXbrcgWwMNK6Da1y8ePEC6d956xV1rmheTuugVM6vw2RWT+oRjoIFnKdvLiU7Oe
-         BaU9u/deG729FlxZtXDeGldr4xvht3B6vdIYI9NW5VXAQdI7/jP+FiXdDlJGZGX5ym6Y
-         s2kA==
+        d=gmail.com; s=20260707; t=1795146371; x=1795751171; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=BLOg8atkDopv8yRViq7RL0BP5AVfcru44tPtNuP8ip0=;
+        b=ySw2+zVYmsf3hlnya2orb+bi9ntcfedNRfzdLHhJofP4NUC0ATXEfgTDCU04y9oI0K
+         MO6z5m8dgqKSHdgCC3K5+Uj+ehFzR3iR1PEGKw/s3iyLgYeFnp81uyd7Ok7Xs5knjoMP
+         KV0h3hWQrM/q7VgGtbrmSBEQ462t4b4HYYnn8kdZJH22x0kP8UKir6AHLcAbEs/z4VoH
+         wEgxgPF7sB9jRpPvvTDfdVkgVPpwnNY/fV4EyQpSnO61hc0HlaqnBVAJTTIdrKplVv1e
+         F/VLI5hvuAbP8N5V9Y4osb000wIz1LU7AKMQJvl6f03FC4Lnq84v5x2j3yhs0dytUNLY
+         Gnjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795123599; x=1795728399;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1795146371; x=1795751171;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=vY24YozXGGsZy0MbrhPHZ+OQZbKbtp3K5o/Zm2P/mac=;
-        b=uWzcMG9z+tHg40oYEWS7ctHu3dOauzm/QUy89oHTkbQMN6kve4dBevNJym2VWkAOU6
-         D+ZG2DnxOf1Mta5WgWdtq7V8AqpSo8jhBLji2Z0wg/A7LWwWHYXMc8kjmot19v4zwcYK
-         eL0pGM0qDQzke8Wv7pZMEOCmxWx5wfgZEMmApN6V/g1EN60okC22PMakBrMsa0TkMGq4
-         psAWEBufX6T/YmGSy5oDlylT/zNGi9teMhqNAKsw/pmTtM+lUagtK5MxeI8r/l2mbWUt
-         Ptbxnd8HVIwm1M8b9rPdRu6Z2dCpnUjWXKF3tPiE6dzpvFbFH0+6OGyQTZ3Dt+PLDu1Z
-         8tQg==
-X-Gm-Message-State: APuU4Z8vqgCJ3URJXdoHpI7okBck2EXg8pbzbxQBft/Y57IIwNjbRgoi
-	86e8tHzRQjUfReA8s8LAkhDNngCOusCCDZ4RL2GJ5ETY9sOy8iBio15o
-X-Gm-Gg: AZFdTZcpD2BUQPyG9Nz/wc3gv3HQ7nWn/KFBfEmPf1X9CSBXTYJDiS9kATtyZPb8MaL
-	8vRSG52/AJEc2zCPWCL68+YylaZWx848xX1bSH5VZm5jHgPROiWHz/OkPI4nmx0BABTiTcr7Bqf
-	prxuIagms4MP/7No7TIp4RisOnwQZNvhgzAHolyYUnWOufmVgePyn2eg22ZqwcWboucAudAoRBU
-	zfQdwAvuq6+wgbrS59nFDHCtjAw7iNnnrkdrSm4BtMzw6PlpgI+okAd6cmLzR8oAmwOvvNT7yFt
-	bcUvnRPT0LrrbQh5EOISELaFK0/SCvqWx6WEqQiJQIJ402xE8zd5E0iacdYPlmRWkhsIHpkupxx
-	MdWos2y3RwoZPFzdHGGyrpdo2pKACnzZxsGOqR4Wfr1GTP77mdrtZ9A1aJOj7XDzgH72mFTK7gx
-	wVXVCtWaadlaGpHGIvvygZEIu+LnNbxSj+XrEa9MD5I9ouMBccCuOscRVHlUmgH8o/BGUjAvss3
-	3oECEenKWs6kacu3pt2B0AnhbqCI9Qfu+piVxJHIaoFKkOx56cVcVsjJHzBEwuO/Z8lbzuBaegT
-	kza3Z0myAPXjc8G1itCBu47VODJk4fL+gcS7hFsxTk1Y8jtaVEiXRUllTCc1PTo/IkI/PZr/wWr
-	NFdCIjpSJBMtt5n3z16HVD7yZfqjaQSdj+BsvAb6+Pg==
-X-Received: by 2002:a05:690c:316:b0:8b3:5f18:7f81 with SMTP id 00721157ae682-8b52050fc52mr3650177b3.65.1795123599062;
-        Thu, 19 Nov 2026 13:26:39 -0800 (PST)
-Received: from localhost ([2600:1702:7a90:6f9f:66f3:d5d6:2d12:d460])
-        by smtp.gmail.com with ESMTPSA id 00721157ae682-8b52034f7absm5433547b3.41.2026.11.19.13.26.36
+        bh=BLOg8atkDopv8yRViq7RL0BP5AVfcru44tPtNuP8ip0=;
+        b=PMGZQKwJ3HH9BkDqOxTfVTkN4JeDGneU9k4GwWhfpGkbzcGXsKyTaVKtbpR9YRN8qM
+         5UsMwvEw6a5wpR0OlQFD6t7gfjoZZldPiFC2n9quaI48wA5aXnew5QszxpO93SDlIyoW
+         oXMUytotIDF7lQ73Qi11WPfNTBEhgJ0wKPxN1MUlVvFiS1DiwTaICNMhA4/A8ELO+clK
+         pT1jOd67ZtPFgEMhSczMrz/6cGvUMCzpEs0FWGbYcuhJ5R02DW5eiuRzS14aRYxRsWba
+         IubV6AibdfCmTUn+azM/a7Ic1jQnalwIbKQeaaYTcJSeoNxfIRCKpFi5jzmIscr2vO7H
+         3E6A==
+X-Forwarded-Encrypted: i=1; AL+hErECXVSUEACQQEClxmQJMniKXzurZyaQxZClUJATTZpuBWWdirwtx/i8HMyg5Xqv0JjKoqEZvK9DlWKNEXA=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/3CUJIuyyHHs0s1I3xhD++UEZhuVz8lkSm27rNc8RUURnCNmqh
+	VFXnColPf8XE8p/MbidYVog+wmI/J0/6IXGmwuBBsZgP2ltOYXk2LteD
+X-Gm-Gg: AZFdTZc7C/cv+USBzEajximJTZI4ix4QtHCJK0FOAoCRz6aI1CcpknM70VQAjqANokF
+	xdY79oHLR/N2Y4K/vKFgniAQP+CFpEYYazdI284vsI4FFpawJqF8Tr1Igv/xQ2ju4Q7daSQ/Y2V
+	TFwYBbKuS6ij0Vl/RbGZ+kYDxtT3XFSjDgL7W7pCyj7cpXHKrYRYgJBjsNXortq+7zUa4NJAj+T
+	QS4YGmKNtmXfQ4dezca/gMRs/kgwhtgyZhEthWlxEXjgIl93uvQc9kpcJSH3er5ujRNHtBVQ27u
+	HSSlLELhhC2HqowjHQzuKhy6XfQ1+vrb7iEEzGhwHtOafT2y1i6+y9EgGMQgnHMAqxkbhEy7wUc
+	KtsXLorlisuTNDj5lL7c4NkHJJktVqUmuBAv6nzZAj6Dk78WUIZQHz3anMfhN14khUcNlrBBF4u
+	Y0ZROYE/3vAbXcDw871AcQMVHCehHkik4JYXY1G8ffrD/YWz3xnVsqoVYfvarb6TvYGKwTy63yb
+	iYRBrES6aoY+fymR45iIrs1SVb7gBfN5gQGXJBbxCcpbeT3sivvUigl163MOBfBB4MOC+lNWOQX
+	uX1UOiLeOJm5M+fUdPf+oMBz5i8XIGGtQMSRx7UxpP/p56zKaA==
+X-Received: by 2002:a05:7301:6183:20b0:384:b2cb:5f76 with SMTP id 5a478bee46e88-3856fe5ebddmr1428480eec.23.1795146370720;
+        Thu, 19 Nov 2026 19:46:10 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38567abb870sm2702820eec.25.2026.11.19.19.46.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 13:26:37 -0800 (PST)
-From: Matt Turner <mattst88@gmail.com>
-Date: Thu, 19 Nov 2026 16:26:33 -0500
-Subject: [PATCH 2/2] drm/nouveau/dispnv04: Allow PMU sleep on iMac G4 with
- NV34M
+        Thu, 19 Nov 2026 19:46:10 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Jyoti Gupta <jyoti@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, npiggin@gmail.com, chleroy@kernel.org, sshegde@linux.ibm.com, oss@buserror.net, Sourabh Jain <sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc: Fix missing of_node_put() calls
+In-Reply-To: <20261119075827.45823-1-jyoti@linux.ibm.com>
+Date: Fri, 20 Nov 2026 09:11:29 +0530
+Message-ID: <1p8gkw46.ritesh.list@gmail.com>
+References: <20261119075827.45823-1-jyoti@linux.ibm.com>
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+	autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,97 +98,133 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261119-nouveau-pmac-sleep-v1-2-360c08654a25@gmail.com>
-References: <20261119-nouveau-pmac-sleep-v1-0-360c08654a25@gmail.com>
-In-Reply-To: <20261119-nouveau-pmac-sleep-v1-0-360c08654a25@gmail.com>
-To: Lyude Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>, 
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
- Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
- Ben Skeggs <bskeggs@nvidia.com>
-Cc: linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
- nouveau@lists.freedesktop.org, Matt Turner <mattst88@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2178; i=mattst88@gmail.com;
- h=from:subject:message-id; bh=jUk7WaGILTaMpFlfNkLk0zUgL4/Qx/PtclGtgMowS9g=;
- b=owGbwMvMwCW25rVmCc8sv+mMp9WSGLL+Z3ZYpb/48E8ur2630aPo/M74qovXY81+e/7wfLG9Y
- eszTpmpHR9ZGMS4GGaKKbLErVdkmdW2Y6nPaelfMHNYmUCGSIs0MAABCwNfbmJeqZGOkZ6ptqGe
- IZChYxQPkdNj0MgsLi5NLdJNKyhyyMsvSSzJzM8r1ssvSM0rSC/QS8tMK8nIyC8qTgUaoZeXWmL
- q6uhmZGhgYuloYeZk4Whq4uzsZOjk5ujo7OpkZGluYuBs6WjiamnOwMUpAHPN1XqGX0xMx6zelE
- 0P35yvGG3dEMGy8orEjJUFomuu6JspK+/5I8HI0Lom0KPKNuDA5levn8l/2ax5PGOvlOPbc99Lz
- 7/RErnizAYA
-X-Developer-Key: i=mattst88@gmail.com; a=openpgp;
- fpr=3BB639E56F861FA2E86505690FDD682D974CA72A
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-PowerMac6,1 and similar boards are flagged PMAC_MB_MAY_SLEEP. They
-only offer PMU sleep (mem_sleep "deep") once a video driver calls
-pmac_call_feature(PMAC_FTR_DEVICE_CAN_WAKE) to say it can bring the
-display back after the GPU loses power. radeonfb and aty128fb do this,
-nouveau does not, so with nouveau only s2idle is available.
+Jyoti Gupta <jyoti@linux.ibm.com> writes:
 
-nouveau resumes the NV34M (10de:0329) in the iMac G4 correctly: it runs
-the VBIOS init tables and restores the mode. With the previous patch,
-the backlight PWM is restored too. Make the call for that GPU.
+> Several PowerPC code paths acquire device tree node references but fail
+> to drop them on error paths, early exits.
+>
+> Add the missing of_node_put() calls across PowerPC platform to ensure
+> proper device node reference counting.
+>
+> These changes prevent device node reference leaks and improve overall
+> resource management in PowerPC code.
+>
+> Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+> ---
+> Changelog:
+> v1 -> v2:
+>  - Rebased onto latest upstream.
+>  - Dropped the powermac/smp.c hunk: there is no leak there. The loop
+>   iterator drops cc on continue/advance and the existing code puts it
+>   before the break, so the added of_node_put() calls were a double put.
+>  - Added Suggested-by tag.
+>  - Link to v1 - https://lore.kernel.org/all/20260930182304.341123-1-jyoti@linux.ibm.com/
+> ---
+>  arch/powerpc/kexec/file_load_64.c            | 1 +
+>  arch/powerpc/platforms/44x/iss4xx.c          | 2 ++
+>  arch/powerpc/platforms/44x/warp.c            | 1 +
+>  arch/powerpc/platforms/85xx/mpc85xx_8259.c   | 1 +
+>  arch/powerpc/platforms/86xx/pic.c            | 1 +
+>  arch/powerpc/platforms/pasemi/setup.c        | 1 +
+>  arch/powerpc/platforms/powermac/pci.c        | 1 +
+>  arch/powerpc/platforms/pseries/hotplug-cpu.c | 4 ++--
+>  8 files changed, 10 insertions(+), 2 deletions(-)
 
-Other GPUs are left out because they have not been tested.
+Mostly minor nits. Otherwise largely looks ok to me.
 
-When nouveau is built in it probes before via-pmu registers its
-suspend ops, so "deep" is offered from boot. With nouveau as a module
-it is not, because the valid states are computed only once, in
-suspend_set_ops(). radeonfb as a module has the same limitation.
+>
+> diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+> index bd80c5fb1b1f..8d4d6a51c046 100644
+> --- a/arch/powerpc/kexec/file_load_64.c
+> +++ b/arch/powerpc/kexec/file_load_64.c
+> @@ -204,6 +204,7 @@ static int add_usable_mem_property(void *fdt, struct device_node *dn,
+>  	if (snprintf(path, NODE_PATH_LEN, "%pOF", dn) > (NODE_PATH_LEN - 1)) {
+>  		pr_err("Buffer (%d) too small for memory node: %pOF\n",
+>  		       NODE_PATH_LEN, dn);
+> +		of_node_put(dn);
+>  		return -EOVERFLOW;
 
-Tested on an iMac G4 (PowerMac6,1, 7448, NV34M) with nouveau built in:
-one suspend to RAM, woken with the power button. The console came back
-with the backlight on and no errors in dmesg.
+Instead can we use goto out and use the common cleanup defined in this function?
 
-Signed-off-by: Matt Turner <mattst88@gmail.com>
----
- drivers/gpu/drm/nouveau/dispnv04/disp.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+>  	}
+>  	kexec_dprintk("Memory node path: %s\n", path);
+> diff --git a/arch/powerpc/platforms/44x/iss4xx.c b/arch/powerpc/platforms/44x/iss4xx.c
+> index ef883d97fe15..ef92b4656d17 100644
+> --- a/arch/powerpc/platforms/44x/iss4xx.c
+> +++ b/arch/powerpc/platforms/44x/iss4xx.c
+> @@ -74,6 +74,8 @@ static void __init iss4xx_init_irq(void)
+>  #endif
+>  	} else
+>  		panic("Unrecognized top level interrupt controller");
+> +
+> +	of_node_put(np);
+>  }
+>  
+>  #ifdef CONFIG_SMP
+> diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
+> index 6f674f86dc85..49afd60b1c30 100644
+> --- a/arch/powerpc/platforms/44x/warp.c
+> +++ b/arch/powerpc/platforms/44x/warp.c
+> @@ -183,6 +183,7 @@ static int pika_setup_leds(void)
+>  				printk(KERN_ERR __FILE__ ": Failed to get %s led gpio: %d\n",
+>  				       led->name, error);
+>  				of_node_put(child);
+> +				of_node_put(np);
+>  				goto err_cleanup_pins;
+>  			}
+>  
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_8259.c b/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> index cb00d596ad80..9b7283038892 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_8259.c
+> @@ -52,6 +52,7 @@ void __init mpc85xx_8259_init(void)
+>  	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
+>  	if (!cascade_irq) {
+>  		pr_err("i8259: Failed to map cascade interrupt\n");
+> +		of_node_put(cascade_node);
+>  		return;
+>  	}
+>  
+> diff --git a/arch/powerpc/platforms/86xx/pic.c b/arch/powerpc/platforms/86xx/pic.c
+> index 9ca36de23532..4cbcc16b1009 100644
+> --- a/arch/powerpc/platforms/86xx/pic.c
+> +++ b/arch/powerpc/platforms/86xx/pic.c
+> @@ -58,6 +58,7 @@ void __init mpc86xx_init_irq(void)
+>  	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
+>  	if (!cascade_irq) {
+>  		printk(KERN_ERR "Failed to map cascade interrupt\n");
+> +		of_node_put(cascade_node);
+>  		return;
+>  	}
+>  
+> diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+> index 7a961f2a228f..a82855752e58 100644
+> --- a/arch/powerpc/platforms/pasemi/setup.c
+> +++ b/arch/powerpc/platforms/pasemi/setup.c
+> @@ -272,6 +272,7 @@ static __init void pas_init_IRQ(void)
+>  	opprop = of_get_property(root, "platform-open-pic", &opplen);
+>  	if (!opprop) {
+>  		pr_err("No platform-open-pic property.\n");
+> +		of_node_put(mpic_node);
+>  		of_node_put(root);
+>  		return;
+>  	}
+> diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+> index d71359b5331c..8bc56a70b4c8 100644
+> --- a/arch/powerpc/platforms/powermac/pci.c
+> +++ b/arch/powerpc/platforms/powermac/pci.c
+> @@ -938,6 +938,7 @@ void __init pmac_pci_init(void)
+>  	/* pmac_check_ht_link(); */
+>  
+>  #else /* CONFIG_PPC64 */
+> +	of_node_put(ht);
 
-diff --git a/drivers/gpu/drm/nouveau/dispnv04/disp.c b/drivers/gpu/drm/nouveau/dispnv04/disp.c
-index 7d44d18e1b88..b4f522fbaf64 100644
---- a/drivers/gpu/drm/nouveau/dispnv04/disp.c
-+++ b/drivers/gpu/drm/nouveau/dispnv04/disp.c
-@@ -35,6 +35,10 @@
- 
- #include <nvif/if0004.h>
- 
-+#ifdef CONFIG_PPC_PMAC
-+#include <asm/pmac_feature.h>
-+#endif
-+
- /* Apple GPUs whose panel backlight is a PWM in NV_PBUS_DEBUG_DUALHEAD_CTL. */
- bool
- nv04_display_has_apple_backlight(struct drm_device *dev)
-@@ -330,5 +334,15 @@ nv04_display_create(struct drm_device *dev)
- 
- 	nouveau_overlay_init(dev);
- 
-+#ifdef CONFIG_PPC_PMAC
-+	/*
-+	 * PMAC_MB_MAY_SLEEP boards only offer PMU sleep once the video driver
-+	 * says it can restore the display. Resume has only been tested on the
-+	 * NV34M.
-+	 */
-+	if (to_pci_dev(dev->dev)->device == 0x0329)
-+		pmac_call_feature(PMAC_FTR_DEVICE_CAN_WAKE, NULL, 0, 1);
-+#endif
-+
- 	return 0;
- }
+After this reference to ht, I think we can drop __maybe_unused during ht
+declaration. I guess it must be added since on PPC32 it won't get
+used and so compiler could complain for an unused variable.
 
--- 
-2.56.1
 
+-ritesh
 
