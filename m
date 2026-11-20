@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DC78606A320
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 04:05:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E6717606A320
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 04:05:34 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G3ZTZd0U
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=p+wHkq/d
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jW1tt4YLQz3c7q;
-	Fri, 20 Nov 2026 15:04:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795147478;
-	cv=none; b=MunjqEOwVLwWCZXJQ8vIbdK+gMmDtJikFNFri+hjBiigNpNQr6/7O3aWAMA2hw+1Ln5dDmHYldWdYktlTsmJLtxcYqdQxfWEjRt04ZDtwcgMipO+frjaETf+fTK0QKYgK9OGG/x/lyKDg6bOeB0YUYYF4vbyCacNa6tWzxSzo3/Et7p0Hlz8Ve86HNntCEVXijRZDUFYzj2Ezh5N7L3+ak5Yu53pJMupzkBrMRA5FZ8unKwqwmWuzs+7qJue9R/UzZEricwOLB0rUE9vAMQUsiMLKeKGquiICdtM+DEBFcMvnJVpEVf/pY1s6R95Qp5UgDYCpLo6oQ7Q7Ww+xp9LZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jW1ty4TNdz30MY;
+	Fri, 20 Nov 2026 15:04:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1330"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795147482;
+	cv=none; b=l3Fo3KtZCVumLzhup13JdEDyZvBAphgyCeleNYt1z51K6b6qfmKS4t6Nzl2jCgSJYDaTCcEg+jqQyheVz/YN1JS6/AGJlT3w+z/hmsVwsH8dxzrc9NrOZ/G2fgtQvjPsyTyTpioHulWjwIa57dOSqzUwYByX5E3IOqugJlBKEs59qTIpHPlm6yoMTjjnFdhOV1xv8bz31EsuTCuMrEIw/3lzJ/OoZcYSHatW90yN4c45pRo0TYIgZJfe1IhHaM9Cw6kPrkB0/0c2KUHJovuyii3rDerJ3aTrMViTPFO8WeZq9LYGXKBtp6DZGfcw+h3GPV0fMjIigfacIuN3DDJTrw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795147478; c=relaxed/relaxed;
-	bh=OEeeKd8/7R6Ji2+yPy0bODVrPI/c25RCAh5o8xRTnOk=;
+	t=1795147482; c=relaxed/relaxed;
+	bh=aMXueYzEMSkafhBw0cZtNBrJpZvkeyJZqfF9NmIV6eo=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Ax29wfpOGJUwjPO/GDBroHqWZoGrrh4tzKRKNq1qjGoe0WzzDp1eO36KE1cPEEEvpe/Es/W3C4SuOKsDgZqN73R8KZX21TH+Syboh7wxkTVH5FKTIQbxPNOg+BrLBY2LZHpZ9HyB7VEqTuCE0zFHDeVELCXBHss+FBDmmKymwIBPKJ96hfaJrH+0/+La6+U546cBjWJtYOaiXbwRXYyUBdQKNUX7bMvpflQX9JUSEaunde/c8umGkHhnHKueZo0nHyYs4g2kPgzRdOn7Ng5BK6qXgA2EUKytnpVuHmlCsi3gKZd6rQqYT5S9Nto8qHILCWdcq8l9NXdCvLar5GpsZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G3ZTZd0U; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=GI0w2hApPA/p+kSZO2wWq78p/wcREG/DYG4z+dtLFCVQSyXq7oQuOSsUfY2I9GdTgmae0unc1kajcTJ1N3kEgy8uXtBccxWbaojsGDSsWa4BlYBqBAvSs1GHz6V+1G+VEa+r5StfeWq6/DNMWzqR/c8Va4eeTaXM6BdMzY8Pdq/TVj/uz+hejzwa6feboz+ORssRGK/QK2vk7q9GoYEh//52LKyAZmQz+NevglTPGICeAocpsCbuc+JcCaDcaJnTIFAhKz2H+p2an3qAZGN57SEheLK4NpeGXzfwvVGYiSddBRNZUzqRsscg5TJKqDaMkcN+CuKdD8HB3thxUxUFFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=p+wHkq/d; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=G3ZTZd0U;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=p+wHkq/d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132b; helo=mail-dy1-x132b.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132b.google.com (mail-dy1-x132b.google.com [IPv6:2607:f8b0:4864:20::132b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1330.google.com (mail-dy1-x1330.google.com [IPv6:2607:f8b0:4864:20::1330])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW1tt0JCcz30Cj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 15:04:37 +1100 (AEDT)
-Received: by mail-dy1-x132b.google.com with SMTP id 5a478bee46e88-381f65e4e4bso703877eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 20:04:37 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW1tx6c7Sz30Cj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 15:04:41 +1100 (AEDT)
+Received: by mail-dy1-x1330.google.com with SMTP id 5a478bee46e88-33fb4680717so1121646eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 20:04:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795147476; x=1795752276; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1795147480; x=1795752280; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=OEeeKd8/7R6Ji2+yPy0bODVrPI/c25RCAh5o8xRTnOk=;
-        b=G3ZTZd0UeWcfKA/Lj47mwM9XGn2Ay7XFnZ7pWXpUGtp45PyfWK9fn04cgrQm/DDGOt
-         4H3sgp1NtvVVOBR01fMoCTja9HMajHC+QcMkXXnpO0zOM/DY3gumTsU+KSqzXTSxJ4PB
-         BHyMB9zPA1HLvXGbCAPI/o7OQl/cxYHjhepDXsuEplGnxln0xxbZK/2H4RLq8mrvYlFZ
-         wPwxzQL5zDCub28JZ+l3h7uEAfiUBHatjrZiVcXdAW1hK9uNtNRR8WLrJmbrXgN6jST/
-         1b2pWA5TO+Ad3VWJlYyGk0JEC6imYYA8OHZvG2XLFSb56Qc3A3+RDFGth/Vfg7Lr7D6d
-         98lw==
+        bh=aMXueYzEMSkafhBw0cZtNBrJpZvkeyJZqfF9NmIV6eo=;
+        b=p+wHkq/dORSQAMva0TyuZNVJiThQNqHLPV1zThOKgi5/zgFN7OYHbysQUuheyaoJja
+         CnPDlkZBOKp1FZ/BtfFad3ekHGFR6nOsrmuGilOnUHWmlU+r2ldIO/QJvqneX4U+HHuF
+         qZKamSyWwvBXX6xIC0jrYe+M4isOeOHubcI1Uykispnw3bgJwQRUJKuKFGh8h6ZLl4Xl
+         BTXL4+aeDziIOO1w1hEZYTJmrPznUTx1MFIk3PdBwne2DxHI2Tf3dvkQehkslyRGTRFK
+         WO/875L09Dh3fq0vOVAQFSL+LMY/jIpvcTBtsaB4M5W+hLm61aNqItZymDs6ZfTtr20R
+         VTyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795147476; x=1795752276;
+        d=1e100.net; s=20260707; t=1795147480; x=1795752280;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=OEeeKd8/7R6Ji2+yPy0bODVrPI/c25RCAh5o8xRTnOk=;
-        b=L4y73T/Zm2k0Ersw86lAbKO7YQZSXcXbNFZ8uh0gAxnYYTTIh1jTG+reZ2WDq3t/QZ
-         ov5RPUV15sUvKb6xugxsGvRSVLufd98s95sGMN2l4itl7G9XaxuQn6sy1uEDPWyQ3xK0
-         l8r3xmizPgBlV7XEav2vWe1uVqnr0WtjuJh8gQNrOVC4G7Xcel9Xt9t09ZNPEXWRTInt
-         tiigpp7vEw6PkUeJfhc96zm5cJuO8uQR1TAn5+Cg/H5QiHrBOpwRsGutiBMR/VJYvJhk
-         /2dYEypS5YdyQUaw1EwB1I7h/LRbYWUdQh4XtQuOlBX0QLRKRBlgNWHEBD9bqok7OAgG
-         UQVQ==
-X-Gm-Message-State: APuU4Z9nk9eXEcark3J9ifcJaq3ZbFz0jfLdRYrmfDc5cB2d6O4upNv5
-	ftp6SeN+uwi/02kQmkEOzecgy+AIXXvsjUeXaPL0VgbVUvl974FY9n7ScyHd9Q==
-X-Gm-Gg: AZFdTZcwMsDR67EGz8ZI8TCOWuoQApPL0t3YqJM1VDCZL2wFK7wUzK3q0baOQ4nn0eM
-	dk7dUpxTUolT8IYqOENMe0p1lBpJOa/rq6EJlYD31dz0AnPOtzgFY3pYM0SOx6ywWmBfIvAcX2v
-	ZVSlIkS+fcrblxHEB5GsMyMLUu9tEqFFtPUCCUhedzvaPO4NDkPYa6vePNRkpN2gXp7Im7knvh9
-	PDGZ/M9wNYyvgec21mLj3Foqzm+OlByqB1TOEbfJmIG+cbzMPAtlzbz92NYEdJLARvu6jpMEdvw
-	bLBP/0R8ZeJuAPXGDBFuv6GJInhgmwqIAHIV1AEQL+AoHSJdI7E2GTMcbw+YDXFVTV3/6tsDqHt
-	vIjfjYDz5fKShpXTwnO03iHJEOK36CXZdNcJDcElZMYbSfvooNX8mQCABbvVW8kRoC8VpSdi/rT
-	9ExKO05JR25JgP/rPS2zM9hcEKIB95VEG4Elhsij9GyBIwxSQ2zisGRa3vyFLVmLj1f5q6g5EkV
-	hhh4X8vInw/cwI7kL26+6OzVCxwDr1cxJfQfG7ewXfbo/AFwLb4xnbBX4+QV/cQ8a53aHWJ659J
-	7ngDV0KM4PnFHX8nzbWLVFAnuKZ4uVnnOQ==
-X-Received: by 2002:a05:693c:8951:20b0:384:ce59:5e19 with SMTP id 5a478bee46e88-3856f257bd6mr1332465eec.6.1795147475927;
-        Thu, 19 Nov 2026 20:04:35 -0800 (PST)
+        bh=aMXueYzEMSkafhBw0cZtNBrJpZvkeyJZqfF9NmIV6eo=;
+        b=hZMdDY6MhfrOCEAS1mXV9wB8TpicmgWIXXj8Y57MlM6fkVsLvPoZUwtFFji0jeNQxx
+         CXVXhnfE/ZIyNoMvCv7AMMdFDVeXXqyDLUwvSXsxGXa2tCe7LbVTjqRV+FCOkkaY4qg0
+         VqdBBr7HkJp1vdpq7KHvHlWXXhVgpu+LsMTVhP2VDUZOAPwMfH2jFqteXzlBv7a4kEiA
+         JRJeoPudLKuj5nkzpg5DKo2j0L65x0p89vvGIXHfDvdQoujBNl3rNMVlV9NvnpmzZcJJ
+         oAp7EQGgNzneV5FHyw9e6cYQvdAXbpf7YGOpC4urIKFwQCaknFTPFobunCaOiWNzFtw+
+         Ogfg==
+X-Gm-Message-State: APuU4Z95uqT08Py16rMKZt7MPKcmfMUEg39GaAGg+mLyg4nWaOtY5Eh/
+	RAJweAjrBXTu/O1HEcmuwE96cKwfvhpUNTTy4S4snGLa8tag+BZhYi6jywpEHg==
+X-Gm-Gg: AYBFou2Nkh25Zg4dZNdceX24I9nz32nGGkgx85quSSkZ1Ip36TRJH98Vt5ZeDKhNA1M
+	X9DmPzol7O5p8R8eTHAlwb4I/BoE7WBUKxOI4/nElWbrW/iuDK3UrEIlMQuyHHk3z9qyNKoQIg6
+	lJ2a5inqRpTHNQ6Bc3BjS7sf6ZgO9fJHyjVr8icFrdEmD8/zfdLYNSpgiU1ZTTjrH9gyQEEzIWb
+	1ud7Yg5ZgbEwIRwtZ7QUctuvQmZUwKsO05WodKAzJ89M+XUtMTCkJz1M3fp7BkXt6NF2sbL2PBx
+	BXpXE6YuC7kdOOOYRnwIFUuh4aDhCJv7N17Z57QwnbvoDWArl6cXgkyXs+WFhCrBkBWcqFsYVT6
+	S2oJZbLQ07YNhU0YBtepeTr58x9tuVIlvPsJipGik5or1o0fN/goLHQNQFo7PLrzccSZjcvQWjU
+	1xVp46wFFJsclz40T0G004GjfBA18aPlnF73SfzMURlz1VfipjXmY0z6WVlq6tQGhvPKL0kXLGN
+	Ntu01NSVP7abrvxoqN8uvc8z2LkoLIYsX8SnVw56c1qY3utny6HU75j16kR3sUzsSNogxcclVFN
+	O4dKXrBeBZZF/xamtY9WMAa9uzLuLXIYCw==
+X-Received: by 2002:a05:7301:4617:b0:36a:1e0c:e28d with SMTP id 5a478bee46e88-3856c2c506fmr1462609eec.4.1795147480140;
+        Thu, 19 Nov 2026 20:04:40 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385666e7f59sm3246104eec.6.2026.11.19.20.04.32
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385666e7f59sm3246104eec.6.2026.11.19.20.04.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 20:04:35 -0800 (PST)
+        Thu, 19 Nov 2026 20:04:39 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -82,9 +82,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv3 16/19] powerpc/pseries: Disable context analysis for the CMM hotplug notifier
-Date: Fri, 20 Nov 2026 09:33:15 +0530
-Message-Id: <b898fdccf40809f4d18aa302ee3feabe27b89151.1795147055.git.ritesh.list@gmail.com>
+Subject: [PATCHv3 17/19] powerpc/pseries: Enable context analysis
+Date: Fri, 20 Nov 2026 09:33:16 +0530
+Message-Id: <778a4d18674535c24b406f6134f327d7af34fcbb.1795147055.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1795147055.git.ritesh.list@gmail.com>
 References: <cover.1795147055.git.ritesh.list@gmail.com>
@@ -110,33 +110,28 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Clang's context analysis reports:
-  cmm.c: error: mutex 'hotplug_mutex' is still held at the end of function [-Werror,-Wthread-safety-analysis]
-  cmm.c: error: releasing mutex 'hotplug_mutex' that was not held [-Werror,-Wthread-safety-analysis]
+pseries objects now build with Clang context analysis enabled.
+Turn it on for the directory.
 
-cmm_memory_cb() takes hotplug_mutex on MEM_GOING_OFFLINE and drops it
-on a later MEM_OFFLINE or MEM_CANCEL_OFFLINE call.
-
-Add __context_unsafe() annotation for cmm_memory_cb() callback to avoid
-the reported build error in order to enable Clang context analysis.
+This checks that each lock taken in this code is dropped on every path.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/platforms/pseries/cmm.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/pseries/Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
-index 38e22125b96f..159efe734785 100644
---- a/arch/powerpc/platforms/pseries/cmm.c
-+++ b/arch/powerpc/platforms/pseries/cmm.c
-@@ -470,6 +470,7 @@ static struct notifier_block cmm_reboot_nb = {
-  **/
- static int cmm_memory_cb(struct notifier_block *self,
- 			unsigned long action, void *arg)
-+		__context_unsafe(/* Conditional locking */)
- {
- 	switch (action) {
- 	case MEM_GOING_OFFLINE:
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index 3ced289a675b..d5f9beec33cc 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -1,4 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
++
++CONTEXT_ANALYSIS			:= y
++
+ ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
+ 
+ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
 -- 
 2.39.5
 
