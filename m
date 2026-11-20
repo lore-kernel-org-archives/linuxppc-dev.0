@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3FAA7606A320
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 04:05:05 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9F31B606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Nov 2026 04:05:12 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gAnOFQ1A
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YqFLmsnt
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jW1tg0DcNz30DK;
-	Fri, 20 Nov 2026 15:04:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.82.52
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795147466;
-	cv=none; b=A+FTh0WGIizPD00usoM4SF3MzXvvnzFDqJ0uckjZxWzqjhPhYPmv2COLzBB4hAqsQsZof5ECQuy77F+xzu2d1eNVVm15WqoseGy1VXiIHyi1SXYZXjexwPammify54szDaNXyxXK1joQe6NKnP5HGEPOXgey+ISzKQW+kQ+tBwWOk86jwHZt0on2Gw75au9F89kJ+FVAZ591mSZLqtwBnAhCrcT2yRHxnT2gVILpJ6Mndgyd7erMV1SnfIh1aJ2lz6JTajX0ityIOHjJWJiUCmlUF4trMyk3dip7tCqD/rZ34WmZZwC0oZWn1ioDG0qyPg57VIGWHWp2uPljlbRbqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jW1tk5XyCz30DZ;
+	Fri, 20 Nov 2026 15:04:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.82.176
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795147470;
+	cv=none; b=YKN6d+3AMUIzKbp5xuO1+S+XnQUXJGr4uN2PQwCQXd3cs5j6mXkKqIylf2zyAMwYN25KnPi3N1J1DPAjLrgh3C3AHDFYSWR3Y8ftGtYC83Ld6HLy6lK3t1k27dL88c8hOoRKOl+WtezHMhXbvcdgA9zu0QhWtf0AufF4+fjFmfZLGbiXst/JkgBJdQun1D0MtSz55yfgtTI5gtyujx1/7HbijxddXcep9nJ5QSQrjcvRdFpGBqswiQqfqnQhyOmvTSqyTmM48Qz7r6qRalpBfKRESS2vkHbqIgeAx68RXAyVsk8WaQeDQgPvscWKn04S2VTE4jCzro2nkKNor30leg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795147466; c=relaxed/relaxed;
-	bh=15P/O4uHafhoF2a9GtiIC0oqae4Qc4Z1UYDUjewxzlo=;
+	t=1795147470; c=relaxed/relaxed;
+	bh=iMwW2JLY+HI916hc5v6/gg4kWQ5njDV9vffDoqUd5vA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=AOsggX5kKg0FNuAjSn6nW63160FBduTnrB24VP+c9aY9qVJttvvlPpykAOcoXXhioLU9hPSKHHcuNBESadA1XbDN0pM9hLMQzal+UKEuPRVu5XnE6pDBCF7EyuYLYx8y7f0H9pPpdDYkSK9R9c5nFo0ieeUklW1zpjYG0X0KbcRLHRBDlmemxG1e0OKKDTfHKBSjOg7LMEwR8ViNrooQeVDpIn5nc8OtvcWeNZVxcaetoAXEsA0DyBNuoaPDA9ts/RcBPT1+y01GzI4zEYOKfbC7ZFVp7a1yZVjyoCIjWV36xak3Lc+jC6QIeQF9Nc8PYOuBmoA3fwn85Qp413M31Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gAnOFQ1A; dkim-atps=neutral; spf=pass (client-ip=74.125.82.52; helo=mail-dl1-f52.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=O/OHonZmu+TAQHQeVemtAdSJU1dn/9kWTMrx1Of/fk+lTIxsF9TC3FhNzi/trgQfcxoESJxYBlgBu2G/IJ/iZGgIuuFzHejIaM8ArT/RjeI4WZdt5/8O1SZ4h0WLXZlBKrTreh2HF10NZO3ZwjYko39AZkHwnuOnRrL2FLiqbvttbm1rBaDiMVp7UXaTokXY2WjNcHQb7mQR8T+tUvbee2MUlqS7vumS94TXwTZ2KA2UNwQ+/zZwKt4UC4GLsMfJIoOeFcLP9wFefYmgD9U2Aq76nHXLj+c+iY9isf8TzO7VJppzQej/mj4hbMohSuAMVYPzXTuETM+nVyKTUSXkWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YqFLmsnt; dkim-atps=neutral; spf=pass (client-ip=74.125.82.176; helo=mail-dy1-f176.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=gAnOFQ1A;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=YqFLmsnt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.82.52; helo=mail-dl1-f52.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-f52.google.com (mail-dl1-f52.google.com [74.125.82.52])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.82.176; helo=mail-dy1-f176.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-f176.google.com (mail-dy1-f176.google.com [74.125.82.176])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW1tf3KXnz30Cj
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 15:04:26 +1100 (AEDT)
-Received: by mail-dl1-f52.google.com with SMTP id a92af1059eb24-14394530ec6so782323c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 20:04:26 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jW1tk0fbQz30Cj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Nov 2026 15:04:30 +1100 (AEDT)
+Received: by mail-dy1-f176.google.com with SMTP id 5a478bee46e88-38564b4b017so486785eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Nov 2026 20:04:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795147464; x=1795752264; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1795147468; x=1795752268; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=15P/O4uHafhoF2a9GtiIC0oqae4Qc4Z1UYDUjewxzlo=;
-        b=gAnOFQ1AlDmkd4KKKMqkakU+knQRfEdM7iaxY3Be6+KOrvQExlxZJGr7jWUMEQAUxm
-         prpjOlNSwDt3BhhIAwOtjb2A/dYgkNSAsQtXods6Fx/NYPdUzZHvQYnTExQBCKsNWd6P
-         1Zx1Ky6SYfI2+0EQ+G/XLZ1XMpMHr1jCl60XyzdNdi9qq7sxmrPyJv4vnH3KYvCxrRin
-         5npLgAA6JEneqLCy5sKS9i/F4cBy0w+6bvMBhfGu1UUhkQyVa3QcKIpqnm1gK09qZQgF
-         tIiTbb1DL7mjV9eCifh2i/GmAj1RCtAetLOjfNeWgkzC1p9Zm7/L3TXh5hwjb7satzUu
-         JGug==
+        bh=iMwW2JLY+HI916hc5v6/gg4kWQ5njDV9vffDoqUd5vA=;
+        b=YqFLmsnt8XER1Afq34P0h24yjTnA3GspOLESnz6Kg08mlvhTv+/j6fHvZlTriWu2ch
+         Al5wvZxF03HS3sqe9SVso6BZy5gUHMGzHTJApaC4LxyLYEcjZ/JJyOy933mkhOrNy4dc
+         zQbGOouoGjqfKlTHr0ICFTy25DGa1CtlTBUsAYpYOHuDFYULNDwV+G+pjVIb00jdNtmW
+         WWIw9iZWgxyuYIi7O+zAlExGMCjflHtpB5RKEdVKG/Rs2OCkNlB6qPZo2G/iPdWTW0tQ
+         C/vqTVwY8CT9HOeJ5Wb0QLZE6gWaquweZNKWuN+XcYu39GPRpHSC0lKRiP5Jcl2rIMix
+         RgqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795147464; x=1795752264;
+        d=1e100.net; s=20260707; t=1795147468; x=1795752268;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=15P/O4uHafhoF2a9GtiIC0oqae4Qc4Z1UYDUjewxzlo=;
-        b=Yqsk+cCvCryzVhdlYIbYZ65gYhKad/8Bc9f9uEFTJ8nO1nyo3edDQ8G0T3ZQwGodjt
-         DkPNxyrOh2Eeq0J9B3WqXGPCQvSpVAiTRhFrjNAt9SRNovtMHTGnnvaGGOcQ/jTbwC8I
-         9+oSlrekdZqGo+Fg5EC7ryRl4DqS0KE1+l0wLPS6bElz1MMNb3ff5zjA4t1nDy4RS7Fl
-         vDk2ygVK8Zq7UZYXiu+z7LkWuIt+529wsbidecEBPa9SpFI2nCRl/B/TRl1KzkISPRqG
-         NdLFsxpM15P/7/v7gAtEDJVnlX1WzvcDmFyyh+A1MxqA1iOt8dP2bWgup84TIZjnLV9B
-         l9pg==
-X-Gm-Message-State: APuU4Z+pPbZVvqRjsulLUwZJ2Au2aITAo2y+jRqxJdZGNPmCc/20bzZV
-	8uag7Vt16VBYAGe+3PaohUaYOuPK9yiWU41QJLbQXBZfEcW10XIpa0VXN2iJAA==
-X-Gm-Gg: AZFdTZfS2C6Ru38ZdG1VI1UXSsg3IzzOB9pL4y3Dy3+wWnSTvFmN1keLsutjRA+NBhM
-	dR1Nw7vweR8pXPCnL26gY8OydATQtd5XNVsiaeUYcq9WNWoYTUesOQU4Jz1CVed1MDI3N0a1C2x
-	8w1KLoK7eISgZN4TB8Uottt3XwwZR4yQG9XXko/gIkfSEs0kWV6jbNws9zSvmqTt7RQ0bWrPr8O
-	2v0UBAnexYTje4EG4GkUZ6lErv0taUYpN/Tqm6wE6mZYMgN2VnvkQAbl6+g/GPq2BoFh3+aFiDk
-	8XgdaNRrWovmc4VWuppDrBPRYmXJuc5nQW18pT+w2HzVhOEqa/1uKXgIwpLksrKR+BDzUgWoQ5W
-	uQoLQ3iC42iWNdx12+cJsn82E3GKLd7kx1CKVU+hK8GqRzGCLMEgMWQGFhy597MA488ZUNtoF4u
-	dJnb5UgM61B+YN5ViAJw1b6PdTaXG4P+b/Yjqu4gjwSNJfWjJ33l2fpjOsA95g2jxF9X/UVwquB
-	HE5+niyFL8iEdvH6zF7F4YtRrGcNn2J6YSS5Rx4iJQBmazN5CBQeV5gA3kfI81OJ5ykrH1coFun
-	AU7liUHA8kndtTdrlN3wQTvccXYq9KebBg==
-X-Received: by 2002:a05:7300:3e93:b0:383:bef:b6f6 with SMTP id 5a478bee46e88-385701574f4mr1638420eec.21.1795147463979;
-        Thu, 19 Nov 2026 20:04:23 -0800 (PST)
+        bh=iMwW2JLY+HI916hc5v6/gg4kWQ5njDV9vffDoqUd5vA=;
+        b=FtulXjOxu8QkZuNPOZuA+MDgWh3WAi9eRwjdHteJpLQTwegoAcFgj/1ZZFbWbwdNRK
+         loN9cXBgcVp3nLlVD5okvYMUWrL3nEwB/+MMDlsQA44lLB4q7NMdkqX/G6Otp3Z8N1f6
+         k5T/ceyXXq+47qNdmqExZdh4hxoAn5ylLPVAOsyyYhocHh1x48qy+WLrJ+jXun2GA2BQ
+         6HXkzf1dNTDwSFULk/xgZvC6D9uWAWLqERIdZGf/hvDHIAo28Fcq6ciXtm3Mu9nTRce1
+         SuCgjMA/4QLDr5rX8V1mQfu8EVDabdMZhvHtxXwUrbEOO5AThgQgl9Z0ng/c7dycb21f
+         KPng==
+X-Gm-Message-State: APuU4Z9wNSfDqLqupWfzvl6tIaeZ1y9J8JwnAMhDU/Sda9Lgs+X6Efaj
+	EXOOj8A3H5KXSd+Uk505uV+YBb6IQc9xSYVMLhStph7QBa+IhfZAQoQfdqne7Q==
+X-Gm-Gg: AZFdTZcblhE2jSPQUJvDQX3gWzj+bgSURgKEQ+WqkABT1eVrzM2fwzoDso3mzHxSv9g
+	6tvwad1+HJweNdsm6J1GBs02qK4Qf2SuEyTyRIjyRH2j3UIjBnOGKQ+sJ++W2BymiOygh+Rhc60
+	KB5siJtpK0UkzxQbHetzGfhKrn9GCyEJSVvX2zpBhTCMTC5n5okPRY9p9e+XzQsNummFfVP3V/V
+	/28Nx5TJZ5wN9T8t8UN/tCj4uyooiS6Q4dDCHIkeAm2PAG3p/tXOW678nZUzx+uWpXATpl0jRsI
+	OyGJDHOYp2PcQwo/GTJFL4DtIGVZIMWZuhYViNkpEHTywLH3BuzDHh1+vGdTyk/98mKr/3jGD3H
+	E3e+Lc5pF0mlOyfu7CM8KMce3RjgzNRO+aV7KUtqpKx7t7Dx9A6eurSdDtLRm9OVQtCj0q6oXY+
+	Dg4n5f/782tyObhQEdu85YH3yK92MI2qwjOMvqKpzZB5EINUcBUjz5wQVydNlEMq68QgvlJiR8v
+	KXw+zIgkzbUUh+rA5o73AhvukXRG+S/H/DHJNP/gPyXtG+cDrg69RK83t96GlS+wUWxWPmBZaBA
+	DIQIeHrRbArFeUKhwRMAwWw7bWZHkHZQsQ==
+X-Received: by 2002:a05:7300:e9c4:20b0:383:6f73:eb34 with SMTP id 5a478bee46e88-3856c6b00fdmr1716713eec.2.1795147467898;
+        Thu, 19 Nov 2026 20:04:27 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385666e7f59sm3246104eec.6.2026.11.19.20.04.20
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385666e7f59sm3246104eec.6.2026.11.19.20.04.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Nov 2026 20:04:23 -0800 (PST)
+        Thu, 19 Nov 2026 20:04:27 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -82,9 +82,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv3 13/19] powerpc/pseries: Annotate the RTAS indices sequence lock context
-Date: Fri, 20 Nov 2026 09:33:12 +0530
-Message-Id: <4d966d74a0d6c6f5fb4ff04a116796097f4f29ab.1795147055.git.ritesh.list@gmail.com>
+Subject: [PATCHv3 14/19] powerpc/pseries: Annotate the RTAS physical-attestation sequence lock context
+Date: Fri, 20 Nov 2026 09:33:13 +0530
+Message-Id: <2345452806a2a056bd8355e12cec2a060f385d2f.1795147055.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1795147055.git.ritesh.list@gmail.com>
 References: <cover.1795147055.git.ritesh.list@gmail.com>
@@ -111,39 +111,40 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Clang's context analysis reports:
-  papr-indices.c:145:1: error: mutex 'rtas_ibm_get_indices_lock' is still held at the end of function [-Werror,-Wthread-safety-analysis]
-  papr-indices.c:158:2: error: releasing mutex 'rtas_ibm_get_indices_lock' that was not held [-Werror,-Wthread-safety-analysis]
+  papr-phy-attest.c:154:1: error: mutex 'rtas_ibm_physical_attestation_lock' is still held at the end of function [-Werror,-Wthread-safety-analysis]
+  papr-phy-attest.c:169:2: error: releasing mutex 'rtas_ibm_physical_attestation_lock' that was not held [-Werror,-Wthread-safety-analysis]
 
-Add the necessary annotations to indices_sequence_{begin|end}(),
+Add the necessary annotations to phy_attest_sequence_{begin|end}(),
 to fix these errors for enabling Clang context analysis.
 
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/platforms/pseries/papr-indices.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/pseries/papr-phy-attest.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/papr-indices.c b/arch/powerpc/platforms/pseries/papr-indices.c
-index 3c7545591c45..3f3b88f708a3 100644
---- a/arch/powerpc/platforms/pseries/papr-indices.c
-+++ b/arch/powerpc/platforms/pseries/papr-indices.c
-@@ -126,8 +126,10 @@ static int rtas_ibm_get_indices(struct rtas_get_indices_params *params)
-  * indices_sequence_begin() - Begin a indices retrieval sequence.
+diff --git a/arch/powerpc/platforms/pseries/papr-phy-attest.c b/arch/powerpc/platforms/pseries/papr-phy-attest.c
+index 350ba26e5962..d2bc5c0da422 100644
+--- a/arch/powerpc/platforms/pseries/papr-phy-attest.c
++++ b/arch/powerpc/platforms/pseries/papr-phy-attest.c
+@@ -133,8 +133,11 @@ static int rtas_physical_attestation(struct rtas_phy_attest_params *params)
+  * @seq: user specified parameters for RTAS call from seq struct.
   *
   * Context: May sleep.
-+ * Returns with rtas_ibm_get_indices_lock held. indices_sequence_end() releases it.
++ * Returns with rtas_ibm_physical_attestation_lock held.
++ * phy_attest_sequence_end() releases it.
   */
- static void indices_sequence_begin(struct papr_rtas_sequence *seq)
-+		__acquires(&rtas_ibm_get_indices_lock)
+ static void phy_attest_sequence_begin(struct papr_rtas_sequence *seq)
++		__acquires(&rtas_ibm_physical_attestation_lock)
  {
- 	struct rtas_get_indices_params  *param;
+ 	struct rtas_phy_attest_params *param;
  
-@@ -150,6 +152,7 @@ static void indices_sequence_begin(struct papr_rtas_sequence *seq)
-  * Releases resources obtained by indices_sequence_begin().
+@@ -161,6 +164,7 @@ static void phy_attest_sequence_begin(struct papr_rtas_sequence *seq)
+  * Releases resources obtained by phy_attest_sequence_begin().
   */
- static void indices_sequence_end(struct papr_rtas_sequence *seq)
-+		__releases(&rtas_ibm_get_indices_lock)
+ static void phy_attest_sequence_end(struct papr_rtas_sequence *seq)
++		__releases(&rtas_ibm_physical_attestation_lock)
  {
- 	struct rtas_get_indices_params *param;
+ 	struct rtas_phy_attest_params *param;
  
 -- 
 2.39.5
