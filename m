@@ -1,57 +1,72 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3930E606A330
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Nov 2026 19:35:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BE68606A330
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Nov 2026 21:05:29 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=m4xEfVgN
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9Hd9qiR
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jX2Vq5Srfz2xQK;
-	Sun, 22 Nov 2026 06:35:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795289747;
-	cv=none; b=M0uuU0MW14W4TpSyrrol4m17IXMNUKhqj/r10vOq6LYaARFsXzNDrElMetSi0/YlZrPvN0/MJ9NX+BryskWBuAtx5MF1ecUOaCQ+/TSuRmMHgCo3VQmn1Qw7XIce4AHvyZf0fJV3BLfEdnq9bDOxwhCjVGm0YgglYXSzP31OonFsiJtFrp1D84idLriZ/afBDw85a8ttsn/rwCyJGjmXmrkmoB+iH3dWs2NX4GMMtHLkIafr7CXyYE7OUtmbmKl3izDcAxKpdjQdy+jU3GBGOIxwSevmZ/ru0a2lDY2gwt2Qlo97gEZBxmPSHy5Ult8HpbMFLsq3/KkiVM5BD3Zb+A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jX4VH6jtXz2xLq;
+	Sun, 22 Nov 2026 08:05:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795295127;
+	cv=none; b=abGR0Mg0RajyAiOH6oEZzqd3B7uDu39uMiIveOiWCq+wkUTRfb3I0m9V0MNc906O78XxWo97tueKxiGIy81jw25LLUlaYSfVrl1CnI+VVujr9RTtHlkJO45wssW6jBSN4yrg8b0RqtuKkwGBtWLfXoJ5+LQeICKVAlbUT9BZT8bA1IOiaNJJpVZO2vFdceNHHgJM1k9s+JUdvuIh0xnxQeKDAIjrEJSwzTq0LCoX0b0BLimkfrHmkQe9QSS7c/vtQ4lxFHpxbJsrWkoaut0AEn8bHcgkUQTgkS8/PieDcSJvP69iO8uBeaX10lkuhMWjPl36CoH8YBAT++Mdxge+Tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795289747; c=relaxed/relaxed;
-	bh=woUgHZr0uil9VFYYYYRHm8aIGID2QxRLbWy19xVONnI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A/J/nTpQvRD0kJ7cjstIRq5+bdo+MqMH5uwy405ylGTnHGo6k1zuVrcDAnPx8y3RzWd9/3gJqjIWvoS9xZ/Ixv5DCMzUm3k006P8yFQ2TnPGSDvmdsn/r85yRiS/07sgz3Z0UzyEna6VRZgS04rHaa+9uCcj/BdYq8E/K6laB+SkuickbvZKhhM+20P/4wonsLcgMgXstDUSCwdF5YThpI5Dx8CvMnsElEIWVdLPupGJ96ILqSG6bgjjrJ1aMdYkqyvpre/Uzib+rQ1igNkujGu5TUicg9+RKkqlh235sQB/nyIuFoYPG6avI08KcJCaD7UHGtkygum5xH4PCZXPlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=m4xEfVgN; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1795295127; c=relaxed/relaxed;
+	bh=kut3RnC+sJhmtjNJCZ9oinVvtWFuAO9/28dyTHZ3+pc=;
+	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=PzwdtZ8QamNZ3M29KIyb2n1xkqyYcNH7KYuWY2b1USZ2rNg7PFhNTmJnvozPVrQDvlTZV9lTeLH1EJQ8iDWs7BTmk8tRauNpptUaICwRzMiknxSFPhIRa+eye5jNXiDjA4GjuP+eC315m08Vn0PnZjeOeSzQUEdC215B0CifPqW3OlVlBnQF0THQS8u5W0oyOXN0g6sqvdWezg5W6YdcX3HSkq/w1yPF6R1BVbNzqPKZlyAu0AP5qpLMMGlMPYN2vvj8e5erudXSYFEb1WctD3z+PlC0LozTOOV1lnCu0FGyhgFXud1jILWK1tpZW9uIQ880qgOpsZFe2x+4UApp4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9Hd9qiR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=m4xEfVgN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9Hd9qiR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jX2Vp121bz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 06:35:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=woUgHZr0uil9VFYYYYRHm8aIGID2QxRLbWy19xVONnI=; b=m4xEfVgNc9OZJR6z5iG+QnFB4H
-	z2jVd4W5Tlhdl6kT5Soywj+i6duxMQH2z0hLPqfBsD/fomCJbEGIuKcacP7zSl/MJwOCQnYEkh2xU
-	TX5EscvEBCTYuyM1rflJd/8BqT2tQ0nyBIo5EzCs+U4r3XoLtXk4sTezTgPk0xBQoE+w=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1xUqs4-000UAd-OU; Sat, 21 Nov 2026 20:35:36 +0100
-Date: Sat, 21 Nov 2026 20:35:36 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: netdev@vger.kernel.org, Pantelis Antoniou <pantelis.antoniou@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org, Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@kernel.org>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Subject: Re: [PATCH net] net: ethernet: fs_enet: add missing
- MODULE_DESCRIPTION()s
-Message-ID: <3cd99f54-d5ec-44ae-878f-e8b1cf841703@lunn.ch>
-References: <20261121192343.932171-1-rdunlap@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jX4VH0x7Vz2xHX
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 08:05:27 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9765861CF7;
+	Sat, 21 Nov 2026 21:05:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 460AE1F000C4;
+	Sat, 21 Nov 2026 21:05:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795295123;
+	bh=kut3RnC+sJhmtjNJCZ9oinVvtWFuAO9/28dyTHZ3+pc=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc;
+	b=B9Hd9qiRrwP84tw05mnaamPACaa0JzLoTVI9KSQpjLy9j2w3SrL4+WL6wgVPPdNac
+	 /tQ23Wk+VF26MG1SWB4YO6/Iqv+vekCHa1QoTrcZIRx7ysGJcxxCqFZeATiD1FQhmG
+	 A8XExvxJf2Ff/6pvuQOMFwZJiVgI4pKZbRm9Ho56css7sfumZ6+x20R2+qJsrC2IEO
+	 zVknB3PVAhJ7fx9DvCpzp7V8uUT1JS9X1aRONUPdXzpl/vWTtWOjS02rEYPa4bI+b1
+	 B0l32y5+GUd8qlzRP0JRlVLih07WnaU3XFBejgD8qQnt8QnF7QUhpoageLWPdosKnB
+	 izqj1nLwU/0EA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3A4D2391B072;
+	Sat, 21 Nov 2026 21:05:23 +0000 (UTC)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.4-3 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <cfa609ff-9ccc-417c-a816-56b364d0bf76@linux.ibm.com>
+References: <cfa609ff-9ccc-417c-a816-56b364d0bf76@linux.ibm.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <cfa609ff-9ccc-417c-a816-56b364d0bf76@linux.ibm.com>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.4-3
+X-PR-Tracked-Commit-Id: bd6d2f87c2239d10bf5f37ab52b3968565528417
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 7b7fe306dd86b5342d3be8a3f1cbf3bb1ebf280f
+Message-Id: <179529512179.1171121.18032448255591519626.pr-tracker-bot@kernel.org>
+Date: Sat, 21 Nov 2026 21:05:21 +0000
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, christophe.leroy@csgroup.eu, gautam@linux.ibm.com, haoxiang_li2024@163.com, kmehltretter@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com, mpe@ellerman.id.au, nathan@kernel.org, naveen@kernel.org, nnmlinux@linux.ibm.com, npiggin@gmail.com, ritesh.list@gmail.com, sourabhjain@linux.ibm.com, sshegde@linux.ibm.com, yadavgaurav386@gmail.com
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,38 +79,17 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261121192343.932171-1-rdunlap@infradead.org>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-On Sat, Nov 21, 2026 at 11:23:43AM -0800, Randy Dunlap wrote:
-> Add 2 missing MODULE_DESCRIPTION()s that are now required.
-> 
-> WARNING: modpost: drivers/net/ethernet/freescale/fs_enet/mii-fec.ko:
->   missing MODULE_DESCRIPTION()
-> WARNING: modpost: drivers/net/ethernet/freescale/fs_enet/mii-bitbang.ko:
->   missing MODULE_DESCRIPTION()
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+The pull request you sent on Sat, 21 Nov 2026 16:01:29 +0530:
 
-Hi Randy
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.4-3
 
-Please could you target net-next, not net:
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/7b7fe306dd86b5342d3be8a3f1cbf3bb1ebf280f
 
-https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html
+Thank you!
 
-The changes themselves look O.K, so when you repost, please add
-my Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-
-    Andrew
-
----
-pw-bot: cr
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
 
