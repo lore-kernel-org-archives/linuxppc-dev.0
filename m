@@ -2,72 +2,94 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CC8C6606A320
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2026 04:08:30 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4FFA9606A320
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2026 04:13:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fY1iywxG
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=ckNxVt6U
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXFtP3lptz2yMP;
-	Sun, 22 Nov 2026 15:08:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795320509;
-	cv=none; b=lxZjprdIw0VbORyrpbZywb75spWbaW7tVQXVS7c9SKKWf8QamSSXG1EdtnDLx2Qffqo3+zygcBXrRuyI0Fqs8knNXIPATI+05rhar70u1PQrwybbgT70RW8jStDoNItT5bQzaVZG8+mIOKDbM3w7mbHd7PaTX5hwZvZ+EBPuBkXYvxAh8E1Pu3SQKJf0tj8In7LdofMBt2DitSq+azOBeTudn4IHckaaCcWSKK6vufJRV96jJehMjoexzyHFM5/6pXbctAJQRihJWwx+//LjAug6VtlBdrvZiPsB0bEbqECY9YimPCf5G2crRCt2EguBfg8AbVB4GZFN0fzJ2ss9fA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795320509; c=relaxed/relaxed;
-	bh=Uv8h2L45V4jj5LVvESCeSMq451qPSPNLhaVFN3TApkA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=VzdFZ5ybczAbUKfKlvgtaGd4cAmKPnHcGjAq5zW1wmcLPl9URNjI9yLA+Q+aJK0zG0UoxI/6ideCuW4++hbtCj2wvw4UK2W+WMOa0Im29K8fY5B/YyLHmW44sG8ITWsW9J5X9Pme8Sq1u48WoDloyUOwcX8ETCj4NW+1lKTd0Onw0UW2WyGE6GyxmTbTvyWoYo5UniLJm6Rz24/Bg6Tw16rC6NFNzpwOrH75gAP/njXY+t+wcuHz1aq9cHLw5mom1PmMoFIDqEY0SKIdcA9UNRQZ0q4p1Z4wUlxhm4K3SzsVsDcAL7BmDQkPnDcw+QE+rLHhsSESRQEFuGgiw390Pg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fY1iywxG; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXFzz1zPHz2yQn;
+	Sun, 22 Nov 2026 15:13:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::82d" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795320799;
+	cv=pass; b=S4MtkOq5iCUYgov+Nu7Vdi8Ddme2cXOvBPzBqqgy6s0wz9iVbRs5BYmWqVikSEv9w/mce3yenEWTKcvtpcOVTHmgvCUqGEOzh2Gi3kAc3gBDzNRMx6g57Y2O5pdYuhncYm466gMYmhA63xCgmJFQvhMTJoxXw3Nobyfvq40bb3stLZUO8xhpL3GYTvex+MDJ/jVdmuQJXwjgcVYkYI4VK6AvlRqoyV+2oVkOgvR0mJGb5IL0gd/QdSQg07kTa9+uHNk4AX1M3IZYwgOy2fK35i9R3qD/U88+vUQKgPJaji6mQZ+8dhw8k3uFdACc9R89ffBcFJUZxUdl1vOkHMWe7w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795320799; c=relaxed/relaxed;
+	bh=5ljRHehwKpqXIEQjugVh5IB8G8Jh5NOSn1c67fpxeVk=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QRMeCZ/hyKNlc/aSwIWQy3Rxw6aKRuMNpebGHdkuV7+9ECXQkqre2WmxTT0dhUHrEPxhjmc3SNMxiVOoG+vKZDfYp8AdYWe6zxaAYivdS6pCO4iLGc+18CQ+dUSj028v2edaXFTvdjyp4hPXRnAbCEKhoUfyMdj9TAL80juW4aZwCa3dTahPL0b8ExmNLOxDodPjFDFvC74LA4kXNTM8IPCeZFyHMtw6z/3LoYg3F+YE1bQjVOq6w5+9e1jI3Z/BEz48kPTTp+eJOR0tIPVmcA2OKrfosalLi3X39USfr9Un96FXS7h1/arfNmm3sbtPUpLM5CkXwmT0MMNZL92GwQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=ckNxVt6U; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82d; helo=mail-qt1-x82d.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fY1iywxG;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20260707 header.b=ckNxVt6U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::82d; helo=mail-qt1-x82d.google.com; envelope-from=surenb@google.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-x82d.google.com (mail-qt1-x82d.google.com [IPv6:2607:f8b0:4864:20::82d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXFtN2hMRz2xnn
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 15:08:27 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AM44Wnv3724081;
-	Sun, 22 Nov 2026 04:08:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Uv8h2L
-	45V4jj5LVvESCeSMq451qPSPNLhaVFN3TApkA=; b=fY1iywxGSjyaQuK2adLxRj
-	2CeiRAC5Q/x9YGowm2V3q+7wiQQrahExgsczFCn3nwUGPoF685L9931mDCjlnDLV
-	OsLwn189d2a238bwXYEtOFUG5R3PBqqb9+qtQ6DIY02h1QkMNbWflWWhLIRKe93O
-	wBl7hg9/F+XrgkFJuLbp6K9EBuV6TcjZ35IoPQ/9Bcin4qSh2Cqwzx0D0+7I6I71
-	43+RJf86/8+J0FZzLWH+QSR8TuV6u8Wc8XLMGhMIS9ITYTubjJVpB42kElL8kbiZ
-	30DHtzOuDyYmTlYGAOD37Im7iFA0tDIm6Es2vmu3D9lhyAUm7azG8K8zw/6Bnuxg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34fk4uqq-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sun, 22 Nov 2026 04:08:25 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AM3nD751128197;
-	Sun, 22 Nov 2026 04:08:24 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j3pmjrff0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 22 Nov 2026 04:08:24 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AM48NoS52953456
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 22 Nov 2026 04:08:24 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A336458055;
-	Sun, 22 Nov 2026 04:08:23 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0CD0F58043;
-	Sun, 22 Nov 2026 04:08:22 +0000 (GMT)
-Received: from [9.43.90.96] (unknown [9.43.90.96])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Sun, 22 Nov 2026 04:08:21 +0000 (GMT)
-Message-ID: <ac3d60d5-1bd3-4f60-9933-e03af7323162@linux.ibm.com>
-Date: Sun, 22 Nov 2026 09:38:20 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXFzy3DXzz2xnn
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 15:13:17 +1100 (AEDT)
+Received: by mail-qt1-x82d.google.com with SMTP id d75a77b69052e-55c7445cf85so155271cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 20:13:17 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795320795; cv=none;
+        d=google.com; s=arc-20260327;
+        b=bRhQDfLGfASArVyyO12FzObPWzfNw0liVrH3NISBiBMuaR6YEW0tSkZI+LsSfiTjk2
+         yghrh75HaD+UjQJtJoj+MRR/FGr3/VVG83i0KV0oAnxjOdWdv/muAFKj9ymHw14p0xKP
+         iPNqu1+vNOEB3Dd67jRQxAs2Y2uxbo0Zdn8xsdp+H3KmQcNDg/BRz1cwkxEfUDKYx2mO
+         nhalqmTf2wsXYqZR9I6Coi2XRio3W6loAW0uL4vF9a3S9O1lKh6XQmXB1rrK567PHJQL
+         Uwrk4POg0I+LdF4icMR0nHaQ8RQ5/LA5Dpesas5IqF6I5TrJfA+oZZeMwnKJMYgtICSY
+         hMew==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=5ljRHehwKpqXIEQjugVh5IB8G8Jh5NOSn1c67fpxeVk=;
+        fh=rSvuZVxOxAZLkn6235mYrEiEq8+IgL+8mlj3jKmAsTU=;
+        b=fEwG6OxmsVv5dLLiOUIYmGdLSnjfPkFOg/hdSPLPhOj9+MUEaDP76LEFlUz/paSGef
+         YX0NSamr8ye8fW/4/kNCul2oeb7dSDTAPr6gXAAZre+d41EnSm6SXt6gD2xHFuDMprZT
+         Fgh+WQkA4Dxg1VgN55dGe+lb0ax5m4hebPfLlV7+GrtxNB+MBGJBOdW3Pgqp6KmxmAwa
+         5gr3Jl4oSHR3HhiEyLhKjnbw6YVooyCGkDfXw4NhD6eHLcw7m7WpfQzvSiO/OprR2wAa
+         vrCVYPsXmtcgqysxBElCaAT7vmbitnCNTGNOrbLlaV85gJueWe5viqYBNmt03+3SKGYw
+         Opqg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20260707; t=1795320795; x=1795925595; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5ljRHehwKpqXIEQjugVh5IB8G8Jh5NOSn1c67fpxeVk=;
+        b=ckNxVt6UZCZsh5X9sANL0AANbEek+HTvhl2BWxrh8TZLKcPRKRC9QWaD0Fohj/M38T
+         pmI1nU9Jic9gsKPHsNqbjdQ5dHL5HmS0VSaTt87he1+nUqP58tZxwNYZH1OL0SKgO5N+
+         zAh/8+mAlK+tRyFkP/4onQg66PSFYg1C/vaknFiBm4SM5fjTMgPWUiDZXB6aNimNf0w5
+         AlKTN/yv/ldCNyUAwueHHgxYLJE7piepKA5MpV7qr68jK0c8N//uGhEbgczp3F2oTTAS
+         KsjkldVDuaNeCkAK1qFw+XwxZNiimuKaUOoJ9M2f56ibU0Wk4c4aBLJgJMF2tMgFfchG
+         mZZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795320795; x=1795925595;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5ljRHehwKpqXIEQjugVh5IB8G8Jh5NOSn1c67fpxeVk=;
+        b=YXpsaaUUDkFQGj366agBvifHe1nLOecTUR7zD3mlBY0zwyJKXCeyYXkwMG+mqUqpdV
+         iJ4RbTM0t1qWwXkvgFk0t3BhCtYnme23fS6nKZeSRvko6cqKsCvEi9XwJLR8FMZKeTmC
+         8SZiaz1+fOAn4REZjTpKQ2QQQD5lIs64mmslGrurTINsHCSVIwrSNEHo3CgHydY66sdK
+         MjDdXvy0bIxDu0blv/9muPJ8I2Spi6oHtaUzHAB6paG9W1WeU1agIR2Rs3r/vZuO/dPS
+         XMyc69oDo3LBry7+wVFkqafGTm5Yw/ida5Bfi6OGmAkUQAF7UFQx1EfaHg7AWEkdNfz1
+         DRJQ==
+X-Forwarded-Encrypted: i=1; AL+hErFpcWU+Vgg4bsIyUASEpT75h6vTvyH7CV3pIvA5UfqLOREohv+FRxoxgI190rTWmUFvJLf6FesCfjzwcsI=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+suu7pAmwNzXsLM3qUm3KsBgeQOhDR2YB6fsyVYnoI9AYAp4WO
+	Sei9JbLMDsgFNBxCitsMXyNUl4JIPTIbHCzck7d8ZZsAEecwWSqPd2CL9AvHDeOovUuKnHA7J/7
+	L+ymGxPEO5LtGqXnI0ahnJ6+n72/R1o7Pvset13TX
+X-Gm-Gg: AZFdTZf22FmyOkm5u8b+2GZpFwuwVmPxTrmcyEA5pMnOIQPe4f43TSjYtjMrzUjTPyn
+	Rq9gv1xDCAIBwiJxFbpR+uaIpWU8SRe9UkdDboI9+yH5S/pdcJW9bmNqJd95A8RBQ4hkkdJfof3
+	xxfcP55B+BqWcGVXeBb/vU6/9Yqat9yIr2g2MuAGrbo3B+RkpuqXh4nkaZaR001zqq8Tcxkw3dG
+	S6dJHkPORX0Z5vtOwOzKTZQMXgRgwoXOyd0b191VH6zfUaxaivR+6eFOxlC0TBjr5rnZFlQt60Q
+	3SoPvNQDqIUSdaoi+7B0uUG/oE3C79ZqWKVJOXb9UBKNOqQzqkM1iUAjKLJq9tLg4abv91pN/9b
+	zF/a9aOMemN+syAUuC/1A4vLmFeY8vD6lptEq7RE6UdCnCZJuTXlIpHTeGEa1n28FtcUfxf8=
+X-Received: by 2002:a05:622a:c15:b0:530:e335:4ef with SMTP id
+ d75a77b69052e-55d88014944mr19387541cf.2.1795320794485; Sat, 21 Nov 2026
+ 20:13:14 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,85 +103,129 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] KVM: PPC: remove unnecessary #ifdef
-To: Paolo Bonzini <pbonzini@redhat.com>, linux-kernel@vger.kernel.org,
-        kvm@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20261120133413.475489-1-pbonzini@redhat.com>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <20261120133413.475489-1-pbonzini@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIyMDAxNiBTYWx0ZWRfX+0QTWCPrwkhd
- 2Ny+u/rYMMxR0z4ARAskb2kgvEiRP4WLBNGEhT/+bPCJYxVjCEfHQ3uU5vQ3jOQ7KR2Va8y5iu3
- cYBk6biXug08Of/gBUaYqcoafEQAeKR7A/AbqhGym2zgxxWYviVFjtIW6jZcFIiPadbxTKNJ2O7
- QaiY1tXrzJbInqmFNNmzUPTmLJaRxAc290HUL6el1KoeztHfzymLHdxMJONzANupLDnh9NLanT7
- KIOFP6AGHgP1Kd6mDZX7ULUc4ky5PrPaEVCs1nMpcEw3QCkQ1XNODx3TE7d8fFDqdmsnRPvQG9h
- 4dIUNJx9yPHWC1HMTTB1saT8l0Px31S4lAe/DX5EIflhTlO/sVXI8nbHSf/U+UXWGvrb5eL7Q9D
- P9UQ63QB+qNhAZVBoW8kQOm3d5boK/IN73OwzPll+BAXjX+JHEP/l+Udf9KvcLV2RAoDs0YN6xn
- Qs+vNVYkQ9LZYz1+yug==
-X-Proofpoint-ORIG-GUID: hCpujaJVqeKogjbmvqemIG1K_zYI_K0k
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIyMDAxNiBTYWx0ZWRfX4GWVfEmf1jds
- a+TN+TbkXXod5hlOBO2b5yuiWXkelIyxC48jA8UG47OepvTrLoQviRF27TjM16JSywuG5UC+W4a
- u6DFCnpM6euGe9cyyc+Kwk143IwtPjM=
-X-Authority-Analysis: v=2.4 cv=A9z5rKWG c=1 sm=1 tr=0 ts=6b026ab9 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=20KFwNOVAAAA:8
- a=BE-TfwSVDWWdQ4Vu56kA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: hCpujaJVqeKogjbmvqemIG1K_zYI_K0k
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-22_01,2026-11-19_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1011 adultscore=0 phishscore=0 priorityscore=1501 impostorscore=0
- bulkscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611220016
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+References: <20261116071325.263682-1-hao.ge@linux.dev> <20261116071325.263682-10-hao.ge@linux.dev>
+In-Reply-To: <20261116071325.263682-10-hao.ge@linux.dev>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Sat, 21 Nov 2026 20:13:03 -0800
+X-Gm-Features: Aa3M54q14FtdKOZ0RiWv5OEBoj77CCH8AI-Mq7soe9RzxldP46nF6XTAMApufpI
+Message-ID: <CAJuCfpF_=KV3ArFO5LtMjc4EGMr79tX_tX2K=YCG_JTvC51OfQ@mail.gmail.com>
+Subject: Re: [PATCH v5 09/11] mm/vmalloc: undo what vmap_pages_range_batched()
+ mapped on failure
+To: Hao Ge <hao.ge@linux.dev>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Alexander Potapenko <glider@google.com>, 
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>, 
+	Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-23.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-++linuxppc-dev
-
-On 11/20/26 7:04 PM, Paolo Bonzini wrote:
-> booke.o is only built as part of kvm-e500-objs (which is conditional
-> on $(CONFIG_KVM_E500V2)) or kvm-e500mc-objs (likewise conditional
-> on $(CONFIG_KVM_E500MC)).  Thus, the #ifdef in kvmppc_core_check_requests
-> is always true.  Remove it.
-yes kvmppc_core_flush_tlb() is defined in e500_mmu.c which is 
-unconditionally linked in
-both e500 config (kvm-e500mc-objs and kvm-e500-objs)
-Nice catch. Thanks for the patch
-
-Queued via PPC tree.
-
-Maddy
-
-
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> ---
->   arch/powerpc/kvm/booke.c | 2 --
->   1 file changed, 2 deletions(-)
+On Sun, Nov 15, 2026 at 11:14=E2=80=AFPM Hao Ge <hao.ge@linux.dev> wrote:
 >
-> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> index fd7f24a68b31..ba762ac1fb56 100644
-> --- a/arch/powerpc/kvm/booke.c
-> +++ b/arch/powerpc/kvm/booke.c
-> @@ -738,10 +738,8 @@ int kvmppc_core_check_requests(struct kvm_vcpu *vcpu)
->   
->   	if (kvm_check_request(KVM_REQ_PENDING_TIMER, vcpu))
->   		update_timer_ints(vcpu);
-> -#if defined(CONFIG_KVM_E500V2) || defined(CONFIG_KVM_E500MC)
->   	if (kvm_check_request(KVM_REQ_TLB_FLUSH, vcpu))
->   		kvmppc_core_flush_tlb(vcpu);
-> -#endif
->   
->   	if (kvm_check_request(KVM_REQ_WATCHDOG, vcpu)) {
->   		vcpu->run->exit_reason = KVM_EXIT_WATCHDOG;
+> vmap_pages_range_batched() maps the range batch by batch. When a
+> batch fails, the batches before it are installed, and the failing
+> one may have installed some of its pages. mapped_end follows the
+> end of the last installed page, and the error path undoes
+> [addr, mapped_end), never past the point where the walk stopped.
+>
+> The KMSAN metadata is set up for the whole range up front, so it is
+> torn down as a whole when the mapping fails, like in
+> vmap_pages_range_noflush(). The only caller, vmap(), also calls
+> vunmap() on its error path; the double teardown only walks over PTEs
+> that are already cleared.
+
+As I mentioned before I think this patch should be merged with patch 7.
+
+>
+> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+> ---
+>  mm/vmalloc.c | 22 ++++++++++++++++------
+>  1 file changed, 16 insertions(+), 6 deletions(-)
+>
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index 28e65073624a..aa80bc273ec0 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -3748,13 +3748,14 @@ static int vmap_pages_range_batched(unsigned long=
+ addr, unsigned long end,
+>         const unsigned int nr_pages =3D (end - addr) >> PAGE_SHIFT;
+>         unsigned int prev_shift =3D 0, batch_idx =3D 0, nr_mapped;
+>         unsigned long batch_start =3D addr, batch_end =3D addr;
+> +       unsigned long mapped_end =3D addr;
+>         int err;
+>
+>         err =3D kmsan_vmap_pages_range_noflush(addr, end, prot, pages,
+>                                              PAGE_SHIFT, GFP_KERNEL);
+>
+>         if (err)
+> -               goto out;
+> +               return err;
+>
+>         for (unsigned int i =3D 0; i < nr_pages; ) {
+>                 unsigned int shift =3D PAGE_SHIFT +
+> @@ -3764,9 +3765,10 @@ static int vmap_pages_range_batched(unsigned long =
+addr, unsigned long end,
+>                         prev_shift =3D shift;
+>
+>                 if (shift !=3D prev_shift) {
+> -                       err =3D vmap_pages_range_noflush_walk(batch_start=
+, batch_end,
+> -                                       prot, pages + batch_idx, prev_shi=
+ft,
+> -                                       &nr_mapped);
+> +                       err =3D vmap_pages_range_noflush_walk(batch_start=
+,
+> +                                       batch_end, prot, pages + batch_id=
+x,
+> +                                       prev_shift, &nr_mapped);
+> +                       mapped_end =3D batch_start + (nr_mapped * PAGE_SI=
+ZE);
+>                         if (err)
+>                                 goto out;
+>                         prev_shift =3D shift;
+> @@ -3786,13 +3788,21 @@ static int vmap_pages_range_batched(unsigned long=
+ addr, unsigned long end,
+>         }
+>
+>         /* Remaining */
+> -       if (batch_start < end)
+> +       if (batch_start < end) {
+>                 err =3D vmap_pages_range_noflush_walk(batch_start, end, p=
+rot,
+>                                 pages + batch_idx, prev_shift, &nr_mapped=
+);
+> +               mapped_end =3D batch_start + (nr_mapped * PAGE_SIZE);
+> +       }
+>
+>  out:
+> -       if (!err)
+> +       if (err) {
+> +               /* Undo the part the batches installed before they failed=
+. */
+> +               if (mapped_end > addr)
+> +                       __vunmap_range_noflush(addr, mapped_end, true);
+> +               kmsan_vunmap_range_noflush(addr, end, true);
+
+So, you are unmapping (addr, mapped_end) range but removing KMSAN
+metadata for the entire (addr, end) range. Is that intended?
+
+> +       } else {
+>                 flush_cache_vmap(addr, end);
+> +       }
+>         return err;
+>  }
+>
+> --
+> 2.25.1
+>
 
