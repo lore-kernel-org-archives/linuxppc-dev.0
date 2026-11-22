@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3C290606A334
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2026 16:45:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 532AD606A33F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2026 16:52:45 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D28Dshub
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Br567cU7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXZgP4h8Cz2xjN;
-	Mon, 23 Nov 2026 03:45:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXZrC4dqyz2xjN;
+	Mon, 23 Nov 2026 03:52:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795365905;
-	cv=none; b=MTe1ctEjvjoS4vAqtfHzoxTgi4TUOFqDu6cpgT768JzqUhu2eHmpZljOOAGdR/AJffPH02nU+tvT0zVgElh1+lh5iDjl+QgdJfH0eeO8+tn95rsDTBSwsLWSf7F7GkSXWrTcK219cBw43VE3aQ+ycDLyodlP9dIaaftn15APwfMi3Gq7IrePHBbweyUfCRfDH+km/XOhkNUQQmJZa9e8t8MnJMssTfsftVd1EGP8TkOtb3XfLKQ+3OP8JSKE5KF9/i4IUsnDChqpkgNIG3UPjh3zQIcGXHDXXoxJmR3wGs8eAwatFRc88zLejjc98j70tWO3Rzo6WwR/SLupnJrWIw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795366363;
+	cv=none; b=B8OrEkFW15XGzMRkbA52V9UWVqKgNrnDL0O+Y5KJzCJwRn3nCDHYf0n720PR9WZF2nyhAu1+ZF0cSXHnSodZvxwy/KgZ3qrKao7VI9/W7aeosa7oBm4Utg2PuFDYK316FW5sZvs40XWMCZ/d/iTzngjCD8j1GIdjr9x+Aujeuqr5o4UYdhA9G12syb0PwrRvi1TiY+ZG4Th2apr9FsLhYq5R0HeSPvkkRSvKVbR6yxMOxiNhFGLAZEjwN6Ox3dD8C5R6EXSwlu2fnPZVssRDllqPPQ8gtr+ZqmBKR0HCMVTU7JVtpbg7kV+gUTcGD7hzz8sw1yGjaQ7IIIUiTHVipw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795365905; c=relaxed/relaxed;
-	bh=KaWb+s8zeKhF6AnCeqIf7E7Vx2X7tWNhfZmMdCpaUGM=;
+	t=1795366363; c=relaxed/relaxed;
+	bh=1NKjBPa3Mm7e007sBCfL+8iXNhsADEsxbBCKLGqTb2o=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NIh8iebC3dHZVC068pwXH06DZcRXvRNrjxaM3SohDTtzDpxF6kjKOQWZCtTWlklnFjc93fHFvp9+opB34UGy3mmWGNYalhroXRK6A5H/ArxWXrLmxbFrvJ3zx0UyEQMSMX8Hl0sKGAl3kOmadyE9OvpGBKiRWOlpAlxNplVCBBOzZa8iDr+Qk7qUDQJyimEoDX0VifkgI9xziLLSxTynQLKKBWelvj6cF5mWPgJ7YAk3OUQIziR0JOHOLTN220XpfcUyDuNPdiOV+vcngZIg8YFk16KgpCtKXMT8MVjXoHcXZhs5KVftsDcIpVrifvISjXJ4z6ad9a7b7Q8hp72k+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D28Dshub; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=Ttx7EQQFoHW2Nm5FXBaiG/0KHWZsBAkGvyMwm98DdPrMEQpMEBiFRi1yZ0J/Ya3Zk/ISoyOzpN4PGhSTxGV44IMrc+V0e2PhdDDuKFCHXC56WFlhSwZgS5HuP7PuRTtSLkPd42jJzvy6LqTjbFwi6x0rbfa/JwFw1JZXTjV0LqNq299+Y40ZXrcY+LzGQxNdu9rlx9CK5L3cGZwh909VCqgh14U000V0v3dQqmG4stwMqLHBqTz/iUJQWAyvUwIfHQYMgo8CJy8bDQ9AWbkBWcibhqomCzh3NA0guk8PaZxJDoXzxAL2RUD2/F4qI7DG+tLuzZKkV56OxuuaVsbUHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Br567cU7; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=D28Dshub;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Br567cU7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXZgN5rWsz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 03:45:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXZrB6HG0z2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 03:52:42 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2E008429CA;
-	Sun, 22 Nov 2026 16:45:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E31261F000C0;
-	Sun, 22 Nov 2026 16:44:56 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 196F440B87;
+	Sun, 22 Nov 2026 16:52:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C2961F000C4;
+	Sun, 22 Nov 2026 16:52:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795365902;
-	bh=KaWb+s8zeKhF6AnCeqIf7E7Vx2X7tWNhfZmMdCpaUGM=;
+	s=k20260515; t=1795366360;
+	bh=1NKjBPa3Mm7e007sBCfL+8iXNhsADEsxbBCKLGqTb2o=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=D28DshubZKDMkBzwpviztYrerD4E6ol3oEYrrdiVPaZa2+dpN2bHePhFa523xOEjS
-	 P1SGChtJYjqqQGZD2zkdtpgdYRa0/HNZ2kH6GTQebbVKLsSAL0gg+JYqxLlmytiYS5
-	 Ex+Q/i3balIADfHYMBT/5LHmS2G1PdFaQdI+lP6MdSDtTM8POMdy2nVFhfHqkjTzFt
-	 VAqP7rZnD0U6kEi2PEGaayOVN50eRaORis8lozJH94u8IIhs5NPEt6fZScZ2PH3LQa
-	 midpnrtMUVqUYfFER4rDCmJOVOxGcX3/jgg/5wwPmZ83fxuv0vniu2uXZmIF5M/xmU
-	 af6CVbJu8vTXQ==
-Message-ID: <cb535634-2d87-451f-be28-ba975281dde8@kernel.org>
-Date: Sun, 22 Nov 2026 17:44:54 +0100
+	b=Br567cU7i2EIc01fZQxF9CCJuMpkTBy7lv8Y7WoZ/xz5Kzw1Fh1Dnig7L+ZGOxarG
+	 BsleFmUduEVXp9CJsQgZhFbg00Dm4y5+2K5JpSuX8VYVuXXtQauNeRx8ZKnUwl+n+o
+	 13xquQXDfYAijo3MRpGVTssouCha+sDjPFYn6tSDEpP5u/p/Qno5mgwLW3SlfRA7J4
+	 z3bH2DtD/MRyZG8/ZmaK9xu+EBfyabZUt5eLs6DVg+Sgm2TuzcmJaQ6Emr+JC3D0Dd
+	 6rhnRwcQiNIrkdXBySVgEVNwV3/zbXJ2FlwcFJyzZY5ZQ8n+JBby2ZUoz0HtE09nfg
+	 9VTxaELeRQ0Dg==
+Message-ID: <c02a4f0a-7790-4949-9037-b346ffbe3921@kernel.org>
+Date: Sun, 22 Nov 2026 17:52:32 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,25 +61,24 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v6 4/4] selftests/mm: test fork of PMD-mapped shmem THPs
-To: Andrew Morton <akpm@linux-foundation.org>,
- Konstantin Khorenko <khorenko@virtuozzo.com>
-Cc: Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>,
+To: Konstantin Khorenko <khorenko@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Zi Yan <ziy@nvidia.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
  "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
  Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
  Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
  Usama Arif <usama.arif@linux.dev>, Kiryl Shutsemau <kas@kernel.org>,
- Peter Xu <peterx@redhat.com>, Alex Williamson <alex@shazbot.org>,
- kvm@vger.kernel.org, =?UTF-8?Q?Lo=C3=AFc_Molinari?=
- <loic.molinari@collabora.com>, Lorenzo Stoakes <ljs@kernel.org>,
- Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org,
- dri-devel@lists.freedesktop.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Peter Xu <peterx@redhat.com>
+Cc: Alex Williamson <alex@shazbot.org>, kvm@vger.kernel.org,
+ =?UTF-8?Q?Lo=C3=AFc_Molinari?= <loic.molinari@collabora.com>,
+ Lorenzo Stoakes <ljs@kernel.org>, Shuah Khan <shuah@kernel.org>,
+ linux-kselftest@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
  "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
- Yeoreum Yun <yeoreum.yun@arm.com>
+ linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>
 References: <20261119-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v6-0-efa7817a2bb3@virtuozzo.com>
  <20261119-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v6-4-efa7817a2bb3@virtuozzo.com>
- <20261119103210.24a7612ee26c3ffc3db49451@linux-foundation.org>
 From: "David Hildenbrand (Arm)" <david@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=david@kernel.org; keydata=
@@ -126,108 +125,221 @@ Autocrypt: addr=david@kernel.org; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20261119103210.24a7612ee26c3ffc3db49451@linux-foundation.org>
+In-Reply-To: <20261119-b4-prep-vstor-149847-copy_huge_pmd-recheck-special-pmd-v6-4-efa7817a2bb3@virtuozzo.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On 11/19/26 19:32, Andrew Morton wrote:
-> On Thu, 19 Nov 2026 14:44:05 +0100 Konstantin Khorenko <khorenko@virtuozzo.com> wrote:
+On 11/19/26 14:44, Konstantin Khorenko wrote:
+> Fork a process that maps shmem THPs with PMDs, in a VMA whose page
+> tables fork copies: a private mapping with an anon_vma, and a shared
+> one with a guard region. The child must find the PMDs before it
+> touches the mapping, and its exit must leave the parent's mapping and
+> the system-wide ShmemPmdMapped counter as they were.
 > 
->> Fork a process that maps shmem THPs with PMDs, in a VMA whose page
->> tables fork copies: a private mapping with an anon_vma, and a shared
->> one with a guard region. The child must find the PMDs before it
->> touches the mapping, and its exit must leave the parent's mapping and
->> the system-wide ShmemPmdMapped counter as they were.
->>
->> With folio_dup_file_rmap_pmd() adding PTE mappings, the child's exit
->> takes the parent's share off ShmemPmdMapped while the parent still maps
->> the folios. Unmapping them drops it once more, so every mapping stays
->> until exit, where the kernel reports "Bad page cache", or hits a
->> VM_BUG_ON with CONFIG_DEBUG_VM. A kernel that leaves file THPs to a
->> refault in the child skips the test.
->>
->> ShmemPmdMapped is system-wide, and reclaim or NUMA balancing can take a
->> PMD from the parent while the test runs. So the test makes up to three
->> attempts, each on a fresh file, and fails only if all of them see the
->> counter drop by exactly the parent's share: the bug does that on every
->> fork, other processes only by chance. It passes on the first clean
->> attempt and skips when none is clean.
->>
->> The test mounts a tmpfs with huge=always over /tmp in a private mount
->> namespace, so it leaves the THP settings and the host's mounts and
->> files alone.
->>
->> ...
->>
->> +static void test_fork(bool shared)
->> +{
->> +	const char *desc = shared ? "shared mapping with a guard region" :
->> +				    "private mapping with an anon_vma";
->> +	long before = 0, after = 0;
->> +	enum result res = NO_THP;
->> +	int i, drops = 0;
->> +	char *mem;
->> +
->> +	for (i = 0; i < ATTEMPTS; i++) {
->> +		mem = map_file(shared);
->> +		/* Make fork copy the page tables; the last PMD gets zapped. */
->> +		if (shared) {
->> +			if (madvise(mem + size - pagesize, pagesize,
->> +				    MADV_GUARD_INSTALL)) {
->> +				ksft_test_result_skip("%s: MADV_GUARD_INSTALL: %s\n",
->> +						      desc, strerror(errno));
->> +				return;
->> +			}
->> +		} else {
->> +			mem[size - pagesize] = 'p';
->> +		}
->> +
->> +		res = pmds_ok(mem) ? fork_once(mem, shared, &before, &after) :
->> +				     res == NO_THP ? NO_THP : LOST_PMDS;
->> +		/* Later children get only their own mapping. */
->> +		madvise(mem, size, MADV_DONTFORK);
+> With folio_dup_file_rmap_pmd() adding PTE mappings, the child's exit
+> takes the parent's share off ShmemPmdMapped while the parent still maps
+> the folios. Unmapping them drops it once more, so every mapping stays
+> until exit, where the kernel reports "Bad page cache", or hits a
+> VM_BUG_ON with CONFIG_DEBUG_VM. A kernel that leaves file THPs to a
+> refault in the child skips the test.
 > 
-> autobot want the return value checked:
+> ShmemPmdMapped is system-wide, and reclaim or NUMA balancing can take a
+> PMD from the parent while the test runs. So the test makes up to three
+> attempts, each on a fresh file, and fails only if all of them see the
+> counter drop by exactly the parent's share: the bug does that on every
+> fork, other processes only by chance. It passes on the first clean
+> attempt and skips when none is clean.
 > 
-> : If this fails, the next child inherits an earlier test mapping too. 
-> : Its exit can then change ShmemPmdMapped by more than the expected
-> : amount, causing the test to skip a real failure.
+> The test mounts a tmpfs with huge=always over /tmp in a private mount
+> namespace, so it leaves the THP settings and the host's mounts and
+> files alone.
 > 
-> which seems ignorable - MADV_DONTFORK failures are super unlikely at present.
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+> ---
+>  MAINTAINERS                                |   1 +
+>  tools/testing/selftests/mm/Makefile        |   1 +
+>  tools/testing/selftests/mm/fork_file_thp.c | 256 +++++++++++++++++++++++++++++
+>  tools/testing/selftests/mm/run_vmtests.sh  |   1 +
+>  4 files changed, 259 insertions(+)
 > 
->>
->> ...
->>
->> +int main(void)
->> +{
->> +	ksft_print_header();
->> +	pagesize = getpagesize();
->> +	pmdsize = read_pmd_pagesize();
-> 
-> This is going to ruin Mark's day again, thanks to "kselftest: mm:
-> rename read_pmd_pagesize() to pmd_psize()".
-> 
-> I think I'll alter Yeoreum's above patch like this (presently untested):
-> 
-> --- a/tools/testing/selftests/mm/vm_util.h~kselftest-mm-rename-read_pmd_pagesize-to-pmd_psize-fix
-> +++ a/tools/testing/selftests/mm/vm_util.h
-> @@ -93,6 +93,8 @@ unsigned long pagemap_get_pfn(int fd, ch
->  void clear_softdirty(void);
->  bool check_for_pattern(FILE *fp, const char *pattern, char *buf, size_t len);
->  uint64_t pmd_psize(void);
-> +/* temporary cross-tree compatibility thing: */
-> +#define read_pmd_pagesize() pmd_psize()
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index d738990161bd0..7ade132e3d3ab 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -17941,6 +17941,7 @@ F:	mm/huge_memory.c
+>  F:	mm/khugepaged.c
+>  F:	mm/mm_slot.h
+>  F:	tools/mm/thpmaps
+> +F:	tools/testing/selftests/mm/fork_file_thp.c
+>  F:	tools/testing/selftests/mm/khugepaged.c
+>  F:	tools/testing/selftests/mm/split_huge_page_test.c
+>  F:	tools/testing/selftests/mm/transhuge-stress.c
+> diff --git a/tools/testing/selftests/mm/Makefile b/tools/testing/selftests/mm/Makefile
+> index 0ea72e9979347..2489027b2a36b 100644
+> --- a/tools/testing/selftests/mm/Makefile
+> +++ b/tools/testing/selftests/mm/Makefile
+> @@ -108,6 +108,7 @@ TEST_GEN_FILES += folio_split_race_test
+>  TEST_GEN_FILES += folio_order_check
+>  TEST_GEN_FILES += khugepaged_sync_check
+>  TEST_GEN_FILES += khugepaged_race
+> +TEST_GEN_FILES += fork_file_thp
+>  TEST_GEN_FILES += soft-dirty
+>  
+>  ifeq ($(ARCH),x86_64)
+> diff --git a/tools/testing/selftests/mm/fork_file_thp.c b/tools/testing/selftests/mm/fork_file_thp.c
+> new file mode 100644
+> index 0000000000000..aaecf7ba6f406
+> --- /dev/null
+> +++ b/tools/testing/selftests/mm/fork_file_thp.c
+> @@ -0,0 +1,256 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * fork() of a process that maps shmem THPs with PMDs, in a VMA whose page
+> + * tables fork copies: a private mapping with an anon_vma, and a shared
+> + * mapping with a guard region.
+> + *
+> + * The child must get the PMDs without faulting, and its exit must leave the
+> + * parent's mapping and the system-wide ShmemPmdMapped counter as they were.
+> + * Kernels that leave file THPs to a refault in the child skip the test.
+> + */
+> +#define _GNU_SOURCE
+> +#include <asm-generic/mman.h> /* Force the import of the tools version. */
+> +#include <errno.h>
+> +#include <fcntl.h>
+> +#include <stdbool.h>
+> +#include <stdio.h>
+> +#include <stdlib.h>
+> +#include <string.h>
+> +#include <unistd.h>
+> +#include <sched.h>
+> +#include <sys/mman.h>
+> +#include <sys/mount.h>
+> +#include <sys/wait.h>
+> +
+> +#include "kselftest.h"
+> +#include "vm_util.h"
+> +
+> +#define NR_PMDS		4
+> +#define MAX_PMDSIZE	(32UL << 20)
+> +/* Other processes, reclaim and NUMA balancing can disturb an attempt. */
+> +#define ATTEMPTS	3
+> +
+> +static size_t pagesize, pmdsize, size;
+> +
+> +static long meminfo_kb(const char *key)
+> +{
+> +	char line[256];
+> +	long kb = -1;
+> +	FILE *f = fopen("/proc/meminfo", "r");
+> +
+> +	if (!f)
+> +		return -1;
+> +	while (fgets(line, sizeof(line), f))
+> +		if (!strncmp(line, key, strlen(key))) {
+> +			kb = strtol(line + strlen(key), NULL, 10);
+> +			break;
+> +		}
+> +	fclose(f);
+> +	return kb;
+> +}
+> +
+> +/* Skips the last page, which may be a guard page, and @skip. */
+> +static bool data_ok(const char *mem, size_t skip)
+> +{
+> +	size_t off;
+> +
+> +	for (off = 0; off < size - pagesize; off += pagesize)
+> +		if (off != skip && mem[off] != (char)(off / pmdsize + 1))
+> +			return false;
+> +	return true;
+> +}
+> +
+> +/* The last PMD is zapped by the setup, the others must be PMD-mapped. */
+> +static bool pmds_ok(char *mem)
+> +{
+> +	return check_huge_file(mem, size - pmdsize, NR_PMDS - 1, pmdsize);
+> +}
+> +
+> +/* Maps a fresh shmem file of NR_PMDS PMDs, PMD-aligned, until exit. */
+> +static char *map_file(bool shared)
+> +{
+> +	char *area, *buf, *mem;
+> +	size_t off;
+> +	int fd;
+> +
+> +	fd = open("/tmp/fork_file_thp", O_RDWR | O_CREAT | O_TRUNC, 0600);
+> +	if (fd < 0)
+> +		ksft_exit_fail_perror("open");
+> +	unlink("/tmp/fork_file_thp");
+> +	buf = malloc(pmdsize);
+> +	if (!buf)
+> +		ksft_exit_fail_msg("malloc failed\n");
+> +	for (off = 0; off < size; off += pmdsize) {
+> +		memset(buf, off / pmdsize + 1, pmdsize);
+> +		if (pwrite(fd, buf, pmdsize, off) != (ssize_t)pmdsize)
+> +			ksft_exit_fail_perror("pwrite");
+> +	}
+> +	free(buf);
+> +
+> +	area = mmap(NULL, size + pmdsize, PROT_NONE,
+> +		    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+> +	if (area == MAP_FAILED)
+> +		ksft_exit_fail_perror("mmap");
+> +	mem = (char *)(((unsigned long)area + pmdsize - 1) & ~(pmdsize - 1));
+> +	mem = mmap(mem, size, PROT_READ | PROT_WRITE,
+> +		   (shared ? MAP_SHARED : MAP_PRIVATE) | MAP_FIXED, fd, 0);
+> +	if (mem == MAP_FAILED)
+> +		ksft_exit_fail_perror("mmap");
+> +	close(fd);
+> +	for (off = 0; off < size; off += pmdsize)
+> +		FORCE_READ(mem[off]);
+> +	return mem;
+> +}
+> +
+> +/* Child exit codes, apart from what kselftest helpers exit with. */
+> +enum result { PASS, NO_PMDS = 10, FAIL_DATA, FAIL_COUNTER, FAIL_PARENT,
+> +	      FAIL_KILLED, COUNTER_OFF, CHANGED, LOST_PMDS, NO_THP };
+> +
+> +static enum result fork_once(char *mem, bool shared, long *before, long *after)
+> +{
+> +	/* The parent alone maps this much with PMDs. */
+> +	long own = (NR_PMDS - 1) * (pmdsize >> 10);
+> +	bool parent_pmds;
+> +	int status;
+> +	pid_t pid;
+> +
+> +	*before = *after = meminfo_kb("ShmemPmdMapped:");
 
-Thanks! Otherwise we could route selftest through a single tree.
+That's not how we test for PMD mappings from other code.
 
-They would fail on the tree until the fix is in ... but that's rpecisely what
-selftests are for.
+We have check_huge_file() etc helpers in vm_util.c for that.
+
+
+Further, some things look a bit odd, like:
+
++static void test_fork(bool shared)
++{
++	const char *desc = shared ? "shared mapping with a guard region" :
++				    "private mapping with an anon_vma";
+
+Why guard regions? Why boolean parameters?
+
+This selftest should probably be written using the kselftest harness instead.
+
+BUT I am not convinced the selftest as is is worth it. It check for too too
+detailed corner cases.
+
+I think we'd want something fairly simple, nothing the does detailed accounting
+checks.
+
+I'll queue 1-3 for now, thanks!
 
 -- 
 Cheers,
