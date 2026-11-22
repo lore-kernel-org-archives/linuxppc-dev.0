@@ -2,69 +2,87 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7BE68606A330
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Nov 2026 21:05:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21E6D606A320
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 22 Nov 2026 02:53:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9Hd9qiR
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mXCoi4dq
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jX4VH6jtXz2xLq;
-	Sun, 22 Nov 2026 08:05:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795295127;
-	cv=none; b=abGR0Mg0RajyAiOH6oEZzqd3B7uDu39uMiIveOiWCq+wkUTRfb3I0m9V0MNc906O78XxWo97tueKxiGIy81jw25LLUlaYSfVrl1CnI+VVujr9RTtHlkJO45wssW6jBSN4yrg8b0RqtuKkwGBtWLfXoJ5+LQeICKVAlbUT9BZT8bA1IOiaNJJpVZO2vFdceNHHgJM1k9s+JUdvuIh0xnxQeKDAIjrEJSwzTq0LCoX0b0BLimkfrHmkQe9QSS7c/vtQ4lxFHpxbJsrWkoaut0AEn8bHcgkUQTgkS8/PieDcSJvP69iO8uBeaX10lkuhMWjPl36CoH8YBAT++Mdxge+Tg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXDD469kgz2xnn;
+	Sun, 22 Nov 2026 13:53:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1234"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795316020;
+	cv=none; b=Vgcby1Z6KVpCnZnQ8251uWp8mxIfTy66H0JR8qGJlX9U+DEoBDOZHn7NeLDped4yR19OCfO+MTAsEOM1xGSxHAO7zWnOF60ZQz/oO/tQOLZvK+1UtdhIyXXa9FhEO+g3mJ0/BB9al9rRlC7mVGuZ3jvXMry6/AxiVlJ0df4yCX2zSNhuzB68y1Szb1lo+f7Z8x6fioGyoqWIw8jl0Tul7Dn5ZOmIOQ3skifwEFn2JXUVgjaNBXhBIueeo5OvnkZeYFQ1vn+E8ggCgxprouX+zAWEhx5NEB3gT+sZE7PfvulqG9TddV6G3HieqA7vIU7OSTDkPM+Y+OI7nK59tl11GA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795295127; c=relaxed/relaxed;
-	bh=kut3RnC+sJhmtjNJCZ9oinVvtWFuAO9/28dyTHZ3+pc=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=PzwdtZ8QamNZ3M29KIyb2n1xkqyYcNH7KYuWY2b1USZ2rNg7PFhNTmJnvozPVrQDvlTZV9lTeLH1EJQ8iDWs7BTmk8tRauNpptUaICwRzMiknxSFPhIRa+eye5jNXiDjA4GjuP+eC315m08Vn0PnZjeOeSzQUEdC215B0CifPqW3OlVlBnQF0THQS8u5W0oyOXN0g6sqvdWezg5W6YdcX3HSkq/w1yPF6R1BVbNzqPKZlyAu0AP5qpLMMGlMPYN2vvj8e5erudXSYFEb1WctD3z+PlC0LozTOOV1lnCu0FGyhgFXud1jILWK1tpZW9uIQ880qgOpsZFe2x+4UApp4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9Hd9qiR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1795316020; c=relaxed/relaxed;
+	bh=W/MPU0ws9cN6OmylOQcaVZtBQz8QcJlnEdU8znZTTXA=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=TfiQ/6l4FMjwhO2g1og47piYz2LCDZpJVsoNKLXEUMP6x3cbqQpX6LMo7+Ms1r9OPDbiItzoRfkC43lissK322d6JU3U292CC7QC6qaGfFd3xJAFm3qSpCVO028CzmI5TcKZi+AHyyEeI6Y+C1zODx/tGNnW0uzQKz01c6AyJe/em0p5vSsdB4hk5RpOwov6I7MdOW+rOmAGVnoGNlL4NFvqXBJDvn3Ig6bPMtMbRosTbT+GeFzAubveBjUrsqM9dhrHgbmETx3UUcKQOrMKA80R8Kr1uozOuljONhfOKgsYEV+Gx44Wu4NFoKzaNX1ztUD4OEI28Z2H39dlxTnT7Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mXCoi4dq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=B9Hd9qiR;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=mXCoi4dq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1234; helo=mail-dl1-x1234.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1234.google.com (mail-dl1-x1234.google.com [IPv6:2607:f8b0:4864:20::1234])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jX4VH0x7Vz2xHX
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 08:05:27 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9765861CF7;
-	Sat, 21 Nov 2026 21:05:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 460AE1F000C4;
-	Sat, 21 Nov 2026 21:05:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795295123;
-	bh=kut3RnC+sJhmtjNJCZ9oinVvtWFuAO9/28dyTHZ3+pc=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc;
-	b=B9Hd9qiRrwP84tw05mnaamPACaa0JzLoTVI9KSQpjLy9j2w3SrL4+WL6wgVPPdNac
-	 /tQ23Wk+VF26MG1SWB4YO6/Iqv+vekCHa1QoTrcZIRx7ysGJcxxCqFZeATiD1FQhmG
-	 A8XExvxJf2Ff/6pvuQOMFwZJiVgI4pKZbRm9Ho56css7sfumZ6+x20R2+qJsrC2IEO
-	 zVknB3PVAhJ7fx9DvCpzp7V8uUT1JS9X1aRONUPdXzpl/vWTtWOjS02rEYPa4bI+b1
-	 B0l32y5+GUd8qlzRP0JRlVLih07WnaU3XFBejgD8qQnt8QnF7QUhpoageLWPdosKnB
-	 izqj1nLwU/0EA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 3A4D2391B072;
-	Sat, 21 Nov 2026 21:05:23 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-7.4-3 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <cfa609ff-9ccc-417c-a816-56b364d0bf76@linux.ibm.com>
-References: <cfa609ff-9ccc-417c-a816-56b364d0bf76@linux.ibm.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <cfa609ff-9ccc-417c-a816-56b364d0bf76@linux.ibm.com>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.4-3
-X-PR-Tracked-Commit-Id: bd6d2f87c2239d10bf5f37ab52b3968565528417
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 7b7fe306dd86b5342d3be8a3f1cbf3bb1ebf280f
-Message-Id: <179529512179.1171121.18032448255591519626.pr-tracker-bot@kernel.org>
-Date: Sat, 21 Nov 2026 21:05:21 +0000
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, christophe.leroy@csgroup.eu, gautam@linux.ibm.com, haoxiang_li2024@163.com, kmehltretter@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com, mpe@ellerman.id.au, nathan@kernel.org, naveen@kernel.org, nnmlinux@linux.ibm.com, npiggin@gmail.com, ritesh.list@gmail.com, sourabhjain@linux.ibm.com, sshegde@linux.ibm.com, yadavgaurav386@gmail.com
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
-	autolearn=ham autolearn_force=no version=4.0.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXDD3564yz2xgv
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 13:53:38 +1100 (AEDT)
+Received: by mail-dl1-x1234.google.com with SMTP id a92af1059eb24-1a2761c69fbso4546907c88.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Nov 2026 18:53:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795316016; x=1795920816; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=W/MPU0ws9cN6OmylOQcaVZtBQz8QcJlnEdU8znZTTXA=;
+        b=mXCoi4dqOIBtprWvLy+OYGl08QGiErba+CHK+1K4QjFISSzZh1h9yd1VGzxJAktVym
+         o/PVFwg/8B+lq28wqzBaRhIMAuEZJamxUS0G5v/oLxUAEYyKSabbniZ780Sygs+CJpaj
+         S37Y9vI1q1LLN5iejfpP6/nZwdn8JvqqiQrmLSsCO88L9a9B80Bk03ALGZ9IQe2hgZ9Z
+         qZYVWjXv/Zuues1QZboO+xaatxHoebcWx9Rl6verEFxE2X7uz8sEyFObfOsIRs8rB7/5
+         +9EslcziJ/u9u8ivyF7UhD9xHXRVZeu5jdQRKL76jk3fflu+OeI/AOw4k48HE72+BNHv
+         6HxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795316016; x=1795920816;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=W/MPU0ws9cN6OmylOQcaVZtBQz8QcJlnEdU8znZTTXA=;
+        b=Qy/6dAtwZYQYTOa9usv+VRWd9KB/JwOOtnybhD2RAqfLIEXcxpCKrV95Kq3sCZPMo3
+         NPgfleorADqPbpoeAWRlgivQ/0rD8ZDxOIgoh5lyCR64iU9fJ7nzwAUlSqV8/GnlbzDU
+         YA7M2WjqmWD+GWfGp8sdmqvC4YtsgbGNc54ap5Hbie90H7BmMbRRYidwnj2Jiv0B5Cul
+         uzCIwNgf+iN+8V/xjGvISPnW+fkjj2Q08bh+zP8lSklTLGJiaMTdxU1v3+YyAxrDQOtS
+         jhXR/rUipueDtGTFxywzuyjfLBw6714qAcBybvEO5L1Dki4Tn25r2g0BySxlOI2xVFcR
+         WILQ==
+X-Forwarded-Encrypted: i=1; AL+hErHHyAooVFwXbiXjNws43x0PaYsyzlZIifbnplQxMgN6qgS09ogXFxVWCG5nDDMatVhRjS+U2IrynEZANPk=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9UDZCAuW0iXLm39tdPXiupjWGQxyV3bC2JAcqJSXzK+EKEqrXP
+	sgR379KhhOoYf8/DeiPWxPNlS4mWJFizjyRtwQA8z1ynG0Zpnji6/i4I
+X-Gm-Gg: AZFdTZeh76gNa0SjM5Jmo49JeszSLEjbdCtO7Guuyp7gDSilE5VzTdoq+7nBlAUttvz
+	Pduv5fk8BjD6KbOAHOuvMlZ26y/zU+DUIK8+anv3j4oD6gXP+av19OWR6bFMOCA7oRyy7tl/D3I
+	xDcMNVPBqGaaj29k+4+aax0M2CLIsYFtl3z+rwGTVHWYIHwn4B3XUSwo0BzmYNW/cbPyJB5DFK6
+	Az8jAjlCsrPDPKkpgjGIPiOPE4YJO7tPT5kSsg9dijg4c7qbfy1QzRLHgCuk029uwPddxFbILWw
+	fPWEQkczac2K2kB4qZzph/5oXnSdCPBGjQEKWkKy9bKh7VWQW0Yp7nC7lVsSoNwPZyAOF3D1adS
+	mgSA+AzcwQn7uUIVdgG26FiWRT1bCB1RYJIBxOvV1SMKnqtgLy7m7r1WLTiovVeoep2P2jTXiit
+	KkgpHQr/gXriCyBSzi+H1d6FoxVcmcy5a4DyppAwvoEwEjZ3PN84SxlxVvp0z9qYIELxGH4F/w4
+	24NGSfOiM/vyzvI1jACMnM+FHlRbgMeRO1tA4r4F+VzPVkbdTTurkp85JRTDHZglfjGMQt8oCcv
+	RllBQfWjNrF6ik1Nkx4wPUWbiBqT
+X-Received: by 2002:a05:7022:4099:b0:1b2:3e9b:3dcd with SMTP id a92af1059eb24-1b5568b2e59mr7776194c88.10.1795316016104;
+        Sat, 21 Nov 2026 18:53:36 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b556840494sm18082231c88.12.2026.11.21.18.53.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 21 Nov 2026 18:53:35 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Jyoti Gupta <jyoti@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, npiggin@gmail.com, chleroy@kernel.org, sshegde@linux.ibm.com, oss@buserror.net, Sourabh Jain <sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc: Fix missing of_node_put() calls
+In-Reply-To: <20261120110648.333973-1-jyoti@linux.ibm.com>
+Date: Sun, 22 Nov 2026 08:21:58 +0530
+Message-ID: <y0alk27l.ritesh.list@gmail.com>
+References: <20261120110648.333973-1-jyoti@linux.ibm.com>
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -80,16 +98,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 
-The pull request you sent on Sat, 21 Nov 2026 16:01:29 +0530:
+Jyoti Gupta <jyoti@linux.ibm.com> writes:
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-7.4-3
+> Several PowerPC code paths acquire device tree node references but fail
+> to drop them on error paths, early exits.
+>
+> Add the missing of_node_put() calls across PowerPC platform to ensure
+> proper device node reference counting.
+>
+> These changes prevent device node reference leaks and improve overall
+> resource management in PowerPC code.
+>
+> Suggested-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> Signed-off-by: Jyoti Gupta <jyoti@linux.ibm.com>
+> ---
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/7b7fe306dd86b5342d3be8a3f1cbf3bb1ebf280f
+> v2 -> v3:
+>  - powermac/pci.c: Dropped __maybe_unused from the ht declaration in
+>    pmac_pci_init(), as ht is now used on both PPC32 and PPC64.
+>  - kexec/file_load_64.c: Use "goto out" for the -EOVERFLOW case in
+>    add_usable_mem_property() so the common of_node_put() cleanup is used,
+>    instead of adding a separate of_node_put() before the return.
+>  - Link to v2 - https://lore.kernel.org/all/20261119075827.45823-1-jyoti@linux.ibm.com/
+>
 
-Thank you!
+Thanks for addressing these review comments.
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+The patch now LGTM. Please feel free to add:
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+
+
 
