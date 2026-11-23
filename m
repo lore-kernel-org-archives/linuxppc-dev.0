@@ -1,73 +1,53 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31AAA606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 06:53:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DEF48606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 07:11:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWwTfVAA
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=guV9eUba
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXxV72TC3z2xqv;
-	Mon, 23 Nov 2026 17:53:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795416799;
-	cv=none; b=hwT9jhzGDNzQQWz47y072AYOW4h1KyJB1ybsSZLY5adSCd0JIXtU0urUDLmlNBswq1zUHUlFClgPQotbgb3ksDYft4q0wWG0dZREg8RywbPQ+hWSBpFYudXPt5vjd6W+A0bqhko7CjWjrTCzkVNnj9YflYRpFvTrbYyR4JwM2pLyBHP0lnuAChxKjBraRjX0u3pz49NMM7FRYYWwd6SjVWWAfpWlDQzfAk8zJjeng7GVohs/OjymiYrKxfn4JbdWKiOqM5UMwZvY9dAkKKBQDG33ZIg32n0l1rbetb56mTCL3TAyhgCGAHDKq4mo/5lxI5SXjjjzYZ5qlPf4xWpFEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXxtm0WKBz2xwP;
+	Mon, 23 Nov 2026 18:11:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795417872;
+	cv=none; b=m7x/8mGEvl1GSRuoGDzGFXofmRzoNiBym2LfCVTNrD8APdznPLYLGWsfcXXQ5vOmhqXE1zi32w/oZQkS+jev+/gz4Ro7uZazL2oi8Is10jvACVaCgm/1e+JSMLhEN+Mvnb21LjOTls8TjpINDLxZFEpjFh74zsa1fQC4V12byoO5JB2ff5KPLAFTx+uQ3Z0ugEHZEMC+imll/jOra3injlbjj7xqKQgV+LdbFLiwBhX4cZ6BasFfEOR3hr6qHMx/u7DEa3/EFuytq4gp1Caw5GLTqQrR5wKBpHsdp1ul9QhursNZ1DEtJRVh/D91m2Ficc1t10PmSjZW3GiEzvHUkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795416799; c=relaxed/relaxed;
-	bh=LYFLUK4X0v4eb/H71FRu0YrCnuzDn+tDFLUu8DbmnA0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JXLVP9JkykpXmieYiVR0b4DMmtYaE0cbNj9s/on/8z8KdM0tZaEEw+9uib5bZBCe601n/6ntx8A65CxhUsli8iHStHixTfzHN6Rqqbpi9SzGLKbM4Qw/61YdkjfEPV1wv9arnMJTHpwWbj70XcXv3/I7wG8sDAKckd+/Q6zEZ9jpZgnboZwVgNxyurZxPLKdxnUr7MSSVhzWhaCPCTPlaDSQxweecRLtXYAIIkAIfeCwRsRymVKen5/RL5dS7fDdcoPIjYbnFmR0vqJjOY8r7uGUHTftBjTFzf83JQTEwccZRIriIqgGBCCDVVxhdNpOEa7Hh9FIp5EulSywlD9Egg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWwTfVAA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795417872; c=relaxed/relaxed;
+	bh=aUC6dwvADLWcIIFgIfO7ZojWD6NXidysfo4b9W39AAY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=jTiF17jf+MY93yIQaf1YxmMO4NVyM77ZXscXzpc1iZsdkivBw+9/F0PCCrBuuOd8CvGIewsq+IwfvG36Yt0jj7Ulw7LlASgS2W9lzQUWZIGwQfeaDOsd1q556GdM2jkrdB2ThPX5ePxT/DycGLqlTNfOoqd8p0LH739Jiasn6ygH3FtIWsu+TnTdR8WeWSivzAvczaCgtC5PvxkrFqY7ncu6iNf1re+zhFOsCe2Lp//z+5Hu8sj+OxE+XPQndktIhch+DXuP13rD0xXXoLFwWAHdGf9pEKyvB4L8wWp9Fq1nDYY+St6zHPdSWiBwGxehtug1knpkPAPhUt6rmKXohg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=guV9eUba; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWwTfVAA;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=guV9eUba;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXxV63Dzlz2xdb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 17:53:17 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54eG62633014;
-	Mon, 23 Nov 2026 06:53:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=LYFLUK
-	4X0v4eb/H71FRu0YrCnuzDn+tDFLUu8DbmnA0=; b=cWwTfVAAWnl1nytN9GhvQ3
-	BzWMjNOnY5i5dvwNM63/AASQTZaMC0oza8uDjYT7pREkqmmJ7lKFXeTUgG71AlpM
-	AR45SqA2Dm9W9x9Vzw5lHZVGMm5AKBiLK0zOrzl1Fm9kTNGHrEuLrDdeNjA196Do
-	YoecBMwjh7Gvca4MBxrD46vGtFui+/Z81n003tCBTzGJ20GRCWmofqtx9AMAZlbW
-	hSaSes8frXoKJh/PLc02LrqXRtT8UEK2Vr1tqU9D7DBLikRSHb4cLAOB6zS+e9HK
-	yPl5XwLXL/LC+vFYMGDqoPiLA5rKvLjeXJnDYNhZYNn2dqu4R0WP27EWvYNjE3vg
-	==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g11kyf-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 23 Nov 2026 06:53:02 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54F2P2817213;
-	Mon, 23 Nov 2026 06:53:02 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j3pmjwnjq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Nov 2026 06:53:01 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AN6qvu128770570
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Nov 2026 06:52:57 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A8C6A2004B;
-	Mon, 23 Nov 2026 06:52:57 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2038020049;
-	Mon, 23 Nov 2026 06:52:52 +0000 (GMT)
-Received: from [9.124.208.184] (unknown [9.124.208.184])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Nov 2026 06:52:51 +0000 (GMT)
-Message-ID: <b5383e66-c777-4e96-9ee8-5548d84f6e89@linux.ibm.com>
-Date: Mon, 23 Nov 2026 12:22:49 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXxth6Qv4z2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 18:11:06 +1100 (AEDT)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=aUC6dwvADLWcIIFgIfO7ZojWD6NXidysfo4b9W39AAY=;
+	b=guV9eUba+R5PDayFm8H06i5ZTYBsUhnHD4vQWNFcLcZtduyG4gmBeeAB+LML0q7m2R3X3WcAk
+	hq/BWQ1RYPlOPu9P52463fbpuoyQt2HGQ1Yx/Ul7gbqJV/FVf0Mc5IJKgZSNsosmbXxuWk9wJBd
+	tEXKc1taTNkcoLdTc3eqClM=
+Received: from mail.maildlp.com (unknown [172.19.162.197])
+	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4jXxt80klzzRhRC;
+	Mon, 23 Nov 2026 15:10:40 +0800 (CST)
+Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
+	by mail.maildlp.com (Postfix) with ESMTPS id 81BD440579;
+	Mon, 23 Nov 2026 15:10:57 +0800 (CST)
+Received: from [10.67.110.68] (10.67.110.68) by kwepemk200008.china.huawei.com
+ (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Mon, 23 Nov
+ 2026 15:10:54 +0800
+Message-ID: <584a0e7a-230e-4a95-9e09-a1d6499a6ea9@huawei.com>
+Date: Mon, 23 Nov 2026 15:10:53 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,180 +62,144 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 5/5] powerpc/powernv/eeh: Map generic EEH error types
- to OPAL
-To: Narayana Murty N <nnmlinux@linux.ibm.com>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Oliver O'Halloran" <oohall@gmail.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        Alex Williamson <alex@shazbot.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin
- <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org, sbhat@linux.ibm.com,
-        harshpb@linux.ibm.com
-References: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
- <20261023073642.59657-6-nnmlinux@linux.ibm.com>
- <2ed69cf8-eca2-41ed-a100-844f9d84c2ad@linux.ibm.com>
- <9efa20ba-d79b-47b8-9677-474c19aa9168@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <9efa20ba-d79b-47b8-9677-474c19aa9168@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH v8 00/11] kexec: Rework segment loading and fix CMA
+ retries
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
+	<ritesh.list@gmail.com>, <sshegde@linux.ibm.com>, <pjw@kernel.org>,
+	<palmer@dabbelt.com>, <aou@eecs.berkeley.edu>, <alex@ghiti.fr>,
+	<tglx@kernel.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <hpa@zytor.com>, <akpm@linux-foundation.org>,
+	<baoquan.he@linux.dev>, <rppt@kernel.org>, <pasha.tatashin@soleen.com>,
+	<pratyush@kernel.org>, <leitao@debian.org>, <yeoreum.yun@arm.com>,
+	<mpilaniy@redhat.com>, <robh@kernel.org>, <coiby.xu@gmail.com>,
+	<Yeking@Red54.com>, <prudo@redhat.com>, <brads@mainlining.org>,
+	<sourabhjain@linux.ibm.com>, <mkchauras@gmail.com>, <blum@kernel.org>,
+	<adityag@linux.ibm.com>, <qirui.001@bytedance.com>, <hui.wang@canonical.com>,
+	<sohammetha01@gmail.com>, <guoren@kernel.org>, <gaohan@iscas.ac.cn>,
+	<ionut.nechita@windriver.com>, <vishal.l.verma@intel.com>,
+	<seanjc@google.com>, <ardb@kernel.org>, <richard.lyu@suse.com>,
+	<arnd@arndb.de>, <tzimmermann@suse.de>, <rick.p.edgecombe@intel.com>,
+	<kai.huang@intel.com>, <kas@kernel.org>, <piliu@redhat.com>,
+	<thuth@redhat.com>, <shradhagupta@linux.microsoft.com>,
+	<ebiggers@kernel.org>, <jbouron@amazon.com>, <me@linux.beauty>,
+	<mclapinski@google.com>, <graf@amazon.com>, <tangyouling@kylinos.cn>,
+	<x86@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <loongarch@lists.linux.dev>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-riscv@lists.infradead.org>,
+	<kexec@lists.infradead.org>
+References: <20261112133418.4044428-1-ruanjinjie@huawei.com>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+In-Reply-To: <20261112133418.4044428-1-ruanjinjie@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: POTtVaHnrtjaDJOwoyhxmcXptX7oATw5
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAyNiBTYWx0ZWRfX7zji1cl3E3Hu
- W7rGuHoEeK2vuHLCJY1l6nbaXcH4oHV+L2QxHVnUxWosFYjfIpZZTPWI1HVpIBkwflh5+hhjCqP
- Wt6AJ3wWw18GMcE4/sMBRaFGZM7SIP4=
-X-Proofpoint-GUID: 0ODn4djClxTQZDVoDpOsbuaXnGG_WbY7
-X-Authority-Analysis: v=2.4 cv=c8M+0h9l c=1 sm=1 tr=0 ts=6b03e2ce cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
- a=p_t55juraV-f5WWF2IAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAyNiBTYWx0ZWRfXy7eA93pfZPq/
- El0yeVZG4uYdcedVjb80xp6cQVQMI8kXzrIF0XLQ0Z3DXQ4h0Amb8mXIeHvmZEuYPNihguwpUnt
- Pzp1dkiJm5zLzrX5XCjsKMeryy913cE3exeq9SHvL6ekBfusSEWsriXcxYo9NueiOMauQwW96R1
- Bjp6CT+ppRqTWm8VCOFVKR9UekN+FHbzUtSHSKe7+MikQIpcUaOtoiPGfgH9DXYcUB7ZzMZEHug
- +ln7JdKOGBemWOmsgpUOiRXapWuDLDNLfc5o9jLfjIdCFkRpXfP+Zu9DkEm1a+4pHBqUIRT15a/
- 7xuXyRof9rVWTPSg9p4/QLrikn4/q7SdHnSamhvvu9QiAMgJvIa7H4rUYnFOhp1RYT56TPj7PW+
- 3B3I/hurA4MK7jKHe7vD22V3ZubBXCMchluezw46Juw3zfyCCo+WkmM9TRJr1E2NvMebeFakTCp
- 8VR5KqUSbzi81rh/Wow==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-23_01,2026-11-22_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 malwarescore=0 suspectscore=0 bulkscore=0
- priorityscore=1501 phishscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230026
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
+ kwepemk200008.china.huawei.com (7.202.194.74)
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
 
-On 20/11/26 13:09, Narayana Murty N wrote:
-> Hi Sourabh,
->
-> On 19/11/26 1:11 AM, Sourabh Jain wrote:
->> Hello Narayana,
->>
->> For my understanding, could you clarify why this change is needed as 
->> part of this series?
->> The series is about enabling RTAS-based error injection, and PowerNV 
->> doesn't support RTAS.
->> How does this change fit with the earlier patches in the series?
->>
-> The intention was to decouple the generic EEH error types from the
-> platform-specific OPAL encodings, similar to the explicit mapping
-> introduced for pSeries.
->
-> However, the generic EEH error-type values remain unchanged, and
-> the PowerNV mapping is not a prerequisite for RTAS-based error
-> injection.
->
-> I'll drop this patch from the next revision and will post it as 
-> seperate patch.
+在 2026/11/12 21:34, Jinjie Ruan 写道:
+> ARM64, LoongArch, RISC-V, x86 and powerpc build the elf core header
+> and place it together with the initrd and the DTB with almost identical
+> code.
+> 
+> This series reworks that path into common helpers that the architectures
+> reuse, and fixes the CMA page and elf core header leaks in the arm64
+> and LoongArch placement retry loops.
+> 
+> The patch organization is as follows:
+> 
+> - Patch 1 moves the release of the elf core header into the generic
+>   post-load cleanup, so that the architectures no longer free it
+>   themselves.
+> 
+> - Patch 2 adds the common helpers
+> 
+> - Patches 3-7 convert arm64, LoongArch, RISC-V, X86 and Powerpc to
+>   reuse the common helpers
+> 
+> - Patches 8-11 fix the CMA pages leaked by the retry loops and
+>   the loop that makes no progress
+> 
+> Tested with kexec_file_load() on arm64, LoongArch, RISC-V, X86 and
+> Powerpc under QEMU, including the CMA retry paths, loading a crash
+> kernel and booting the second kernel, with the agent help.
+> 
+> This series is also available at:
+> 	https://github.com/ruanjinjie-eng/linux/tree/kexec_rework_cma_bugfx_v9
+> 
+> Changes in v8:
+> - Rework the common code as Mike suggested: the core provides building
+>   blocks and the architectures uses them (Mike)
+> - Build the elf core header once and only place it on the retries (Mike)
+> - Keep the segment order and the arch placement policy unchanged (Mike)
+> - Convert x86 and powerpc as well
+> - Move the CMA fixes to the end of the series (Mike)
 
-I don't mind keeping this patch as part of the series. The only thing 
-missing is an
-explanation in the commit message of why and how this patch is needed 
-for the
-RTAS-based error injection support for pSeries introduced by the 
-previous patches.
+Hi Mike,
 
-It would be helpful to include a scenario explaining why these changes 
-are needed
-for RTAS-based error injection support on pSeries.
+Does this refactoring now meet your expectations?
 
-- Sourabh Jain
+In my view, there is still an issue worth discussing: should we reserve
+for the crash hotplug elf core header in the framework code
+kexec_add_elf_core_header(), or only implement it in the x86
+architecture code, and consider generalizing it after the ARM64
+implementation is available?
 
->
-> Thanks,
-> Narayana Murty.
->> On 23/10/26 13:06, Narayana Murty N wrote:
->>> eeh_pe_inject_err() is called with generic EEH error types defined in
->>> the VFIO/EEH userspace ABI (EEH_ERR_TYPE_32, EEH_ERR_TYPE_64).  The
->>> PowerNV backend previously compared these generic values directly 
->>> against
->>> OPAL firmware constants (OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR and
->>> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64).
->>>
->>> This is fragile: it relies on the generic EEH ABI values being
->>> numerically identical to OPAL-specific values, and would silently
->>> misbehave if they ever diverged.
->>>
->>> Add an explicit mapping in pnv_eeh_err_inject() that translates:
->>>    EEH_ERR_TYPE_32 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR
->>>    EEH_ERR_TYPE_64 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64
->>>
->>> Return -ERANGE for unsupported error types, preserving the behavior
->>> of the original code.  Decouples the VFIO/EEH interface from OPAL
->>> implementation details.
->>>
->>> No change to existing userspace ABI or PowerNV behavior.
->>>
->>> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
->>> ---
->>>   arch/powerpc/platforms/powernv/eeh-powernv.c | 22 
->>> +++++++++++++++-----
->>>   1 file changed, 17 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/ 
->>> powerpc/platforms/powernv/eeh-powernv.c
->>> index db3370d1673c..01dae760cecb 100644
->>> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->>> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>> @@ -1167,12 +1167,24 @@ static int pnv_eeh_err_inject(struct eeh_pe 
->>> *pe, int type, int func,
->>>   {
->>>       struct pci_controller *hose = pe->phb;
->>>       struct pnv_phb *phb = hose->private_data;
->>> +    int opal_err_type;
->>>       s64 rc;
->>> -    if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
->>> -        type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
->>> -        pr_warn("%s: Invalid error type %d\n",
->>> -            __func__, type);
->>> +    /*
->>> +     * eeh_pe_inject_err() receives generic EEH error types from the
->>> +     * VFIO/EEH userspace ABI.  The PowerNV backend must not rely on
->>> +     * these generic values being numerically identical to OPAL 
->>> firmware
->>> +     * values.  Translate to OPAL-specific types before calling 
->>> firmware.
->>> +     */
->>> +    switch (type) {
->>> +    case EEH_ERR_TYPE_32:
->>> +        opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR;
->>> +        break;
->>> +    case EEH_ERR_TYPE_64:
->>> +        opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64;
->>> +        break;
->>> +    default:
->>> +        pr_warn("%s: Invalid error type %d\n", __func__, type);
->>>           return -ERANGE;
->>>       }
->>> @@ -1192,7 +1204,7 @@ static int pnv_eeh_err_inject(struct eeh_pe 
->>> *pe, int type, int func,
->>>       /* Do error injection */
->>>       rc = opal_pci_err_inject(phb->opal_id, pe->addr,
->>> -                 type, func, addr, mask);
->>> +                 opal_err_type, func, addr, mask);
->>>       if (rc != OPAL_SUCCESS) {
->>>           pr_warn("%s: Failure %lld injecting error "
->>>               "%d-%d to PHB#%x-PE#%x\n",
->>
->
+Best regards,
+Jinjie
+
+
+> - Link to v7: https://lore.kernel.org/all/20261026075201.699550-1-ruanjinjie@huawei.com/
+> 
+> Previous Versions are as below:
+> - v6: https://lore.kernel.org/all/20260921090450.807575-1-ruanjinjie@huawei.com/
+> - v5: https://lore.kernel.org/all/20260918100442.3841135-1-ruanjinjie@huawei.com/
+> - v4: https://lore.kernel.org/all/20260907125404.922123-1-ruanjinjie@huawei.com/
+> - v3: https://lore.kernel.org/all/20260826092541.3905933-1-ruanjinjie@huawei.com/
+> - v2: https://lore.kernel.org/all/20260729031235.2840255-1-ruanjinjie@huawei.com/
+> - v1: https://lore.kernel.org/all/20260723131242.1537633-1-ruanjinjie@huawei.com/#t
+> 
+> Jinjie Ruan (11):
+>   kexec: Free the elf core header in kimage_file_post_load_cleanup()
+>   kexec: Add helpers to load the elf core header, initrd and FDT
+>   arm64: kexec_file: Load the other segments with common helpers
+>   LoongArch: kexec_file: Load the other segments with common helpers
+>   riscv: kexec_file: Load the extra segments with common helpers
+>   x86: kexec_file: Use the common segment helpers
+>   powerpc: kexec_file: Use the common segment helpers
+>   kexec: Extract kexec_free_segment_cma() from kimage_free_cma()
+>   kexec: Add kexec_rollback_segments() helper
+>   arm64: kexec_file: Fix CMA segment placement retries
+>   LoongArch: kexec_file: Fix CMA segment placement retries
+> 
+>  arch/arm64/include/asm/kexec.h             |   4 +-
+>  arch/arm64/kernel/kexec_image.c            |  15 ++-
+>  arch/arm64/kernel/machine_kexec_file.c     |  87 ++++----------
+>  arch/loongarch/include/asm/kexec.h         |   3 +-
+>  arch/loongarch/kernel/kexec_efi.c          |  15 ++-
+>  arch/loongarch/kernel/kexec_elf.c          |   3 +-
+>  arch/loongarch/kernel/machine_kexec_file.c |  80 +++++--------
+>  arch/powerpc/kexec/elf_64.c                |   9 +-
+>  arch/powerpc/kexec/file_load_64.c          |  18 +--
+>  arch/riscv/include/asm/kexec.h             |   4 +-
+>  arch/riscv/kernel/kexec_elf.c              |   3 +-
+>  arch/riscv/kernel/kexec_image.c            |   3 +-
+>  arch/riscv/kernel/machine_kexec_file.c     |  83 ++++----------
+>  arch/x86/kernel/crash.c                    |  25 +----
+>  arch/x86/kernel/kexec-bzimage64.c          |   8 +-
+>  arch/x86/kernel/machine_kexec_64.c         |   4 -
+>  include/linux/kexec.h                      |  14 +++
+>  kernel/kexec_core.c                        |  25 +++--
+>  kernel/kexec_file.c                        | 125 +++++++++++++++++++++
+>  19 files changed, 254 insertions(+), 274 deletions(-)
+> 
 
 
