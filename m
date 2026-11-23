@@ -2,48 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id F2F9B606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 08:13:21 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 42A44606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 08:24:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wKO1e9JG
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=D6Fh9qWC
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXzGS4vQSz2xyj;
-	Mon, 23 Nov 2026 19:13:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::2a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795421600;
-	cv=none; b=Ns8MnO3/JH4+mC0ZZNwsVNYw/dOFAxjHM0+XaAFnWxNVw9OWFfUZbreMTnWoDpdedgjzMQd7fd7ovhND3RvmAZTKS4g0bmC9/oBcSy7DUjdfyeRLSU6x/G6p/j5ZqkAQHvskhi264Szw0zIBtXSrnj7zov2BdydkS26zvncBJN0G2sw713WiUQ6Yc2cAx4vA9TjsTcJQonCRGyCyRQiLsmyTIY94I/Ep4F6jgM7ow0puefFNdaxhV6Ww05LHIrubSFEzTe2UKzSE8auIw1IwwvWASun3plosHysFHK+BgIo/EM7PSBC38qw5yY1uJ5r3iPtT1mofCSXIiCIg2ajbtQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXzWn1L7rz2xyj;
+	Mon, 23 Nov 2026 19:24:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::67"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795422293;
+	cv=none; b=hLYkktkw2XMfGmytqTsdpu6ycYluDdmOvDFGehyREDtXQ6D/I6VZ5/BQu73DCyhB/p3+EoJeMqbmkcZZn9MCvfAKFA6mfUyoCbq8UbcMvTdHwrval9vo4srgA2mUIzmQHpuVC4OMkPRE+jeBRv14jrSUhhVV8GIbzoi0V+h7p6Zdq3er9wW1rLXsQFU2zhY1rYj8Usq35aOKh3E+DDiWerFCacfpjj8VpDy6QP240hTNwdAsGvwqTNqVZGsSf5BiuTtxG2l9Gdu74tZDBuq+eEcG+k6OHZjn78tdHmCII5nL+03GBP8tNU9J+SFESJ+eC/xAp6yc0MRoZ0DrZnjtaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795421600; c=relaxed/relaxed;
-	bh=6jeN8jAJwq+1hUMXlRYrpD7AgdkVOgMUP5t8JmxUI2U=;
+	t=1795422293; c=relaxed/relaxed;
+	bh=IQO4tn0OyPdxMhtPAGNESRuXYu8NbrwjcIpFVzP0og8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gsH/4vy31OsBOdtageylW7VQn6HeyZcowu0Izmtxkn4zKuawLNdaBpdwtKXW1viwf3drefneaorWVWEjJu62XnKF0GV/QybrjpopnHmbGczNnFT1xiJa/rrI4orQtmboCMTSMQ4xLkDgxImUFjsX4CD5Ge05tuNL9fxdP915PJS4MRIaK9MaQYUMUQrYKw3rS1JYFsPVNeMb81K41TSJLgeiFwC/aZcFrQMP5HNq0WnaP0V3RakJNcj4F6MyHRnabxHWaUoRfC0U6yrUIJLkRTLoi7XNyM+d9pquBJok/6Fj0sK2bBI1zeI9JUVzxB8YzRJXaHMnTiQCYl+FHTp67A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wKO1e9JG; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::2a; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 In-Reply-To:Content-Type; b=mNdSnGE9AAsi9aeexCmaIHBMRHXjNGCd4KhRSK8BhASgYF3YC6Bkn0VhORU5QAbM+6Syo+iNN8iRFp7+SoAyC3sGMUaIx05NickvlvPgGh05L8SdkXHqJDDlGTXxlo0lF0pu2jsG0uvs8DsbRKAhTYcHlKXyX5G04KHSe5vFvGY+9gbZBEFfw8cr/he6vZ9JfYKnYCVqi7dwZpj57LVPyYiC09zj25rJUpnwxLf0V6gb+RkLan+aRUF10tXKYXMTAsbUhcWAWXJ4oS6GX6faLLd2us00SnuUl0o3DlTxkLWTryU3cYL4v7gnB7f3gydLsrp9BUxc14b9wywude6YuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=D6Fh9qWC; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::67; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wKO1e9JG;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=D6Fh9qWC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::2a; helo=mta0.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-42.mta0.migadu.com [IPv6:2001:41d0:1004:224b::2a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::67; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-103.mta1.migadu.com [IPv6:2001:41d0:203:375::67])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXzGP1Mldz2xQD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 19:13:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXzWk31Svz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 19:24:48 +1100 (AEDT)
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=RvrR5l1dNK11b4mH1JIdE/igKyGnL+zkw54T9Nsh9yE=;
+DKIM-Signature: a=rsa-sha256; bh=HSUyFp+EYllNTrLsXxEGxRMBuqpbPPoIyuQ1COVxKsE=;
  c=simple/simple; d=linux.dev;
  h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795421572; v=1; x=1796026372;
- b=wKO1e9JGDzqD1t9RdLopQR/RqknqWfCQZH7iLfbq3+9sW/3zLN/1OKhGvNlAldPf9OjKOINd
- AUr53HEskD/RGF9eQ0m+54cwpu5pMapeOWSD25o3PnoBUy91ZqKGJSdRNFZcNPOGKqZctK/bqCW
- wrPkSHtCJRpVb51ZLDpAz1ZM=
+ t=1795422270; v=1; x=1796027070;
+ b=D6Fh9qWCPEswhAg5emIFm6DBkMe74EM6ay3Mi3HuZUBJNeGqHpWo2PZ+RBhuA+TCw7/pdfYM
+ fNbX7Sep8iwoCOQFiu1FXC9I/doZUWoDJV2AXczIR6+kywooOFjb3+eDPROR5/ViWJePvPi3DFO
+ GXwYoS62jRK5yXqQteoZ2vmM=
 X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id d0f5c025c2c20c78;
-	Mon, 23 Nov 2026 08:12:51 +0000
-X-Mizu-Trace-ID: d0f5c025c2c20c78
+Received: by smtp.migadu.com with ESMTPS id 4f28e3a27007a1d5;
+	Mon, 23 Nov 2026 08:24:29 +0000
+X-Mizu-Trace-ID: 4f28e3a27007a1d5
 X-Migadu-Flow: FLOW_OUT
-Message-ID: <793d63ff-c48b-431d-8a2a-4044feb45721@linux.dev>
-Date: Mon, 23 Nov 2026 16:12:46 +0800
+Message-ID: <1e7d39f1-382c-49e2-b3ae-935f25b22a57@linux.dev>
+Date: Mon, 23 Nov 2026 16:24:23 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,10 +58,10 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 02/11] mm/kmsan: undo the shadow mapping when the
- origin mapping fails
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
+Subject: Re: [PATCH v5 04/11] mm/vmalloc: reject an unaligned range in
+ __vunmap_range_noflush()
+To: Suren Baghdasaryan <surenb@google.com>, Dev Jain <dev.jain@arm.com>
+Cc: Uladzislau Rezki <urezki@gmail.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -72,14 +72,15 @@ Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
  Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
  Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org, stable@vger.kernel.org
+ kasan-dev@googlegroups.com, linux-mm@kvack.org,
+ Sashiko <sashiko-bot@kernel.org>
 References: <20261116071325.263682-1-hao.ge@linux.dev>
- <20261116071325.263682-3-hao.ge@linux.dev>
- <CAJuCfpHOZS6mp_no3wKmU3-S4HKspnbriUw8Mwtxf3nmw0-pfw@mail.gmail.com>
- <CAJuCfpFv=sCeib+SDWJNW6oqbNnhT+m3YjnfKh8jNkquzuYORg@mail.gmail.com>
+ <20261116071325.263682-5-hao.ge@linux.dev>
+ <4c233641-15ad-4e5a-a106-423bc31f357c@arm.com>
+ <CAJuCfpG5shRGvjHJyEOveSxkPE=x7nGTo4xmy0XLabV7NutrMQ@mail.gmail.com>
 Content-Language: en-US
 From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <CAJuCfpFv=sCeib+SDWJNW6oqbNnhT+m3YjnfKh8jNkquzuYORg@mail.gmail.com>
+In-Reply-To: <CAJuCfpG5shRGvjHJyEOveSxkPE=x7nGTo4xmy0XLabV7NutrMQ@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -90,136 +91,78 @@ X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Suren
+Hi Suren and Dev
 
-On 2026/11/21 05:49, Suren Baghdasaryan wrote:
-> On Fri, Nov 20, 2026 at 9:14 PM Suren Baghdasaryan <surenb@google.com> wrote:
+On 2026/11/21 06:13, Suren Baghdasaryan wrote:
+> On Tue, Nov 17, 2026 at 6:05 AM Dev Jain <dev.jain@arm.com> wrote:
 >>
->> On Mon, Nov 16, 2026 at 7:13 AM Hao Ge <hao.ge@linux.dev> wrote:
+>>
+>>
+>> On 16/11/26 12:43 pm, Hao Ge wrote:
+>>> The PTE loop stops only at addr == end. An unaligned end is never
+>>> reached, so the loop keeps clearing past the range. An unaligned
+>>> start clears the page below the range first. Both are caller bugs,
+>>> and the damage is hard to attribute afterwards.
 >>>
->>> kmsan_vmap_pages_range_noflush() first maps the shadow pages and then
->>> the origin pages. If the second mapping fails, the first one is left
->>> mapped, and the callers do not roll it back. The next vmap of the
->>> same metadata range hits the stale PTEs again and fails with a
->>> WARN_ON() and -EBUSY in vmap_pages_pte_range().
+>>> vmap only installs page aligned mappings, so an unaligned unmap
+>>> request is never a legitimate teardown. Warn and bail out at the
+>>> entry of __vunmap_range_noflush(), before any PTE is cleared.
 >>>
->>> Undo the shadow mapping on that error path, the same way
->>> kmsan_ioremap_page_range() cleans up after a partial failure.
->>> __vunmap_range_noflush() only clears the PTEs; nothing has touched
->>> the shadow mapping, so no TLB flush is needed.
+>>> Reported-by: Sashiko <sashiko-bot@kernel.org>
+>>> Closes: https://lore.kernel.org/all/sashiko-outbox-178439@kernel.org/
+>>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>>> ---
+>>>  mm/vmalloc.c | 3 +++
+>>>  1 file changed, 3 insertions(+)
+>>>
+>>> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+>>> index a168f6f20f4f..e2b63cb1592b 100644
+>>> --- a/mm/vmalloc.c
+>>> +++ b/mm/vmalloc.c
+>>> @@ -523,6 +523,9 @@ void __vunmap_range_noflush(unsigned long start, unsigned long end,
+>>>       pgtbl_mod_mask mask = 0;
+>>>
+>>>       BUG_ON(addr >= end);
+>>
+>> Nit: It is usually a practice to change the existing BUG_ON's to
+>> WARN_ON's too, if you are changing around that part.
+
+Ack.
+
+>>
+>>
+>>> +     if (WARN_ON_ONCE(!PAGE_ALIGNED(addr) || !PAGE_ALIGNED(end)))
+>>> +             return;
 > 
-> After a second thought, kmsan_ioremap_page_range() does not skip TLB
-> flushing. __vunmap_range_noflush() comment at
-> https://elixir.bootlin.com/linux/v7.4-rc1/source/mm/vmalloc.c#L497
-> says:
-> 
-> The caller is responsible for calling flush_cache_vmap() before
-> calling this function, and flush_tlb_kernel_range after it has
-> returned successfully ...". There are no mentions of guarantees that
-> mapped PTEs require explicit access to be cached. Please double-check
-> if this is safe.
+> nit: It's also better not to combine multiple conditions into one
+> warning so that the generated report clearly shows which condition
+> (code line) caused the warning. IOW:
 
-That's a subtle detail. I've looked up the relevant documentation.
-You are right, and my "no TLB flush is needed" was wrong.
-
-The Arm "Learn the architecture" AArch64 memory management guide says it
-in "TLBs and Changing translations":
-
-https://support.arm.com/documentation/101811/0106/TLBs-and-Changing-translations
-
-If you change a translation table entry, or the controls that affect how entries
-are interpreted, then you need to invalidate the affected entries in the TLB. If
-you do not invalidate those entries, then the processor might continue to use the
-old translation.
-
-The undo changes the shadow PTEs, so the TLB has to be invalidated.
-
-I also checked the Arm Architecture Reference Manual:
-https://support.arm.com/documentation/ddi0487/md/-Part-D-The-AArch64-System-Level-Architecture/-Chapter-D8-The-AArch64-Virtual-Memory-System-Architecture/-D8-16-Translation-Lookaside-Buffers
-rule R SQBCS:
-
-If a stage of translation is enabled for a translation regime that is not out-of-context,
-any translation table entry for that stage that does not cause a Translation fault,
-an Address size fault, or an Access flag fault is permitted to be cached in a TLB or
-intermediate TLB caching structure as the result of an explicit or speculative access.
-
-So it may already be cached by speculative access even if there was no explicit access.
-
-For the kernel side,  Documentation/core-api/cachetlb.rst
-https://elixir.bootlin.com/linux/v7.4-rc1/source/Documentation/core-api/cachetlb.rst
-says that The "TLB" is abstracted under Linux as something the cpu uses to cache
-virtual-->physical address translations obtained from the software page tables.
-Meaning that if the software page tables change, it is possible for stale translations
-to exist in this "TLB" cache. Therefore when software page table changes occur, the kernel will
-invoke one of the following flush methods _after_ the page table changes occur:
-
-The condition there is the page table change, not whether the range was accessed.
-
-Likewise, I believe flush_cache_vmap() is also required.
-The sequence in cachetlb.rst is
-flush_cache_range()
-change_range_of_page_tables()
-flush_tlb_range()
-so the cache flush has to happen before the unmap.
-This is exactly the contract that the __vunmap_range_noflush() comment you quoted spells out,
-the caller is responsible for calling flush_cache_vmap() before the call and flush_tlb_kernel_range()
-after it.
-
-The code will do:
-
---- a/mm/kmsan/shadow.c
-+++ b/mm/kmsan/shadow.c
-@@ -258,6 +258,13 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
-                                            o_pages, page_shift);
-        kmsan_leave_runtime();
-        if (mapped) {
-+               /* Undo the shadow mapping set up above. */
-+               flush_cache_vmap(shadow_start, shadow_end);
-+               kmsan_enter_runtime();
-+               __vunmap_range_noflush(shadow_start, shadow_end,
-+                                      gfpflags_allow_blocking(gfp_mask));
-+               kmsan_leave_runtime();
-+               flush_tlb_kernel_range(shadow_start, shadow_end);
-                err = mapped;
-                goto ret;
-        }
-
-Thanks a lot for catching this, I learned quite a bit about the TLB
-along the way. 
+Ack on applying the same to the previous patch in the series, "mm/vmalloc:
+reject an unaligned range in vmap_page_range()", as well, it is done the
+same way there now.  
 
 Thanks
 Best Regards
 Hao
+
 > 
->>>
->>> Fixes: 47ebd0310e89 ("mm: kmsan: handle alloc failures in kmsan_vmap_pages_range_noflush()")
->>> Cc: stable@vger.kernel.org
->>> Suggested-by: Suren Baghdasaryan <surenb@google.com>
->>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+> if (WARN_ON_ONCE(!PAGE_ALIGNED(addr))
+>         return;
+> 
+> if (WARN_ON_ONCE(!PAGE_ALIGNED(end))
+>         return;
+> 
+> 
 >>
->> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+>> Reviewed-by: Dev Jain <dev.jain@arm.com>
+> 
+> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+> 
 >>
->>> ---
->>>  mm/kmsan/shadow.c | 5 +++++
->>>  1 file changed, 5 insertions(+)
->>>
->>> diff --git a/mm/kmsan/shadow.c b/mm/kmsan/shadow.c
->>> index 0c88d89bf0d6..212449db34a1 100644
->>> --- a/mm/kmsan/shadow.c
->>> +++ b/mm/kmsan/shadow.c
->>> @@ -258,6 +258,11 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
->>>                                             o_pages, page_shift);
->>>         kmsan_leave_runtime();
->>>         if (mapped) {
->>> +               /* Undo the shadow mapping set up above. */
->>> +               kmsan_enter_runtime();
->>> +               __vunmap_range_noflush(shadow_start, shadow_end,
->>> +                                      gfpflags_allow_blocking(gfp_mask));
->>> +               kmsan_leave_runtime();
->>>                 err = mapped;
->>>                 goto ret;
->>>         }
->>> --
->>> 2.25.1
->>>
+>>> +
+>>>       pgd = pgd_offset_k(addr);
+>>>       do {
+>>>               next = pgd_addr_end(addr, end);
+>>
 
