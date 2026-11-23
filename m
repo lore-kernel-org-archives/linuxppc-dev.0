@@ -2,62 +2,66 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57651606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 03:28:15 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 25BC1606A69F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 05:05:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=DScxZSda
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MaJmLHh7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXrxT4lm1z2xyj;
-	Mon, 23 Nov 2026 14:28:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=111.22.67.139
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795404493;
-	cv=none; b=Etnr/QSHmM4cZAsNitv5KWlU5lYLDC1vLbHePf9znWiz9XSByQE6/VaNSjnybFmWL+B97ZDjUqQ/NWdzMnsWCIsgOPYhPH7ZO0672lWKfLKp77XFwAGcDAPHNe7A9vqT5nx28OmqwrWbk2f8o3vMgX5PuY7HvQtaGPTbmGGNbz6CmRL1ukZ4j8TMV9rW4P3WLIzVp/X/HGU8KDxPJDU2CBOaoIcP9YhzwX4EJfL29SgHHSXe1N2/X1YZCZEjTBJNV4oQ8EBj5X6TEWAb5qGKwJ5VNvVadPsdh5Ta2D1bSZwc7sYKU9nEB4UUhgfT+v7tfV6qiQYqoOP+JTg/4Dat8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXv5x35g4z2xwP;
+	Mon, 23 Nov 2026 16:05:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795410341;
+	cv=none; b=G07fGBv0XqkXQV6ttPihosHXHNcDjB1pA9gbVKfkRe9NJ89zKF1Zxc1f2mgcQ1F5a19JzduBGTAQlGKW7fSnkekzXpK5HTAuuUI5RMYWHOtopNBWYGd93Zk5iTqmD2OZUGpttEbQtqppZQFi50n90+1PR84gHKoNKw96R3+uTqKUezEtedA7excd8/xJM42ko894YsIxXvP2yvxqUicupJZjPn37breIUGUeTbiqfrwJt4hOmAAUjr4x6E/7MROJ0gu7W4k65Pw0gvBF5JOGGb7rGtEdBTvv12E+bdY5TVc21cDvkRgCS1o4mPodXh+bdiva8RJcc0qunyIO5etPTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795404493; c=relaxed/relaxed;
-	bh=TGfp7P5OBJUKiThiruIwJr4YVVahruavoJqGO1SNK8U=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eteJnvBraOBQvPPGdu4lNIkTTg1CjTJlsE90M9CPAvLvMEiPN0772mg/WdyXesn4DA0k9zqPhtZjq//j/WVZfqvkcCMrZP9h22e57RjO/r+QlJ0rC6/bxy/X0IVyNA+Dk1yTVdeyL+nCcr67895kbXxVLelz7/s7U9iJYDLPuUpay66aks4R5Rgg+YlRA29NK+OfrV/hatZk1Upz73acJoRj0oAlIslqqFcEgEZ5sUi2NRWBObgltZakKIEym1oOQhiXgA1oSifYrSAaodIxxzlsK8OvkKJjAr8I4E5886hegStYnE0Xw/ozELSZb0Lq+vjHA5hBNiBTbYrZ8XHwMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com; dkim=pass (1024-bit key; unprotected) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=DScxZSda; dkim-atps=neutral; spf=pass (client-ip=111.22.67.139; helo=cmccmta6.chinamobile.com; envelope-from=chenaibing@cmss.chinamobile.com; receiver=lists.ozlabs.org) smtp.mailfrom=cmss.chinamobile.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=cmss.chinamobile.com
+	t=1795410341; c=relaxed/relaxed;
+	bh=kc1WDNzqnWa7MzsqOAzEg3sXZ0FXTjUIsij2hS/psy8=;
+	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=JsxSpetxdmzwp/Q1G+gudNSJCuA7CoKXgMfZqJkaa8j13y5pw/LhviFPudjzbeFx3FO0m/3BnhnWnRTEShEvl+uLbCleCqUay+Mvr5X/BlwHfTn9AhPboDfiecwyEjSFMUj+adODF+2E2jgzp4yNZaBfzILD6Q9TgLNyoDTpNa1c3XgrnvWqahaqt74+M/D8rEwrNB7Ql75wuYXEjVQfwVRLYBTroCskIWsEUuXdVW1zAvBt8tdoFQCESh0wbDsxYekF3M6cicsY9grgiiX+Z251P2U9AOJZpv7SWLrmen+3p1h2nGs3+2jMlwOkHlIDK4tCwiXjFk0dWA4Vn0ouCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MaJmLHh7; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=cmss.chinamobile.com header.i=@cmss.chinamobile.com header.a=rsa-sha256 header.s=default header.b=DScxZSda;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MaJmLHh7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cmss.chinamobile.com (client-ip=111.22.67.139; helo=cmccmta6.chinamobile.com; envelope-from=chenaibing@cmss.chinamobile.com; receiver=lists.ozlabs.org)
-Received: from cmccmta6.chinamobile.com (cmccmta6.chinamobile.com [111.22.67.139])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXrxP570Mz2xdR
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 14:28:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=cmss.chinamobile.com; s=default; l=0;
-	h=from:subject:message-id:to:cc:mime-version;
-	bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=;
-	b=DScxZSdazFS7PwahgzQqGpB/4MD+YYIL03yNpJ1gAV+xzkymx4hQjavd+KC8VOLi/RWtcWRWlOvSc
-	 Xoa7BJDuW49VKKoj2dkMAzsxjyYNb0rkvi9QJ3/cRCQN9ewXTuAEXVvJG0e2xcUa8zjQHQ2mfHllDn
-	 r90KuvjBEVnLqerw=
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from spf.mail.chinamobile.com (unknown[10.188.0.87])
-	by rmmx-syy-dmz-app05-12005 (RichMail) with SMTP id 2ee56b03b2c007e-35e20;
-	Mon, 23 Nov 2026 11:28:00 +0800 (CST)
-X-RM-TRANSID:2ee56b03b2c007e-35e20
-X-RM-TagInfo: emlType=0                                       
-X-RM-SPAM-FLAG:00000000
-Received:from FHD-W7400297 (unknown[10.55.1.70])
-	by rmsmtp-syy-appsvr02-12002 (RichMail) with SMTP id 2ee26b03b2be876-84f5d;
-	Mon, 23 Nov 2026 11:28:00 +0800 (CST)
-X-RM-TRANSID:2ee26b03b2be876-84f5d
-From: Aibing Chen <chenaibing@cmss.chinamobile.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-	Jaroslav Kysela <perex@perex.cz>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ALSA: aoa: size the codec reference property name buffer
-Date: Mon, 23 Nov 2026 11:27:58 +0800
-Message-ID: <20261123032758.855-1-chenaibing@cmss.chinamobile.com>
-X-Mailer: git-send-email 2.50.1.windows.1
-In-Reply-To: <87cxs5ypv9.wl-tiwai@suse.de>
-References: <87cxs5ypv9.wl-tiwai@suse.de>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXv5w3K9gz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 16:05:40 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id 39A4F602D3;
+	Mon, 23 Nov 2026 05:05:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 99B6C1F000CA;
+	Mon, 23 Nov 2026 05:05:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795410336;
+	bh=kc1WDNzqnWa7MzsqOAzEg3sXZ0FXTjUIsij2hS/psy8=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=MaJmLHh73l7lNwukwY22xJ7TRPlLyjsKgI6pQH3BWlzUQYCqKS6z5xd9rP6LXTe4s
+	 NDRy/Kdzc1QCkY8khTw91OdWz9E38XGfiyjbKlxz8VJ5GJ67k+MKXBnHvkIvbKOKaF
+	 i2lEzuClX9n2A2rFbOC9dLOcP1RpTiq8BWLsqKx+XxtKkv1X5Sd0Oad+NJ+u/P21sq
+	 49uho1bKuptVA/znJFwH0qo+mIZ2gDReW9eyAr9MNFyAomkqcRBhLZVmhNXE/GQ+qM
+	 PP2dqtmReItxuqsTqV3WiwPpCl/jS0oqf12gHVKteZHYIFda+sKvbxAr/zQOX3Lx67
+	 Bz2PZVJKjrvJw==
+Subject: Re: [PATCH v8 net-next 4/9] net: dsa: netc: tie setup resources and
+ reset to DSA setup/teardown
+From: netdev-bot+sashiko@kernel.org
+To: wei.fang@oss.nxp.com
+Cc: xiaoning.wang@nxp.com, andrew@lunn.ch, olteanv@gmail.com,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
+ richardcochran@gmail.com, linusw@kernel.org, linux@armlinux.org.uk,
+ wei.fang@nxp.com, imx@lists.linux.dev, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Date: Mon, 23 Nov 2026 05:05:35 +0000
+Message-ID: <179541033517.3135.5228725617878780083@kernel.org>
+In-Reply-To: <20261119030534.1892935-5-wei.fang@oss.nxp.com>
+References: <20261119030534.1892935-5-wei.fang@oss.nxp.com>
+X-sashiko-severity: Low
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,32 +75,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Takashi,
+Thank you for your contribution! Sashiko AI review found more severe
+issue(s) in other patches of this series. This mail is only an FYI, in case
+you want to address the nit picks below when you respin.
 
-You are right, there is no truncation with the codecs that exist in the
-tree.  codec->name is only ever set from a fixed string:
+Low priority / nit picks for your consideration:
 
-  sound/aoa/codecs/onyx.c:1005     strscpy(onyx->codec.name, "onyx");
-  sound/aoa/codecs/tas.c:860       strscpy(tas->codec.name, "tas");
-  sound/aoa/codecs/toonie.c:129    strscpy(toonie->codec.name, "toonie");
+- [Low] The patch changes how netc_switch_pci_init() handles a failed
+  probe-time FLR, and the commit message does not say so.
 
-so the longest property name built by check_codec() is
-"platform-toonie-codec-ref", 25 bytes including the terminator, which
-fits in the existing 32 byte array.  The W=1 warning is a false positive:
-the compiler cannot bound the length of codec->name.
+--
 
-I will drop the patch.
+net: dsa: netc: tie setup resources and reset to DSA setup/teardown
 
-Thanks,
-Aibing Chen
+This commit adds netc_switch_reset() so that every netc_setup() after the
+first one does a PCIe FLR and starts from a clean hardware state. It also
+converts the setup-path devm_ allocations to explicit alloc and free.
+These are released in netc_teardown() and on the error paths.
 
+> diff --git a/drivers/net/dsa/netc/netc_main.c b/drivers/net/dsa/netc/netc_main.c
+> index 1225ff8153d44..f724f95add36b 100644
+> --- a/drivers/net/dsa/netc/netc_main.c
+> +++ b/drivers/net/dsa/netc/netc_main.c
 
+[ ... ]
+
+> @@ -1042,7 +1161,10 @@ static int netc_switch_pci_init(struct pci_dev *pdev)
+>  	void __iomem *base;
+>  	int err;
+>  
+> -	pcie_flr(pdev);
+> +	err = pcie_flr(pdev);
+> +	if (err)
+> +		return dev_err_probe(dev, err, "FLR failed\n");
+> +
+
+[Severity: Low]
+This hunk changes probe behaviour, and the commit message doesn't say so.
+Before, the return value of pcie_flr() was ignored and probe always went
+on. Now any FLR failure in netc_switch_pci_init() makes probe fail.
+
+The commit message only says:
+
+  The probe path already performs a FLR in netc_switch_pci_init(), so the
+  first setup will skip the reset because the priv->configured flag is
+  not set.
+
+and later:
+
+  The NETC switch does not support multi-switch yet, so there is no
+  functional problem today. This only reworks the driver so that
+  multi-switch can be added later without hitting these issues.
+
+Both passages read as if the probe path is unchanged.
+
+pcie_flr() can fail in three ways:
+
+  - -ENOTTY when pci_dev_config_accessible() fails
+  - an error from pci_dev_reset_iommu_prepare()
+  - an error from pci_dev_wait() after PCIE_RESET_READY_POLL_MS times out
+
+In any of these cases, a NETC switch that bound before this patch would
+now fail to probe.
+
+Failing probe is probably the right behaviour, since the driver relies on
+a clean post-FLR state. Could the commit message mention this change, or
+could it go into its own patch? The hunk is still the same at the end of
+the series.
+
+>  	err = pcim_enable_device(pdev);
+>  	if (err)
+>  		return dev_err_probe(dev, err, "Failed to enable device\n");
+
+-- 
+Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261119030534.1892935-1-wei.fang%40oss.nxp.com
 
