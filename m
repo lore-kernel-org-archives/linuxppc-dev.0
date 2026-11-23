@@ -1,73 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 137F9606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 06:42:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 31AAA606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 06:53:21 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oECQqBng
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWwTfVAA
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXxF35P5mz2xwP;
-	Mon, 23 Nov 2026 17:41:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXxV72TC3z2xqv;
+	Mon, 23 Nov 2026 17:53:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795416119;
-	cv=none; b=PteXBJgo0EqE1JcvPu8j8HC2MvLDUceb76KYU+9F7ZGwyEtEmBj3GiHJG2ldjyC7PV2LkoMseS2FcIHnnVOgS0sd5Tj2RvJxf1ydJF6fe2f6f55IS9WnCWTxp5zpM3jE76QiG37JWGTzUcCBek7DD3/OJa3kNbzYBV1XDHdTwMbrJEcDV2UxpW7s4SI03aew9kCxMA4mTImbxWno0sJ8m9A3nO7H922vaEH9vrEPgjpyL+rLq9snN0lbBXxnuSLgivPIAlsuTmeuVpt66lV56CFRPOYHL7OcipPyEVUYpPX8HSGmkKjYS7g1AYcjGY8a+sjqDcQKLPhpAEpLlXvMOA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795416799;
+	cv=none; b=hwT9jhzGDNzQQWz47y072AYOW4h1KyJB1ybsSZLY5adSCd0JIXtU0urUDLmlNBswq1zUHUlFClgPQotbgb3ksDYft4q0wWG0dZREg8RywbPQ+hWSBpFYudXPt5vjd6W+A0bqhko7CjWjrTCzkVNnj9YflYRpFvTrbYyR4JwM2pLyBHP0lnuAChxKjBraRjX0u3pz49NMM7FRYYWwd6SjVWWAfpWlDQzfAk8zJjeng7GVohs/OjymiYrKxfn4JbdWKiOqM5UMwZvY9dAkKKBQDG33ZIg32n0l1rbetb56mTCL3TAyhgCGAHDKq4mo/5lxI5SXjjjzYZ5qlPf4xWpFEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795416119; c=relaxed/relaxed;
-	bh=qBreP/Oo/PnPhpv8ZmYNUNcsA5D6iFCiC+x/766XWo0=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=A2LT5sbZbtuWvzi53mC8TlpiFU7PJDS3Dsrfzh5IMy/2cKOPgHYoDBgA9SrIzkhoZl0pnmVwarfRJ5krCnj8gAZE26vL511DZyOywk6ptXXZ6kyoXxPX8CPoyItREJbQvYSVjtZU2fnA6ORTrONxZ7Tc5SkcTSQ71VYq11fBjoSiv+aHTWhfh7GJcmAepySvaLTHwcSZDzaEC7I3Z0xH7r3GCcw65hIVQL0Tw0yDK9bqgVty0M+pxoSf/rAyn6G5XHwLrvbksF8Dunt6p9qTuBHBxusTTQpBis7njoBN8fKsi54Ix5cwfucWQ9caNisIFE+ieHPvvHLsG8n5BswT6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oECQqBng; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1795416799; c=relaxed/relaxed;
+	bh=LYFLUK4X0v4eb/H71FRu0YrCnuzDn+tDFLUu8DbmnA0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=JXLVP9JkykpXmieYiVR0b4DMmtYaE0cbNj9s/on/8z8KdM0tZaEEw+9uib5bZBCe601n/6ntx8A65CxhUsli8iHStHixTfzHN6Rqqbpi9SzGLKbM4Qw/61YdkjfEPV1wv9arnMJTHpwWbj70XcXv3/I7wG8sDAKckd+/Q6zEZ9jpZgnboZwVgNxyurZxPLKdxnUr7MSSVhzWhaCPCTPlaDSQxweecRLtXYAIIkAIfeCwRsRymVKen5/RL5dS7fDdcoPIjYbnFmR0vqJjOY8r7uGUHTftBjTFzf83JQTEwccZRIriIqgGBCCDVVxhdNpOEa7Hh9FIp5EulSywlD9Egg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWwTfVAA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oECQqBng;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cWwTfVAA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXxF245L6z2xqv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 17:41:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXxV63Dzlz2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 17:53:17 +1100 (AEDT)
 Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54gFq2633067;
-	Mon, 23 Nov 2026 06:41:42 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54eG62633014;
+	Mon, 23 Nov 2026 06:53:03 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=qBreP/
-	Oo/PnPhpv8ZmYNUNcsA5D6iFCiC+x/766XWo0=; b=oECQqBngTqmtlK4WTi68N9
-	PhTwWYo0yx9envYjzx+ygfIT03cMUhU30Z48RmI2g1BVZAXRwjiLTQ+lxRuBKYR4
-	IMEuEBjBUIGRj81k6/6EJd4L9dev3+GHGzjpBNedrhghWSY9Zq77yDWsxZvoJ2qa
-	QyFRekOCp+L9hWUnNcZMCf0g9nxUNW6ik/XVdeA2k+BJHH2hdUPmJQM12xPi/VA4
-	VDH7PHrjV6+mzuT+VwSANBIfQ69+i/5XbLehctysawShhOJyP0/G68rZQNQYkTg0
-	8GR267pnCkx0Y2E6HYbTTo6hOwzVoEnTgGTbah4MPPHiO7eVb0f7ANpHFsU3PaWw
+	:message-id:mime-version:references:subject:to; s=pp1; bh=LYFLUK
+	4X0v4eb/H71FRu0YrCnuzDn+tDFLUu8DbmnA0=; b=cWwTfVAAWnl1nytN9GhvQ3
+	BzWMjNOnY5i5dvwNM63/AASQTZaMC0oza8uDjYT7pREkqmmJ7lKFXeTUgG71AlpM
+	AR45SqA2Dm9W9x9Vzw5lHZVGMm5AKBiLK0zOrzl1Fm9kTNGHrEuLrDdeNjA196Do
+	YoecBMwjh7Gvca4MBxrD46vGtFui+/Z81n003tCBTzGJ20GRCWmofqtx9AMAZlbW
+	hSaSes8frXoKJh/PLc02LrqXRtT8UEK2Vr1tqU9D7DBLikRSHb4cLAOB6zS+e9HK
+	yPl5XwLXL/LC+vFYMGDqoPiLA5rKvLjeXJnDYNhZYNn2dqu4R0WP27EWvYNjE3vg
 	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g11k1r-1
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g11kyf-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 23 Nov 2026 06:41:41 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54SlZ1346513;
-	Mon, 23 Nov 2026 06:41:40 GMT
+	Mon, 23 Nov 2026 06:53:02 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54F2P2817213;
+	Mon, 23 Nov 2026 06:53:02 GMT
 Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j3nmqdtts-1
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j3pmjwnjq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Nov 2026 06:41:40 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AN6fa1C47317442
+	Mon, 23 Nov 2026 06:53:01 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AN6qvu128770570
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Nov 2026 06:41:36 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 826362004E;
-	Mon, 23 Nov 2026 06:41:36 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E91D820040;
-	Mon, 23 Nov 2026 06:41:33 +0000 (GMT)
-Received: from [9.123.4.64] (unknown [9.123.4.64])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Nov 2026 06:41:33 +0000 (GMT)
-Message-ID: <c34ffcfe-f432-415b-af0d-c574ec416e50@linux.ibm.com>
-Date: Mon, 23 Nov 2026 12:11:33 +0530
+	Mon, 23 Nov 2026 06:52:57 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A8C6A2004B;
+	Mon, 23 Nov 2026 06:52:57 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2038020049;
+	Mon, 23 Nov 2026 06:52:52 +0000 (GMT)
+Received: from [9.124.208.184] (unknown [9.124.208.184])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 23 Nov 2026 06:52:51 +0000 (GMT)
+Message-ID: <b5383e66-c777-4e96-9ee8-5548d84f6e89@linux.ibm.com>
+Date: Mon, 23 Nov 2026 12:22:49 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,8 +84,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v6 5/5] powerpc/powernv/eeh: Map generic EEH error types
  to OPAL
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>,
+To: Narayana Murty N <nnmlinux@linux.ibm.com>,
         Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
         "Oliver O'Halloran" <oohall@gmail.com>,
@@ -104,29 +103,30 @@ References: <20261023073642.59657-1-nnmlinux@linux.ibm.com>
  <2ed69cf8-eca2-41ed-a100-844f9d84c2ad@linux.ibm.com>
  <9efa20ba-d79b-47b8-9677-474c19aa9168@linux.ibm.com>
 Content-Language: en-US
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
 In-Reply-To: <9efa20ba-d79b-47b8-9677-474c19aa9168@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: E_boxzguLIIDgS85SKfN-JRZDq-Ftfz-
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAyNiBTYWx0ZWRfX+FX5Z7TOFmwu
- Cj6KN1UyOamK/8EB1BIheVqHHF6+jIrNYpsE3cTZOpYRkPIgcLPJmVsH2TK7JeShu98lJJSP8Yq
- i//fHxw+czHKznEHvxA4tUb8QBjM+Zw=
-X-Proofpoint-GUID: f9KpyKt35FTz4Y_A3hX-VETTE8EbGfra
-X-Authority-Analysis: v=2.4 cv=c8M+0h9l c=1 sm=1 tr=0 ts=6b03e025 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-ORIG-GUID: POTtVaHnrtjaDJOwoyhxmcXptX7oATw5
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAyNiBTYWx0ZWRfX7zji1cl3E3Hu
+ W7rGuHoEeK2vuHLCJY1l6nbaXcH4oHV+L2QxHVnUxWosFYjfIpZZTPWI1HVpIBkwflh5+hhjCqP
+ Wt6AJ3wWw18GMcE4/sMBRaFGZM7SIP4=
+X-Proofpoint-GUID: 0ODn4djClxTQZDVoDpOsbuaXnGG_WbY7
+X-Authority-Analysis: v=2.4 cv=c8M+0h9l c=1 sm=1 tr=0 ts=6b03e2ce cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
  a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VnNF1IyMAAAA:8
- a=8MjjNtLoB4kJMNi7y5gA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAyNiBTYWx0ZWRfXxWwrCrOw6kQ6
- 3YCt+TI/ZvGB/SSGR+3pPfjteMotugYWFQj/aYRK2LqkIx3DtpQD2z3AlaxiHBJMg7FRhjYlTWQ
- fQ0oFjAP5KN0nowI6tCK2Ly01nIDhv5bXuSDMZIWdmOo0gLbQFsHfbbFwVdF+47LlPIQY2K2xyB
- rLmkkCHp8w2EECvZsnLzTBBaeeKjJJv6uxAG+wueMkmMqst9V6wTpUmwPJ2AyOlcRLGeI211ff3
- Cd3rr6UnVTNN7iBkXAfho0ECE+yUAKHLgyyhMZhO6zI+ytvrQXJwZk6/WajpRYh3jlngy1Vcrvy
- q/fkf5AyeFHYtf/ucvLmmpLY/uXxkJiqAxJNsGv9Cz8r/lDyUzGHUo70tevVyCF/uLGQ/U0hTYy
- pO5eRcgfo3w50+pNHxy6lz6BW21WYLPS6KFvNNSsGYIHQCM5lIaPgMUrpTX0OFOK6OrEDRvBzGp
- TvbOAIJtBxJkxjnECrQ==
+ a=p_t55juraV-f5WWF2IAA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAyNiBTYWx0ZWRfXy7eA93pfZPq/
+ El0yeVZG4uYdcedVjb80xp6cQVQMI8kXzrIF0XLQ0Z3DXQ4h0Amb8mXIeHvmZEuYPNihguwpUnt
+ Pzp1dkiJm5zLzrX5XCjsKMeryy913cE3exeq9SHvL6ekBfusSEWsriXcxYo9NueiOMauQwW96R1
+ Bjp6CT+ppRqTWm8VCOFVKR9UekN+FHbzUtSHSKe7+MikQIpcUaOtoiPGfgH9DXYcUB7ZzMZEHug
+ +ln7JdKOGBemWOmsgpUOiRXapWuDLDNLfc5o9jLfjIdCFkRpXfP+Zu9DkEm1a+4pHBqUIRT15a/
+ 7xuXyRof9rVWTPSg9p4/QLrikn4/q7SdHnSamhvvu9QiAMgJvIa7H4rUYnFOhp1RYT56TPj7PW+
+ 3B3I/hurA4MK7jKHe7vD22V3ZubBXCMchluezw46Juw3zfyCCo+WkmM9TRJr1E2NvMebeFakTCp
+ 8VR5KqUSbzi81rh/Wow==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-23_01,2026-11-22_01,2025-10-01_01
@@ -144,9 +144,9 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 
 
-On 20/11/26 1:09 PM, Narayana Murty N wrote:
+On 20/11/26 13:09, Narayana Murty N wrote:
 > Hi Sourabh,
-> 
+>
 > On 19/11/26 1:11 AM, Sourabh Jain wrote:
 >> Hello Narayana,
 >>
@@ -159,36 +159,28 @@ On 20/11/26 1:09 PM, Narayana Murty N wrote:
 > The intention was to decouple the generic EEH error types from the
 > platform-specific OPAL encodings, similar to the explicit mapping
 > introduced for pSeries.
-> 
+>
 > However, the generic EEH error-type values remain unchanged, and
 > the PowerNV mapping is not a prerequisite for RTAS-based error
 > injection.
-> 
-> I'll drop this patch from the next revision and will post it as seperate 
-> patch.
+>
+> I'll drop this patch from the next revision and will post it as 
+> seperate patch.
 
-Thanks for the feedback, I misinterpreted your comment.
+I don't mind keeping this patch as part of the series. The only thing 
+missing is an
+explanation in the commit message of why and how this patch is needed 
+for the
+RTAS-based error injection support for pSeries introduced by the 
+previous patches.
 
-Patch 5/5 is included to keep the generic EEH error-injection interface 
-consistent across pSeries and PowerNV.
+It would be helpful to include a scenario explaining why these changes 
+are needed
+for RTAS-based error injection support on pSeries.
 
-This patch series introduce RTAS-based error injection on pSeries, where 
-the generic EEH error types (EEH_ERR_TYPE_32/64) are mapped to the 
-corresponding PAPR error-injection classes.
+- Sourabh Jain
 
-PowerNV uses the same generic EEH interface through eeh_pe_inject_err(), 
-but its backend currently relies on the generic type values matching the 
-OPAL error-injection constants.
-
-Patch 5 makes this translation explicit in the PowerNV backend, similar 
-to the pSeries RTAS implementation. It does not introduce RTAS support 
-on PowerNV or change the userspace ABI or existing behavior.
-
-I'll update the commit message to clarify this relationship.
-
-Thanks,
-Narayana
-> 
+>
 > Thanks,
 > Narayana Murty.
 >> On 23/10/26 13:06, Narayana Murty N wrote:
@@ -215,7 +207,8 @@ Narayana
 >>>
 >>> Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
 >>> ---
->>>   arch/powerpc/platforms/powernv/eeh-powernv.c | 22 +++++++++++++++-----
+>>>   arch/powerpc/platforms/powernv/eeh-powernv.c | 22 
+>>> +++++++++++++++-----
 >>>   1 file changed, 17 insertions(+), 5 deletions(-)
 >>>
 >>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/ 
@@ -263,6 +256,6 @@ Narayana
 >>>           pr_warn("%s: Failure %lld injecting error "
 >>>               "%d-%d to PHB#%x-PE#%x\n",
 >>
-> 
+>
 
 
