@@ -2,70 +2,48 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21A46606A688
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 10:03:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id CA576606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 10:16:09 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=3VkflIru;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kAAiYpzk
+	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tp8Y+6DM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jY1jW6571z2xyj;
-	Mon, 23 Nov 2026 21:03:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795428207;
-	cv=none; b=jUUnRDoZTVDa78NUvlGkEJp7wtIBry6yB0sHv+pvO070k743BTq0UCY31NlL7YPMFG/mzxO7GDN9EPSzmx6SMzwIwrU5vXmbvxmBp9ZCSXMPqReFH+ubs9uiAba5GmTyJBCkCQTXX+ePSYO85xCc29QVHAQl7CkVmjtDexgCmkxfLN4Ysv3fGhOJZtO94nTMPmQvhrX/vGDEVvmP7A1Dyi3O/tAIBHAQIbMmjNarRh+BVINqBbYm7+hS6P+w51Iz+MQC6kSRSHFCt1qJTurhhKEtClpalel4xcg2SCIshCSn5oJtTUFEqLzQhZPSEop86wlVAO0mstYPSL1jaSESrQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jY2081B5Wz2xwP;
+	Mon, 23 Nov 2026 21:16:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::1b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795428968;
+	cv=none; b=d5AQgE/npm/MK18Km1fH6geHi8510SeHP1sIeFKNFtV++wkU7tJFVjNa4wvnpcoCGKGtgOrnZtYls6qGolQODWcwNh1IDCXBpkygQH43mmjipJpwsffqfpVq91VjGV6pNgCR9WMjYxyLNbqW7+rwVUZ8Is4MfwQeXwzCWjHNyGkN30ZYHXRaxZOUAlZj95TZotbmB6ZhvZTVsyAbohHQUX7XoV/kdPdnPuWqCjR5hC8nRnAIgdyIdTO3E1K5nJZCcMdD2Ty4zgFBHSkVW/epqpYEbhI5PaYdQV3IVixdaHRrBkSMeS14ka2jGc5/PNOpDKGJ1nhqavFJuhwGKjQjTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795428207; c=relaxed/relaxed;
-	bh=CD4ic9Gltp6sjM8mfIwiECFvv0TUSDYXBdZI3py6+Hs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RmtxYXwOZU5Z2ytj23+1BP0NuTh6YF+SBNudD5z3PK7bRwT9LYzChIXPmFdnRyiH1+esxvP8j8jgXU7b1sI1+uM5pBG9TGcsQEDWIPO2Xnwj/jVXBc/+HVPqrchYEMG8vBKuKLxoZEMPYcbbPIscL8csmqsZb6o9dAgiJMSqhswQNfFwQ/s1OJ1nkOBmQO8IDWNE15GitXkUNfaLngzKID+VuBz+JgLO7qt/CI3CdlxWleLMcj3SIPVpy0r+EyQ3nu42Haj530hDZn3ZbWnAEkowZbcs3+E86loaqwdhegxgOgUUNUU2AEI0sDkU7xQVBj6cuF51rWov03KfiOs+ng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=3VkflIru; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kAAiYpzk; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1795428968; c=relaxed/relaxed;
+	bh=5VZam8o1y0qDbPb40lL86ri5OnzIJLEYJQ5jktXiFv0=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=IiggV1FxnzheRFqPa2BgrDMFbJtRvW+DtlW2cF/5WKKJOV/pbmSgixt45f3paW0VKpB0AAv0AK/51cV4trxJ0JcY+IOZs7/5NO1cljeh8rMfNgy7eNrwiRWsV3QsSEoZ4gTQ8LTBSx9vGrR1SoFAm67AyA/oVkNFZtie3gPXQoFd6W0wYnJpGPcM/q74SojovVIWKDDcIxcp8CkgtARkMOiNxDEi/8rkq4vh6+t4o0sPqn9B2KJusgr59N4ukvV/7wI/R457INvriPxse7hZl3jyyMB0XxVSyiF5V/5WxYuhrDcbsW9bzOxXFKGdNRgCbDHxnAO7WienMjSYnUA/dw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tp8Y+6DM; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::1b; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=3VkflIru;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=kAAiYpzk;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Tp8Y+6DM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::1b; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
+Received: from mta1.migadu.com (out-27.mta1.migadu.com [IPv6:2001:41d0:203:375::1b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY1jV723fz2xQD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 21:03:26 +1100 (AEDT)
-Date: Mon, 23 Nov 2026 11:03:22 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1795428203;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=CD4ic9Gltp6sjM8mfIwiECFvv0TUSDYXBdZI3py6+Hs=;
-	b=3VkflIruKARozyrkLHlX2mQ95+oFUmmPQ9g7O4L3WFJ+V/4YkuEfXhftFZgsdG9N+ReUrC
-	3ECXYSLczZ5sfXJmW/dp9rUJNM/FMjQfywHZgZtQzuHb0kSoe7hHEhJUgFIKC0qG05v5/W
-	deQUhf+pARzVbGBEEIbo6yBX9OA7AK30MKgGM9nFf9PO5zjwkdkfGkZM9cxjaj34VKvOsw
-	myOUpmdrBt4nOPgZIRTrtBBjy4he4UJ8IukvSGDbAO08UnI4M4oCeuCrk04sAimvWyNpHh
-	OeIZxe3E8yO3AcaESf76ss7nR72GuxDw2HX74Yv5N4Yb5IVJ8j/g7DgcR1hCiw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1795428203;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=CD4ic9Gltp6sjM8mfIwiECFvv0TUSDYXBdZI3py6+Hs=;
-	b=kAAiYpzkfztPq6MYwun6e1Y8Vy2mVk9Secfye9usXniusBTfN7Fozg38iBhnOT33Y8lwOo
-	+hHvYlvL/ixDdMDQ==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Kees Cook <kees@kernel.org>, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>, 
-	linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org, loongarch@lists.linux.dev, 
-	linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-sh@vger.kernel.org, linux-alpha@vger.kernel.org, 
-	Paul Walmsley <pjw@kernel.org>, Andy Chiu <andybnac@gmail.com>, 
-	Magnus Lindholm <linmag7@gmail.com>
-Subject: Re: [PATCH v3 00/15] exec: Remove AT_VECTOR_SIZE_ARCH from UAPI
-Message-ID: <20261123110111-6431e85f-39a4-427e-b545-2e7a590a6c19@linutronix.de>
-References: <20261123-at-vector-size-arch-v3-0-d342dae9e843@linutronix.de>
- <ec5359c1-c16e-4177-8dfa-2ae5ab8a874f@app.fastmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY2030X93z2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 21:16:00 +1100 (AEDT)
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+DKIM-Signature: a=rsa-sha256; bh=JunA8M01hnMz3RMuM3CcwD3rgeX5dq0GUnfQcSCgCqU=;
+ c=simple/simple; d=linux.dev;
+ h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
+ t=1795428942; v=1; x=1796033742;
+ b=Tp8Y+6DMuRHYwvurMY48qyDWbd0vw0TdktcTwlx10+Xqft7yl2FVn9qY0rDgNlLWbF0XNToB
+ GBhGZchj5OMfOz2RTBBzVPpi9wsdgt9b4V7ZM4Q6v6ZhHgYUJg4+jYEmGnUrFy87utwC32ikWLn
+ ZtgoR+mE8u5I1g4F9/UpnX4M=
+X-Envelope-To: linuxppc-dev@lists.ozlabs.org
+Received: by smtp.migadu.com with ESMTPS id 8cf77738964f3f07;
+	Mon, 23 Nov 2026 10:15:35 +0000
+X-Mizu-Trace-ID: 8cf77738964f3f07
+X-Migadu-Flow: FLOW_OUT
+Message-ID: <81b05a10-1b20-4132-8cc6-c71b88f21414@linux.dev>
+Date: Mon, 23 Nov 2026 18:15:29 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,42 +57,176 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 02/11] mm/kmsan: undo the shadow mapping when the
+ origin mapping fails
+From: Hao Ge <hao.ge@linux.dev>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
+ Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-mm@kvack.org, stable@vger.kernel.org
+References: <20261116071325.263682-1-hao.ge@linux.dev>
+ <20261116071325.263682-3-hao.ge@linux.dev>
+ <CAJuCfpHOZS6mp_no3wKmU3-S4HKspnbriUw8Mwtxf3nmw0-pfw@mail.gmail.com>
+ <CAJuCfpFv=sCeib+SDWJNW6oqbNnhT+m3YjnfKh8jNkquzuYORg@mail.gmail.com>
+ <793d63ff-c48b-431d-8a2a-4044feb45721@linux.dev>
+Content-Language: en-US
+In-Reply-To: <793d63ff-c48b-431d-8a2a-4044feb45721@linux.dev>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <ec5359c1-c16e-4177-8dfa-2ae5ab8a874f@app.fastmail.com>
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 23, 2026 at 10:44:40AM +0100, Arnd Bergmann wrote:
-> On Mon, Nov 23, 2026, at 10:37, Thomas Weißschuh wrote:
-> > There is nothing userspace can do with this value. In the kernel is
-> > always combined with AT_VECTOR_SIZE_BASE, which is not exposed to
-> > userspace and also changes from time to time.
-> >
-> > Move the symbol to kernel-internal headers.
-> >
-> > Meant to be applied through the asm-generic or execve tree.
-> > The default recipient list was huge. I trimmed it to only the
-> > architecture lists.
-> >
-> > Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+
+
+On 2026/11/23 16:12, Hao Ge wrote:
+> Hi Suren
 > 
-> Hi Thomas,
+> On 2026/11/21 05:49, Suren Baghdasaryan wrote:
+>> On Fri, Nov 20, 2026 at 9:14â€¯PM Suren Baghdasaryan <surenb@google.com> wrote:
+>>>
+>>> On Mon, Nov 16, 2026 at 7:13â€¯AM Hao Ge <hao.ge@linux.dev> wrote:
+>>>>
+>>>> kmsan_vmap_pages_range_noflush() first maps the shadow pages and then
+>>>> the origin pages. If the second mapping fails, the first one is left
+>>>> mapped, and the callers do not roll it back. The next vmap of the
+>>>> same metadata range hits the stale PTEs again and fails with a
+>>>> WARN_ON() and -EBUSY in vmap_pages_pte_range().
+>>>>
+>>>> Undo the shadow mapping on that error path, the same way
+>>>> kmsan_ioremap_page_range() cleans up after a partial failure.
+>>>> __vunmap_range_noflush() only clears the PTEs; nothing has touched
+>>>> the shadow mapping, so no TLB flush is needed.
+>>
+>> After a second thought, kmsan_ioremap_page_range() does not skip TLB
+>> flushing. __vunmap_range_noflush() comment at
+>> https://elixir.bootlin.com/linux/v7.4-rc1/source/mm/vmalloc.c#L497
+>> says:
+>>
+>> The caller is responsible for calling flush_cache_vmap() before
+>> calling this function, and flush_tlb_kernel_range after it has
+>> returned successfully ...". There are no mentions of guarantees that
+>> mapped PTEs require explicit access to be cached. Please double-check
+>> if this is safe.
 > 
-> I'm happy to take this through the asm-generic tree. I've already
-> made sure it all applies and the patches look good to me. I'd
-> wait a few more days for additional Ack or any other replies,
-> let me know once you think I should apply this version.
+> That's a subtle detail. I've looked up the relevant documentation.
+> You are right, and my "no TLB flush is needed" was wrong.
+> 
+> The Arm "Learn the architecture" AArch64 memory management guide says it
+> in "TLBs and Changing translations":
+> 
+> https://support.arm.com/documentation/101811/0106/TLBs-and-Changing-translations
+> 
+> If you change a translation table entry, or the controls that affect how entries
+> are interpreted, then you need to invalidate the affected entries in the TLB. If
+> you do not invalidate those entries, then the processor might continue to use the
+> old translation.
+> 
+> The undo changes the shadow PTEs, so the TLB has to be invalidated.
+> 
+> I also checked the Arm Architecture Reference Manual:
+> https://support.arm.com/documentation/ddi0487/md/-Part-D-The-AArch64-System-Level-Architecture/-Chapter-D8-The-AArch64-Virtual-Memory-System-Architecture/-D8-16-Translation-Lookaside-Buffers
+> rule R SQBCS:
+> 
+> If a stage of translation is enabled for a translation regime that is not out-of-context,
+> any translation table entry for that stage that does not cause a Translation fault,
+> an Address size fault, or an Access flag fault is permitted to be cached in a TLB or
+> intermediate TLB caching structure as the result of an explicit or speculative access.
+> 
+> So it may already be cached by speculative access even if there was no explicit access.
+> 
+> For the kernel side,  Documentation/core-api/cachetlb.rst
+> https://elixir.bootlin.com/linux/v7.4-rc1/source/Documentation/core-api/cachetlb.rst
+> says that The "TLB" is abstracted under Linux as something the cpu uses to cache
+> virtual-->physical address translations obtained from the software page tables.
+> Meaning that if the software page tables change, it is possible for stale translations
+> to exist in this "TLB" cache. Therefore when software page table changes occur, the kernel will
+> invoke one of the following flush methods _after_ the page table changes occur:
+> 
+> The condition there is the page table change, not whether the range was accessed.
+> 
+> Likewise, I believe flush_cache_vmap() is also required.
+> The sequence in cachetlb.rst is
+> flush_cache_range()
+> change_range_of_page_tables()
+> flush_tlb_range()
+> so the cache flush has to happen before the unmap.
+> This is exactly the contract that the __vunmap_range_noflush() comment you quoted spells out,
+> the caller is responsible for calling flush_cache_vmap() before the call and flush_tlb_kernel_range()
+> after it.
+> 
+> The code will do:
+> 
+> --- a/mm/kmsan/shadow.c
+> +++ b/mm/kmsan/shadow.c
+> @@ -258,6 +258,13 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
+>                                             o_pages, page_shift);
+>         kmsan_leave_runtime();
+>         if (mapped) {
+> +               /* Undo the shadow mapping set up above. */
+> +               flush_cache_vmap(shadow_start, shadow_end);
 
-This v3 is functionally identical to v1 and v2 which have been on the
-list of a long time. I am not sure how much more feedback will come.
-IMO it can already be applied to gain more exposure in -next.
+Sorry, this should be flush_cache_vunmap.
 
-
-Thomas
+> +               kmsan_enter_runtime();
+> +               __vunmap_range_noflush(shadow_start, shadow_end,
+> +                                      gfpflags_allow_blocking(gfp_mask));
+> +               kmsan_leave_runtime();
+> +               flush_tlb_kernel_range(shadow_start, shadow_end);
+>                 err = mapped;
+>                 goto ret;
+>         }
+>
+> Thanks a lot for catching this, I learned quite a bit about the TLB
+> along the way. 
+> 
+> Thanks
+> Best Regards
+> Hao
+>>
+>>>>
+>>>> Fixes: 47ebd0310e89 ("mm: kmsan: handle alloc failures in kmsan_vmap_pages_range_noflush()")
+>>>> Cc: stable@vger.kernel.org
+>>>> Suggested-by: Suren Baghdasaryan <surenb@google.com>
+>>>> Signed-off-by: Hao Ge <hao.ge@linux.dev>
+>>>
+>>> Reviewed-by: Suren Baghdasaryan <surenb@google.com>
+>>>
+>>>> ---
+>>>>  mm/kmsan/shadow.c | 5 +++++
+>>>>  1 file changed, 5 insertions(+)
+>>>>
+>>>> diff --git a/mm/kmsan/shadow.c b/mm/kmsan/shadow.c
+>>>> index 0c88d89bf0d6..212449db34a1 100644
+>>>> --- a/mm/kmsan/shadow.c
+>>>> +++ b/mm/kmsan/shadow.c
+>>>> @@ -258,6 +258,11 @@ int kmsan_vmap_pages_range_noflush(unsigned long start, unsigned long end,
+>>>>                                             o_pages, page_shift);
+>>>>         kmsan_leave_runtime();
+>>>>         if (mapped) {
+>>>> +               /* Undo the shadow mapping set up above. */
+>>>> +               kmsan_enter_runtime();
+>>>> +               __vunmap_range_noflush(shadow_start, shadow_end,
+>>>> +                                      gfpflags_allow_blocking(gfp_mask));
+>>>> +               kmsan_leave_runtime();
+>>>>                 err = mapped;
+>>>>                 goto ret;
+>>>>         }
+>>>> --
+>>>> 2.25.1
+>>>>
 
