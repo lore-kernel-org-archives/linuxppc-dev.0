@@ -1,51 +1,94 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6E3C3606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 07:46:32 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 23C95606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 07:49:49 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CZI8yb8L
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CE4EL6tZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXygV6GDpz2xGg;
-	Mon, 23 Nov 2026 18:46:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795419990;
-	cv=none; b=gIJwsCBcGBq4tE1EL2U2ESBajVL1rWMEuq0JFePeeBazPh7LGm+YxO5vkvsyXWASFECQ9oluKTucZJtUe31lC/epcZ9JrediB2BfQ1Iirz2i18xjPmZR22MClnMkwcREl9x8MiOm7cHiSuib49DbS23kBt88Ua3ddinZng1IxKbUyEfaSKdMnY2R4UIW3D0qKwyVguvQZCUvbfEg9SPYXb5SfWJzodcn5f4QjLfjZboS2Xws02wrGwtRVKH89HMFjl22Ni6KN/k2y38QOfvR1nY2OpsJ9YB6E8GKDza04D2hU2t50kkMc+XZ1R4aGU8MkqzEx19E4axI4TJWJpyIYQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795419990; c=relaxed/relaxed;
-	bh=G46SljVUhLkLQuSEWLMybJUgwMzH8Uht7tF4gSH3iGw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XFIHQTqgcBDcivV/kzQpwFW6KWinODy0L4tMEDx5bg11Ba0Tj6hghyvcydojmI5aJ7KEq12iAq9EvqHs1g4tUn0/btOl/e8UKfFzESbNj8BaqULN6Bo1WWtRYE+ipI2nSqtZb+TQqrSyEyFH506Tb2oBRbR0Eis/VmdSz4xBZnNlWqyTOzf12hBY3JhG5Cv+57Mxq4ySdozH11P38fB3TkxtFbxdmB8D52PqzORDI76MLr4Asf+a2n9lQol3VhZlpDLv1rieVoXdDfjZO+HYn6XBaB9vTqyA//YnUDGo5zUFxmZ+DSZVMN8rhck7jUxTA8L0s+oZBRRYPK3lYsJTwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CZI8yb8L; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXylH5zDTz2xyj;
+	Mon, 23 Nov 2026 18:49:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b132" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795420187;
+	cv=pass; b=PJ4sPwkzgTGMN7JE2GHoS5DoM+Mm1L80S9cwiuE1pr98MoU6ktsLgndZ2yvT9YMHPwnJuzQtFvi0Nhme4ty4Kaflzt8MmfE5V9CXupod6xqQBfkFeDlgJCYcQ7nV4prYVyKfOm6I/cBMJ/zEK7Nw4eSLFcO4S5TvN3WEaKXI58rn97MeXoU53OlCVrMc1Hw4+jKAYun/8tgDxHO2JvHYEbgP0rZUCzR3IWaE7Sqve6FQv44bI7naKlN4EJmVXM52ty1A5UWAjvfujAF/e8XNUVgVC5Sm+SngzQXqOyRmlcOLHnbM9dXgQAeISGduiYwO2nNszb+U+rHgwfycYqbjdQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795420187; c=relaxed/relaxed;
+	bh=8SFIGgJ3U+9xGIvUE0awoBO9S4vSUMNtx0j+SWo1DZo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ONp7AgCkZqr3UHwCpyaE50RB0hW+XVfZoxRjdoSAZyY0MQ5kKcagbZDUcdko+87W++GqsbDyOVTmz52YZ0edQ20AR8KhrETmzCSm80l4uhNgigcEO2798AjHL/rG7Q4UQ/SgFfk79rCzMgCLr2rRsNOuQ2mMrcMqYmiYTyCXXllTsYl2cxwNIQ5Sl81WL0eAlN5EvkjqjH8pgrCCwZ7fcQL35GXRLIIoDQ/i5eYlusSPPb5PtcB1UM/p2KI7fBNyF5zPf8De8xWanxYR8540frfjz6mLM8xIItQWqPy+c3FfM7PJMaQuFj85RsAr/kccuWfZF5UDFrlTVCxsidQpOA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CE4EL6tZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b132; helo=mail-yx1-xb132.google.com; envelope-from=yadavgaurav386@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=CZI8yb8L;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=CE4EL6tZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b132; helo=mail-yx1-xb132.google.com; envelope-from=yadavgaurav386@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb132.google.com (mail-yx1-xb132.google.com [IPv6:2607:f8b0:4864:20::b132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXygV0S9Gz2xGF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 18:46:29 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id C3F55408A0;
-	Mon, 23 Nov 2026 07:46:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 537931F000C6;
-	Mon, 23 Nov 2026 07:46:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795419987;
-	bh=G46SljVUhLkLQuSEWLMybJUgwMzH8Uht7tF4gSH3iGw=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=CZI8yb8LlP1wNIcTPsNhNtIafBqdis8cmGzSD8bbOyq5NryPPJRiFpSYDhm7HlezF
-	 jFdoNE0yZOfQ+4yPYh4egDAGtja+adFIXdGDVpA/Qga1cl9xlILz8f6cdcYS/zaPqO
-	 97IUnfFeiLpiEtOJ5/6vHTotgTUFauvGubf9E1wsAZUQDS6c1NSbcIfSF8mmAByKxD
-	 Wx4AhoDphVv7EEPSXqTSZW7CgYarxLnpt4CAY7FM54i5XOL+4B7hBQrdM36irPQebK
-	 UQPXOi114FJ1AdPOrlT9nKB9Lm65dzwqE0cpklFbVrgF2LDUJO1CHJUkvPWDG5C2hU
-	 MdhTtje12St7Q==
-Message-ID: <91f869ee-8a2f-4016-8b91-893d26692b0f@kernel.org>
-Date: Mon, 23 Nov 2026 08:46:22 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXylG2rxdz2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 18:49:45 +1100 (AEDT)
+Received: by mail-yx1-xb132.google.com with SMTP id 956f58d0204a3-67da69e7c31so2906275d50.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Nov 2026 23:49:45 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795420182; cv=none;
+        d=google.com; s=arc-20260327;
+        b=DSLP8oFeKw5oUlu/tLw0BWCnMLyFsami7d5Hk+IzZ/C0m/bb+OrWoNeJ0oUHig7E1m
+         JZV+1FD6O+A5f3GtoKfZi0O9lWtyDiXkKGvRV+MVWkjCEehmWc4x3mZkrkDRshyHbRGq
+         +1p0a7Vxu+gZ5n8/pPP2F4N9pdAB5n5660/LzBmULQ7KHznBOwGyayHFFht6fjxNrVeD
+         lWRhP814H/T7VtabtlCV6ZV/G8Qhv0pTHC4Eo63UW38A9R125nowhziveyA12zFVr6zW
+         lIdN2kIbn8jLU1oXp94bWQSrcxzK07IKtxGuXHJo+cNFZbPN1n/5ZvX+oqWd/rgP9s30
+         TauQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=8SFIGgJ3U+9xGIvUE0awoBO9S4vSUMNtx0j+SWo1DZo=;
+        fh=D0PO99RoSMUY6jIgk60+j+9euhDfDK2xPZJ36xxlgX4=;
+        b=rqsb6p0zuMwUh9EYSXzYfgWIIlF8V6Ph+ZVPUYlEppL5CyQIYgU5vk38w5u7R1DB34
+         XU7Ls4r5SttmyzcvwIFepge/evKZm8yfS4Lmo/JtSw/CIurfqE4rq2/UcnvDstxx5hCl
+         Ffs7E/YvlZ8gSe7FQL3o5yyu84nLja0Q5aSHB4c3yCLjjvtaI985Z4erPJm5K2ebivsl
+         jr4wiGY/W0VgVEDrpfl+FO6gpK+0uSPYylktAkMDzOx2LpeC3Un7cUcVOlyX3e4xFsNC
+         DLe6DKffl18Qfh8aAFTs6qeQUr0zGxYddGSB1fZ/cQZTsr2SN3hDMUzZimpgVpAXpGtq
+         Tung==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795420182; x=1796024982; darn=lists.ozlabs.org;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=8SFIGgJ3U+9xGIvUE0awoBO9S4vSUMNtx0j+SWo1DZo=;
+        b=CE4EL6tZMzuu3Zn0Fwa/Nvy8V1EWNFxzyzitSAvgNv6tJ0zL00M+oFHmAPqVO846A7
+         LeK4imYj1j06VpN+vR8C3ij9XnFpDFlJhFZyLqRfVm86R0jNBnmFFFSIWUNLQOkOQL+o
+         D7P7YqGqhyAhLob7j1ifW5TuW24WKMSr4Tp30F3pqOpHVl3C3NAI8zKJWsP3+NRudEDQ
+         nKdrBQLxpWb1eJp+oRV9ITGtnKOC+VoypvyU60A1S48x7fHyiQfoKgjqZN16ZbMDxyaX
+         CQ/D+NVqvcIfa8D0B9AKZMYOmZ6rrm7AHoOUEncDObK40wyZH5j+h0/TUd1u9saq8C3J
+         lIcQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795420182; x=1796024982;
+        h=content-type:cc:to:subject:message-id:date:from:in-reply-to
+         :references:mime-version:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to:content-type;
+        bh=8SFIGgJ3U+9xGIvUE0awoBO9S4vSUMNtx0j+SWo1DZo=;
+        b=PDyZt3iLtAnQe4f3rJsk6Z4wH8WRsIJrGNf+1s4JSpKg+iacVMsj7xULow6oiUZVG4
+         rorVhYHoDaP8RWIDF9Af5dt53m2RaPuPlDYC71m5p1XrGFjtrJmttloMT/fjStEGAFVM
+         3XzCNEc4ZG3S+oaNjaDgHNp9VQkbNx3aP367YJDvwLzm1NI1KVju9ldOWgGUA0vHm3P2
+         nPIONVgYmxVfAMJoYoHeGgn6CzHGkGZ/tY09TprZ/JP4hGt9JqAdKy12bkqiiqxng2Oe
+         lRAV5X7UJD4RHlW9DlOsBPHhoGxDAI6YZUpzhji+zr8GkjUCYBQ7Za2kRSs5DvBLSX4W
+         76EQ==
+X-Forwarded-Encrypted: i=1; AL+hErH1f29zrME8UrcUFBT2IywQKK0FBKYF4aKgWgzQC06D4uBwNDFgprFI1fNx41k0YqMYilYqhuhNxIztSNY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9F1mEj0Lv8nfb7FfNGSEmJjVvJGBMQifkYcr9fHzXWTCUsnkJ+
+	8RBe4brrHmJd3klrS/tdGbdQrbfUggGWKUd7rFwCaTfiWwQgvalSQtx9rMZq+egaAyHYJ4hUxKA
+	6txvVx+RgvZqcj1XFzdo4BgaaTX9wuGc=
+X-Gm-Gg: AZFdTZcrAZcc5J/PpgV8NC045TEIpzYLuoJPpC3FSbc2FvUNHB6cYoHa6CYTj3ID1DL
+	C1W7jvxgKtHLLTwLFHqwxyNf/WoZfEclcMRhbM+ddfXAmFu7yoQ7vjwNqaOY2Nz0m+1xOqr05Ge
+	dNOzUx/AronFq0lrHcRShRJ3b3T1WfAG1wYRIFLzKs/0YXfC92HLJGpyaJJHxiW2zo9V6frMszr
+	liAxa0tmzyyMMenJjTytg3j3vxNM6vom/xHWXAAMefzL9Zdh1uIGQi4kITBiecD4eo+q5gmXNND
+	/SH9HWoQ3/HnyQfJ/hW6f3iWqa8M3aV2sh0pBErKrmojsFy9q+TJ3TeBSztwrr1rTzBjBbfZPVP
+	lqXEPPnk0UiiQI0kzufeMg6WuFRtPCz7AukSk6M4OlIHjs/HZGvcTNYH4dG3xQ/FritpEcA==
+X-Received: by 2002:a05:690e:47d8:10b0:67d:8ef8:30bf with SMTP id
+ 956f58d0204a3-67df441089fmr3009842d50.36.1795420182636; Sun, 22 Nov 2026
+ 23:49:42 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,98 +102,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/4] powerpc32/bpf: fix argument passing for subprograms
-To: Lukas Stockner <lukas@lukasstockner.de>,
- Hari Bathini <hbathini@linux.ibm.com>, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: Naveen N Rao <naveen@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>
-References: <20261122194205.218543-1-lukas@lukasstockner.de>
- <20261122194205.218543-2-lukas@lukasstockner.de>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20261122194205.218543-2-lukas@lukasstockner.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+References: <20260807084050.25216-1-yadavgaurav386@gmail.com> <179532322375.92012.11986007993512084245.b4-ty@linux.ibm.com>
+In-Reply-To: <179532322375.92012.11986007993512084245.b4-ty@linux.ibm.com>
+From: Gaurav Yadav <yadavgaurav386@gmail.com>
+Date: Mon, 23 Nov 2026 13:19:30 +0530
+X-Gm-Features: Aa3M54quNxW2e3qe0v2krpY5JeAp2nV265GSJrPVh6iCQNce8pNUFbahmfbHdw0
+Message-ID: <CANo8Lds=ysQE7sZ3rD+KbYnH=Lu5KbAZ2mBc-yBDE62ZrbfL_Q@mail.gmail.com>
+Subject: Re: [PATCH] KVM: PPC: BookE: Use vcpu_err() instead of printk() in kvmppc_dump_vcpu()
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: multipart/alternative; boundary="000000000000356e2b0660ecd653"
+X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS autolearn=no
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+--000000000000356e2b0660ecd653
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Thanks a lot.
+
+On Sun, Nov 22, 2026 at 10:25=E2=80=AFAM Madhavan Srinivasan <maddy@linux.i=
+bm.com>
+wrote:
+
+> On Fri, 07 Aug 2026 14:10:50 +0530, Gaurav Yadav wrote:
+> > Replace generic printk() calls in kvmppc_dump_vcpu() with vcpu_err()
+> > and remove the corresponding TODO comment.
+> >
+> > Using vcpu_err() provides vCPU-aware logging context, making it easier
+> > to associate register dumps with specific vCPU instances in logs.
+> >
+> >
+> > [...]
+>
+> Applied to powerpc/fixes.
+>
+> [1/1] KVM: PPC: BookE: Use vcpu_err() instead of printk() in
+> kvmppc_dump_vcpu()
+>
+> https://git.kernel.org/powerpc/c/54efc2e1e9af9e3a14264db5686330e4fd477286
+>
+> cheers
+>
 
 
-Le 22/11/2026 à 20:42, Lukas Stockner a écrit :
-> [Vous ne recevez pas souvent de courriers de lukas@lukasstockner.de. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> Main programs receive a single 32-bit pointer as the first argument,
-> so the current prologue converts it to the 64-bit BPF_REG_1 by moving
-> R3 to R4 and zeroing R3.
-> 
-> However, subprograms are called like helper functions, so there the first
-> argument already is 64-bit - but the prologue still does its conversion,
-> so the argument ends up with its halves swapped and the upper one zeroed.
-> The same problem applies to the return value.
-> 
-> In particular, in the common case where the first argument is a context
-> pointer, the callee ends up with the upper (zeroed) 32 bits, which then
-> triggers a kernel panic as soon as it's used.
-> 
-> Therefore, make JIT emit the appropriate 64-bit prologue/epilogue for
-> subprograms.
-> 
-> Fixes: 51c66ad849a7 ("powerpc/bpf: Implement extended BPF on PPC32")
+--=20
+With Regards
+Gaurav Yadav
++919310150558
 
-Take care ctx->is_subprog only exists since commit 2ed2d8f6fb38 
-("powerpc64/bpf: Support tailcalls with subprogs") which means automatic 
-backport won't work.
+--000000000000356e2b0660ecd653
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-off-by: Lukas Stockner <lukas@lukasstockner.de>
-> ---
->   arch/powerpc/net/bpf_jit_comp32.c | 16 ++++++++++++----
->   1 file changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-> index f5b9441cf46a..261ac0646b96 100644
-> --- a/arch/powerpc/net/bpf_jit_comp32.c
-> +++ b/arch/powerpc/net/bpf_jit_comp32.c
-> @@ -179,9 +179,11 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
->          if (ctx->seen & SEEN_TAILCALL)
->                  EMIT(PPC_RAW_STW(_R4, _R1, bpf_jit_stack_offsetof(ctx, BPF_PPC_TC)));
-> 
-> -       /* First arg comes in as a 32 bits pointer. */
-> -       EMIT(PPC_RAW_MR(bpf_to_ppc(BPF_REG_1), _R3));
-> -       EMIT(PPC_RAW_LI(bpf_to_ppc(BPF_REG_1) - 1, 0));
-> +       /* Programs receive the first arg as a 32 bits pointer, subprograms don't. */
-> +       if (!ctx->is_subprog) {
-> +               EMIT(PPC_RAW_MR(bpf_to_ppc(BPF_REG_1), _R3));
-> +               EMIT(PPC_RAW_LI(bpf_to_ppc(BPF_REG_1) - 1, 0));
-> +       }
-> 
->          /*
->           * We need a stack frame, but we don't necessarily need to
-> @@ -231,7 +233,13 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
-> 
->   void bpf_jit_build_epilogue(u32 *image, u32 *fimage, struct codegen_context *ctx)
->   {
-> -       EMIT(PPC_RAW_MR(_R3, bpf_to_ppc(BPF_REG_0)));
-> +       /* Programs return a 32-bit value, while subprograms return 64 bit. */
-> +       if (ctx->is_subprog) {
-> +               EMIT(PPC_RAW_MR(_R3, bpf_to_ppc(BPF_REG_0) - 1));
-> +               EMIT(PPC_RAW_MR(_R4, bpf_to_ppc(BPF_REG_0)));
-> +       } else {
-> +               EMIT(PPC_RAW_MR(_R3, bpf_to_ppc(BPF_REG_0)));
-> +       }
-> 
->          bpf_jit_emit_common_epilogue(image, ctx);
-> 
-> --
-> 2.56.0
-> 
+<div dir=3D"ltr">Thanks a lot.=C2=A0</div><br><div class=3D"gmail_quote gma=
+il_quote_container"><div dir=3D"ltr" class=3D"gmail_attr">On Sun, Nov 22, 2=
+026 at 10:25=E2=80=AFAM Madhavan Srinivasan &lt;<a href=3D"mailto:maddy@lin=
+ux.ibm.com">maddy@linux.ibm.com</a>&gt; wrote:<br></div><blockquote class=
+=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rg=
+b(204,204,204);padding-left:1ex">On Fri, 07 Aug 2026 14:10:50 +0530, Gaurav=
+ Yadav wrote:<br>
+&gt; Replace generic printk() calls in kvmppc_dump_vcpu() with vcpu_err()<b=
+r>
+&gt; and remove the corresponding TODO comment.<br>
+&gt; <br>
+&gt; Using vcpu_err() provides vCPU-aware logging context, making it easier=
+<br>
+&gt; to associate register dumps with specific vCPU instances in logs.<br>
+&gt; <br>
+&gt; <br>
+&gt; [...]<br>
+<br>
+Applied to powerpc/fixes.<br>
+<br>
+[1/1] KVM: PPC: BookE: Use vcpu_err() instead of printk() in kvmppc_dump_vc=
+pu()<br>
+=C2=A0 =C2=A0 =C2=A0 <a href=3D"https://git.kernel.org/powerpc/c/54efc2e1e9=
+af9e3a14264db5686330e4fd477286" rel=3D"noreferrer" target=3D"_blank">https:=
+//git.kernel.org/powerpc/c/54efc2e1e9af9e3a14264db5686330e4fd477286</a><br>
+<br>
+cheers<br>
+</blockquote></div><div><br clear=3D"all"></div><br><span class=3D"gmail_si=
+gnature_prefix">-- </span><br><div dir=3D"ltr" class=3D"gmail_signature"><d=
+iv dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr"><font size=3D"2"=
+>With Regards</font><div><font size=3D"2">Gaurav Yadav</font></div><div><fo=
+nt size=3D"2">+919310150558</font></div></div></div></div></div></div></div=
+>
 
+--000000000000356e2b0660ecd653--
 
