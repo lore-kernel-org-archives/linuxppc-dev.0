@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 78BB4606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 01:06:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DDAE606A31D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 01:06:31 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QvcaYkKC
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EeFkUDgo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXnng10wkz2xdb;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXnng5Q3Jz30C6;
 	Mon, 23 Nov 2026 12:06:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795395975;
-	cv=none; b=losy9JLqqmwoJhlXm/uXF9ARuqGYY41pPbmPqQio82NmMsmzH6x4Z33Zfh9v0bwI9OnYcrsXkGktI4QGMQK8hT9y4OvduPqRc3eI8iUKe3PbowfqH7PW/sf9TYPOTte8VOC9ciFQbfTOfjg8sxo1W84bK+wMHnHxiSJLRGanmGfVjZAe54XLAUaCS2LQiTyjz+ye3oNSjoPwZ1L/AaKE1BDfk95EJBjDbMTv9WLPTXsXfYvtxeU4AehRFbmiX9RU+/e8Wf1qRWSq7wEfDxXPeUF4RHp/S/Aj1zZNG8eqpxkNX+RykYUbVb+KEOVoSGGgyaVWn9c9QFg+XX4mdyV/UA==
+	cv=none; b=B6AOEmpRtQi7L96lIiXpBqeMeenpVY8KKmIn4xqpCbBwMUZZJmAyrO1wUeGSRasHLQnukfOykmx+9rAJQukiPkbNRt004U7N35vQcaHOv4rrgCnjA8vgrKgaJ+PJgcWG2yTe7dz1lIdWnHSrjxBiirLnXUow48SHaNWfFtimCv9LRhYHf5FZ5945zgdBs1IwMH4UbEoZ4lQq0eVwZ99r5VWY8HNUw1gaSOyF5dZup41GiZt1S42DeWrlas+WFbOK+Z8oFzL2l0qTH66NrYmvftfMc6oG6wbupJgSBeB6/ezLXKdmHnHi9ctqzYGAPdXsKcN+GCdAnw3FX81btCNJfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1795395975; c=relaxed/relaxed;
-	bh=cJ7NUMGwLfTWrECF1miPTjZFFRtfLbQ3wKxWhov3nIo=;
+	bh=c52FecD9pTkops3xpRxdHkp10wpl7jH4KiBhrJdHiV8=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=bp+7U4WtJwBZnVw3YqKA6BRB+t0a0JfVtGspYerMlskuR37mnAK2QZCqIXkSxJYOAvG0inyLiS7+KzJlJp/r8vNplLJ/6xiCWV9D7aRqGD0pXnPcRbY0oSe54p0P0WJlXi3cK2Ptpbk8w3nX/P8ErQkFjUZQEq+0+dZ+bDI5rjOZ59oxhoO8DXc1fphO3XlpkSpHgdMfitqicnEyAyog/+Eo2U2DIPEw3ZlaKmqMQP4+HvaYO+f8bydy3BGp8AKMgwNjvDQ7CtWoKbLbtqh58Z+TjxMF3L9lbZiTLiA1qBtdd3Q7UmyOTAgBMMH37X694M7QdMv6mwVDpFLtnUfa8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QvcaYkKC; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=Semm4dOeBwvtTy3cMbWNAV0FPcYmeHu94N9GPdpQN7BXz+bqigQdyPoFdmNiVbDA3w4dxZdw20G0tL/T+qfDYsibNlbpk013tmfQLqFBKMEtlpcXaNR7sebUduWNcKT72M/HgmOdkICQqJ+r64k/RXDLYh/YxUvQA+8mmFG9OfJki72spVeIw/FVe57UbvSCZ1tu66pM1ECuxrOakAoNB0Xk7m4OD221sAyzBlyP5v/kC4A7+izP+/wwCpx4Wt11oG9/r23pPnAd/gXlNmX/Cxpe33hhqQETQbNYOWOLUBP2LtwtJ7E+9HiQmBLC/c5iDg8BcvlqoMyJD7mltK0bnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EeFkUDgo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=QvcaYkKC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EeFkUDgo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXnnd4LZwz2yDc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 12:06:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXnnf3Q7Xz2ySV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 12:06:14 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 62A0861811;
+	by sea.source.kernel.org (Postfix) with ESMTP id CB7FD44EF4;
+	Mon, 23 Nov 2026 01:06:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACCBC1F000C0;
 	Mon, 23 Nov 2026 01:06:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15D0F1F000C0;
-	Mon, 23 Nov 2026 01:06:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795395971;
-	bh=cJ7NUMGwLfTWrECF1miPTjZFFRtfLbQ3wKxWhov3nIo=;
+	s=k20260515; t=1795395972;
+	bh=c52FecD9pTkops3xpRxdHkp10wpl7jH4KiBhrJdHiV8=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=QvcaYkKC4G2oQzlD44duBsrNEz6biI0Q4oN6LFVMO2j6yeyKNj4w7yjaJjJcGPH1x
-	 qaLLQ6IdqspEnG+RYMvGOH0N6LikLfZPOsxZn8g+pGCrwDd2wxN4NLGNb44zBAQ4f5
-	 1720udNgQory108y0R7qaR1PVfCxgGi5e8n82/GJGmtjq3uLSKhIZTupRuvwtOAnqj
-	 PgJZ0bC6DhwPjEc+EArX0MV703hUkS2/WMFVvpi+78J0oiI9xi4/LQlQ2ANTCNECFq
-	 dxHu8azi6/bGiEH9Qv8SAIEAt2S1LSueEM67x1hguJPVWoNpoYiJpMtXEiWwccDFPC
-	 MYpmFrCF4sJ+Q==
-Subject: Re: [PATCH net-next 5/8] ibmveth: Refactor TX resource allocation in
- open/close paths
+	b=EeFkUDgoy5serfTBSaWlvaWB1q5o1vlkGKCIQYjY/jRtCikthOhCRk807KEGGAVUE
+	 ekxpILLtzThkigPYEEaIVgFt5D9qKXY9akVLNYV0ATryUDUe/4LrSwiM55fOH9Vsp/
+	 g87pFxGCVR7ek1XSV89hA5+1/UYz0sPR1JWeYjIIJdIqkESRRCSRMgd42WOImGzUVa
+	 k+bzmUlVnrHvCDV8W4zZ3knkAI3E43rOiSxFoP5YJM+8KDI9ULGt/iqeYN+YM0t5WJ
+	 P/wirFprIvH/ywXCXiKuLCx7niq5gFnV9UB0w89YVdIZvrpGH1Y/kG3VcIf5D67ZUZ
+	 jM43kUiY+Cjww==
+Subject:
+ Re: [PATCH net-next 6/8] ibmveth: Add RX queue register helpers for MQ
 From: netdev-bot+sashiko@kernel.org
 To: mmc@linux.ibm.com
 Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
@@ -55,11 +55,11 @@ Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org, horms@kernel.org, davemarq@linux.ibm.com,
  haren@linux.ibm.com, ricklind@linux.ibm.com, bjking1@linux.ibm.com,
  shaik.abdulla1@ibm.com
-Date: Mon, 23 Nov 2026 01:06:09 +0000
-Message-ID: <179539596966.3135.308887197140765933@kernel.org>
-In-Reply-To: <20261119000711.18093-6-mmc@linux.ibm.com>
-References: <20261119000711.18093-6-mmc@linux.ibm.com>
-X-sashiko-severity: Medium
+Date: Mon, 23 Nov 2026 01:06:11 +0000
+Message-ID: <179539597127.3135.40344499616504179@kernel.org>
+In-Reply-To: <20261119000711.18093-7-mmc@linux.ibm.com>
+References: <20261119000711.18093-7-mmc@linux.ibm.com>
+X-sashiko-severity: Low
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -82,161 +82,118 @@ X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Thank you for your contribution! Sashiko AI review found 2 potential
-issue(s) to consider.
+Thank you for your contribution! Sashiko AI review found more severe
+issue(s) in other patches of this series. This mail is only an FYI, in case
+you want to address the nit picks below when you respin.
 
-Critical: 0 · High: 0 · Medium: 1 · Low: 1
+Low priority / nit picks for your consideration:
 
-If you believe none of the issues are legitimate, please reply to each
-issue of Medium severity or higher and explain why the AI is wrong.
-If any of them are legitimate and you plan to respin, please let patchwork
-know by including "pw-bot: cr" as a separate line at the end of your reply
-(one such reply per series is enough).
-
-- [Medium] In ibmveth_open() (drivers/net/ethernet/ibm/ibmveth.c), this
-  patch moves the TX long-term-buffer DMA mapping…
-- [Low] The commit is titled and framed as a refactor ("Move TX LTB
-  allocation and free ... into ibmveth_alloc_tx_resources() and…
+- [Low] The commit message presents this patch as moving existing code
+  into helpers and changing the order of open().
 
 --
 
-ibmveth: Refactor TX resource allocation in open/close paths
+ibmveth: Add RX queue register helpers for MQ
 
-This moves TX long-term buffer allocation and free into the new helpers
-ibmveth_alloc_tx_resources() and ibmveth_free_tx_resources(). It also
-moves the TX LTB allocation in ibmveth_open() to after RX and NAPI are
-running. To cover that, it adds netif_tx_disable() at the start of open()
-and starts the queues under netif_tx_lock_bh().
-
-> open() now allocates the TX LTBs last, after RX is running. It stops
-> TX with netif_tx_disable() first: on a first open the queues are not
-> DRV_XOFF, so generic XDP_TX could transmit before the LTBs exist. It
-> starts TX under netif_tx_lock_bh() once they do. A TX allocation
-> failure unwinds RX the way close() does.
-
-[Severity: Low]
-This isn't a bug, but could the commit message say why the reorder is
-needed?
-
-The subject and first paragraph present this as a refactor into helpers.
-The patch also changes the bring-up order of ibmveth_open(). Before this
-patch, the TX LTBs were allocated right after ibmveth_alloc_rx_queues().
-That was before h_register_logical_lan() and before NAPI was enabled.
-
-Three of the changes are only needed because of the new order:
-
-  - the new netif_tx_disable() at the top of open()
-  - the netif_tx_lock_bh() around netif_tx_start_all_queues()
-  - unwinding the whole RX bring-up when the TX allocation fails
-
-The window that the netif_tx_disable() comment describes ("once NAPI is
-up and before the LTBs exist") did not exist before this patch.
-
-Would the ordering change fit better in its own patch with a stated
-reason, separate from the helper refactor?
+This moves logical LAN registration and teardown out of ibmveth_open() and
+ibmveth_close() into the new helpers ibmveth_register_rx_queues() and
+ibmveth_free_all_queues(). The H_FREE_LOGICAL_LAN busy loops now share
+ibmveth_free_logical_lan(). open() also allocates the buffer pools before
+registering the LAN.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index ab5df17940042..8f32f75f2d7fd 100644
+> index 8f32f75f2d7fd..ab8c5f6a265b4 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
 
 [ ... ]
 
-> @@ -1096,12 +1143,6 @@ static int ibmveth_open(struct net_device *netdev)
->  	if (rc)
->  		goto out_free_filter_list;
->  
-> -	rc = -ENOMEM;
-> -	for (i = 0; i < netdev->real_num_tx_queues; i++) {
-> -		if (ibmveth_allocate_tx_ltb(adapter, i))
-> -			goto out_free_tx_ltb;
-> -	}
-> -
->  	mac_address = ether_addr_to_u64(netdev->dev_addr);
->  
->  	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
+> +static long ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
+> +					 union ibmveth_buf_desc rxq_desc,
+> +					 u64 mac_address)
+> +{
+> +	long rc;
+> +	int try_again = 1;
+> +	unsigned long ua = adapter->vdev->unit_address;
+> +	unsigned long buf_dma = adapter->buffer_list_dma[0];
+> +	unsigned long filter_dma = adapter->filter_list_dma;
 
 [ ... ]
 
-> @@ -1136,26 +1177,35 @@ static int ibmveth_open(struct net_device *netdev)
->  	 */
->  	rc = ibmveth_setup_rx_interrupts(adapter);
->  	if (rc)
-> -		goto out_free_buffer_pools;
-> +		goto out_unregister_lan;
->  
->  	netdev_dbg(netdev, "initial replenish cycle\n");
->  	ibmveth_schedule_rx_queue(adapter, 0);
->  
-> +	rc = ibmveth_alloc_tx_resources(adapter);
+> +static void ibmveth_free_all_queues(struct ibmveth_adapter *adapter)
+> +{
+> +	long lpar_rc;
+> +
+> +	lpar_rc = ibmveth_free_logical_lan(adapter);
+> +	if (lpar_rc != H_SUCCESS)
+> +		netdev_err(adapter->netdev,
+> +			   "h_free_logical_lan failed: %ld\n", lpar_rc);
+> +}
+
+[ ... ]
+
+> +	rc = ibmveth_disable_irq(adapter, 0);
 > +	if (rc)
-> +		goto out_cleanup_rx_interrupts;
+> +		netdev_dbg(netdev,
+> +			   "Failed to disable IRQ for queue 0 before registration, rc=%d\n",
+> +			   rc);
 
-[Severity: Medium]
-With the new order, can open() fail on CMO partitions where the old order
-worked?
+[Severity: Low]
+This isn't a bug, but the commit message describes the patch as moving code
+into helpers and reordering open(). The patch also changes some logging that
+the message doesn't mention.
 
-With FW_FEATURE_CMO, every VIO DMA mapping draws on the device's IO
-entitlement through vio_dma_iommu_map_phys()->vio_cmo_alloc(). That call
-returns -ENOMEM when the free reserve plus the excess pool is smaller than
-the request.
+In ibmveth_close(), the old message was:
 
-By the time ibmveth_alloc_tx_resources() runs, NAPI is enabled and
-ibmveth_schedule_rx_queue(adapter, 0) has scheduled the first replenish.
-The replenish runs in NET_RX softirq, either in ksoftirqd or at the next
-IRQ exit. It can map and post every RX pool buffer before or while the TX
-LTBs are mapped:
+    "h_free_logical_lan failed with %lx, continuing\n"
 
-ibmveth_open()
-  ibmveth_setup_rx_interrupts()
-  ibmveth_schedule_rx_queue()
-    __napi_schedule()
-      ibmveth_poll()
-        ibmveth_replenish_task()
-          dma_map_single()      <- per RX buffer, uses entitlement
-  ibmveth_alloc_tx_resources()
-    ibmveth_allocate_tx_ltb()
-      dma_map_single()          <- can now return DMA_MAPPING_ERROR
+ibmveth_free_all_queues() now prints it in decimal with new wording:
 
-The two failures are handled differently. An RX mapping failure in
-ibmveth_replenish_buffer_pool() bumps replenish_add_buff_failure and
-breaks out of the loop.
+    "h_free_logical_lan failed: %ld\n"
 
-A TX LTB mapping failure makes ibmveth_alloc_tx_resources() return
--ENOMEM. open() then tears down the IRQs, the logical LAN registration and
-the RX pools, and the interface does not come up.
+Anything that greps logs for the old string will no longer match.
 
-The direct close()/open() pairs (change_mtu, pool sysfs, set_csum and
-set_tso) are affected too. There, IFF_UP stays set but the adapter is not
-open.
+The open() error path after a successful registration (a failure in
+ibmveth_setup_rx_interrupts() or ibmveth_alloc_tx_resources()) used to free
+the LAN without logging anything. It now goes through
+ibmveth_free_all_queues(), so it calls netdev_err() if H_FREE_LOGICAL_LAN
+fails.
 
-Before this patch, the TX LTBs were mapped before any RX buffer went to
-PHYP, so TX always got entitlement first.
+The new netdev_dbg() above also seems to repeat a message that
+ibmveth_toggle_irq() already prints before it returns -EIO:
 
-ibmveth_get_desired_dma() seems to make this more likely:
+    dev_err_ratelimited(&adapter->netdev->dev,
+                        "Failed to %s IRQ for queue %d, rc=0x%lx\n",
+                        action, queue_index, h_rc);
 
-drivers/net/ethernet/ibm/ibmveth.c:ibmveth_get_desired_dma() {
-    ...
-	/* add size of mapped tx buffers */
-	ret += IOMMU_PAGE_ALIGN(IBMVETH_MAX_TX_BUF_SIZE, tbl);
-    ...
-}
+The old code ignored the return value of ibmveth_disable_irq(). Is the extra
+debug message needed?
 
-This counts one 64K TX buffer, but open() maps one LTB per real TX queue.
-The default is min(num_online_cpus(), 8) queues, so up to 512K. Once RX
-has taken its share, is there any entitlement left for TX?
+Two other changes are unrelated to the move: ibmveth_register_logical_lan()
+now returns long instead of int, and the adapter fields are copied into
+local variables.
 
-The order is the same at the end of the series. In "ibmveth: Split RX
-poll into per-slot helpers for MQ", ibmveth_alloc_tx_resources() still
-comes after ibmveth_schedule_rx_queue().
+Could these changes either go in a separate patch or be mentioned in the
+commit message?
 
 > +
-> +	/* Start under the xmit lock so a sender that tests DRV_XOFF
-> +	 * there sees the LTBs this open just published.
-> +	 */
-> +	netif_tx_lock_bh(netdev);
->  	netif_tx_start_all_queues(netdev);
-> +	netif_tx_unlock_bh(netdev);
+> +	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
+
+[ ... ]
+
+> @@ -1232,14 +1295,7 @@ static int ibmveth_close(struct net_device *netdev)
+>  
+>  	ibmveth_cleanup_rx_interrupts(adapter);
+>  
+> -	do {
+> -		lpar_rc = h_free_logical_lan(adapter->vdev->unit_address);
+> -	} while (H_IS_LONG_BUSY(lpar_rc) || (lpar_rc == H_BUSY));
+> -	if (lpar_rc != H_SUCCESS) {
+> -		netdev_err(adapter->netdev,
+> -			   "h_free_logical_lan failed with %lx, continuing\n",
+> -			   lpar_rc);
+> -	}
+> +	ibmveth_free_all_queues(adapter);
 
 [ ... ]
 
