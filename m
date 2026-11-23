@@ -1,49 +1,81 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C40F606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 11:33:29 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81619606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 12:48:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WTrfVq08
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BUwZHsMM
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jY3jM3f4vz2xyj;
-	Mon, 23 Nov 2026 22:33:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::46"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795433607;
-	cv=none; b=CIap5pI36TenbPrfLhgbVDQ30Vhusd/sCRQHCHCgcxRkPaEsYzBuZNVWRbn1xOfwS+4XT2VjNDx5088j4M5/VxtB918iqIG8NxjS0krfLLdfX8HGk66Z/DTn4qEOdrfWVspPnyYX6oWaJPj/JW3cIXjbGZZEOkt7fgwO9M4BpHcP/LporVJEif/lWl3mEDamUUwsW5nTGEbWzhpQp5SlAAqARNngZA1xZAIPedFJgcK/DqWhMHR6++F4ZD8x7i23FCFw9HP6HiIscC9HmcYhsKf+XmR9gnxjVq1HoBHZatrljYxVlgJ2ppwPWq5biTkZ+raciiCceUUZYx72TGWuXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jY5Mb4lbwz2xyj;
+	Mon, 23 Nov 2026 23:48:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795438091;
+	cv=none; b=d0XaLvuUDaWRwOFd6gpzJcQO5M1pYavm4RmHcaCwFVgYQmMac3y/anCCEPAaEd/yLqHf2m29bdMV+Cr/xOkmyvylk3fPlL75L4QdDvjZhZaDO1lfQByO2+3Xwgheo4inwdNVyPvL9oNfVW8LtYZqgFDRZy/EzjJbAAOCGJRpvYNvhFBN+8WBjYKxXAM4CXkM9Ca+xZGO87NwFnbPTlPVqwX4hpjquHMFd4NnVTfGFNBdjmSnH1YN4hBeEkDDbRLLw9qHr8wlYe2v4kLWXufv4O0g+X39RvwozNGO4JboiTq/AlKFdRJpqsoZ8NMgnZEVmlmnVpIdqTYGFK5hTBiP/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795433607; c=relaxed/relaxed;
-	bh=g/yjtbcg5So+54TQQrwZaOAyU8C7v2qrotK0MDLGBlk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=L/LqoDtFTTmsclmn6C0fnNytjxUO7uKO4y3dux/cs6WEGi5PIZMIYJlA29NYfLmVPhKgn7QwhrOBy5gXwx+42jP95tO4+Zx5ti2NKuRtjSL/1Zch5l3ikXU5R+nUWOz+gVJOf4BK8JQP7qr7lBJQmbhPIJm2yidTfpZrDdD4/HPdTO55AYo6/5ifbrqsE+fa/8TQWD52X8tSTjvZtFydp/cCzeshAimAnpi/7wKUsQ14y/k4oYR6tm0f6al0TEBDEZ09Q/YO8WR557IXJ+pnhI0zl6Z6QiAjKOeenb1RHEzl137Rcxq9tXK1ZDQKW5HiFwHxNJJcoIi2zjVtFyRpvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WTrfVq08; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::46; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1795438091; c=relaxed/relaxed;
+	bh=d/Z0vUg/xEbWIM0w4egf1KXaQZ+WOY8AjsMj/fZc1b0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=al0uCs9B/Sv/VgG7T8xqbhxVIICsQPjpsq008wcFnZk7IETqT3fETqab0KF7xhXHjlt1RLQBdcfvDdliNOYN8kgXn6Rh9QozPjYr6WHWB+yJoni6XfuxXAlSXS9Wm7+bY7oa+IHi5NjYkZVFqqrt5pv8g+3QNwqg6K+EuGJ5WLtAE5D4QYF/4afsWEJdKashtzVwEO41skDav9gBPOmW/ZVUsASRCeHrHNN7Cxw5XPwRLM50Fw/WosTPHNrRmHmaOmzLKl311bfeNJFZTwqZFCZJqmypzMZJGB428HOMoxZ2eyVoCmiU4SQIzHamqfwoeehv9UZqKsCrw7ogQmpZuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BUwZHsMM; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=WTrfVq08;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BUwZHsMM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::46; helo=mta1.migadu.com; envelope-from=hao.ge@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta1.migadu.com (out-70.mta1.migadu.com [IPv6:2001:41d0:203:375::46])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY3jH2SpRz2xwP
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 22:33:16 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=EJgnsJKgFUNVuWQixFdvu+2zJ14nbsStpxGkd+Wpnts=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795433577; v=1; x=1796038377;
- b=WTrfVq08LkZEOI1ZPNilLy/If0IKJhvvY/gDlg1LlJiC047SiyuW7EevjWWerKUAaXJb20BW
- cnQQ5/ESEek/bGeynjCYTAHQulDaSQ+WXJU1qH+7/+981YeFj8iUirRy0V1hvXtHOB3ex+OHPgn
- r96lyXxIb4XkD4p51F62HMNc=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 6b58d3fb24c8c492;
-	Mon, 23 Nov 2026 11:32:57 +0000
-X-Mizu-Trace-ID: 6b58d3fb24c8c492
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <0e30c5c2-b9d0-40ea-b7f9-af9a8854bd58@linux.dev>
-Date: Mon, 23 Nov 2026 19:32:48 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY5MZ3C83z2xdb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 23:48:09 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ANCZB2X1981967;
+	Mon, 23 Nov 2026 12:47:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=d/Z0vUg/xEbWIM0w4egf1KXaQZ+WOY8AjsMj/fZc1
+	b0=; b=BUwZHsMMEs49L/zwmB12uvhbfzlOw7GR/6xdhzOYPEQphOy5blUjBKL4S
+	QWhORBl2BXfCuBoblrRcJuPsfTKVYUzC7oOh1Q8pueAoeesEaswpJ41nl6x8vELK
+	ud7Yw3HYxdgj2Rd5VQtCstCnrcA0xa9JCKnQ1eqbjaEKNSnlnbglfBe5Bifvtvy5
+	AaXbv21i6O6RaNpcCpjRtqvRv+76SpRBUkTPzGvnFF95jz3R2aTN1MPOz64ShhDK
+	zUKZdc35vVQMYFhMqMF7ikuEluXCjBsEOYGgBWT+jNiQd3vZ8N54j4qUNqsIqixz
+	pfMYg2Tv5IWB0q9duQ/bRdV3isqwQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g336nu-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 23 Nov 2026 12:47:46 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ANCJeQb1159456;
+	Mon, 23 Nov 2026 12:47:45 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j3p0vex9n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 23 Nov 2026 12:47:45 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ANClfuG51380670
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 23 Nov 2026 12:47:41 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 606CE2004E;
+	Mon, 23 Nov 2026 12:47:40 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5810D20040;
+	Mon, 23 Nov 2026 12:47:35 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.24.192])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 23 Nov 2026 12:47:35 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, peterz@infradead.org,
+        tim.c.chen@linux.intel.com
+Cc: sshegde@linux.ibm.com, christophe.leroy@csgroup.eu,
+        linux-kernel@vger.kernel.org, ritesh.list@gmail.com,
+        kprateek.nayak@amd.com, yu.c.chen@intel.com, vineethr@linux.ibm.com,
+        vincent.guittot@linaro.org, srikar@linux.ibm.com, npiggin@gmail.com,
+        mpe@ellerman.id.au
+Subject: [PATCH v3 0/4] powerpc/topology: Introduce llc_override kernel parameter
+Date: Mon, 23 Nov 2026 18:17:26 +0530
+Message-ID: <20261123124730.1466978-1-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.54.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,148 +89,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 09/11] mm/vmalloc: undo what vmap_pages_range_batched()
- mapped on failure
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: Uladzislau Rezki <urezki@gmail.com>, Dev Jain <dev.jain@arm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Alexander Potapenko <glider@google.com>, Marco Elver <elver@google.com>,
- Dmitry Vyukov <dvyukov@google.com>, Dennis Zhou <dennis@kernel.org>,
- Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@gentwo.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-mm@kvack.org
-References: <20261116071325.263682-1-hao.ge@linux.dev>
- <20261116071325.263682-10-hao.ge@linux.dev>
- <CAJuCfpF_=KV3ArFO5LtMjc4EGMr79tX_tX2K=YCG_JTvC51OfQ@mail.gmail.com>
-Content-Language: en-US
-From: Hao Ge <hao.ge@linux.dev>
-In-Reply-To: <CAJuCfpF_=KV3ArFO5LtMjc4EGMr79tX_tX2K=YCG_JTvC51OfQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=SoQFe/O0 c=1 sm=1 tr=0 ts=6b0435f3 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
+ a=uAbxVGIbfxUO_5tXvNgY:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=dBynatHyQikd6B6G4x0A:9
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDA1MCBTYWx0ZWRfXxMLLHAugSTZP
+ GlttXXSOvd4EeTpFHnTzDEENZUoj6IoNctfj0moCOjSYGVenps/mY1cwoMcB+S+sfyEDnV3HHhd
+ 3MxmgJa3LUBBD5UuUgTIpayT4VIOYI4=
+X-Proofpoint-ORIG-GUID: PwNgRZtd7mRzn3KWQasn2k6X2BBOy3rN
+X-Proofpoint-GUID: 1atbfizsNdZfmjtDsIBaCNZF_Zlc4sOH
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDA1MCBTYWx0ZWRfX1k4Bf+sTuA/d
+ Gj1dEyj5UYg8LAU9WAxMvogYipU/KQLpxfw7KqHvaUWFbHKtQBOY5faWPQPcIaJnubHZtKnhLI0
+ GHw3YhC3zsstuioEdQXujCOSSUp9DCjnk1oywwuUKB7JInOt4ZRe5ZwZ0f3Edk4Ujr8uo9JVG6/
+ n8FxbGZyWtSbu1OmVNQQw9DdXpWJg6AkDdRQ2kAx3HVNAD4C8SrUprua+e3HvgZ9dnHLj+ExfF6
+ 3Lz11LjQwcrRfKho0mBHjFz9TdB2ApYXH2haywV8xvQjwYmx6NS6M8JXsBFFF8ZeVZVzpD4mvqe
+ o8brmjLZAEZMc2kaL5Zif8DVLmPYm8HYPJyrhL206yqqX63xu141YqF/ldztG382n9kmKIvjF0K
+ iRyxtWCGrtugw+q0KJ/Ya7+9XEJKZ0DaywSzV2JlpSXghiu0+Tz5D1wz16P8/bolcLgvH1hr6Pu
+ 8Vxmh8D8t3zSlquWw1Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-23_02,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 spamscore=0 bulkscore=0 adultscore=0
+ lowpriorityscore=0 clxscore=1015 malwarescore=0 impostorscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230050
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Suren
+Depends on generic cacheinfo series[1] to be applied,
+[1]: https://lore.kernel.org/all/20261118163639.890546-1-sshegde@linux.ibm.com/
+That patch is under discussion and likely need some changes specially
+for DLPAR related stuff. Meanwhile, sending this updated series out.
 
+Provide an option for users to enable cache aware scheduling on powerpc
+via a command line parameter.
 
-On 2026/11/22 12:13, Suren Baghdasaryan wrote:
-> On Sun, Nov 15, 2026 at 11:14 PM Hao Ge <hao.ge@linux.dev> wrote:
->>
->> vmap_pages_range_batched() maps the range batch by batch. When a
->> batch fails, the batches before it are installed, and the failing
->> one may have installed some of its pages. mapped_end follows the
->> end of the last installed page, and the error path undoes
->> [addr, mapped_end), never past the point where the walk stopped.
->>
->> The KMSAN metadata is set up for the whole range up front, so it is
->> torn down as a whole when the mapping fails, like in
->> vmap_pages_range_noflush(). The only caller, vmap(), also calls
->> vunmap() on its error path; the double teardown only walks over PTEs
->> that are already cleared.
-> 
-> As I mentioned before I think this patch should be merged with patch 7.
+Verified that cache aware scheduling is taking effecting by observing that
+llc_balance happens and mm_sched_llc is pointing to the right llc id after
+running threads and size checks succeed.
 
-Ack.
+More details of the problem and context is in cover-letter of v1.
+v1: https://lore.kernel.org/all/20261012102037.2477378-1-sshegde@linux.ibm.com/
+v2: https://lore.kernel.org/all/20261023131646.2907938-1-sshegde@linux.ibm.com/
 
-> 
->>
->> Signed-off-by: Hao Ge <hao.ge@linux.dev>
->> ---
->>  mm/vmalloc.c | 22 ++++++++++++++++------
->>  1 file changed, 16 insertions(+), 6 deletions(-)
->>
->> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
->> index 28e65073624a..aa80bc273ec0 100644
->> --- a/mm/vmalloc.c
->> +++ b/mm/vmalloc.c
->> @@ -3748,13 +3748,14 @@ static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
->>         const unsigned int nr_pages = (end - addr) >> PAGE_SHIFT;
->>         unsigned int prev_shift = 0, batch_idx = 0, nr_mapped;
->>         unsigned long batch_start = addr, batch_end = addr;
->> +       unsigned long mapped_end = addr;
->>         int err;
->>
->>         err = kmsan_vmap_pages_range_noflush(addr, end, prot, pages,
->>                                              PAGE_SHIFT, GFP_KERNEL);
->>
->>         if (err)
->> -               goto out;
->> +               return err;
->>
->>         for (unsigned int i = 0; i < nr_pages; ) {
->>                 unsigned int shift = PAGE_SHIFT +
->> @@ -3764,9 +3765,10 @@ static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
->>                         prev_shift = shift;
->>
->>                 if (shift != prev_shift) {
->> -                       err = vmap_pages_range_noflush_walk(batch_start, batch_end,
->> -                                       prot, pages + batch_idx, prev_shift,
->> -                                       &nr_mapped);
->> +                       err = vmap_pages_range_noflush_walk(batch_start,
->> +                                       batch_end, prot, pages + batch_idx,
->> +                                       prev_shift, &nr_mapped);
->> +                       mapped_end = batch_start + (nr_mapped * PAGE_SIZE);
->>                         if (err)
->>                                 goto out;
->>                         prev_shift = shift;
->> @@ -3786,13 +3788,21 @@ static int vmap_pages_range_batched(unsigned long addr, unsigned long end,
->>         }
->>
->>         /* Remaining */
->> -       if (batch_start < end)
->> +       if (batch_start < end) {
->>                 err = vmap_pages_range_noflush_walk(batch_start, end, prot,
->>                                 pages + batch_idx, prev_shift, &nr_mapped);
->> +               mapped_end = batch_start + (nr_mapped * PAGE_SIZE);
->> +       }
->>
->>  out:
->> -       if (!err)
->> +       if (err) {
->> +               /* Undo the part the batches installed before they failed. */
->> +               if (mapped_end > addr)
->> +                       __vunmap_range_noflush(addr, mapped_end, true);
->> +               kmsan_vunmap_range_noflush(addr, end, true);
-> 
-> So, you are unmapping (addr, mapped_end) range but removing KMSAN
-> metadata for the entire (addr, end) range. Is that intended?
+v2->v3:
+- Move to generic cacheinfo so that get_effective_llc_bytes populates
+  the right value. Thanks to Chen Yu, Tim Chen for pointing out that
+  llc_bytes was 0.
+- Make llc_override __ro_after_init and remove READ/WRITE_ONCE
+  (Chen Yu, Tim Chen)
+- Merge patches around domain flags and arch_llc_mask (Tim Chen)
+- Ensure parameter is of nop on shared processor LPAR (New patch)
 
-Yes, that is intended. The metadata for the whole range is set up
-before the mapping starts, kmsan_vmap_pages_range_noflush() at the top
-of vmap_pages_range_batched() installs the shadow and origin pages for
-the entire [addr, end) in one go. So on failure the metadata is fully
-installed and has to go as a whole, while the page tables only reached
-mapped_end and are undone up to there.
+v1->v2:
+- Move to kernel parameters from debugfs. This helps to keep
+  llc_id consistent which doesn't change across sched domain
+  rebuilds. (Tim Chen)
+- Update arch_llc_mask to reflect the override (Tim Chen)
+- Limit only to mc, pkg (Srikar Dronamraju)
 
-I know this looks somewhat awkward. The asymmetry comes from the metadata
-having to be set up before the mapping starts, I don't see a way to avoid it.
-Maybe add a comment explaining this?
+PS: Selftests related to Cache aware Scheduling will be taken up
+subsequently, as that is more complicated.
 
-WDYT?
+Shrikanth Hegde (4):
+  powerpc/topology: Introduce llc_override kernel parameter
+  powerpc/topology: Update flags and llc_mask based on llc_override
+  Documentation/powerpc: Add details about llc_override
+  powerpc: Skip llc_override on SPLPAR
 
-Thanks
-Best Regards
-Hao
+ .../admin-guide/kernel-parameters.txt         | 15 ++++
+ arch/powerpc/include/asm/topology.h           |  8 +-
+ arch/powerpc/kernel/smp.c                     | 74 +++++++++++++++++--
+ 3 files changed, 86 insertions(+), 11 deletions(-)
 
-> 
->> +       } else {
->>                 flush_cache_vmap(addr, end);
->> +       }
->>         return err;
->>  }
->>
->> --
->> 2.25.1
->>
+-- 
+2.52.0
+
 
