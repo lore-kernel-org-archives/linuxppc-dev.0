@@ -2,59 +2,89 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 84885606A31A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 13:52:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63B67606A321
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 13:53:00 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rCXDMhbM;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Vihz+OSm
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=p4ZIBkY1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jY6mv3B1Fz3bpM;
-	Tue, 24 Nov 2026 00:51:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795441903;
-	cv=none; b=b+uzoiAHHmt3F7XcbcXYQtsBMPjh/gn5VGxt3zBTmbnGZGs4B6SHp4jYFpRpFOJeXI2L4uLtiA1BFkOTf4ZTTAa80+DbEgc03Kp5HXRm8pRh9nBjtesp9F2GXUqdR2MYmAIE2GrQoklWigNDPbktuFYND/tDyaOPckno3VIbuOjf7gCimXICuYFS9tLWFQMdGjJVeFSHQmqPy79yTRMheoVwi2h4bcctfi/EMhTXaNEa186TL7wvI/RW7eL1ruS+uz/i0Ds09IK7x+bsy6MOSLsayQmcC5POOhfZlq2BXxf/LHIbYri0UsY3LqBwdYNoSUCjvBot2PURoW3Hk5K7tw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jY6nQ3xm3z2yCP;
+	Tue, 24 Nov 2026 00:52:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795441930;
+	cv=none; b=XRvIgbpDTHKL7Rg8j02fpjmxy/aIR37c1gQlLeb/v8zHpbPQNCLNpvunKFe9DfSDO545lYAN49Q5WXT8PyAouYvqJV3tOFV40IFoFms7mk6ZfpzVlRvrxiR0mO2l7z/U9wXn69GODbvnINN/C2bPPmDPpmVySW3AeWAxlcA7kWH07WPRnWsAMo4jkzRhhsGAHzFfMWdCVGqh+pnLZqQi5C8Plkj5cQUgskFB9Q7MqwIaqRC5wzB9Uc1JL09KxMm7mcffyTHGqTlr2C4FvlOVUWETeX4WtTsEdJJAu5ayS4ADSl/RGGUBkkLXuxFv5nTHcKKBPxHKJkxaSBGbNCIj/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795441903; c=relaxed/relaxed;
-	bh=JPmhvZcQZsMI6w6eJvQYmGXP4b/7L7ItLiKaLRPpFiQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HujXOhoCQNRf0GiZ0sDrx+pWbWCzotX710eDVXM7XaL85ZevSreMkKoYGzoH9eGGar5z6k/Lb3pLGkqctzOEFFpNrnMzZkRwBmy29di9Nfk4a0aoeJ0rNZnJPVFrSxpLCuq+CpQvaduVKxkTGUJVjQnWVXgKQSmgAROp/DNKz7TDag9bxWqp8Hzvc5alzZ28BvsqsJy4yoGgv1Ae3lAboBzbCbt+As69Qp2dncL0EGWwyq5f+JENwIXIpeBDqTOyFm0nikgibMiLsQto/Upz8iqUGu0/o8gmJwLRPp/PZFTQOMOHqPX0YR781lArkl3CgZkvSUU7COyFy9HqSof5AA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rCXDMhbM; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Vihz+OSm; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1795441930; c=relaxed/relaxed;
+	bh=/IO4yScrqDKaKjG7SH6JwQjksWNKpCJcuGeohF7E2TU=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=ji5Jo373AFJgm6ZovM63c6XgDluCEjigBauHxXXDoFHPsutqy8C4dY4Yq3XvJQ0ciBfab6rObyO8Cn4ywg7FwSSnJPUMO2T+6W0sHVtO6WZPi5UyWAAZE3dU6XRcH1ITDpwj3ST256DXNOBBhHY/78POB4Jf8aFZwpSU5/2ZpkTqMizgIPytqaUWJn8wkPzgdrL//1xLFHXOiEXUS6bzpah0+ZH0QDv8EeYMh6BNVg7XqxOHaOBLJajxnpT0s3Im2oBOOoXtch55F4JLIpxxKsYnHVgfqLNaSX433ECmGLAnTB+E804fsg5kBTj65FKbS+i2LL5O1FtovfPmjhudFQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=p4ZIBkY1; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rCXDMhbM;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Vihz+OSm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=p4ZIBkY1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY6mt3SBfz2yCP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 00:51:42 +1100 (AEDT)
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1795441899;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JPmhvZcQZsMI6w6eJvQYmGXP4b/7L7ItLiKaLRPpFiQ=;
-	b=rCXDMhbMNovmfoO6qyadNrRk7f6HVHBen34hmO8c2sCJxmWlrI+kuN6Fu1RHeKKsk6EY24
-	E0SacrConMBbHsRxfbnnA1QmrkSNG5ig6+9Hj82q0+fcZzQog4JMvSX6BdBkvLPKAZY09a
-	cmajQWcX84aMnEYYUqKcjQOYaLNnWLHV9hW4r1F+KoYJyRFvRAAJZbR87Cv1533ZENWlNL
-	1IH3b3cUootBgp4GSIrRdqXPpBA39+LY1KQmZGiOE+gUNUvfwW3zvseTDo78nzug9YZv0c
-	Nf0/IEvGQ27iEzT9+d3kiH4e7e72aytWDiOonz7mndTpsY7S1mpQeK4PjYtpeQ==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1795441899;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=JPmhvZcQZsMI6w6eJvQYmGXP4b/7L7ItLiKaLRPpFiQ=;
-	b=Vihz+OSme/gaZLLhdpsDZx8NOwH494utLHXdBxi1jGqiwVH9qbyOTU05x0YmhKAKY4MP4H
-	F0xPTtLbZf0pAzDg==
-Date: Mon, 23 Nov 2026 14:51:02 +0100
-Subject: [PATCH v6 11/11] vDSO: Automatically enable VDSO_CHECK
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY6nP5Lkpz2y7p
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 00:52:09 +1100 (AEDT)
+Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-cddc597d062so1973194a12.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 05:52:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795441927; x=1796046727; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=/IO4yScrqDKaKjG7SH6JwQjksWNKpCJcuGeohF7E2TU=;
+        b=p4ZIBkY1eUbk5wFWv/MaPnrZjsqAJcnP2+dhT5NjgrFolZa6qPt6EsUnr2ND44Hq/o
+         YuAMm77DOnVfKDKQrJ1Geaoece4qoDsgw3lRfV5urwubCrwm9Rha1c+azeubnUmJ/Xns
+         I5yvqMoy5CThVjx2ocBJcNtRcp7t85C5alk/gmSB6xI09m3a7L5ZoGHqRbnXqGKTIoYV
+         mjjX+WkRmiIcS72EA3WhzbKcslvk86mtpZGU4ZeHz1J2xB9qwzCSP5EXb4aTGmPw93qo
+         vm0kz6hCyCAO/zY6/CKGgB+BTbkzxhPmfOp1LJObYjU6R9UrwNqsQlNagTIhKkdJeo2Q
+         Q6VQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795441927; x=1796046727;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=/IO4yScrqDKaKjG7SH6JwQjksWNKpCJcuGeohF7E2TU=;
+        b=MvM318RNdJPPm53osPtVotm0eI5kMkASE/+5cIKTbHxP1CR+V/xqRe4H301xF2xT+r
+         HhTYhQi6ugluTS7qbnqXJ3dfkjwX05xNAmc/pGXReVC+3QICNDjid5IR8G/osq7xcVvt
+         DFLirEhEigIGbVxH4YPEk3fJBYyvkAIiLHjilgI6ojNKQEiOxVdWIAu/3tIeC/2lbsMG
+         E37HjVuvc+sR9aIwj6bk6uTtDaHTF84BLAth7Fjv1zg1CCipBngSBTNMLj7cHHToiWPb
+         w1M5tr86yyWwavAO2cWQaN+7l8fxd3mhbSOxi7A6N4+0ttWWRdeKjIVLR7dDTdYXcemr
+         jyhQ==
+X-Gm-Message-State: APuU4Z96mmTqmv1kSwCLny1LPZ1KlbTAQ6gETUK6I0qPL5sgVUTnlXOv
+	Eum+cNvJHWKvZwAR7HtP9mJgRAzjW7lQsdK5Bc40kgQ6KnFFXBpIXlO3QZFJuQ==
+X-Gm-Gg: AZFdTZe0q/F4wytTWHouAKtKtouHxCkCgf9mFHrlJ6pzukrbKhdpziTwL1HtKLMuz9b
+	75DqQRvjtr6urjQCm7BZc1/hlSJV/K2RqfjuS2IbTTD6iXwmnzxS1b3BvhmJYVejatsVF3PkQHh
+	QY0CCq5S4PXeD8oG9lfEov1ONNU6c5ZqwRLp01Pdx2ZfzXc7CxLzH4MRL+t0Qyxt2nNR7HKCZao
+	2Ok0Pq4z/qsg8L942EbCXRzH3BSI/Kj+dcvkygv+SC+iiLnIEMRjzDJ4Axpj0jBfUETxMaP0AHQ
+	K4vV51ecFg2p0RIM5uLioog0IqbKX3e1/f68Euc037HOOzXwfMp4/vD0O3YGjKX+Io32ezgrklB
+	qJ4IR8kJUedcJaDQQaUjIt9dJ1Wvwdk/3VuAt0cKCuW8KdlFNcvrtJtIVVvsBWZuB5vz6gLkU4o
+	BVvGYSoIcBocz0k4bbrTPjQ1Gq0I0TBF6mJoJ01gXxc2kIg24XVNvwlESvwVAFoNoZ0sP5ZxoKK
+	L0c9XyCs/nFFeM8YXfO9329bA6s7AS3yNXOPHRR7T+9gZ83yoaEWz5GvcfoUqqgW4ilrdJCDiB4
+	rQTJGrl5fRZDCaAy7WB0QwJJIeNugnDTZA==
+X-Received: by 2002:a17:90b:3810:b0:3b0:9a13:c5d5 with SMTP id 98e67ed59e1d1-3b41c8fed56mr11558586a91.16.1795441927261;
+        Mon, 23 Nov 2026 05:52:07 -0800 (PST)
+Received: from pve-server.rlab ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b405ec698dsm20842512a91.14.2026.11.23.05.52.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 23 Nov 2026 05:52:06 -0800 (PST)
+From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
+	chleroy@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Subject: [PATCHv3 0/4] powerpc: Misc fixes for debug kernel splats
+Date: Mon, 23 Nov 2026 19:21:49 +0530
+Message-Id: <cover.1795441238.git.ritesh.list@gmail.com>
+X-Mailer: git-send-email 2.39.5
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,211 +98,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261123-vdso-absolute-reloc-v6-11-161e218dd217@linutronix.de>
-References: <20261123-vdso-absolute-reloc-v6-0-161e218dd217@linutronix.de>
-In-Reply-To: <20261123-vdso-absolute-reloc-v6-0-161e218dd217@linutronix.de>
-To: Paul Walmsley <paul.walmsley@sifive.com>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>, 
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
- Andy Lutomirski <luto@kernel.org>, 
- Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>, 
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, 
- Russell King <linux@armlinux.org.uk>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
- Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, Thomas Gleixner <tglx@kernel.org>, 
- Christophe Leroy <chleroy@kernel.org>, Boqun Feng <boqun@kernel.org>, 
- Nicolas Schier <nsc@kernel.org>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
- llvm@lists.linux.dev, linux-mm@kvack.org, linux-um@lists.infradead.org, 
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
- loongarch@lists.linux.dev, linux-s390@vger.kernel.org, 
- linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org, 
- linux-kbuild@vger.kernel.org, Jan Stancek <jstancek@redhat.com>, 
- Arnaldo Carvalho de Melo <acme@redhat.com>, 
- Peter Zijlstra <peterz@infradead.org>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795441872; l=4650;
- i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=tCXUwkZUh4Hl18kwgGqhcWJoeos+T/6rMQq0M5SHQdY=;
- b=gvQ6fSLlDUp8t1Kpx0/BBIhQ7AihqhesygBcKjwQL0dpVUoOyS5DoqWuOa59xHy5yVuHPzbgt
- Z/t2kJ3fm0ZAJfn4xh2H2o29XKP0jwDQOX8shG9Arg4eFHtoqbgV9U/
-X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
- pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-All architectures using the generic vDSO library should enable
-VDSO_CHECK. Now that this is the case, enable VDSO_CHECK automatically.
+Enabling debug options like PROVE_LOCKING, DEBUG_PREEMPT and
+DEBUG_ATOMIC_SLEEP on powerpc64 showed these warnings.
 
-Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
----
- arch/arm/mm/Kconfig    | 1 -
- arch/arm64/Kconfig     | 1 -
- arch/loongarch/Kconfig | 1 -
- arch/mips/Kconfig      | 1 -
- arch/powerpc/Kconfig   | 1 -
- arch/riscv/Kconfig     | 1 -
- arch/s390/Kconfig      | 1 -
- arch/sparc/Kconfig     | 1 -
- arch/x86/Kconfig       | 1 -
- lib/vdso/Kconfig       | 2 ++
- 10 files changed, 2 insertions(+), 9 deletions(-)
+Main motivation for me to look into this was - many folks internally reported
+that after generic entry/exit feature, they aren't able to use lockdep because
+of the warning splat it generates during boot, after which lockdep gets
+disabled.
 
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 7f55ed37f464..41d7b495ec45 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -943,7 +943,6 @@ config VDSO
- 	depends on AEABI && MMU && CPU_V7
- 	default y if ARM_ARCH_TIMER
- 	select GENERIC_GETTIMEOFDAY
--	select VDSO_CHECK
- 	help
- 	  Place in the process address space an ELF shared object
- 	  providing fast implementations of gettimeofday and
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index df22b4ed5e29..1075bc661833 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -258,7 +258,6 @@ config ARM64
- 	select TRACE_IRQFLAGS_NMI_SUPPORT
- 	select HAVE_SOFTIRQ_ON_OWN_STACK
- 	select USER_STACKTRACE_SUPPORT
--	select VDSO_CHECK
- 	select VDSO_GETRANDOM
- 	select VMAP_STACK
- 	help
-diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-index ad4cafeddbb8..b5ed4881d3c0 100644
---- a/arch/loongarch/Kconfig
-+++ b/arch/loongarch/Kconfig
-@@ -211,7 +211,6 @@ config LOONGARCH
- 	select TRACE_IRQFLAGS_SUPPORT
- 	select USE_PERCPU_NUMA_NODE_ID
- 	select USER_STACKTRACE_SUPPORT
--	select VDSO_CHECK
- 	select VDSO_DATASTORE
- 	select VDSO_GETRANDOM
- 	select ZONE_DMA32 if 64BIT
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 31c247c2faeb..ed17c9b1624c 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -106,7 +106,6 @@ config MIPS
- 	select TRACE_IRQFLAGS_SUPPORT
- 	select ARCH_HAS_ELFCORE_COMPAT
- 	select HAVE_ARCH_KCSAN if 64BIT
--	select VDSO_CHECK
- 
- config MIPS_FIXUP_BIGPHYS_ADDR
- 	bool
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1c4a75c3a830..c3b6cd655606 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -327,7 +327,6 @@ config PPC
- 	select SYSCTL_EXCEPTION_TRACE
- 	select THREAD_INFO_IN_TASK
- 	select TRACE_IRQFLAGS_SUPPORT
--	select VDSO_CHECK
- 	select VDSO_DATASTORE
- 	select VDSO_GETRANDOM
- 	#
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 2a0f5fbcd7e3..e7891a2a89da 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -226,7 +226,6 @@ config RISCV
- 	select THREAD_INFO_IN_TASK
- 	select TRACE_IRQFLAGS_SUPPORT
- 	select UACCESS_MEMCPY if !MMU
--	select VDSO_CHECK if MMU
- 	select VDSO_DATASTORE if MMU
- 	select VDSO_GETRANDOM if MMU && 64BIT
- 	select USER_STACKTRACE_SUPPORT
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 71a614832886..7138d923d86f 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -289,7 +289,6 @@ config S390
- 	select TRACE_IRQFLAGS_SUPPORT
- 	select TTY
- 	select USER_STACKTRACE_SUPPORT
--	select VDSO_CHECK
- 	select VDSO_GETRANDOM
- 	select VIRT_CPU_ACCOUNTING
- 	select VMAP_STACK
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 90df77235184..742ffff8c37f 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -114,7 +114,6 @@ config SPARC64
- 	select ARCH_SUPPORTS_SCHED_SMT if SMP
- 	select ARCH_SUPPORTS_SCHED_MC  if SMP
- 	select ARCH_HAS_LAZY_MMU_MODE
--	select VDSO_CHECK
- 	select GENERIC_GETTIMEOFDAY
- 
- config ARCH_PROC_KCORE_TEXT
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 09d3aa04ee82..58dce0b66179 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -302,7 +302,6 @@ config X86
- 	select HAVE_UNSTABLE_SCHED_CLOCK
- 	select HAVE_UNWIND_USER_FP		if X86_64
- 	select HAVE_USER_RETURN_NOTIFIER
--	select VDSO_CHECK
- 	select VDSO_GETRANDOM			if X86_64
- 	select HOTPLUG_PARALLEL			if SMP && X86_64
- 	select HOTPLUG_SMT			if SMP
-diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
-index 559f5534831e..741de1abe923 100644
---- a/lib/vdso/Kconfig
-+++ b/lib/vdso/Kconfig
-@@ -6,6 +6,7 @@ config VDSO_DATASTORE
- config GENERIC_GETTIMEOFDAY
- 	bool
- 	select VDSO_DATASTORE
-+	select VDSO_CHECK
- 	help
- 	  This is a generic implementation of gettimeofday vdso.
- 	  Each architecture that enables this feature has to
-@@ -21,6 +22,7 @@ config GENERIC_VDSO_OVERFLOW_PROTECT
- config VDSO_GETRANDOM
- 	bool
- 	select VDSO_DATASTORE
-+	select VDSO_CHECK
- 	help
- 	  Selected by architectures that support vDSO getrandom().
- 
+Therefore this series is an attempt to fix the warnings which are generated
+- when we enable these various debug config options.
 
--- 
-2.56.1
+v2 -> v3:
+=========
+1. Instead of calling lockdep_hardirq_exit() 5 times, consolidated that once
+   for the entire duration of __replay_soft_interrupts(). - (Christophe)
+
+v1 -> v2:
+========
+1. Patch-4 fixes a pre-exiting issue pointed out by Sashiko.
+2. Patch-2 and patch-3 from previous revision is re-arranged.
+3. Patch-2 change smp_processor_id() to raw_smp_processor_id() since preemption
+   is already off - (From Shrikanth)
+
+
+Ritesh Harjani (IBM) (4):
+  powerpc/64: Leave lockdep hardirq context around replayed interrupts
+  powerpc/watchdog: Disable preemption in arch_touch_nmi_watchdog()
+  powerpc/kvm-hv-pmu: Don't allocate gsm/gsb GFP_KERNEL allocations under spinlock
+  powerpc/kvm-hv-pmu: Free hostwide stats buffers if perf_pmu_register() fails
+
+ arch/powerpc/kernel/irq_64.c   | 19 +++++++---
+ arch/powerpc/kernel/watchdog.c |  8 +++-
+ arch/powerpc/perf/kvm-hv-pmu.c | 69 ++++++++++++++++------------------
+ 3 files changed, 53 insertions(+), 43 deletions(-)
+
+--
+2.39.5
 
 
