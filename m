@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C02E7606A331
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 01:06:13 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2CA92606A32D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 01:06:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZVPkEAb
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FqNUZAhO
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jXnnc2fgXz2xyj;
-	Mon, 23 Nov 2026 12:06:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795395972;
-	cv=none; b=jKHA4D3Vf6AmnQnHR313VUhmykfvs7xr2wV92s5WXwx55PQzgfJZ57UFdpiEdAsg47GYjZHk0harHVV9jcYcoCgCh+kBm1RJBQw34GzZCNEcT3MV/i48DTDw90ZoLPYGqPPD04D9JngjenA3XDZT/1dbBxck7HU+neAAgqJ0Nr850xb5/JXd5iDSMMwnUfH8r1CsHI79IawcreXW6Xz86NfUhHswtCDd2lqOpAetiy0NT8J/W+NgoT3VOynBOdb+eGPBrOnHLe60FyK6vSOuAUU+WX9O2zecLzJrKpD7gzlOntIQxbX/3/JJvwU58zt4TzqJV7U1z96OMRC4K9Uspg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jXnnd26MZz2yCP;
+	Mon, 23 Nov 2026 12:06:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795395973;
+	cv=none; b=P2RKYUWyjeJSjW45p8wfeUqujYbwc/GmdSNhqEdXlSCshhtdTmZ/6L/Ohrro/MLLnglSDOz6TMNyF37Ww6SHxdMU0fU2JAt4OpOb0jlaD6742UOlOMOFqhpUfbAGxf10sPg34oECF+c7PA0H78WVz2c7Rlah4nL4ebyliw/E3NnSYEjVQCVaTxZ7SigjC1K9AyqM/sTDB7KZAr9e57gW0z/dOAF0hrKvXJ2VILZJrqNmFQEnHldIuli5KpyC1OIMXl9WIYOQX+o7wYwBj29pj+ei4nzZkTGZZ09y+/Uw7vqdPuOBhQvFLCzQ1Pm02XkT1uu7mahVEsXLRW76/UZiOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795395972; c=relaxed/relaxed;
-	bh=Pc0mbPEt0qUdPQBtJKfrlvydOvmXsdAhSeL1Yff4aoM=;
+	t=1795395973; c=relaxed/relaxed;
+	bh=bek1vXvOamnajq4jzHjrKGYyiWI4N7auK9ZUrTn9TgE=;
 	h=Subject:From:To:Cc:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=hnYbd9co/vN3SDPKqiwfrAKsqDHMtF4guDerVDebnL7fDMAJ0RYrDM0L/sqBwixw5g/DFdW/aEyUo2dMRf+q5H3A8rppNvxFU4cSODYBy4Wj/OXDa0IhPzOs/60ZVST3kLVCXtBazdFA17pKFZu2nSPJwKKyHMnMVYf5qcec4xIGOXdRQKRjdmEbTVYBc7NP5u/ZYIpH9laXhEnS2bPevmN2bfGPN4k835yyzlrpB/A0EyRbL3rlnUkU8UbMGj0prTZxhqXS1AJCezjpzn8z2r2zUaLgGAPEg8/giK0/jyoYPG3S+pwQZhkEkXXpgVB8CPuw/dViI6dHufwyU1FZ5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZVPkEAb; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:MIME-Version; b=WYg/WKn+iwteDoZEAXO0kNG5beHBXzUZ64brtKCQ1qABmbT8yt9jg00691KsmjpHRe+yPnW+PnU5Skt4YFOKy3gXZg4m4ZpJAfBbrkPWybmqoIDX4KvLsK0QPEpgtbg7+htTGWv5YUAClHwLUQduydVwtqmbl/afhTFVetnfHvwPJbB7Sqh8B33g4A3ASDwXsqtiiK2AgEYCuhi91SfJyEt1QkVWS9YFd8l9AoSGTli9Cta+kuX1kt0wyUTClFQiodGLDCcnoECgrrGmmXoNbl/rjt/5hpDxXR0ZLzujgIFaA6GIdESou5B1+5yWnWfj11E2DelSM+qkTiXkgWYw2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FqNUZAhO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=BZVPkEAb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FqNUZAhO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=netdev-bot+sashiko@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXnnb1Hjjz2xBb
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jXnnc0gZCz2xdb
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 12:06:11 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2BF026147B;
+	by tor.source.kernel.org (Postfix) with ESMTP id C25046060E;
+	Mon, 23 Nov 2026 01:06:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 772791F000C0;
 	Mon, 23 Nov 2026 01:06:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A97691F000C0;
-	Mon, 23 Nov 2026 01:06:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795395967;
-	bh=Pc0mbPEt0qUdPQBtJKfrlvydOvmXsdAhSeL1Yff4aoM=;
+	s=k20260515; t=1795395969;
+	bh=bek1vXvOamnajq4jzHjrKGYyiWI4N7auK9ZUrTn9TgE=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=BZVPkEAbcTojVg8JMq9AXiu3/+6RVnbR+VC+8EeuzlUt8+/jgMB+eMo2CgQIyd0JH
-	 sw0LEDjpOO6jRRgEiAvAscgXh7sPQwhrysjSaqVnLvKaQ4nwZ5VXunKm4dKuD9UAtd
-	 W8w3mXbynmYuJy0Cfo9VrG96OIyEwBzaGfeGxS93ySTlPS6H+RDMm7Xa/Ka30FjqsZ
-	 C6MPKq1InnhNzmkctgEus+74d7H5wYnMG1NaTBl8GzNQXApzjc4q1rm2qsEAhrMVJa
-	 RxIXKdoxjKT3rJg8JuFJdMAys8nPPAamrKiX5NCsJ+I22C6LcLEaVXCqnwK5im11Y3
-	 5IKtIvtVHMAog==
-Subject: Re: [PATCH net-next 2/8] ibmveth: Refactor RX resource allocation for
- MQ RX bring-up
+	b=FqNUZAhOyVEYfW/fOkWC4/9NG+ff+FMq/0CIKv249nnampRP6S+B91CMNlZXtGwAl
+	 MOfzMMuWqDbLTeEkDWhQcJzEHXuAqxI75Q98ye6qPzBha/ZHynSVWHO/bWZqSGXgBs
+	 94ZyQZE2yjWNH/g4G45y9qBXalfylwjRr3Np/3YBXXU2Zi1jNBYxb348H59+QsO2aJ
+	 Te0wiwkJolfFE0yf5BIA0QYaelKyNgILqoviIHIn+S7yKhsfPF6NskBwLocHhrZ4/j
+	 5IwniLqXB68htMty5nPvIA7/9Cq5uYNuLGzSBClEq7HnVkOVskOTntzIwcxIVW2J5j
+	 NCwqEG7CtRGTw==
+Subject: Re: [PATCH net-next 4/8] ibmveth: Refactor RX interrupt control for
+ MQ RX queues
 From: netdev-bot+sashiko@kernel.org
 To: mmc@linux.ibm.com
 Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
@@ -55,10 +55,10 @@ Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org, horms@kernel.org, davemarq@linux.ibm.com,
  haren@linux.ibm.com, ricklind@linux.ibm.com, bjking1@linux.ibm.com,
  shaik.abdulla1@ibm.com
-Date: Mon, 23 Nov 2026 01:06:06 +0000
-Message-ID: <179539596618.3135.16248027677119364858@kernel.org>
-In-Reply-To: <20261119000711.18093-3-mmc@linux.ibm.com>
-References: <20261119000711.18093-3-mmc@linux.ibm.com>
+Date: Mon, 23 Nov 2026 01:06:08 +0000
+Message-ID: <179539596806.3135.11806601454673648074@kernel.org>
+In-Reply-To: <20261119000711.18093-5-mmc@linux.ibm.com>
+References: <20261119000711.18093-5-mmc@linux.ibm.com>
 X-sashiko-severity: Low
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -88,88 +88,182 @@ you want to address the nit picks below when you respin.
 
 Low priority / nit picks for your consideration:
 
-- [Low] The kernel-doc for ibmveth_cleanup_rx_resources() in
-  drivers/net/ethernet/ibm/ibmveth.c says "Free all RX queue resources",…
+- [Low] The kernel-doc for the new IRQ helpers promises a per-queue mask,
+  but the code always masks the whole adapter.
+- [Low] The kernel-doc of ibmveth_setup_rx_interrupts() says it "Leaves
+  the queues masked in PHYP; the caller kicks NAPI, and the first poll…
+- [Low] The comment added in ibmveth_poll() says "Mask before queueing,
+  as schedule_rx_queue() does", but no function by that name exists.
 
 --
 
-ibmveth: Refactor RX resource allocation for MQ RX bring-up
+ibmveth: Refactor RX interrupt control for MQ RX queues
 
-This moves the filter list and per-queue RX ring and buffer list
-allocation out of ibmveth_open() into helpers that loop over
-num_rx_queues and undo their own partial failures. ibmveth_close() and
-the open() error path now free through the same helpers.
+This moves ibmveth RX IRQ and NAPI setup, teardown and PHYP masking into
+helpers that take a queue index, and uses the queue's NAPI as the IRQ
+cookie. It adds queue_irq[] and moves napi_enable() after request_irq().
+In close(), the IRQ is now freed before H_FREE_LOGICAL_LAN.
 
 > diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index fc50036d5d265..559c4d2d957bb 100644
+> index 20273240d8fea..ab5df17940042 100644
 > --- a/drivers/net/ethernet/ibm/ibmveth.c
 > +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -159,6 +159,177 @@ static unsigned int ibmveth_real_max_tx_queues(void)
+> @@ -330,6 +330,150 @@ ibmveth_cleanup_rx_resources(struct ibmveth_adapter *adapter)
+>  	}
+>  }
+>  
+> +/**
+> + * ibmveth_toggle_irq - Mask or unmask one RX queue's interrupt in PHYP
+> + * @adapter: ibmveth adapter structure
+> + * @queue_index: RX queue index
+> + * @enable: true to unmask, false to mask
+> + *
+> + * Return: 0 on success, -EIO on failure
+> + */
+> +static int
+> +ibmveth_toggle_irq(struct ibmveth_adapter *adapter, int queue_index,
+> +		   bool enable)
+> +{
+> +	const char *action = enable ? "enable" : "disable";
+> +	unsigned long h_rc;
+> +
+> +	h_rc = h_vio_signal(adapter->vdev->unit_address,
+> +			    enable ? VIO_IRQ_ENABLE : VIO_IRQ_DISABLE);
+
+[Severity: Low]
+The kernel-doc says this masks "one RX queue's interrupt". The
+ibmveth_disable_irq() and ibmveth_enable_irq() wrappers and
+ibmveth_schedule_rx_queue() also describe a per-queue mask. Is that
+accurate?
+
+h_vio_signal() takes only the unit address and a mode:
+
+arch/powerpc/include/asm/vio.h:
+#define h_vio_signal(ua, mode) \
+  plpar_hcall_norets(H_VIO_SIGNAL, ua, mode)
+
+So queue_index only reaches the dev_err_ratelimited() message, and every
+call masks or unmasks the whole adapter.
+
+With num_rx_queues > 1, the per-queue loops in
+ibmveth_cleanup_rx_interrupts() would send the same adapter-wide hcall
+once per queue. The unmask in ibmveth_poll() after napi_complete_done():
+
+	rc = ibmveth_enable_irq(adapter, 0);
+
+would also re-arm the interrupt for queues whose NAPI is still scheduled.
+
+Also, only queue_irq[0] gets set (in ibmveth_open()), but
+ibmveth_setup_rx_interrupts() and ibmveth_cleanup_rx_interrupts() loop
+over num_rx_queues.
+
+IBMVETH_MAX_RX_QUEUES and IBMVETH_DEFAULT_RX_QUEUES are still 1U here and
+at the end of the series, so nothing changes at runtime today.
+
+Could the kernel-doc say the mask is adapter-wide? Or would real
+multi-queue masking need a different firmware mechanism, such as the
+per sub-CRQ H_VIOCTL control that ibmvnic uses?
+
+> +	if (h_rc) {
+> +		dev_err_ratelimited(&adapter->netdev->dev,
+> +				    "Failed to %s IRQ for queue %d, rc=0x%lx\n",
+> +				    action, queue_index, h_rc);
+> +		return -EIO;
+> +	}
+> +	return 0;
+> +}
 
 [ ... ]
 
 > +/**
-> + * ibmveth_cleanup_rx_resources - Free all RX queue resources
+> + * ibmveth_setup_rx_interrupts - Register IRQs and enable NAPI
 > + * @adapter: ibmveth adapter structure
+> + *
+> + * Leaves the queues masked in PHYP; the caller kicks NAPI, and the first
+> + * poll unmasks.
+> + *
+> + * Return: 0 on success, negative error code on failure
 > + */
-> +static void
-> +ibmveth_cleanup_rx_resources(struct ibmveth_adapter *adapter)
+> +static int
+> +ibmveth_setup_rx_interrupts(struct ibmveth_adapter *adapter)
 > +{
-> +	struct device *dev = &adapter->vdev->dev;
-> +	int i;
+> +	struct net_device *netdev = adapter->netdev;
+> +	int i, rc, num = adapter->num_rx_queues;
 > +
-> +	for (i = 0; i < adapter->num_rx_queues; i++) {
-> +		if (adapter->buffer_list_addr[i]) {
-> +			dma_unmap_single(dev, adapter->buffer_list_dma[i],
-> +					 4096, DMA_BIDIRECTIONAL);
-> +			adapter->buffer_list_dma[i] = 0;
-> +		}
-> +
-> +		if (adapter->rx_queue[i].queue_addr) {
-> +			dma_free_coherent(dev, adapter->rx_queue[i].queue_len,
-> +					  adapter->rx_queue[i].queue_addr,
-> +					  adapter->rx_queue[i].queue_dma);
-> +			adapter->rx_queue[i].queue_addr = NULL;
-> +		}
-> +
-> +		if (adapter->buffer_list_addr[i]) {
-> +			free_page((unsigned long)adapter->buffer_list_addr[i]);
-> +			adapter->buffer_list_addr[i] = NULL;
-> +		}
-> +	}
-> +}
-
-[Severity: Low]
-This isn't a bug, but is the kernel-doc for ibmveth_cleanup_rx_resources()
-accurate? It says "Free all RX queue resources". The body only frees
-buffer_list_addr[i] with its buffer_list_dma[i] mapping, plus the coherent
-ring at rx_queue[i].queue_addr.
-
-It doesn't free the per-queue buffer pools in adapter->rx_buff_pool[queue][*]
-(the free_map, dma_addr and skbuff arrays and the DMA-mapped skbs). That is
-why ibmveth_close() still frees them in a separate loop after calling this
-helper:
-
-	ibmveth_cleanup_rx_resources(adapter);
-	ibmveth_free_filter_list(adapter);
-
-	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
-		if (adapter->rx_buff_pool[0][i].active)
-			ibmveth_free_buffer_pool(adapter,
-						 &adapter->rx_buff_pool[0][i]);
-
-The ibmveth_open() error path also keeps its own out_free_buffer_pools
-label for the same reason.
-
-At the end of the series this doc line hasn't changed. There, close() and
-the open() error path call ibmveth_free_buffer_pools() separately before
-this helper. So the helper doesn't seem meant to free the pools.
-
-Could the comment be narrowed to describe the buffer lists and RX rings it
-actually frees? The name could also be changed to match its allocator,
-ibmveth_alloc_rx_queues().
+> +	for (i = 0; i < num; i++) {
+> +		rc = request_irq(adapter->queue_irq[i], ibmveth_interrupt,
+> +				 0, netdev->name, &adapter->napi[i]);
+> +		if (rc) {
 
 [ ... ]
+
+> +	}
+> +
+> +	for (i = 0; i < num; i++)
+> +		napi_enable(&adapter->napi[i]);
+
+[Severity: Low]
+Both this kernel-doc and the commit message ("napi_enable() moves to after
+request_irq(), with PHYP still masked") say the queues are left masked.
+The function itself only calls request_irq() and napi_enable(). Does it
+depend on a precondition that the caller has to provide but that is not
+documented?
+
+The only mask is the earlier one in ibmveth_open(). Its return value is
+ignored, and H_REGISTER_LOGICAL_LAN runs after it. On the kexec retry
+path, H_FREE_LOGICAL_LAN and a second register also run:
+
+ibmveth_open() {
+    ...
+	adapter->queue_irq[0] = netdev->irq;
+	ibmveth_disable_irq(adapter, 0);
+
+	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
+    ...
+}
+
+Suppose that hcall failed, or PHYP is unmasked again by the time
+request_irq() runs. An interrupt arriving before napi_enable() would go
+through:
+
+ibmveth_interrupt()
+  ibmveth_schedule_rx_queue()
+    napi_schedule_prep() fails because NAPI is still disabled
+
+and return IRQ_HANDLED without masking. The queue would stay unmasked
+until the later ibmveth_schedule_rx_queue(adapter, 0) kick in
+ibmveth_open().
+
+In the old order, napi_enable() ran before request_irq(), so the first
+interrupt masked PHYP itself. I couldn't tell from the code whether PHYP
+can reset the interrupt mode during register/free, so this may only be a
+documentation issue.
+
+Should the precondition be documented? Alternatively, could
+ibmveth_setup_rx_interrupts() do the mask itself and check the result?
+
+[ ... ]
+
+> @@ -1902,18 +2025,17 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+>  	/* We think we are done - reenable interrupts,
+>  	 * then check once more to make sure we are done.
+>  	 */
+> -	lpar_rc = h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE);
+> -	if (WARN_ON(lpar_rc != H_SUCCESS)) {
+> +	rc = ibmveth_enable_irq(adapter, 0);
+> +	if (rc) {
+>  		schedule_work(&adapter->work);
+>  		goto out;
+>  	}
+>  
+> -	/* Mask before queueing, as ibmveth_interrupt() does: a threaded
+> +	/* Mask before queueing, as schedule_rx_queue() does: a threaded
+>  	 * NAPI can start polling, and unmask, as soon as it is queued.
+>  	 */
+
+[Severity: Low]
+This isn't a bug, but the comment names schedule_rx_queue(), and there is
+no function with that name. Should it be ibmveth_schedule_rx_queue()?
 
 -- 
 Sashiko AI review · https://netdev-ai.bots.linux.dev/sashiko/#/patchset/20261119000711.18093-1-mmc%40linux.ibm.com
