@@ -2,59 +2,57 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DF01E606A69A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 13:51:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0DC1D606A31A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 13:51:47 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cmCyDGAo;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=FI7TlzcC
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dhUms7oH;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SZJ7c1JZ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jY6mb6RFjz2yQJ;
-	Tue, 24 Nov 2026 00:51:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795441887;
-	cv=none; b=jbFrZAuvlDHYZAQX0rzUBiwk5ZTTgBB3OzJiN4p/6mgGwZG3ISeSt/rZLlsdajg+b9H2knPfn/pt9Rvv7Dax360QmgB6k87WsUzWffPw+qNxd0tpur405DcH4nvKbG1rc7s/zeJFz8bHQJU1aRHHi2JfptDo/7jYKgqIaZMKwwRvVdfyZFiFbsM/GLHEn/VOdY2wT4tRTSmvor3+AFQKdQSzm25qEtySROvrobUJ4NiCOLdxqrmm0Ndw4mEQvyH/yVciFdhj1VkLsjnvzSQRhj57aLHWdLrU+efrFBjWnmY8A32IDdxvPxinaaxNdBVo4BKrimSTQnHpw1IJHSanxA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jY6md32Gwz30C6;
+	Tue, 24 Nov 2026 00:51:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795441889;
+	cv=none; b=g3XxX536wO4GkZuRdkG3UAzjpgriq3a+lTm5w9q5Q4y59f15mZEWeyOoFkU3osz14xcW4Oaae0Nxg2hUyWSJB35rk54YKkk7eXPmwNt/ISy52C6aLHP/v7i4ihb6a3l+H4g4u64hVRBxfZoQZH335EhsfUvbKRgMO2VONMMy00qW9Kip1C+qyqJ3Vfkd5Admm+oPeAcSRvxBXha7HhIpqI75XcUoNyQf+QzqunJpwuNVwxmTTGW1oj3wRN5SvEPLAdLr61VUlcNl9zwXJKbTK4rgD3CE4Fbp9mNaRSmJSd3jx/srfJR7i40xdDt1h9zqMGtMMxOJDdzGDajvhLyDXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795441887; c=relaxed/relaxed;
-	bh=ogBMPA0Qx4PjkZ9OZjmL4avau0QGga2wYFkd3qrKkjA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hHuJxiKTSBBr5wZR6GE8azgP0MA+D7TrHgoREY0yRB8uM+xpHAhFZ6H3ui5MNRAoiCUipAl14c6lX/66z4QhVxG00vwesYDl7TqQwcGEXG5ahaCV4AgdrZXY6QA6t5bkjwoYe+XnUYKMmgw/9UTHauAX2Mdsyil0hqJ2EDRx2htNReD79BeFfyFQdgYK15II1KyiUqLiLfmHLSYMj0NlWJru5XnGv6JY1HgTzDhoz5AIRiDF7Nfl1+TuZfs+4LGQtABTMvKEX5HQV8iySDROz91g5Zi51BVFvWJvSGIN64R2tJAUzT7Xi8pZto53HRhH39Xvh/EumUD9r0LPWMVOhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cmCyDGAo; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=FI7TlzcC; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	t=1795441889; c=relaxed/relaxed;
+	bh=eDaWEGVSberGT3lup7BUtg92+nPcoIl/POEYu2Hk/qs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=MxXsSJqGJWO8BW30WMBERxgWeoq90kirmWZvz+cHrPLVzmSQ0frVheYJWt8k83wBRDw6NochQfZvhhJ3oRxJZfI9OZaVAzQgQS2lx4IMXOkUUWFIRgbpa9MbDKaYHDowV2IPbyfIy2Wq35uOmEcqZ5VwxuPb+ku605X99lh/N1JWozGzHPZeFyRknAlFU5OddL8cMzWuUKKCrzmz6C6MKmTO/X3Pwr5CSnVzCL++eOPCgYngcQP5456mFJrUv7vpE8igW5SGT1nJ++Fb7SRGzclunczFTg3eTeFhKGuaRIFxO59t3j6QXZP5ptMc5mQVdgePmb/0k3iCIcLn7Q3u3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dhUms7oH; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SZJ7c1JZ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cmCyDGAo;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=FI7TlzcC;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dhUms7oH;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SZJ7c1JZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY6mX5YPqz2y7r
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY6mX4jswz2xyj
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 00:51:24 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1795441880;
+	s=2020; t=1795441877;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ogBMPA0Qx4PjkZ9OZjmL4avau0QGga2wYFkd3qrKkjA=;
-	b=cmCyDGAoxa8oDitp4LrGWDkP4CDp+0lHo+E95wkqa425Lcn3w9cm+RbtYI5eSO9sXjWmat
-	QoidlgrDeM4aH5qIvXHPl1TDVl5Iw559yftSUOCPc5GcBuxFifOb+nU3JxnfLbZdhCZ/Om
-	61jBrg1gwc6UQdIBpO8pgask1Ph1G4gW3SA6b0NuVLd4pUoNaoNy0wPFXztdPp3d8hh+Zg
-	svLYWwoSJyRDtbPyOPK0O339rD3z7Iwn0JP+dqM6WEftghcvuiSaHG4v/nGkA4phRhVCqH
-	PJlYghaw7CnygCSTcXlznhUSRnaErzqNJ6mBTTdKTlafxylCV8WSXfEo+ZSzJg==
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=eDaWEGVSberGT3lup7BUtg92+nPcoIl/POEYu2Hk/qs=;
+	b=dhUms7oHgMAyTwjaFQ4RcmHZy3AcRiYZGHrtxzyko2OKJq9ppnxdmoYRgjmCHmDl72nUPK
+	L/7fYN96Dq/EWTGaIbc6mSLcy31gm1eTfI4kwupFpFPjC112yyZkM8ESt8bMlcCF8FmAER
+	KmEK8t92o7JvwtqkOPsvSFKiP0dHe4+qaQz5h0vFdUIKKWIuL0I9ZQNNlUKxBIx2c7YsVt
+	9wFwFcCd8I9ee05oaCZWhsyhqcXGDWdhcn0TprHoLVGNWll7eYv0kGf1d15Xde8wEa17I2
+	nVKIeHL9cL2tRun1gCxK7pNUw/9eoEPay1jdaqJRmlkyRrC7OYH3x68J6Bc0fg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1795441880;
+	s=2020e; t=1795441877;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=ogBMPA0Qx4PjkZ9OZjmL4avau0QGga2wYFkd3qrKkjA=;
-	b=FI7TlzcCK0viQr5GdhmEG+URex60ciyYkkkN9vhgUpMrF77XhfzOHKSYvwvEX+q3uNF/qq
-	5xO9jwTwQOfMlyDw==
-Date: Mon, 23 Nov 2026 14:50:54 +0100
-Subject: [PATCH v6 03/11] ARM: vdso: Enable the vdsocheck tool
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=eDaWEGVSberGT3lup7BUtg92+nPcoIl/POEYu2Hk/qs=;
+	b=SZJ7c1JZEJleqouSHibtjvawagbQZiztXnKad+RaVrzqS2CEbt3LfVh0aVKUf8rCz1vARk
+	veQbOsz5bF+5U/DA==
+Subject: [PATCH v6 00/11] vdso: Reject absolute relocations during build
+Date: Mon, 23 Nov 2026 14:50:51 +0100
+Message-Id: <20261123-vdso-absolute-reloc-v6-0-161e218dd217@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,9 +68,12 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261123-vdso-absolute-reloc-v6-3-161e218dd217@linutronix.de>
-References: <20261123-vdso-absolute-reloc-v6-0-161e218dd217@linutronix.de>
-In-Reply-To: <20261123-vdso-absolute-reloc-v6-0-161e218dd217@linutronix.de>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/23QzWoDIRDA8VcJnmtx/LanvkfJQd3ZRljWohtJC
+ PvuNYGQUjz+B+Y3MDdSsSSs5ONwIwVbqimvPfTbgcSTX7+Rpqk34YwrJrmlbaqZ+lDzct6QFlx
+ ypJ5zzZ2IYDSQvvlTcE6Xh/p17H1Kdcvl+jjS4D59em7oNaCMOms88/MELKjPJa3nreQ1Xd4nJ
+ Hez8T+OYGOHd0fhHKMIUQauR454ORpg7IjuSGOdmYwwVoaRI1+OBT52ZHc0eBs0KFQYR456Opo
+ 5Nv53U90R3gnjwM8Q5//Ovu+/Goaqs9oBAAA=
+X-Change-ID: 20250428-vdso-absolute-reloc-a226293c1761
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
  Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
  Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>, 
@@ -112,11 +113,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Peter Zijlstra <peterz@infradead.org>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795441872; l=2441;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795441872; l=3723;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=8GMxY0hgZLZmXIGNxEsx+zQJWvtZKAV9EO32aM3n8Sw=;
- b=LUKSJQixY6S9CU9mjQSgw2/Vb6bCSqXY+Xe0Ot0VvpO4DA94i5rRE3OxPHegS/C2s4VGPq1re
- 6wJI1xLx7sRDEH/jE+pAglfUlG/v94LNXGZGAJwkNAq7NAX4/q3rqdM
+ bh=838wXNltovAdYq5DnbIAatCSo/HDl9G1xi3tlTew/l4=;
+ b=JGW/t5g7XakafXkEmZgN47zuaZVRMd5P5Z1iLiNybaoBHrfSDWqN9ASPR8Bxcs9mW00guv58q
+ XTXxW/DfNA2DS7eGKT7s34DDNPA2BkV8xQIeN4+3mlNlEP2jFFXWeWs
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
@@ -126,75 +127,91 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The vdsocheck tool validates the object files and final .so library.
-It can detect if the compiler created relocations which are incompatible
-with the vDSO which need to be worked around.
+The compiler can emit absolute relocations in vDSO code,
+which are invalid in vDSO code.
+Detect them at compile-time.
 
-Wire it up for the architecture.
+The tool is written in Rust. However this does *not* introduce a Rust
+dependency for kernel builds with CONFIG_RUST=n. If no Rust toolchain is
+available, the new comprehensive check is skipped automatically.
+
+libc elf.h is missing some of the relocation constants,
+so hardcode the magic numbers instead.
+
+Kbuild and Rust folks: This contains custom definitions of hostprog
+bindgen and rust library commands.
+These are currently only defined inside the subsystem directory.
+Let me know if they should go into scripts/Makefile.host.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/arm/mm/Kconfig         | 1 +
- arch/arm/vdso/Makefile      | 4 ++--
- lib/vdso/check/vdsocheck.rs | 9 +++++++++
- 3 files changed, 12 insertions(+), 2 deletions(-)
+Changes in v6:
+- Drop all UAPI header changes, hardcode relocation numbers instead.
+- Add note about Rust *non*-dependency to cover letter.
+- Link to v5: https://patch.msgid.link/20260908-vdso-absolute-reloc-v5-0-3a93791af1cf@linutronix.de
 
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index 41d7b495ec45..7f55ed37f464 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -943,6 +943,7 @@ config VDSO
- 	depends on AEABI && MMU && CPU_V7
- 	default y if ARM_ARCH_TIMER
- 	select GENERIC_GETTIMEOFDAY
-+	select VDSO_CHECK
- 	help
- 	  Place in the process address space an ELF shared object
- 	  providing fast implementations of gettimeofday and
-diff --git a/arch/arm/vdso/Makefile b/arch/arm/vdso/Makefile
-index cf8cd39ab804..fd34d0ff018a 100644
---- a/arch/arm/vdso/Makefile
-+++ b/arch/arm/vdso/Makefile
-@@ -37,7 +37,7 @@ endif
- $(obj)/vdso.o : $(obj)/vdso.so
- 
- # Link rule for the .so file
--$(obj)/vdso.so.raw: $(obj)/vdso.lds $(obj-vdso) FORCE
-+$(obj)/vdso.so.raw: $(obj)/vdso.lds $(obj-vdso) $(vdsocheck) FORCE
- 	$(call if_changed,vdsold_and_vdso_check)
- 
- $(obj)/vdso.so.dbg: $(obj)/vdso.so.raw $(obj)/vdsomunge FORCE
-@@ -50,7 +50,7 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 
- # Actual build commands
- quiet_cmd_vdsold_and_vdso_check = LD      $@
--      cmd_vdsold_and_vdso_check = $(cmd_ld); $(cmd_vdso_check)
-+      cmd_vdsold_and_vdso_check = $(cmd_ld_vdso); $(cmd_vdso_check)
- 
- quiet_cmd_vdsomunge = MUNGE   $@
-       cmd_vdsomunge = $(objtree)/$(obj)/vdsomunge $< $@
-diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
-index 8cd8c7f3fec8..e28ee59a900d 100644
---- a/lib/vdso/check/vdsocheck.rs
-+++ b/lib/vdso/check/vdsocheck.rs
-@@ -48,6 +48,15 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
-             ..Default::default()
-         }
-         .into(),
-+        bindings::EM_ARM => AllowedRelocations {
-+            in_object_file: &[
-+                0,  /* R_ARM_NONE */
-+                3,  /* R_ARM_REL32 */
-+                42, /* R_ARM_PREL31 */
-+            ],
-+            ..Default::default()
-+        }
-+        .into(),
-         _ => None,
-     }
- }
+Changes in v5:
+- Rebase on v7.3-rc1
+- s/HOSTRUSTLIB/HOSTRUSTC L/
+- Pick up review tags.
+- Also handle SPARC.
+- Build 'vdsocheck' during the prepare phase.
+- Drop now unnecessary riscv LTO preparation patches.
+- Link to v4: https://lore.kernel.org/r/20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de
 
--- 
-2.56.1
+Changes in v4:
+- Replace the inline shell logic with a dedicated build-time tool
+- Link to v3: https://lore.kernel.org/r/20250611-vdso-absolute-reloc-v3-0-47897d73784b@linutronix.de
+
+Changes in v3:
+- Drop already applied bugfix for arm64
+- Disable LTO for the riscv vDSO, as it is incompatible
+- Link to v2: https://lore.kernel.org/r/20250430-vdso-absolute-reloc-v2-0-5efcc3bc4b26@linutronix.de
+
+Changes in v2:
+- Link to openend (invalid) GCC bug containing more explanations
+- Refine commit messages
+- Don't fail on commit absolute relocations in debug info
+- Link to v1: https://lore.kernel.org/r/20250429-vdso-absolute-reloc-v1-0-987a0afd10b5@linutronix.de
+
+---
+Thomas Weißschuh (11):
+      vdso: Add the vdsocheck tool
+      x86/vdso: Enable the vdsocheck tool
+      ARM: vdso: Enable the vdsocheck tool
+      arm64: vdso: Enable the vdsocheck tool
+      powerpc/vdso: Enable the vdsocheck tool
+      riscv: vdso: Enable the vdsocheck tool
+      LoongArch: vDSO: Enable the vdsocheck tool
+      s390/vdso: Enable the vdsocheck tool
+      MIPS: vdso: Enable the vdsocheck tool
+      sparc: vdso: Enable the vdsocheck tool
+      vDSO: Automatically enable VDSO_CHECK
+
+ Makefile                                    |  19 ++
+ arch/arm/vdso/Makefile                      |   4 +-
+ arch/arm64/kernel/vdso/Makefile             |   4 +-
+ arch/loongarch/vdso/Makefile                |   4 +-
+ arch/mips/vdso/Makefile                     |   8 +-
+ arch/powerpc/kernel/vdso/Makefile           |   4 +-
+ arch/riscv/kernel/vdso/Makefile             |   4 +-
+ arch/s390/kernel/vdso/Makefile              |   4 +-
+ arch/sparc/vdso/Makefile                    |   5 +-
+ arch/x86/entry/vdso/common/Makefile.include |   2 +-
+ lib/vdso/Kconfig                            |   7 +
+ lib/vdso/Makefile                           |   2 +
+ lib/vdso/Makefile.include                   |  14 +
+ lib/vdso/check/.gitignore                   |   3 +
+ lib/vdso/check/Makefile                     |  34 ++
+ lib/vdso/check/elf.rs                       | 498 ++++++++++++++++++++++++++++
+ lib/vdso/check/vdsocheck.rs                 | 299 +++++++++++++++++
+ 17 files changed, 896 insertions(+), 19 deletions(-)
+---
+base-commit: 0e2fcd5208a4bbe53419a0e4359df3a614135649
+change-id: 20250428-vdso-absolute-reloc-a226293c1761
+
+Best regards,
+--  
+Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 
 
