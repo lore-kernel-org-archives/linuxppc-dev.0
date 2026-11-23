@@ -2,88 +2,94 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 47347606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 08:48:17 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1CBD1606A31F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 23 Nov 2026 09:22:22 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AP/jkJTU
+	dkim=pass (1024-bit key, unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=eOvlVJ9j
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jY02N12dcz2yhV;
-	Mon, 23 Nov 2026 19:47:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795423676;
-	cv=none; b=AeOx5Ak0Nwqfvzl6AY59v86QR6xHkREidOn1p01ptuZHX0x4BQsIDBjeZCloHNSpDR91yBr5gQCji+1CIPfMyYqlZwsaBR0Ld6mdAUYJ7c1Y5u+HYX2tLFJrcuHUKl5K1HILXMa4JWcCbnpFBqRbbhuk6VSw5npdXYmrYIlyk+s5Xyev/TqKSVvDhjyn0MXr8X8RUnB1LzPGKK21uZqXMbZwCuPM7zA6V9JnPiWKenWhPk0TJmHJUTX6flRWlBiGWUjD/9P6wz92Q3SXw7bOcEn7SAyBiy+yB3fJ8N2mEdiMIJwjXfTqo+Om56b3A22ogyEVxiCqegZEc1CGkiYGCA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795423676; c=relaxed/relaxed;
-	bh=jtPmF+KNP7DwnoRQ+DopIkz1VDyOzRPcRfk8tIoDwYo=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=f2elDQLWDXR3mPpjH8JE7EY4tdAiFTN608v5W1LMA2Dd4aFW/4JKgP0YazgDlurp8P+FKevSylvkI5nik75QOSYVVPFvy1WH1AmUJyRhZ6DlPS0NQC6AJh4la7VXV57ZNcXaqE8ypPHKgFmlDL79gfuoF9IxDxFf7CyDcOQUm8hrBm5Sh7YaujbkBtYyuY3Y4HUnpYQbDZaxzATKZfHXPMklhHGt3X/xUHGLevLTaHADjEexLvObeYKZlhcn4AbBO85B3BlE7E3orYrE2DkNDzT9S2jr+m4KhQyC2oR34lvea5hTAXOXDB+wI/cO58/NhWjPp+d+5q/N1OMWrfdQZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AP/jkJTU; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jY0p44nwvz2y7p;
+	Mon, 23 Nov 2026 20:22:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c001::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795425740;
+	cv=pass; b=nowCyVNMghQnjf1sVGgDS7Dc2Pzgdq+OoZBt1uMVHnLwm7BUXR0ne3cWTNPWMBJ/SotAAFcx2r3HO4veAYwIEhcwwF6mG7rDWPkkjaD8hKVzdEAHRLN6xvHcKXTx5/bjW2VxPgG2rCHya86+XqzPRNmzgCVsg9NAqP1oXK04c3mEjIwts04RA+ltiGZBwE195rUP89M+iRTrfQHnLhGT9c6fYMCzpl+oVuVqrwsoaFknJPwSleM+Z3KaQExjUZ+fyNFncCDzxTSvuTvLb+PVHanrrAsXaZFgp5pwbwW/Q/m3g7kmRMQ/Er/CU4kNY5fc0moMfh8ebkU6taBhmuMqfA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795425740; c=relaxed/relaxed;
+	bh=iS3QCFguGjkTFIwErDHucjGu31A6GDtLusBktCJQBTY=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=T/cl4psPJ31rxXNAktpkhtWS4C14dSDJgVA1wk0WMUQl+u+W+dI68uq99wdzgy3pvN4K1NNRPVzYA/91C89tDfANPq9Hc6TzjIFEkJDKy5XqJM3pn7uc06TqpGHV/+G3TyWYodKafaY5T/Wucxsi9ZLHhPIzShDdJZpY8hFfJSVJuS8GM2MxM7SN/b2g5DzpHtzWYEBOUWbj1KL+UCN04CrqmbWCGQ5gSxF6/+8dMc4yxf6bdd5H7JzIQbuFV9AekAI0oE5nfwVpH1GsHmeVAxi8CZCzrdhFFUN01d4SYxG1O3L17VNclE+qqesUuL2FT2wn62aPRnsJFZjIMH62Ug==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=eOvlVJ9j; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c001::5; helo=byapr05cu005.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=AP/jkJTU;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=eOvlVJ9j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c001::5; helo=byapr05cu005.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org)
+Received: from BYAPR05CU005.outbound.protection.outlook.com (mail-westusazlp170100005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c001::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY02M2VM9z2xyj
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 19:47:55 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54q4g1364721;
-	Mon, 23 Nov 2026 08:47:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=jtPmF+KNP7DwnoRQ+
-	DopIkz1VDyOzRPcRfk8tIoDwYo=; b=AP/jkJTU6qwWdm3GDdkCBChVcblaOmqqw
-	a/kvPplyrAPd97cpYcp3bsJe9psPxBAQqCBTu6Gxo+8KfbVUD8cSi7iP5eYOVNma
-	7SSazqKVgsS6mGF3qMCvy0ZI10M1tPmQExq/RAIokZlz0Vbzo52g9hZUyaSEVfXu
-	xEKaomQpGVFYiHeCx6DrXcnPIJn2+RHy8fZkl4XOMFzvfcIb7P7pq84L68B4oKEv
-	eAK2gLbClYqeN2DtApRzdCPK1Avhz7S4jrsrCpgdPNga0mIFcXxDHw8NUZXvwLAl
-	jeDhcwp9gU8l3Rwehv8IrO5TkXYjNNGS4jfZ0N+pNvTogxYJjtRzw==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34p49v23-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 23 Nov 2026 08:47:34 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AN54ORC2817259;
-	Mon, 23 Nov 2026 08:47:33 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j3pmjx0t6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 23 Nov 2026 08:47:33 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AN8lT9M46334392
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 23 Nov 2026 08:47:29 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4D08D2004D;
-	Mon, 23 Nov 2026 08:47:29 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5ACCE2005A;
-	Mon, 23 Nov 2026 08:47:26 +0000 (GMT)
-Received: from Narayanas-MacBook-Pro.bl1-in.ibm.com (unknown [9.123.4.64])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 23 Nov 2026 08:47:26 +0000 (GMT)
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        "Oliver O'Halloran" <oohall@gmail.com>,
-        Timothy Pearson <tpearson@raptorengineering.com>,
-        Alex Williamson <alex@shazbot.org>
-Cc: sourabhjain@linux.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <chleroy@kernel.org>,
-        Ritesh Harjani <ritesh.list@gmail.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org, sbhat@linux.ibm.com,
-        harshpb@linux.ibm.com
-Subject: [PATCH v7 4/4] powerpc/powernv/eeh: Map generic EEH error types to OPAL
-Date: Mon, 23 Nov 2026 14:17:02 +0530
-Message-ID: <20261123084658.61330-8-nnmlinux@linux.ibm.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261023073642.59657-1-nnmlinux@linux.ibm.com> (raw)
-References: <20261023073642.59657-1-nnmlinux@linux.ibm.com> (raw)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jY0p25xKwz2xyj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 20:22:17 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=JxVGfe1i4xgiVtDzB1zu7o/Focb6IBkJ38jFpzCx0ytkmoYewV9M2puzfHjkUMCwss6rT75eWHKbqh3GQMn4RkOXPKEstrHQFAb8NxlS5Jkb7+WWCmGlAto2U5MQ8SGfD7VXPuRX0m7k/IYaT16D5DbsRw8tSGRx/BKWDG4spqOL3YO+gK3uApfSqEuxPV2OAzTYE+tfHIeEXVUC76tB6GneSlqRYFkQW3uUj4S/Zhu5mUSBDJ2nxjPEfABx+dXI2+bX7Rlk/MURO1CAoBSI+fKZ0oKvZzI8JlwSzWlzYoo/KI2L8j6FUirmHfMaxWdrB1MyzyE89MSlpVU80H8+wA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=iS3QCFguGjkTFIwErDHucjGu31A6GDtLusBktCJQBTY=;
+ b=lxzNwc5VVWE+FJ7GUXyokLRLpVYCUAq4y0lsa+CHfJASwATD47iB95WLpvCLqy8nz1LBZs6PX/Mqd27/d06+IW3nm4rX7bSlyaFNfz4iXQJP0r5DpKTN/wwzceYp916tG7TUJo5llKXSjVSYNZgtVYi51VaHzRfZdVz1/A4OT+gGk+R5/yomW6+Agg6Yrip5srlUL9mv/sTfxsAyBxXraJ7g/S9D5NfzqE8YAankf8uvwiiz4GDs9/+rdQd4sKLR9WHqasDgighUhZTAXt7646ZZnT/QanyTvoP6etgQBvlEwS+c7+fxwctkBPO73HLaCTzWubdC7OyYQ3CFRTrHNw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=iS3QCFguGjkTFIwErDHucjGu31A6GDtLusBktCJQBTY=;
+ b=eOvlVJ9jmGaHYLN3ubnadxsocSoD7tTgFoRtwo4g9yBFEbmgveilvkrobrounMCEKlPW1DApw23um4lteySETxyu1zuNy78nhjthGomRopbrpaAD6x0N3tgHFUFYbYuYwnfop/T7FXNY9xfY8P59yhLfCAz+HzOCdiXmCE9AUQs=
+Authentication-Results: mx.microsoft.com 1; dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
+ by DS2PR12MB9797.namprd12.prod.outlook.com (2603:10b6:8:2ba::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.639.13; Mon, 23 Nov
+ 2026 09:22:00 +0000
+Received: from PH7PR12MB5685.namprd12.prod.outlook.com
+ ([fe80::ce69:cfae:774d:a65c]) by PH7PR12MB5685.namprd12.prod.outlook.com
+ ([fe80::ce69:cfae:774d:a65c%3]) with mapi id 15.21.0639.012; Mon, 23 Nov 2026
+ 09:22:00 +0000
+Message-ID: <7e2d1eb5-ebd3-466b-b516-7b4b8bc32809@amd.com>
+Date: Mon, 23 Nov 2026 10:21:19 +0100
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 4/4] mm: check permissions and bounds for
+ vm_ops->access
+To: "David Hildenbrand (Arm)" <david@kernel.org>,
+ Lorenzo Stoakes <ljs@kernel.org>, "Liam R. Howlett" <liam@infradead.org>,
+ Vlastimil Babka <vbabka@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>,
+ Matthew Auld <matthew.auld@intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ Felix Kuehling <Felix.Kuehling@amd.com>, Chris Mason <mason@kernel.org>
+References: <20261122-access_shite-v2-0-808d8d2aa700@kernel.org>
+ <20261122-access_shite-v2-4-808d8d2aa700@kernel.org>
+Content-Language: en-US
+From: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
+In-Reply-To: <20261122-access_shite-v2-4-808d8d2aa700@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: FR0P281CA0263.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:b5::6) To PH7PR12MB5685.namprd12.prod.outlook.com
+ (2603:10b6:510:13c::22)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,114 +103,181 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTIzMDAzNCBTYWx0ZWRfX6EbCewMDKnIb
- S13DcLgnublBt4ugEd0HKCx84mGoywPoMUVNyNz46uBS1UOE4t1lG2yYDdvd/IWF40Wh7h1+Nst
- 5A0UUo1arkfnf3SoqyI+48X3Xv0D9HM=
-X-Proofpoint-GUID: hNK09LV_UAt2WejEAoo1gY31wbRsnz8p
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTIzMDAzNCBTYWx0ZWRfXxxjZfwbhCoHT
- emuGRu4UQavQOASBYOZtpj5WkuOdaJKzub0S3nkV7gUFTTqmMoisg331IBBmKmcwetcI/BMoDCF
- MsAUQhzCboH0CBrWwM3rH0GcYfydxlQR5lJDSw4vkVMSTiXxYtuznDoF0sjucOOVBA/aSfT6Apw
- Rjlk04S1tUuZuYpLgaZ8XCF0g6zMiuBcsHkWUdNP8NAkeInv9UX7d+z8jesKj/eCdk58JuPp5oa
- ondqBjjWDQ2UlwQM7nOMkXHxkmA41F/GZs+Ad/2qVJ8leCsSeeISieZggqChazy/LK9gixbH+JE
- c7mC4dRW50IQT68t53blkSLG3O8e3jROGj17WYpN7VzEZH5G+U8RDh/oGKneA+qIe8RgUbl1867
- vKMuEyJTueapKLxswCZmUJhVLb3dISmIu/D4VNFWNEijQIwZHM1m+E9XrhjdEigauw1KVQfRpWP
- p1gpmHFaDy/vJYYDk+w==
-X-Proofpoint-ORIG-GUID: FSVLxOQlCIZa9g7jUmfE5BfrMw-LsBj6
-X-Authority-Analysis: v=2.4 cv=QabzLcbv c=1 sm=1 tr=0 ts=6b03fda6 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=V8glGbnc2Ofi9Qvn3v5h:22 a=VnNF1IyMAAAA:8 a=6j_9x97VlVn643bU65YA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-23_01,2026-11-22_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 phishscore=0 lowpriorityscore=0 suspectscore=0 adultscore=0
- bulkscore=0 priorityscore=1501 clxscore=1015 malwarescore=0 impostorscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611230034
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|DS2PR12MB9797:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7a41ea29-8bbf-4b04-b252-08df49433a65
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|23010399003|7416014|376014|366016|1800799024|921020|10067099003|4143699003|11063799006|56012099006|261009223027099003|261022105027099003|261021123027099003|261021121427099003|261102123227099003|261102130727099003|261026121527099003|261026140227099003|261028144727099003|18002099003|22082099003|3023799007;
+X-Microsoft-Antispam-Message-Info:
+	4NV9gDoJP0AHf4nbvfEbHNGdjCVHbn/WGKB/yxCGmFdEhi8VKbIRlie9OcK3vtk+4ceJwGfmZlRCLjJhCZFhqqyUsgwNRJ/EOkIGDF9mC9D9F836mPEEUVCEBtq/QvE9kDuMWR7GDtwwgMvBoBASJicQtBJxVhu59uLSPwpYPLPO9t7tE3MDdzZaw37YZE6cUat/p22N7fACG5X5kjgqJLpQ+iFhDn18LFj1Hxn258PHw4zyLrVUX7JMGe14Tvg0tWNeO2xMDAvuYIp9kxq+SfW91j0EEQwvbny5Rww5xEiVeyCx+eOcTp0STF36sTr4tG1TBdDFS+VJntBX1qlE9SKwx0UNr6p1rw0HFwWlGaF1cCg8Pct26KEUMMQwwA4sicKGgx7Jj7ntHra1lAJ0gURx5fNczod7CTvJIUB3sB0tjSKt58leVpaWfdhm1Dyr9LqfQb7WM+Yyqwk+kWpDc7YV1dmXpDawa0aWuKTBG6eqh7WvYcQ7enHKukQ4Ra4/Ut+sXR91Eo3+AYm/Q6SU4iz4zB5uBeI10EvSo6a31fqQP9EctAvwUJuQ6vI/OHKZCWaV4woaa0PCiH71uit5JEDXVh76WtzlIz7bOImuUe8yqN3Jk28Y+HfXDHlCtC5KspkDPdx7AwDsxsDAjOncVZebDDF1/yp6Uyx+YMYLJ23xPzLX+zRY7nY8XfT7bYcDJCMSEvpVFk6HYxqJ3L9W8g==
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(23010399003)(7416014)(376014)(366016)(1800799024)(921020)(10067099003)(4143699003)(11063799006)(56012099006)(261009223027099003)(261022105027099003)(261021123027099003)(261021121427099003)(261102123227099003)(261102130727099003)(261026121527099003)(261026140227099003)(261028144727099003)(18002099003)(22082099003)(3023799007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?WDJzVXBPOGEydVQ4S3VEeTIrbklNZkxoZXdBQWY2c0toV250RENZSjgwVVRq?=
+ =?utf-8?B?UHhBUjNQaFQ0TmNmSjRpaUpuZFRMb24rbCtmSndYQ3hVN2pLcXhhMFhRWUlD?=
+ =?utf-8?B?UmdkbHY3KzRnK2FJVzNaY05FY0tNeHJLVVo0VjBGaGxxRHlsSVdKUXZMbG1q?=
+ =?utf-8?B?OVkzYWJ2bDFMKzRkMnJPRWt3cWQybUNVV3E1VjZnTUR6ZUkvdzBLUHZmMjJ2?=
+ =?utf-8?B?cXMxQlB3TkJhc1Flbm1XaXg1NU5FZXJuME0xUUZ2bHlMQXcySG00MlZxRm9h?=
+ =?utf-8?B?QndKSk9OUk5hMjZOU1RkeWhkbG90MlRocHIremltYnJCMXczUjlVaUlWK1hB?=
+ =?utf-8?B?Q3JSZFB6M2NybHZaZmVlcUZ6cTNPS25ScTlqK1I1ZTUvSXA4M1Rudkd2NzNo?=
+ =?utf-8?B?QkhCNmdHVXltZjZnbEc4NTdLWlpRVm9UaW1HaXZJdTFKZzFJYXNXcFJoOEhn?=
+ =?utf-8?B?dmExWkJYbThlaUF5Y3ZobzNPb1F1Ry9OUVFlNTZHallHbmNlWUdYeHcyTGQw?=
+ =?utf-8?B?V3lnNkxITUFKWkU4T3NVckcwVy9MTW5GelpJNUxLN3F0SFZjdWdQVXk1LzB0?=
+ =?utf-8?B?UTl0SWFmRHR4eW9Vb0FFM1Y0UlJVcWVsU25USkZ3c3ZVT0hrU3duOHZZd002?=
+ =?utf-8?B?TmFucmZRRnFqRE1WK3l2bTZvZTFFN2tiU1RDWmNTcU9SajZoUW9YZURxOGpo?=
+ =?utf-8?B?SENrL1gwdUdDNElwK0hPTGEvYmlvaGpvejJmQUVHdUJOeDk0S1JlR3hLVlVU?=
+ =?utf-8?B?T0krVTEwQ2FQVXcrWDhIL3l4b1c3OXg3UHJYOWRYdms3dElOTWJ0dHd3YVFN?=
+ =?utf-8?B?TVA1eVVOd0I4YzBhTlFiNC85K3hXTEZKRFhBZWt5RmRKWFBTZlhzYTZNWUph?=
+ =?utf-8?B?TUNra3loRDNxbXlEa1EvWWxHNEJUZDZSeEEwd2pnaGpFLzlHbzlDMUdJVW9o?=
+ =?utf-8?B?MGYyeFJyQUpGUUkyUVZVU1ZmRm5DQ242MWFra1ErRVV2RzJ4RjNIMzNibGV0?=
+ =?utf-8?B?VnBUN2dqRUNSQjlkODhCVnNjbTFzaW9qSDJUNGVTMVlYdlBiajJVVTBadWhS?=
+ =?utf-8?B?cVVDV1NiWWNlOUdpUkFIN2VwbVJ0VjhCa0xXK2xySmpIZGN3T21LRERoWk41?=
+ =?utf-8?B?Sy8rZXp6WHZRR29BYzZlQzdkMXpJcEYwekk4TWNxRW9ZM096TnpJNjRwY2tR?=
+ =?utf-8?B?YXlwek9rY3FoUUNzcTR4VUpHZTNQaG1ySHlyZXMyMmdhbm1xbTdLL1JFQnpp?=
+ =?utf-8?B?U0FveFI1VkEvZkRRd05jSTNGc1VOUkEyeENxT1p4Zm5pa1pGcmhzNHV6aGdI?=
+ =?utf-8?B?NXZOaks2TE9jaHJWUmdVT1hkVkVsaE1MWU9tRkpWemk2MThSNGlWTEs3QWpT?=
+ =?utf-8?B?WXRCSTZsQzRxMnV2RnZ3SC9GMUhtN1oydnBPbTk0dnZHN2VKa2dmSjhHaTJq?=
+ =?utf-8?B?NGNvQ2hFaHRyMDNDVHQ1OUxhV3NKc1RkTVc4ZC9GeFJ1dkdiMjQxK2plQ2FM?=
+ =?utf-8?B?YlJiYXY3MGFXUzdUdXBpWWRjL1lTRWNPK252RTVTYnJwMzdzTlNOb2h6V2pn?=
+ =?utf-8?B?aUJoenZ6dmdiaC8wR1dVOFcxcmxHVHdHZmtCSzM2L0NVbURVNEN6clFvcGpF?=
+ =?utf-8?B?Z1FjLzJFWWtuNlEwL1Q4a3lyODRxaEd3b0Z0Y1FmQTQxMlNmT1FXR01SbXR1?=
+ =?utf-8?B?U2t6QmE1aHBSY1RiNm0wN3lVWDlldGVuWDNQT3Zic3ZUZm8wQnlXM3FhUTZ6?=
+ =?utf-8?B?bHpMMG5PNVdCTHo4U1lzN3EwSnlPdklIaWNVeGZNWDI2RDZ1d2JmSzU5OEhj?=
+ =?utf-8?B?d0VhemYzUDAya29NWDRkdjJoYzl2Qy9VOUNza3hiSGRraVdXVjY3MElqRjU3?=
+ =?utf-8?B?QmxBY2dwd25pVmphS0J5Tmh6ajBiMGpra3dNem9qMzhkZ0U4dUp1aHRDZHVC?=
+ =?utf-8?B?aEc0WWhnZGVIMXBpL0RCSXdwOFQ5RzRyNHlISVBUUUVueFY3Z2NXME9JMzlQ?=
+ =?utf-8?B?b3BNYzA1dlg2THdvUHljVkk5OTdMNFd5SnJLTTJWR1JoVkJEdHdyRXBqd0oy?=
+ =?utf-8?B?dzc0dkVKN3lTYjUxeWYycnZSWGJVT1ZHNXRsdkNNQmNpVk1UY2JMNUxmU3N0?=
+ =?utf-8?B?R1NXTWt6TzJNMGpJLzFvQ2VEU3JDQkR4d2ZQa1VycHpBSC95MzNtZlExdnBS?=
+ =?utf-8?B?QXVkcEF0SEJkTk9QeFZvM0ZYNXVvUWZsWmlyR2l4dWk2Sk41ckplZzhLS1RZ?=
+ =?utf-8?B?T2VFU1c1MGZDdW9MQUlZNUJEb2doZWpuZlNhTkZQRTgvZ3g4REhIS2M2aUx1?=
+ =?utf-8?Q?/bkwLMr8rFb4Q9PD2s?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7a41ea29-8bbf-4b04-b252-08df49433a65
+X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Nov 2026 09:22:00.2951
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: +E6cpV/B7zWZvYKTg9JB9xcQeIMFhEQEsA5S5YoNy6hMUml3q59v9GVAJJDqDp/F
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS2PR12MB9797
+X-Spam-Status: No, score=-22.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-eeh_pe_inject_err() is called with generic EEH error types defined in
-the VFIO/EEH userspace ABI (EEH_ERR_TYPE_32, EEH_ERR_TYPE_64). The
-PowerNV backend previously compared these generic values directly against
-OPAL firmware constants (OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR and
-OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64).
+On 11/22/26 18:55, David Hildenbrand (Arm) wrote:
+> GUP rejects VM_IO and VM_PFNMAP mappings early. __access_remote_vm() then
+> falls back to vm_ops->access without checking VMA permissions and without
+> limiting the request to the VMA size.
+> 
+> Consequently, /proc/<pid>/mem can bypass protections even without
+> FOLL_FORCE, or cross into another mapping without checking its
+> permissions.
+> 
+> Check VMA permissions before calling ->access and limit each request to
+> the current VMA. Implement access permission checks similar to GUP,
+> however:
+> 
+>  (1) Reject writes to CoW mappings because the callbacks access backing
+>      memory directly and cannot handle CoW.
+>  (2) Allow forced writes to non-CoW mappings with VM_MAYWRITE.
+>  (3) Allow reads of write-only mappings, as we historically did. Most
+>      architectures cannot express write-only mappings in page tables
+>      anyway, and i915 selftests rely on it.
+> 
+> This intentionally breaks forced writes through legacy amdgpu PROT_NONE,
+> MAP_PRIVATE debugger mappings. The workaround in commit fa5239f2af98
+> ("drm/amdgpu: workaround failed COW checks for Thunk VMAs") cleared
+> VM_MAYWRITE to avoid CoW, but debugger writes still succeeded by
+> exploiting the missing access-permission checks fixed here. Reads remain
+> supported. Userspace must use MAP_SHARED instead; ROCm 5.5.0, released
+> in May 2023, already does so.
+> 
+> Similarly, forced writes to MAP_SHARED mappings of files opened read-only
+> (e.g., read-only DMA-bufs) no longer succeed, as VM_MAYWRITE is not set.
+> Writing to read-only files through ptrace was never intended to work,
+> and would usually be a security bug.
+> 
+> If this turns out to break real users that cannot easily satisfy their
+> debugging needs differently, we can figure out how to handle that.
+> 
+> Link: https://github.com/ROCm/ROCT-Thunk-Interface/commit/fea44fab6e84eda52fcf6b419b35600c18f4c022
+> Fixes: 272ddc8b3735 ("proc: don't use FOLL_FORCE for reading cmdline and environment")
+> Cc: stable@vger.kernel.org
+> Cc: Felix Kuehling <Felix.Kuehling@amd.com>
+> Cc: Christian König <christian.koenig@amd.com>
+> Cc: Simona Vetter <simona@ffwll.ch>
+> Reported-by: Chris Mason <mason@kernel.org>
+> Acked-by: Felix Kuehling <felix.kuehling@amd.com>
+> Reviewed-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> Signed-off-by: David Hildenbrand (Arm) <david@kernel.org>
 
-This is fragile: it relies on the generic EEH ABI values being
-numerically identical to OPAL-specific values, and would silently
-misbehave if they ever diverged.
+Acked-by: Christian König <christian.koenig@amd.com>
 
-The preceding patches introduce RTAS-based error injection on pSeries,
-mapping generic EEH error types to PAPR error-injection classes. Apply
-the same explicit translation in the PowerNV backend, which uses OPAL
-instead of RTAS.
-
-Add an explicit mapping in pnv_eeh_err_inject() that translates:
-EEH_ERR_TYPE_32 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR
-EEH_ERR_TYPE_64 -> OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64
-
-Return -ERANGE for unsupported error types, preserving the behavior
-of the original code. This decouples the VFIO/EEH interface from OPAL
-implementation details.
-
-No change to the existing userspace ABI or PowerNV behavior.
-
-Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 22 +++++++++++++++-----
- 1 file changed, 17 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index db3370d1673c..01dae760cecb 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1167,12 +1167,24 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
- {
- 	struct pci_controller *hose = pe->phb;
- 	struct pnv_phb *phb = hose->private_data;
-+	int opal_err_type;
- 	s64 rc;
- 
--	if (type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR &&
--	    type != OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64) {
--		pr_warn("%s: Invalid error type %d\n",
--			__func__, type);
-+	/*
-+	 * eeh_pe_inject_err() receives generic EEH error types from the
-+	 * VFIO/EEH userspace ABI.  The PowerNV backend must not rely on
-+	 * these generic values being numerically identical to OPAL firmware
-+	 * values.  Translate to OPAL-specific types before calling firmware.
-+	 */
-+	switch (type) {
-+	case EEH_ERR_TYPE_32:
-+		opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR;
-+		break;
-+	case EEH_ERR_TYPE_64:
-+		opal_err_type = OPAL_ERR_INJECT_TYPE_IOA_BUS_ERR64;
-+		break;
-+	default:
-+		pr_warn("%s: Invalid error type %d\n", __func__, type);
- 		return -ERANGE;
- 	}
- 
-@@ -1192,7 +1204,7 @@ static int pnv_eeh_err_inject(struct eeh_pe *pe, int type, int func,
- 
- 	/* Do error injection */
- 	rc = opal_pci_err_inject(phb->opal_id, pe->addr,
--				 type, func, addr, mask);
-+				 opal_err_type, func, addr, mask);
- 	if (rc != OPAL_SUCCESS) {
- 		pr_warn("%s: Failure %lld injecting error "
- 			"%d-%d to PHB#%x-PE#%x\n",
--- 
-2.54.0
+> ---
+>  mm/memory.c | 26 ++++++++++++++++++++++++--
+>  1 file changed, 24 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 5d0d58aeff3cb..d43837623a063 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -7412,6 +7412,7 @@ EXPORT_SYMBOL_GPL(generic_access_phys);
+>  static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
+>  			      void *buf, int len, unsigned int gup_flags)
+>  {
+> +	const bool force = gup_flags & FOLL_FORCE;
+>  	void *old_buf = buf;
+>  	int write = gup_flags & FOLL_WRITE;
+>  
+> @@ -7451,15 +7452,36 @@ static int __access_remote_vm(struct mm_struct *mm, unsigned long addr,
+>  			if (gup_flags & FOLL_ANON)
+>  				break;
+>  
+> +			/*
+> +			 * In contrast to GUP, we historically allowed
+> +			 * FOLL_FORCE write access to non-CoW mappings and
+> +			 * read access to write-only mappings. However, we
+> +			 * must always reject writes to CoW mappings as we
+> +			 * cannot CoW here.
+> +			 */
+> +			if (write) {
+> +				if (!vma_test(vma, VMA_MAYWRITE_BIT))
+> +					break;
+> +				if (!vma_test(vma, VMA_WRITE_BIT) && !force)
+> +					break;
+> +				if (vma_is_cow_mapping(vma))
+> +					break;
+> +			} else if (!vma_test_any(vma, VMA_READ_BIT, VMA_WRITE_BIT)) {
+> +				if (!force || !vma_test(vma, VMA_MAYREAD_BIT))
+> +					break;
+> +			}
+> +
+>  			/*
+>  			 * Check if this is a VM_IO | VM_PFNMAP VMA, which
+>  			 * we can access using slightly different code.
+>  			 */
+>  			bytes = 0;
+>  #ifdef CONFIG_HAVE_IOREMAP_PROT
+> -			if (vma->vm_ops && vma->vm_ops->access)
+> +			if (vma->vm_ops && vma->vm_ops->access) {
+> +				bytes = min_t(unsigned long, len, vma->vm_end - addr);
+>  				bytes = vma->vm_ops->access(vma, addr, buf,
+> -							    len, write);
+> +							    bytes, write);
+> +			}
+>  #endif
+>  			if (bytes <= 0)
+>  				break;
+> 
 
 
