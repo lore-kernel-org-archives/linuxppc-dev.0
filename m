@@ -1,80 +1,105 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A4077606A331
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 18:43:16 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A53DE606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 18:54:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Sh1fXG9L
+	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ns0ocBa9;
+	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=VyCHGOD7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYsBq0V7Zz2xNC;
-	Wed, 25 Nov 2026 05:43:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795545794;
-	cv=none; b=ex9p4EDMQ6te//H3s/MrK7P4g50KQW18rPwsOkjG3sYfq2jiRjuzxtywaAfbK9HggbvFELgGf7vCn/TVRh9156e8Owz8EaAVHfqqvy1Hnh6wwsI1bfL+N4u06zoc+CvjBBzh4IcZuLBcDHQyrxnZnbwSQ4KogWILIVMaTlhcM1J92duI7VD3L3obsK3bnK1aUsQMV1OF1CY0fJ7rQgUZ4aFAgCW1mjBo+TA1+CnFWLlmWUEH1IhH7GRmWLBrUa5b0E3IxVxkSt6cqaICUxnjsd5Hqd0ZxwlakD7ODW5YMgfN8Wjprw1UoZDMuCse/o2z1R6EPgVI49ZOKlewJWCemA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYsRf6gSxz2y2L;
+	Wed, 25 Nov 2026 05:54:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.139
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795546462;
+	cv=none; b=D5kHxwS16UHzRwt5MR/v8/DrhndOzaxHKKktNrTA8aALqzGnjtNJG5kZexrO0Ykyu/N5ese4ARRHkMbQWMBGvWCqwTD3oR1galvpYjwdR9yIM+OHhWZaE8+ouXBF7Pc1Mh2h621Hr7+kxJEdD9Zm+/Yv6OF9AzT3BGLpQVXFfAZCnqd7xC5Cv5rY0OXRxeHT4V+rzJB+Oess2rSVyvNs/XsS36J08rn5ejMq1EqYvrc7Y7f23uoV0sxBFzdWE4Ooc/yS1jG+EsrB78R/OdxlM+KpzGJSONB3qnMuTLh3MOM38HtQ22ASKauLU4gu5syyE5fro6ltalF0s1SaVrNp5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795545794; c=relaxed/relaxed;
-	bh=bQRQZy30Tebgu8DcmRcM6e1SmYwydzEVaBJXylkhXCY=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=gi9pYjho/kYHEakKLHlxwiIOEDdX5uu/en1VOOpetbC+SDpDX70CAuFHXsB6hLy95aMP7aiiSe0cFKK4QDZvJbHTijWZLb0DBblxJRUrZX9b/qQIMnTzzyMB/Qj9mVh6o5yG+EooOXyxjrPuLbeD0lRZqNaMpvIUrIQMopRs64hpDXFhvI+HCMXjn4qzfsHQ1RLVI1Tu/icyW+dS/RNiINU5foMhHcHxm/v+rGH7xlXKiezl6/KIxfqF+yAs8pSFdPirH3Gp32K/es6ZPLzaPyWCd5I+aDgy8bphilQlpGP4QUCD31X0Gbwfd2zjTz/ccfBoownDh64whDz2W3siXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Sh1fXG9L; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795546462; c=relaxed/relaxed;
+	bh=iJ0bZtF+M32WhmItWYj3FSa2ZiQSpvoOogcaFVHVH5I=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=DF+oln2lpfgPmWJFFlczGrtvNO5PoO7m8oyxy1TWEZvYRoruck8sdgJHfIdQT+j9F1Q6tAphvFgfCq6V+mtNBi8yj4vGd49x+vGZO6eMFIbGj0NHZ4mgPuGgHvRPxZWjNJDh071BN3HYIQsCUkkN+NkyOa8TEe6LfLIHZ0skTER5rZMXh6Xo14qiwrBs0JLwIO4uDE0qCoHoZ38nNR6LXBzFhIsdKGs9VXwGW6wuISQZ00ZSz7lFezdsHsqL/FJJDu3TfM+E063UaYA8k4k5QY3aphwG0i1s4eSK3gAMH91Lfm4P0Y8K5JP91JsnXZPBfIe/iSHZeJGURRGj380jxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ns0ocBa9; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=VyCHGOD7; dkim-atps=neutral; spf=pass (client-ip=103.168.172.139; helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Sh1fXG9L;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ns0ocBa9;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=VyCHGOD7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.139; helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYsBn71XVz2xN4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 05:43:13 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOIYu333378756;
-	Tue, 24 Nov 2026 18:42:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=bQRQZy30Tebgu8DcmRcM6e1SmYwydzEVaBJXylkhX
-	CY=; b=Sh1fXG9LlVUlcAqd4zfE9MS34ZSnVc0Ju4U3XPG+4Ydev7WmT6Nxfwku6
-	NXw6UqU6/l8JAr8185xqg5gYGB5ip2Kkn2ibZGg2lIwpQZOjTc71hAl4h68pLSYn
-	6qv+rzQm523BGrbMll9+iUFE0vHAbON/6wVSqHxtcvFwPizgN0pntkfK6QbsTzIA
-	fs+Q/HHJ2orqJx3e+Lt2whmHJj6q559HQclizedZt4UQUNzeheUzcU5HIVtejB17
-	RxS8jfUp5KOcQAa4xhX3rHkQQfxede4cdImplCKhEJYLR+IXmYtQBGV1rmDShzdc
-	TS8i4PPLMxWkOHg9uLlyOw/onVjPw==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34fa970k-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 24 Nov 2026 18:42:52 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOIZZjO3855073;
-	Tue, 24 Nov 2026 18:42:51 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j5dcurm0w-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Nov 2026 18:42:51 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AOIgncX6882262
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 24 Nov 2026 18:42:49 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C2C2F5805D;
-	Tue, 24 Nov 2026 18:42:49 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 785CD58054;
-	Tue, 24 Nov 2026 18:42:47 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.67.103.228])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 24 Nov 2026 18:42:47 +0000 (GMT)
-From: Mingming Cao <mmc@linux.ibm.com>
-To: netdev@vger.kernel.org
-Cc: Mingming Cao <mmc@linux.ibm.com>, davem@davemloft.net, edumazet@kernel.org,
-        kuba@kernel.org, pabeni@redhat.com, horms@kernel.org,
-        andrew+netdev@lunn.ch, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        linuxppc-dev@lists.ozlabs.org, davemarq@linux.ibm.com,
-        bjking1@linux.ibm.com, nnc123@gmail.com
-Subject: [PATCH net] MAINTAINERS: update ibmveth maintainers
-Date: Tue, 24 Nov 2026 10:42:41 -0800
-Message-Id: <20261124184241.40470-1-mmc@linux.ibm.com>
-X-Mailer: git-send-email 2.39.3 (Apple Git-146)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYsRb5MM6z2xlw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 05:54:19 +1100 (AEDT)
+Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
+	by mailflow.phl.internal (Postfix) with ESMTP id B271D13803C7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 13:54:16 -0500 (EST)
+Received: from ams-imap-03 ([10.64.2.23])
+  by ams-compute-02.internal (MEProxy); Tue, 24 Nov 2026 13:54:16 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm2; t=1795546436;
+	 x=1795553636; bh=iJ0bZtF+M32WhmItWYj3FSa2ZiQSpvoOogcaFVHVH5I=; b=
+	Ns0ocBa9uuJQNTtG3QfiU8sUxKT2BVab79oK6XioPic07HNY7BbGUro4492vDSKa
+	taWSB3j0rahIlRO5r8ZoxMAmIeofQrkEd2O7X1OMQEOOEmHkNvuaEYSDts/UAM8w
+	fED4InNTr0trVvSv57ETj3yHni+DAOQy8IgrUckr5I1xjqbrfGUxOwoJi0smwrAp
+	nxVmvZkiOxgeZLtuxZuUgSTF8HOJ38Mrh+Szpuf5yDk9lzFD74nKhq2IZnhfVZN/
+	vyB/Gl1S/ltyMKRNSc+WiurJ6LH/MJ4UcyvYBvhtsIXVP/k06hqmaXkoDI11XeA7
+	wlXBDaQ5dfB4kxGI+OVvoA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795546436; x=
+	1795553636; bh=iJ0bZtF+M32WhmItWYj3FSa2ZiQSpvoOogcaFVHVH5I=; b=V
+	yCHGOD7HZXf+kTkcfTRyN6yTdKP309423KicUoIMqFh/OtFm+5uIv1vysvBFedjV
+	XJFPWePPRM0CnxRFksiKelXDd4qxik7aQ3mMcyBCJjLxhyAF1/B4D21N2RNJubIz
+	u5cBy+nZv7B/NkDxHFeW1hHCDPsd2Yncp7NFyXICp+R3pT0Y5ellhwQTcSjOD4Is
+	qcejxkzW8ihZzqAnjwKGNkFDJQStwnjJ8vVNe8gpcx5sVF8NLwPxyCUUnJOe3iXr
+	77Djsuz/1kfq3wwkXcMCZm5S41gIGVWAkWq3DEPG3YLiO4EDE4ry1FhRdzsZiw+Q
+	+pL5WKOI4leoxTvwkIf/g==
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=sign d=arndb.de a=rsa-sha256;
+DKIM2-Signature: i=1; m=1; t=1795546436; d=arndb.de;
+	mf=PGFybmRAYXJuZGIuZGU+;
+	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
+	s=fm2:rsa-sha256:mmTqL9ciIPJL/qozR4rIxAifhnJe3auTf2L582GLKJUdmUl
+	O6JpBiI83gK2AUgKk1JnS0pO4VnMBYvZQSgvlYwI+0Cu1ksRTWr4gLdGMLBtmnr3
+	Q/nVLj2x3BgIb3XN1EWxKrPTJxEkzt7TtBuaZCs6jDvIh++xBv7fOT78APzFQ1jy
+	Tvwpeu9rx3JllAZeZByU8DfTlG8G6pJOPbMJ9VdaGc5z1ZecA9VBOF4aNaYpV/SR
+	u5gSLoT2QYrILK14qidD14KMLP9vWh1ikybqETTUsKk6XRwepYwzO2SCUJdZyj5f
+	lVvY8bGlTUOoaFwsvz8rHGVWhdd/dOkyLt4Gqzw==;
+X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
+	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
+	action=mi-m=1; hc=12;
+	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
+	from,in-reply-to,message-id,mime-version,references,subject,to;
+Message-Instance: m=1; h=sha256:JE9Pf+dIuvBMDyw467eQ/Tr4tyY4SBvJ9vbnWlDmBbU=:iJ0bZtF+M32WhmItWYj3FSa2ZiQSpvoOogcaFVHVH5I=;
+X-ME-Sender: <xms:NN0Fa_Dh16pBjRQMtmAQtpYpz28UEZAAlNWef9QDlR230iNPWwpgaA>
+    <xme:NN0FawWnt_cU2zPqxwlF3kn6lXR865LwUWDq-4TBjsqjqIqfahALCgQWW-0jyO7G3
+    I2uTFidD6Jk0Jt_ZRZrrybQhsZmf0PkwLrG07cX5Ey9rp4FNHu-UqM>
+X-ME-Proxy-Cause: dmFkZTFsQKpYLoHX3KE6zope7Xly27EYv6AQYyIF3Qau4aRC0vSHzWA0jMBeGZ/9+uCniy
+    PTkF5Fmn4ClSCnUsMdxXtnQhtPNPNvOPsMvdctlUYyw6p+0jhYlfcnMwYC+ka8/fLSpuKw
+    3YLhivPgri0MvBEeHeehNeV5wiFAsJv2bcNaHD7UboTSW+RjgcB42VuUlh1hahI0iQExPr
+    +XuV8lAvetVw7YfrG+rkJKl9bl6k1+Pc6YG1mdIQsn8HBaASQD8dGrUNem4yjy4NNXFr2o
+    l0vAJfxG5EW/9uTEMy9av1oYJYPAqHBvhuaThuRz9ZxrEhJBnZZaNefPyOfbd5a857jzji
+    xS3AH0yNi27nlGbP2enOJqlf9wVeoOUs7OcWrHRUnaD4wGX3BucglKw1DWVVHUPxhfMt+c
+    yYMsv9QYzlu0IncPWVnqsNMz+WiqY0HZprQifxi/zsPZ8ChkJiSCAB7jX698jdmSQw7t0Q
+    wldIOTkPNxc4rzT0CMfulFrj4Rm5L/cie4t1IvZQrqsjE2CBRn8iUu7yiZ0dS2UrGJdlIv
+    HMXP1d1uGpGRgLQ/rxCRTkol4EEsKGIX1Iz0tWkHIV/hA4OOaUelQC0/ml5S6Hx7O/VRRR
+    HHsnZozZEW2a8iAqfQuYUL98uV7rqteWCN+bZ4WQQO+0dMzPuH8W8HlVGiTA
+X-ME-Proxy: <xmx:PN0Fa_OfkSf0I2gz53d1q87MSYiyija7o2MtMOioAI-ZeTkir1jV5A>
+    <xmx:PN0Fa6p4AcKgvKj7Nxl2i9GHjEd2VbenjcJEjgY_FbTxdjTIKHGJeg>
+    <xmx:PN0Fa5WDuMRF3QKr7uInN4TtUt9GYOr8jpLSEeuwpRljz5xEyg6WqA>
+    <xmx:PN0Fazu29G7Wm_IQCdCnlJY6WRkfF9-85rVjBcVYL-WZQOkOQNyjOA>
+    <xmx:RN0Fa7HuB9LonHDmNq2kLPdcfAnhX1Syf3plWTxAvus5eCvT9QG1bsct>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.ams.internal (Postfix, from userid 501)
+	id 4968232A0099; Tue, 24 Nov 2026 13:53:40 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,68 +113,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDA3MyBTYWx0ZWRfXyzHLLEUDR697
- 9ILHeuUH4IFzG3zgTyzT7JbYTrPKjpmDxph2BEvaGqPy6sHwFOdXKiYcof3rbFAAKR8WGgkKkps
- mgCoeoCZd62UeExAEEbg4tD6dzybfk/nx1RhfRqn4DkRrbcin0Gw+JD1noKfVKumUlnQR87CaiX
- m02TfmUNKN5F1WSZF2URcQ6XUhZO9wCoDPMGlWayo4O9mbv0r7h8cnv/Wyg/hDAxMLLDgmwQ20j
- 69ablalLWBLdVHoD37klkL5RvUyBUxnIAI332ZP8/yuSM7iUt0dY2oAnT+boYAk/pg8ZYGDInR2
- yOHEHV/HLzrvxTC4xJZK5ESALR0PLRx1tEFjloQyYihVrDZPTeHaNpoohBflDFsnjAoLoTMIrBe
- FdgpEL2Ro9wIqzjrTg6J3st+cdZY4aMfuoQmY42cpbq1xhTC8P+lLH+TZ/AWbVmfM/G/A4tb0je
- Rv1WPTXJ8ImZ7F01thg==
-X-Proofpoint-ORIG-GUID: 2bjDnoBkweei-uQJdA2TUAUIqovxFlT6
-X-Authority-Analysis: v=2.4 cv=U6QHnuru c=1 sm=1 tr=0 ts=6b05daac cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=iQ6ETzBq9ecOQQE5vZCe:22 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=VwQbUJbxAAAA:8
- a=PrzpYAlufntWHnhYRjoA:9
-X-Proofpoint-GUID: CBY8R7go3T2zK4WZN1tAkC12FzrYuzE6
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDA3MyBTYWx0ZWRfX4beoaIRRBaM0
- QfDhCB2OUj2r6x7q03LrGXP1bxyEG+w4tUi4FvD5s9Aifirz52PAQBOFI7xch9SRCvkZ0dsCRY4
- bkpkol+dFkBNXywTQDxWfFY6h08jfik=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-24_05,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 spamscore=0 impostorscore=0
- clxscore=1015 bulkscore=0 suspectscore=0 adultscore=0 phishscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611240073
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-ThreadId: Ai76fMdDSoMo
+Date: Tue, 24 Nov 2026 19:53:19 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Lorenzo Stoakes" <ljs@kernel.org>,
+ "Andrew Morton" <akpm@linux-foundation.org>,
+ "Juergen Gross" <jgross@suse.com>,
+ "Stefano Stabellini" <sstabellini@kernel.org>,
+ "Oleksandr Tyshchenko" <oleksandr_tyshchenko@epam.com>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Christophe Leroy" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ "Shrikanth Hegde" <sshegde@linux.ibm.com>,
+ "Haiyang Zhang" <haiyangz@microsoft.com>, "Wei Liu" <wei.liu@kernel.org>,
+ "Dexuan Cui" <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ "Jason Wang" <jasowangio@gmail.com>,
+ =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ "Xuan Zhuo" <xuanzhuo@linux.alibaba.com>,
+ "Jarkko Sakkinen" <jarkko@kernel.org>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>,
+ "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Jan Kara" <jack@suse.com>,
+ "Paul Moore" <paul@paul-moore.com>,
+ "Stephen Smalley" <stephen.smalley.work@gmail.com>,
+ =?UTF-8?Q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>,
+ "Joel Stanley" <joel@jms.id.au>,
+ "Andrew Jeffery" <andrew@codeconstruct.com.au>,
+ "Ryan Chen" <ryan_chen@aspeedtech.com>,
+ "'billy_tsai@aspeedtech.com'" <billy_tsai@aspeedtech.com>,
+ "Bjorn Andersson" <andersson@kernel.org>,
+ "Konrad Dybcio" <konradybcio@kernel.org>, "Abel Vesa" <abelvesa@kernel.org>,
+ "Jens Wiklander" <jenswi@kernel.org>, "Sumit Garg" <sumit.garg@kernel.org>,
+ "Scott Branden" <scott.branden@broadcom.com>,
+ "Broadcom internal kernel review list" <bcm-kernel-feedback-list@broadcom.com>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ "Richard Cochran" <richardcochran@gmail.com>,
+ "David Woodhouse" <dwmw2@infradead.org>,
+ "Andrew Lunn" <andrew+netdev@lunn.ch>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Eric Dumazet" <edumazet@kernel.org>, "Jakub Kicinski" <kuba@kernel.org>,
+ "Paolo Abeni" <pabeni@redhat.com>
+Cc: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+ linux-sgx@vger.kernel.org, selinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org,
+ Netdev <netdev@vger.kernel.org>, linux-mm@kvack.org
+Message-Id: <3208cde3-c5cf-4888-88f7-c77d7b0e5940@app.fastmail.com>
+In-Reply-To: <20261124-late-2026-mmap_prepare-v2-8-0b0d99d655f9@kernel.org>
+References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
+ <20261124-late-2026-mmap_prepare-v2-8-0b0d99d655f9@kernel.org>
+Subject: Re: [PATCH v2 08/13] soc: aspeed: convert LPC and P2A control mmap hooks to
+ mmap_prepare
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Nick Child has left IBM. Take over maintenance of the ibmveth driver,
-and add Dave Marquardt, who reviews ibmveth patches, as a reviewer.
+On Tue, Nov 24, 2026, at 15:02, Lorenzo Stoakes (ARM) wrote:
+> Move from the deprecated mmap hook to the new mmap_prepare hook for both
+> the LPC control and P2A control drivers.
+>
+> Both remap a range of their reserved memory region, so use the PFN remap
+> mmap action to do so, retaining the -EAGAIN error on failure via the action
+> error override.
+>
+> Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-Acked-by: Dave Marquardt <davemarq@linux.ibm.com>
-Acked-by: Nick Child <nnc123@gmail.com>
-Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
----
- MAINTAINERS | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index bde216003f42..8f063466ded4 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12796,7 +12796,8 @@ S:	Supported
- F:	drivers/vfio/vfio_iommu_spapr_tce.c
- 
- IBM Power Virtual Ethernet Device Driver
--M:	Nick Child <nnac123@linux.ibm.com>
-+M:	Mingming Cao <mmc@linux.ibm.com>
-+R:	Dave Marquardt <davemarq@linux.ibm.com>
- L:	netdev@vger.kernel.org
- S:	Maintained
- F:	drivers/net/ethernet/ibm/ibmveth.*
--- 
-2.50.1 (Apple Git-155)
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 
