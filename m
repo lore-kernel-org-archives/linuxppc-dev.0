@@ -2,104 +2,72 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2359D606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 18:54:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D127E606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 19:10:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=BRs+t4ks;
-	dkim=pass (2048-bit key, unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Vx/K0IlD
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lkC50nhR
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYsSK6Bw7z2yQG;
-	Wed, 25 Nov 2026 05:54:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.139
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795546497;
-	cv=none; b=Rq1Y91G3WQtuYUqbSUxQTRJkvM80Ci64b6/12e8YqinkaRpC4JTVMr3ikC9galxmxhZ06TZpvW2X20RB9ce14wcpTLm1+i7gsGq4Zeu64RqLCxqwYGtawJVMcewWboGahP1dvh5zjtADSL0XI+7cRcnCGczOVwANztNBb1UYISFK7uiQLVluIrl3gRmOryzyGRoSO8K/14lTXhk3hBmTfDqOoxX/UBd/zgk1D7CLEB+dycuS4L8hXxuXW43/HK4NwMHG4yGvV8JYROmAhD+EAB8OvzC1DedC7+T1LXjUCDtIpWQUCxkvprW0PIDkhqcGQTd62n6wMen8COv7OsdK3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYspn2ZRWz2xfX;
+	Wed, 25 Nov 2026 06:10:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795547457;
+	cv=none; b=h5VTt0t/qWWSRj6qOiRbxuBHVDMY2XhAN42h0vB/C/NFqJWdZJIc/xEHcw/5o6od1mCvLJClv9HznZd5obHyFXffw4qwNNTIwkIakwplILqgLAQCxNLNWiLpPabR8XNmAh4wJuwmpJldW5ZKYvjIwed3BWzJD/00ITbOfCxP9/1S6ZnInya3WcDEw9xO3OzzDLfAgQ7cQHzn1A9YKShX3UKvN4IsgoQk42iourZoXRZ2Of4aIL/u2R+YUyZbtEMPgi2sIgTBA187H5xh/2PcbGvblaZTwhLeOsC7V1J7SbHcI4eeh4ORMrF4eHeHouI6bO5kySmZErk2T5Kxjbm5Jg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795546497; c=relaxed/relaxed;
-	bh=zzADWq2A9f6U6Ncm9LM291Imr7Nwrsax19gq4eW/i1s=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=YsevTndwmatwD4b8/JpnwIonwDsJBhvCEXvUAw1qT/CXjgf69fgEolrf7xFshJ229j5CPEhTMgDTrYllEF3Td35WuLZtGXQfBbiQEwSGqZllRGDrePN3srN5XVBGmePi9OtW5j8SNmo+88T0ujPuMFmDK9Zlgq28kPZpsmMjYToEo3JkVphYQPxuUlXsZYGuEr25kdFRm0NkxbsFriWhAnZ204O41cSDsZyVJEBVnwxEghU69MN71FjFEtY6ZLiJUQtDR6Uso4u6jN3yUd2LnhXFiVrcJmqrTZkI5IhZEaaggEV35Q6U27cQEalJ6H/7FwZMjuIaUpZrSF4lfA1dHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=BRs+t4ks; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Vx/K0IlD; dkim-atps=neutral; spf=pass (client-ip=103.168.172.139; helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1795547457; c=relaxed/relaxed;
+	bh=rDDM9aEwpFXDXSs2NT3NL3JuMcLYaZ1LtePbXsFAldQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DT6FLwFTq/5PptLSoE4oOKRJ2R1CRyJhCNVSFCj6+moWgm5sk91GEShhE9HIh3iPiXYKaXL8KyfhL4nTiLIysLA9+Ryl6MH4eW+IgYt0J6hAXS1igP2fepjatHVr+rJym/ar104HuWYEnS+bpm3hNxceD63TIYN8+liOjkN5ZePcK6s2jw2w4/vLn1/e3QgnkTOhtU29eO32/00EtdU58MtCSHqv7cSuVmvfKTisIMzEIwdMEFSBdw4/v5eLAXJqfA7Pt/vPyOpTf9ewzEkY6t8X7O0TqnE1wzhZgdkp94GwEybhRnulVETuuh+fdJemE4i2p1RS6S/zi+e2+XBYDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lkC50nhR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=BRs+t4ks;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Vx/K0IlD;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lkC50nhR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.139; helo=flow-a4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from flow-a4-smtp.messagingengine.com (flow-a4-smtp.messagingengine.com [103.168.172.139])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYsSK0HB9z2yPq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 05:54:57 +1100 (AEDT)
-Received: from ams-compute-02.internal (ams-compute-02.internal [10.64.2.62])
-	by mailflow.phl.internal (Postfix) with ESMTP id D860B13804C6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 13:54:54 -0500 (EST)
-Received: from ams-imap-03 ([10.64.2.23])
-  by ams-compute-02.internal (MEProxy); Tue, 24 Nov 2026 13:54:55 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1795546475;
-	 x=1795553675; bh=zzADWq2A9f6U6Ncm9LM291Imr7Nwrsax19gq4eW/i1s=; b=
-	BRs+t4ksTqnTtE1oYjJwDc1C9K5jlphfaup5bA8IjY07JdlXNr3LnaRbvngocT+l
-	0s8mpcGjn2w5BH00n8m4unx2HOzBIssG9G0cRWhbuMv2TLmdp1NalygFp5oxuPtJ
-	wTAJP5SGdhazfnxYVfevwxTV6el91PqN32OZosleJtIwlS9tg7bn57xISyTR2cV2
-	w8mchKYS54UTYuQdinubggxyt/E11YV+y1DBfPwx09QgOMJyBy4X/e1dzVXEdCLQ
-	UfkpU0yQ7iyBQzG/lrKYkD+WJELv9rYSdR8XNg8Icg5Xi7DvSz7qRf9OXV3LCBtL
-	CSzbMSwdg5Yc27rprTFHxg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1795546475; x=
-	1795553675; bh=zzADWq2A9f6U6Ncm9LM291Imr7Nwrsax19gq4eW/i1s=; b=V
-	x/K0IlDvDMzIOh6ytEGzD9KXK48W6+PlY63Pkk5C4LqO8corTR1AOL6M3C0HEOEt
-	RnYztbOsrj/0nf6VZ7GNoKO3ESw2hQALr88flIWiz5nE2Vis9yZo/Ns4DfYzZ8gs
-	HGrNVlz/fNpZlQyjnvQnlw9skxNMOmJEBOYaR4LGyOZQhwF7fyOi5lto72PKc/d5
-	FXgv4UzC3YmDb9P8JTElHIgUuk8lUDGbXOVIkdWbLNNQrV65HVYiNE+VAzlmo2Mr
-	249vwFX/TxOavA6UatGb13UOmLI4UeYjVkP4zkYTEoRL1UdTk0BTJTgoKHcSuG8k
-	+lq6xcKwaH/EuXoPJowQg==
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=sign d=arndb.de a=rsa-sha256;
-DKIM2-Signature: i=1; m=1; t=1795546475; d=arndb.de;
-	mf=PGFybmRAYXJuZGIuZGU+;
-	rt=PGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg==;
-	s=fm2:rsa-sha256:bzWzerLoMASfTqZVmA8BcelJS23y/T3ZB0O9kRUqxY+rtEv
-	h6nsXIDskKoECJUeYapErhFeZfPUx1a6KgyfLeoucQTKjcgB2L/DT8kaIBorUucX
-	Uf/sqx2DKxKDEUMSB8Dmw8pg7be/yPaa0n4om+EZAOlHVMASEy/isSSqWjgE7l5M
-	1SA0FYZWrfn6CWdfHflmxohwUQCmE3+D/C97VjJxGvnkw7b5ED1u1V2zS+ynEja5
-	r86ssYX2HM7GU4Ki+wieYUyqHaX0SI9JO8OiCqQ/PVGMuoCpumGYhsJCYRrA4IbG
-	RIE0OknbHPi+WOhAtSu49NwaBwDRwsPtC/Emb1A==;
-X-DKIM2-Info: draft=ietf-dkim-dkim2-spec-09;
-	repo=github.com/dkim2wg/interop; date=2026-11-03; sw=lmtpprox;
-	action=mi-m=1; hc=12;
-	hn=cc,content-transfer-encoding,content-type,date,feedback-id,
-	from,in-reply-to,message-id,mime-version,references,subject,to;
-Message-Instance: m=1; h=sha256:LzM4tAbzweW+mDyb/1r3509G6pq6a3/4tE8KTO1Vt/k=:zzADWq2A9f6U6Ncm9LM291Imr7Nwrsax19gq4eW/i1s=;
-X-ME-Sender: <xms:Xd0Fa55FOfcfIgivK7gDT2s90l8T2iyzgndSBP-plhfJtABFXfc8Eg>
-    <xme:Xd0FaxtsJcVSGFN5HVXn38MtsB8YALAp-Wx8fFhFezYcs-M83HeSNrRFesiuboQoW
-    5UfpbOJWqvvpnAVz9GZ53DVxThH7R3ev1eLeyVj0ZpYxdoXqLzoT860>
-X-ME-Proxy-Cause: dmFkZTFIFQbDkqPixxG6ZmbrNqWja0iBmS0t+/2OXw3Hr68jTmofYge70Jd2C8rdOHxiEX
-    pUSI1QmY8wa8hdAn9aHQtwJQbrzJ92rRcp5Lj4ZnT7lqds2vmNLcn0UUOnmmP8hv3V6w+/
-    4jmHwhmrL8ACMwHSGKtRy9Vnn1gbC9jBuNuwnrpPjs09zdYgYnDdJ7dHlbs8/Vq3FaRIg2
-    harjfzAY/2DUVwFrNAo5sJTbPVeYuXkjeFTXI2vNrndIhUaMB0WHtTD9Snytzp1zPIggcK
-    0Qu1xi+ImflvZSyP3jJ4f+Pj22kJds4yfs5MDHkxWsLhkYz/NB/2cV/kiMtdUnvlRqpyL2
-    pa8DmP1PV2q7BXbNlBMb0LKR9J0cg5zWatj1ewFm/B4wUeq2NcKYG3p/wiHSLf/7MZkJPo
-    55VBqztvGKRmqQhHsRaalq/b5qWlczTjuaCR4KHYJNMSuYr6Ue5sGaBM73CTNL8k5C+HeS
-    6yw7flTH1KDfWZ2D/nTRJ3KwclHeIC555NIo/fbXlsIZrqs/aZ2GTd67CpM9d+D1a0dou3
-    PxTyuQMHWomu85N198NFQNJkn2rRVPia1CBEDpS4YilQB2ja7EgRCyk+GRsdfBsMdfvj61
-    iX1Tevck3x163pXwovYHvcc+KWnNS+6vzDYjKokt0XM2OTPlrT2Sqf+0nrGw
-X-ME-Proxy: <xmx:ZN0FawFxheCN-x8-0Vbv0XSt5auhNbm68w5nEL_E_IUlqy9inlE7gQ>
-    <xmx:ZN0Fa_SMlpnS-VL9ozFnJwNMSJnC9TJbQVcM28ytDW_qtr-tXAFROg>
-    <xmx:ZN0Faz1H8jdefJwCblcNEhWmtX8FBEPKunscTBgHdHefzx5f7AFpNw>
-    <xmx:ZN0Fay5HgQNFfUBXh7L8tyhCYUmn3ZM-G7JVXw9IVM5_sFauYfaajA>
-    <xmx:a90Fa4VKd0seXJsIkfqSaHH9e6lytGZcnkXlwXg5yWyhKLyy-Iftp9hP>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.ams.internal (Postfix, from userid 501)
-	id 1964B32A0099; Tue, 24 Nov 2026 13:54:21 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYspm0hTMz2xS6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 06:10:55 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOIZPad3229993;
+	Tue, 24 Nov 2026 19:10:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=rDDM9a
+	EwpFXDXSs2NT3NL3JuMcLYaZ1LtePbXsFAldQ=; b=lkC50nhRwxvkD060qJ468e
+	qp+upN2Ult0QZpK7/V0Z1R/UF4J6GkPdrI99/ZVemEqlW9CIqlJItQ2v3FRKdBzz
+	ND+pefR6Q9fiuyw95xIkXCLb00s5SLyfyFpcLyw9HHAMtC3j7ctzBCk9bgShK1C0
+	2U/tH51w92kgvdBs1KgMFzjKpc2u4T6jR1k9MZuB2Xxd6lJEgD2pOjffVYmdjnAY
+	+bOJ7g5GFRy6w+VpHmJcqyaFXaqIEgYxFLyZ+oodYjQOTanWNFW1YsMYooJ/5hsH
+	zaVbL9sbQGn91ScpeKCwsNSelAWqJJkYznqhlQ0P/UD7EJLOiorglCkYW4IZTmzg
+	==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g18uyv-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Tue, 24 Nov 2026 19:10:38 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOIZejd2684691;
+	Tue, 24 Nov 2026 19:10:38 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j3qufukmh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 24 Nov 2026 19:10:38 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AOJAalT42598688
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 24 Nov 2026 19:10:36 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2A89158054;
+	Tue, 24 Nov 2026 19:10:36 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 23E345805F;
+	Tue, 24 Nov 2026 19:10:33 +0000 (GMT)
+Received: from [9.67.103.228] (unknown [9.67.103.228])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 24 Nov 2026 19:10:32 +0000 (GMT)
+Message-ID: <80e75016-67c0-46c0-a934-f9455d975178@linux.ibm.com>
+Date: Tue, 24 Nov 2026 11:10:32 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -113,77 +81,223 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-X-ThreadId: ADzkAynZlS63
-Date: Tue, 24 Nov 2026 19:54:00 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Lorenzo Stoakes" <ljs@kernel.org>,
- "Andrew Morton" <akpm@linux-foundation.org>,
- "Juergen Gross" <jgross@suse.com>,
- "Stefano Stabellini" <sstabellini@kernel.org>,
- "Oleksandr Tyshchenko" <oleksandr_tyshchenko@epam.com>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- "Shrikanth Hegde" <sshegde@linux.ibm.com>,
- "Haiyang Zhang" <haiyangz@microsoft.com>, "Wei Liu" <wei.liu@kernel.org>,
- "Dexuan Cui" <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>,
- "Jason Wang" <jasowangio@gmail.com>,
- =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
- "Xuan Zhuo" <xuanzhuo@linux.alibaba.com>,
- "Jarkko Sakkinen" <jarkko@kernel.org>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "Thomas Gleixner" <tglx@kernel.org>, "Ingo Molnar" <mingo@redhat.com>,
- "Borislav Petkov" <bp@alien8.de>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, "Jan Kara" <jack@suse.com>,
- "Paul Moore" <paul@paul-moore.com>,
- "Stephen Smalley" <stephen.smalley.work@gmail.com>,
- =?UTF-8?Q?Ondrej_Mosn=C3=A1=C4=8Dek?= <omosnacek@gmail.com>,
- "Joel Stanley" <joel@jms.id.au>,
- "Andrew Jeffery" <andrew@codeconstruct.com.au>,
- "Ryan Chen" <ryan_chen@aspeedtech.com>,
- "'billy_tsai@aspeedtech.com'" <billy_tsai@aspeedtech.com>,
- "Bjorn Andersson" <andersson@kernel.org>,
- "Konrad Dybcio" <konradybcio@kernel.org>, "Abel Vesa" <abelvesa@kernel.org>,
- "Jens Wiklander" <jenswi@kernel.org>, "Sumit Garg" <sumit.garg@kernel.org>,
- "Scott Branden" <scott.branden@broadcom.com>,
- "Broadcom internal kernel review list" <bcm-kernel-feedback-list@broadcom.com>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- "Richard Cochran" <richardcochran@gmail.com>,
- "David Woodhouse" <dwmw2@infradead.org>,
- "Andrew Lunn" <andrew+netdev@lunn.ch>,
- "David S . Miller" <davem@davemloft.net>,
- "Eric Dumazet" <edumazet@kernel.org>, "Jakub Kicinski" <kuba@kernel.org>,
- "Paolo Abeni" <pabeni@redhat.com>
-Cc: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
- linux-sgx@vger.kernel.org, selinux@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org,
- Netdev <netdev@vger.kernel.org>, linux-mm@kvack.org,
- "Jens Wiklander" <jens.wiklander@oss.qualcomm.com>
-Message-Id: <9a87f9a4-4299-4a9f-97db-578d7687a848@app.fastmail.com>
-In-Reply-To: <20261124-late-2026-mmap_prepare-v2-10-0b0d99d655f9@kernel.org>
-References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
- <20261124-late-2026-mmap_prepare-v2-10-0b0d99d655f9@kernel.org>
-Subject: Re: [PATCH v2 10/13] tee: convert shm mmap hook to mmap_prepare
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=4.0.1
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next v2 3/8] ibmveth: Refactor buffer pool management
+ for per-queue MQ RX
+To: netdev-bot+sashiko@kernel.org
+Cc: netdev@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
+        npiggin@gmail.com, chleroy@kernel.org, ritesh.list@gmail.com,
+        sshegde@linux.ibm.com, nnac123@linux.ibm.com, andrew+netdev@lunn.ch,
+        davem@davemloft.net, edumazet@kernel.org, kuba@kernel.org,
+        pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, horms@kernel.org,
+        davemarq@linux.ibm.com, haren@linux.ibm.com, ricklind@linux.ibm.com,
+        bjking1@linux.ibm.com, shaik.abdulla1@ibm.com
+References: <20261123075136.3278-4-mmc@linux.ibm.com>
+ <179551045236.3135.13521842784287344413@kernel.org>
+Content-Language: en-US
+From: mingming cao <mmc@linux.ibm.com>
+In-Reply-To: <179551045236.3135.13521842784287344413@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Proofpoint-ORIG-GUID: ggyztGDsF8KOhd_LREHumNVN7EvUt-XL
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDA3NSBTYWx0ZWRfXxpt8azr92Tqo
+ Ic13zjszeI21WngK9N+N0y7ywBcrq7cmRn849KG/PMBM6+SMQgLxo99YYZf/4GRrZp+XGMgAuss
+ EmUPJXjPt8sR9GHQO7BEVEYviHoOWbU=
+X-Proofpoint-GUID: -e-cNAQJ93fVYex1pNvOhVa2ruk9ZY_C
+X-Authority-Analysis: v=2.4 cv=c8M+0h9l c=1 sm=1 tr=0 ts=6b05e12f cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
+ a=i_8X3K9gQzJtdaTUWEEA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDA3NSBTYWx0ZWRfXwGG4I6dQVLyX
+ eURLAZoRvnro1VvGBqdnaUVIQzt88HTXJws5a5xRdnWADJ3bZSgPwZuKNt6+lKdJB/vyemFBF/9
+ 03CPCKIIYOU0+rm1IPtMpPjizrZCy4xtrMc+6lEG/SLTyTgNUc3poebRGWDO/RpHSxdOd4XVfzO
+ jwKVSccT8jm3QLamx4ahRbGeqRz4HJNn7fwpQdqSX8QfzW0nb7/o21VX1S8ZZ49b/3qwGGzyy5v
+ IOFJWloJhN6OovXPomwUFwa5PhmlAF/YkWexzijrUv7IRphaY2rRBcxf+PYr4dy+nvLRw8MjCQP
+ yUxkPmQOPyzS3KgrPzpD5cRAuXVnyoDZHgHd9TXnPpuIxRsSACnlByVbq63Hwah29DNDKpuy+ug
+ 6ZZ9KbCsHduT1yZdTmEtj0B6cfesXyRRclfuJhdxQWxVn620rEMMZSISIJx5XNNnnkSd56wrU74
+ x5hRS8hHZ+yxoU9pM1w==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-24_05,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 malwarescore=0 suspectscore=0 bulkscore=0
+ priorityscore=1501 phishscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611240075
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 24, 2026, at 15:02, Lorenzo Stoakes (ARM) wrote:
-> Move from the deprecated mmap hook to the new mmap_prepare hook, using the
-> PFN remap mmap action to map the shared memory.
->
-> Reviewed-by: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
-> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+On 11/24/26 12:54 AM, netdev-bot+sashiko@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 1 potential
+> issue(s) to consider.
+>
+> Critical: 0 · High: 0 · Medium: 1 · Low: 0
+>
+> If you believe none of the issues are legitimate, please reply to each
+> issue of Medium severity or higher and explain why the AI is wrong.
+> If any of them are legitimate and you plan to respin, please let patchwork
+> know by including "pw-bot: cr" as a separate line at the end of your reply
+> (one such reply per series is enough).
+>
+> - [Medium] ibmveth: persistent pool deactivation in
+>    ibmveth_alloc_queue_buffer_pools()
+>
+> --
+>
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+>> @@ -660,6 +660,100 @@ static void ibmveth_rxq_no_skb(struct ibmveth_adapter *adapter,
+>>   	schedule_work(&adapter->work);
+>>   }
+>>   
+>> +/**
+>> + * ibmveth_free_queue_buffer_pools - Free buffer pools for a single queue
+>> + * @adapter: ibmveth adapter structure
+>> + * @queue: queue index
+>> + *
+>> + * Frees every pool on @queue regardless of the active flag;
+>> + * ibmveth_free_buffer_pool() skips what was never allocated.
+>> + */
+>> +static void ibmveth_free_queue_buffer_pools(struct ibmveth_adapter *adapter,
+>> +					    int queue)
+>> +{
+>> +	int i;
+>> +
+>> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+>> +		ibmveth_free_buffer_pool(adapter,
+>> +					 &adapter->rx_buff_pool[queue][i]);
+>> +}
+>> +
+>> +/**
+>> + * ibmveth_alloc_queue_buffer_pools - Allocate buffer pools for a single queue
+>> + * @adapter: ibmveth adapter structure
+>> + * @queue: queue index
+>> + *
+>> + * Allocates backing storage for each active pool on @queue.
+>> + *
+>> + * Return: 0 on success, -ENOMEM on failure
+>> + */
+>> +static int ibmveth_alloc_queue_buffer_pools(struct ibmveth_adapter *adapter,
+>> +					    int queue)
+>> +{
+>> +	struct net_device *netdev = adapter->netdev;
+>> +	int i;
+>> +
+>> +	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+>> +		struct ibmveth_buff_pool *bpool =
+>> +			&adapter->rx_buff_pool[queue][i];
+>> +
+>> +		if (!bpool->active)
+>> +			continue;
+>> +
+>> +		if (ibmveth_alloc_buffer_pool(bpool)) {
+>> +			netdev_err(netdev,
+>> +				   "queue %d pool %d alloc failed (size=%u count=%u)\n",
+>> +				   queue, i,
+>> +				   bpool->buff_size,
+>> +				   bpool->size);
+>> +			bpool->active = 0;
+>> +			/* Undo the pools this queue already allocated; the
+>> +			 * failed one freed its own partial allocation.
+>> +			 */
+>> +			ibmveth_free_queue_buffer_pools(adapter, queue);
+>> +			return -ENOMEM;
+>> +		}
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +/**
+>> + * ibmveth_alloc_buffer_pools - Allocate buffer pools for all queues
+>> + * @adapter: ibmveth adapter structure
+>> + *
+>> + * Return: 0 on success, -ENOMEM on failure
+>> + */
+>> +static int
+>> +ibmveth_alloc_buffer_pools(struct ibmveth_adapter *adapter)
+>> +{
+>> +	int q, rc;
+>> +
+>> +	for (q = 0; q < adapter->num_rx_queues; q++) {
+>> +		rc = ibmveth_alloc_queue_buffer_pools(adapter, q);
+>> +		if (rc) {
+>> +			while (--q >= 0)
+>> +				ibmveth_free_queue_buffer_pools(adapter, q);
+>> +			return rc;
+>> +		}
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +/**
+>> + * ibmveth_free_buffer_pools - Free buffer pools for all queues
+>> + * @adapter: ibmveth adapter structure
+>> + */
+>> +static void
+>> +ibmveth_free_buffer_pools(struct ibmveth_adapter *adapter)
+>> +{
+>> +	int q;
+>> +
+>> +	for (q = 0; q < adapter->num_rx_queues; q++)
+>> +		ibmveth_free_queue_buffer_pools(adapter, q);
+>> +}
+>> +
+>>   /**
+>>    * ibmveth_remove_buffer_from_pool - remove a buffer from a pool
+>>    * @adapter: adapter instance
+> [Severity: Medium]
+> Now that ibmveth_free_queue_buffer_pools() frees every pool on the
+> queue regardless of the active flag, is there still a reason to clear
+> bpool->active here?
+>
+> The active flag is the pool's persistent configuration. It comes from
+> pool_active[] at probe, is turned on by ibmveth_change_mtu() for large
+> MTUs and toggled through veth_pool_store(), and ibmveth_close() leaves
+> it alone so the same pools come back on the next open. Clearing it on
+> a transient ibmveth_alloc_buffer_pool() failure has two effects. A
+> later ibmveth_open() quietly skips that pool, and it can succeed
+> without a pool large enough for mtu + IBMVETH_BUFF_OH.
+>
+> None of the callers of ibmveth_open() put the flag back.
+> veth_pool_store() only restores oldactive for the pool it is editing.
+> The ndo_open path, ibmveth_change_mtu(), ibmveth_set_csum_offload(),
+> ibmveth_set_tso() and ibmveth_reset() do not touch it at all.
+>
+> The old single-queue loop did the same thing. With per-queue pools,
+> though, a failure on one queue also leaves rx_buff_pool[q][i].active
+> different between queues for the same pool index.
+>
+> Can this line simply be dropped, since the unwind no longer depends on
+> it?
+
+Yes — the clear is not needed for unwind. It is also not new here: it
+dates back to 860f242eb534 ("[PATCH] ibmveth change buffer pools
+dynamically"), and this patch keeps it so the refactor does not change
+behaviour.
+
+I am dropping it in the multi-queue series that follows, not in an s1
+respin. With one RX queue (this series and base), the only effect is
+that later opens skip that pool. Once there are several RX queues, the
+same clear can leave queues with different active sets, or disable the
+pool on every queue when queue 0's template is cleared. That is where
+the footgun shows up, so the fix belongs with that series (first
+patch: drop `bpool->active = 0`, retry the pool on the next open).
+Until then this prep series just prepares the helpers and leaves the
+pre-existing clear alone.
+
+Thanks,
+
+Mingming
+
 
