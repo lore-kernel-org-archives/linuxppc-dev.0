@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0B652606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 17:11:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 4F33D606A336
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 17:11:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FAWDg5Vd
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flOieDI7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYq905SBtz2yDc;
-	Wed, 25 Nov 2026 04:11:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYq9Q06nbz30V6;
+	Wed, 25 Nov 2026 04:11:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795540292;
-	cv=none; b=PHDvnxjjXLU8QIUUs8ledBevW/z47SJqJRerkYY3+jZ5jkdDb6E15DulkaY+aX/utlTOaPSs+m89aD+abHp2LPyKdoUC9RJ3NvqJkJ6Txi1EOYdGOy8GHilr8Zn/r7T/75E2baCmsgAoLrMYEeZhaJJ//qZdmLNmgY4yW1oFVjyhwp7eGZcjJ25Vfmwt9yAi/iTl8SDrZgKWCfBcG8paUO2M9MSmfEB7GXPSUCCk86f6W3UWw5sqTOx4cHfCt/u8d7UEH8r2gd6tWIxeFeiS2gKTiq0MDoe+E5Tyjbt2Wlv02P1JWEQLnO+IdFK9bfHJ6j7axVA7eVoextuubDi75g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795540313;
+	cv=none; b=FMKb0+aGbpWUv97fvzkYYYVcqju7CwqPgUpZgIjp4nl5RvIual4P9/EGpd9LZ1pUe54CVDpSd7m/nCY5OCq9AmhhFeUCubMMJyzlhbRgwvpmZhIPkPmy13EdKcNM3u6XEuhv1kZhwqJdGjQEREt8vBkmODcsiaSLxkJCxxRWBHI2g9yWVhFAHyPT5Syt3DEL4s8gFDZOY1F1nsu3AVDHlrKuvZtsybqXTpRmic483utPHiTIPT21ZPySLJD5PkQfDp7Dg6aGfWQH6OhHQ/GwCdVEBARx+TID6rhP/ZamcZput3BbrQYj1HZpqK21ra6+0c/Uv6foRh+m7rv6Hj79bA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795540292; c=relaxed/relaxed;
-	bh=QldWE4w0TVdbt2gDvBD2hdwiIfOJOYra+WZwlAsjtw8=;
+	t=1795540313; c=relaxed/relaxed;
+	bh=YinBgxbv9k9aPLLClvg1TQtKuAgAUMd8VM3evMe5Yvw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=mLyJPLZZvim9VebenfnHySYo9fIIHPIGhnis4LcPhr+TjWmunvItfclqr6/JRLSRuzGXSDawv4nVDu437i4vezm6uQYKpWH8BuWTHw/I2s4ObjUyF71PtCQgHPNv5wKZ44azpI7jnP8nQukjgIQuf8TJkIK/L0ZMkFlegRa6jZA67pj6Tv4SXXvyUywN2oIut+5MAkeyGbze4aS61BdHa+X1gmoMgBEYUdcd8C3XKCdPFQFYM5XqQlrkmtZwgs7Pyw6Tu11aIG3Y27xHyVWYRIwRzIMQ0kkyUJlFGDYNO3v9wikRbyi51jRheaI3Jtju0W/xuNcu0o5dkFq1V2UlNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FAWDg5Vd; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=EhnArphfKSb3BQkiv2OqAo7Yndn3VHfWtqsjz1GGI354QUh7GedKLIuaPv13X2H8rsKjP3EreRUTWeL1ozekcRY/wmYCeVJBlC4YLJKfilY5K4KFbPNaLM7KvDXbySJbNtu9kSJafQSclKrbZikcdPciiIVlCEkYG6V2BYljznjA8clLYqHuOnIhDGNoy7Jf1JV2p79CS7ICMQVVwbTKoLzDXG5Uudb84jEuuwTcSLYcauXCQxevNCmIsBpSMTcAgsQNmNVKWQJnsxzcSXu0nsukhqszIJMFkvTADRT0A9FLCVUmD/EK91QqJGUiQ/sNSy9GCWhLkX1SYnC9tSAPNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flOieDI7; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=FAWDg5Vd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flOieDI7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ljs@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYq900VgJz2yDD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 04:11:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYq9P21smz2yDD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 04:11:53 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 81513434AE;
+	by sea.source.kernel.org (Postfix) with ESMTP id 9C39141783;
+	Tue, 24 Nov 2026 17:11:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6D5F1F000E0;
 	Tue, 24 Nov 2026 17:11:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA0571F00A01;
-	Tue, 24 Nov 2026 17:11:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795540290;
-	bh=QldWE4w0TVdbt2gDvBD2hdwiIfOJOYra+WZwlAsjtw8=;
+	s=k20260515; t=1795540311;
+	bh=YinBgxbv9k9aPLLClvg1TQtKuAgAUMd8VM3evMe5Yvw=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=FAWDg5VdpmSx8rQ4lXebaV7SUMn+/W07Xst8eBB+3X2tL8rSRKmUXHCIMftwFSPK1
-	 goeF2p68x4zrFVqN7xqOVkVerTS4zXG+4wTxWabsWpEHq49685dHDsGi1uixY9oNEF
-	 yw1zPDt3FpEF4KEpItK8x54ojy5MOVI2n3NR48J8lK+HvY3W2yz5ioRrupk/rL/gsw
-	 JnWTskNHr9Jv8Q4/CtMgZye6VMx5Qdrm165YtlCl9x7rSsx1acUmvoIxrlN3N+Jtxs
-	 QVVD0egk+QCVnvxAMlVDhkBS8CqDmQHE2ldeU1c9PlzXCKOKpXgrqszLMrksKwsM2j
-	 jQ/sEhDIaDEQA==
+	b=flOieDI7Kh9vBBXOWVO8o7dM5nAz0R25xYTttwaLOe1IgLSs+iCwxBl30zbtS91+e
+	 7Ww6lGfLE/r00fATsd8UbPhsgVKdXh9IPRnBx7aDCttrF3Eq4tuu4nWV68e/NXeJwq
+	 iq81YOM5gmYaLG/bTwDv4R7VdMn3Onx3AL4S4iQeRg6Xr+y5byFWOKLdb7ZD17Cnjq
+	 JGbfrS406KNlKaHM6I0WZK8Ri9sMIFsZlVto4U1ksd1BYhR3qwL/HMinuol32TWlcW
+	 RZzpRJIdaGGA9zlrVWHylQIiwI5rcm3cGov3Vpum4WR2ir63Blo7v/VTl959Pubgc6
+	 XZL6aIka5+n2Q==
 From: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
-Date: Tue, 24 Nov 2026 17:08:01 +0000
-Subject: [PATCH v2 09/11] apparmor: convert VMA flag tests to use
- vma_flags_t
+Date: Tue, 24 Nov 2026 17:08:02 +0000
+Subject: [PATCH v2 10/11] ima: convert VMA flag tests to use vma_flags_t
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261124-late-2026-vma-flags-v2-9-bf3fade93064@kernel.org>
+Message-Id: <20261124-late-2026-vma-flags-v2-10-bf3fade93064@kernel.org>
 References: <20261124-late-2026-vma-flags-v2-0-bf3fade93064@kernel.org>
 In-Reply-To: <20261124-late-2026-vma-flags-v2-0-bf3fade93064@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, 
@@ -123,12 +122,12 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-integrity@vger.kernel.org, selinux@vger.kernel.org, 
  "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=852; i=ljs@kernel.org;
- h=from:subject:message-id; bh=Fq9T8hwtRsQLwO0WpGmIyYpdIofCGHG7KaF/EUohnCo=;
- b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZj+SVzZ+tY/pliVFg7/PJFXOrpYolpPnfcfUpLJ9Xq
- Hrm/5JjHaUsDGJcDLJiiizPv4jvDxIJm9d5wd8NZg4rE8gQBi5OAZjIlT2MDH/Ubjy1mjJp2/eW
- Zf+bX7xfEBQ0kWFv7ptlrTMschv3y6YxMtyfM+G4ub3U1Evcyzr+7Ar/vXfCg2O9KeJfXsm9Cjp
- dw8EKAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=956; i=ljs@kernel.org;
+ h=from:subject:message-id; bh=aZXr2zSVB/rJfER5dUYjqts6E/Nx59tdty75BvHwYEY=;
+ b=owGbwMvMwCV2fu7ZrsZH9SKMp9WSGLJZj+QVSnUuXe77Y1vJhJirX5l9E+6nP6q7dXchw+r7m
+ ecWq+3S7yhlYRDjYpAVU2R5/kV8f5BI2LzOC/5uMHNYmUCGMHBxCsBEgl4wMvwRCfuxt4eRa8oH
+ Dkd31cpd004ad9q16nh8Fa7ct/b9wheMDAcdmsP65A5c+PmtRm+uXv88sSVfT2w4W5NV/tTU6mm
+ 5CC8A
 X-Developer-Key: i=ljs@kernel.org; a=openpgp;
  fpr=E7F417BF5214569E89D04F46CF9DCD8A81E27F14
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
@@ -139,29 +138,29 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 Replace use of the legacy vm_flags_t flags with vma_flags_t values in the
-AppArmor mprotect LSM hook.
+IMA mprotect LSM hook.
 
 No functional change intended.
 
 Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 Reviewed-by: Lance Yang <lance.yang@linux.dev>
 ---
- security/apparmor/lsm.c | 2 +-
+ security/integrity/ima/ima_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
-index eaebc3c60c5a..9ff9096b6199 100644
---- a/security/apparmor/lsm.c
-+++ b/security/apparmor/lsm.c
-@@ -591,7 +591,7 @@ static int apparmor_file_mprotect(struct vm_area_struct *vma,
- 				  unsigned long reqprot, unsigned long prot)
- {
- 	return common_mmap(OP_FMPROT, vma->vm_file, prot,
--			   !(vma->vm_flags & VM_SHARED) ? MAP_PRIVATE : 0);
-+			   !vma_test(vma, VMA_SHARED_BIT) ? MAP_PRIVATE : 0);
- }
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index fed80da3ee09..92032afe4cd1 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -556,7 +556,7 @@ static int ima_file_mprotect(struct vm_area_struct *vma, unsigned long reqprot,
  
- #ifdef CONFIG_IO_URING
+ 	/* Is mprotect making an mmap'ed file executable? */
+ 	if (!(ima_policy_flag & IMA_APPRAISE) || !vma->vm_file ||
+-	    !(prot & PROT_EXEC) || (vma->vm_flags & VM_EXEC))
++	    !(prot & PROT_EXEC) || vma_test(vma, VMA_EXEC_BIT))
+ 		return 0;
+ 
+ 	security_current_getlsmprop_subj(&prop);
 
 -- 
 2.56.1
