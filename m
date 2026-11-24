@@ -2,50 +2,114 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6CB2606A334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 10:06:59 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9CDB0606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 11:02:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flCBnIDd
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jB2OhFnb;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=buyHQ1tj
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYdl619d1z2xL5;
-	Tue, 24 Nov 2026 21:06:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795514818;
-	cv=none; b=gPxHkXVBO/JPxkM1xz6iPPNgrc5LRQfLGixX1m+WB2I5jTK6bAh6CAfJXAEIx+UsDGf9aokvhqJ2C45Bdvyg/GaNqDUiJJw6ZEuq8vjezTGBOR5tGq6hMeyJcrjY9uAjNds6qsTtKyfz+n1T2e8pSdD1w8qq9iP5FvYi1KZOCc4/ShNHzd3qqyaIi4MqbMKUf7XhpMTEubTeY7WzJB/ikD7adfEwljPUd8fgvWlZxZVqotPUAtfs7/Jc8DNINMKo/SuO5+iBOlK6Y0wTiMabcUgvKaME8DYwWT50dZg++ok1X1aF1iDm1ObTyeXPPfH0WtmPcis/5fmuP6xtI7ba1A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795514818; c=relaxed/relaxed;
-	bh=SXEF56RrG5y5FAdKWjS4+NoaPcHn0Sj4aJ75nFCxeYA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=heUyb7fDmGxRDj6w8qXKBrIAXvFgbUGlGOko7TewUDPHigF+iePglt/ZIglPEPD6KM/kMnsvn+sB+tJnrjLqLDJdgHdmpb+k+fMsh4SU/6jHpgSi33Q8K021pmErVr9t7PrK9/+QnAm2nC3Bmo+DLIg0Lxr4iz4I//J/49sGYnLSnzQGtEKaFdD7DmmK+xjkb7U/Y6tyIl8tBzcXm5+IuXFTIPYu/3n6k6D7KeyqNV9L1NLQKaKEpg1q57CQ7BEIgLsmJzLkTgtMenHd93P0luYrwC7xnoz3RSdSdmD06tYof3VTRTtQBPfd8MUuVbIuuRSwbBNHqmBuHxf4wJiypQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flCBnIDd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYfzb5HQvz2xlw;
+	Tue, 24 Nov 2026 22:02:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.168.131 arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795505882;
+	cv=pass; b=L3q74eOdfpTMW05MeDMr8Y/XuOmtaZvSpnoo/l9niIL3TEHNXpxFCB5w9cyW69uf+rU8jIRar51Xox+D2Cn9QwzQziyZb+tKEhmlMg+lafxPDiRKsqs+i2BiJaiUA31tqcF59GFhvaQbXpLF8ddBVnaiIdXb36Swyz8c3/Ckq97M9hLqCuzynkkUCbT0cc1i9FaVnc7O5AkMb7PXJfafbS5QO8ue+yWHxxKTxQoh4mfgm3Mp9akLwh3HBmwJRKZm2w527xAOkRFUwNLxP9q3OVl3eZ2JeeTuwp4wDWvTkBFLA4ix5ad8LCQ+zX2FTQtXZJPxeVCrjor7vhymkP4p3w==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795505882; c=relaxed/relaxed;
+	bh=WLDBCseQttjsh+YgjaRZ95arQzmquJXtwPce4pg+uuw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=a5IHzzjOmq+p9/0RKARzckPsuY558gFyDQBqxbwl6eRhFd+kvs9UYhiXIXockaKmRpjqhs0tqyN8yx81rJfy7BQYKZnblj1WJ0gLUZwetwfh+FQbRCv/mpXV5IX3x+ep4BV+YjUt/CDjpeN/iYgjoDj2CdxAlKFAi1HZXfAruSdhbzuEYtlv6WBX5UdGaL1BGALmDQJvJFXlw5ltTvljimdFZPr2iu9yUKqT5XCl2EXjVFh4IdhDCpg0E9wn9cBFGyNpG8SW8ycCOWaHO9LPtBBZwZfJL9A/7rbxsitW/CUtqraSHh2m9/dzxa7tqUiS/3vGwp9bmMfx5Ws5ZMCkdA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jB2OhFnb; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=buyHQ1tj; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=jens.wiklander@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flCBnIDd;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=jB2OhFnb;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=buyHQ1tj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=jens.wiklander@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYdl50vy7z2xK4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 21:06:56 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8019840FDD;
-	Tue, 24 Nov 2026 10:06:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D1481F000C4;
-	Tue, 24 Nov 2026 10:06:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795514813;
-	bh=SXEF56RrG5y5FAdKWjS4+NoaPcHn0Sj4aJ75nFCxeYA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=flCBnIDdaewb+skQc1KO+Zef0Qf1B9wCc2dAgiever4x7MW5nx9zb/+o4sW1y0BxP
-	 H+IOx5Xu65qNlumufAS1gkDIpdCSgTbtLOpDv8tw1OOoe6sRtQUhl1VkzLwcJaER3j
-	 md4cj3iCazQGmmzT1pC9W4eHz46jAvTCt5kXrutsUJNG9Hn6yl+H93EbOFLtLKCB0t
-	 OpWPUQuqHCCtHYm0v+p0KZP71uiro0wOGOEd01kh4kRj+pxmoaSCrDg5ktTjqQc7KJ
-	 xcYJ6y4kVJ2/YQsZcE8pS2hwRrk+OqSFVdQabFF3FIuXMEmv7AI8WviQ9Ug/FIUJxz
-	 ZklrsoCYmQ7DQ==
-Message-ID: <0a6fbbd8-6339-444d-bcb0-a74980fb77c8@kernel.org>
-Date: Tue, 24 Nov 2026 11:06:47 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYZRD3BGrz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 18:37:59 +1100 (AEDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AO2k6mM901973
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 07:37:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	WLDBCseQttjsh+YgjaRZ95arQzmquJXtwPce4pg+uuw=; b=jB2OhFnb5kcQJfBh
+	9PooZCIYHGNUVjDcGwumXONQT2rphRiM+HKb+Z5rBcfoZ9URBb6HmUCKyU398p1z
+	0DE3n1unAJCPGSKA9qHqDKxoWrwnFiNfWRaB4F0mZuQ+gIyw7qVkk0rFFWIT+hr0
+	xlGvD+nbKD4m1GM6eRm0zn5N+zABS6NWAAQ4zM+xLUUTfkXPLcKrmGNQSuaj6NVk
+	LSMFCUkYtOrVzKgsE9JjRJp/p/+NgBxqv/l5UGfpSyCfsEnsySH6HhHWtAFvnFTH
+	QiJHfUK8nig+0y+RvbrdRu8nHxWlPz45JWmVSfVxj87VvZ9rM/3qatNGi8g/YvkN
+	LVZ85g==
+Received: from mail-yw1-f198.google.com (mail-yw1-f198.google.com [209.85.128.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j4w6st1a4-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 07:37:55 +0000 (GMT)
+Received: by mail-yw1-f198.google.com with SMTP id 00721157ae682-8b50256700cso64738007b3.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 23:37:55 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1795505875; cv=none;
+        d=google.com; s=arc-20260327;
+        b=TPmKWOsUUCTPtQRvBRW9vZl+th8uGNWfa8p0VJIpgvQT/8GxFGblZWxtXkZ2LSXFs2
+         nVviuh07D5+xlsgXAblMFsjj2o5hMllXvJqP/NYlYDvI/07tEelfpVvYjZdy9UmifPKM
+         B2dZMvi9YkDj/zQ+lcaWMIMmYwt+aU2T11kTsskoqp24vobYey1oIPA6wvpyQXOeOSWX
+         dR7rG7r3xTVfolKYBCro2IGMcnmM8MT5YIbp4R43WXvy0rro4Ch16FbyxlhsMmtxokFE
+         mRQBJlwhM9XikTo9N9Fezc/RHY3unclBrRYvVPvcQq2Y1FksR+XJ73F8PSkm7tME/oLL
+         fwFQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=WLDBCseQttjsh+YgjaRZ95arQzmquJXtwPce4pg+uuw=;
+        fh=OQ5jRewd1oxkUOxHG+9h8hwKHG+Nsf/HOhIuriRc+lo=;
+        b=hR9bgTIKQh2Jnf+2amZ8cxAvd/HxEvxZYpwxquV02kgSQt2t5CEs1qPm1ggyC7BlCr
+         Qwgqc6IM5HqrD8PEOM1I9fyrMer6CLNdwJ7rYH5VoW4jizjwl+wgrV0vHEENK2GQ1yP9
+         mjFJngqDmxbV4rbSE/66R6JXFRaUmyu+mbixzUGhkYIe69mkN3nKB3viFGhcpRjvo1OT
+         75X8HuKCjzWOMFi0X3an3AMp5V79vlvx1rhyN4iOfLsU/c5qCFHN/uL6pPMrFzG2+Vcr
+         micXuiyOboVOf2n0m7gD+iaqcqbODxFiJES7pWGMUyBay3S5S5DvhpJZ82CINXcOndeg
+         mqjg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795505875; x=1796110675; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=WLDBCseQttjsh+YgjaRZ95arQzmquJXtwPce4pg+uuw=;
+        b=buyHQ1tjKg56x2TeWYiS2NMpODyLl3+d7S0MLkApi3Zq54rcs5UqYc5pCcrICHMA7Q
+         7mC8ZoCHBIWIcYtC/WeJGvy7G6ZB/A/Dv+RPcpYweOwdoSXdbtYKTARd4udNi/p7PJdF
+         WTLBVDhJhetF/KOw+jXiWUkJD9eoGzozSfD50BWeW1PaORJttm4bTGLnkQ6GBC14+6RK
+         Puh1JsZRjy0Ivz965D/EwfO4+JvPGBAEuaDgda2DIRe4y8v/y28JdvV25Tv62CfD1mwQ
+         wwxMuLsMky9o0cWAUGc9nyfLt8haJGmSKRmINiS3aiv8C8GPC1+WqPbetqc0t6Zw8Mx0
+         iI9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795505875; x=1796110675;
+        h=content-transfer-encoding:content-type:cc:to:subject:message-id
+         :date:from:in-reply-to:references:mime-version:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=WLDBCseQttjsh+YgjaRZ95arQzmquJXtwPce4pg+uuw=;
+        b=iNTsPD08c6WOVR74aSxmNfEH05vTROwch/ZkRFz4eG1xpP+AMtdp6gS8MAGv/8V1UI
+         NmPkK/m3FkaK4gJBBE25AooAbtWYAeDOHkLTOkY3QwtlUZwmVvgZilKChxcaaiJzq/Nm
+         2U8ONno9YS6d6W43l3UnzvUxak1bmPMXdFf+3iDgnWUw4JdQnzqE9WVRbip6ujAPcLam
+         psgivPFR4IdPUt2HECN/9/yRr1wEI4KEkIzdan8pqk6ykZMMgOlTWkYdABDe5oudUYMj
+         Cob9I77EhzbAD13UC80KCgVexQdHTyDyHNt2DDYxEY+M/00ufkstCyqTe4OBvbBbsiDu
+         eBVg==
+X-Forwarded-Encrypted: i=1; AL+hErGjcATIFjWf8ESb/v34TDurlrc1fcEkmgIa2UxPMfjc0puOftlfTqz1GcHK5k1tTbPnafiXZwDFpXV1KIY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9ulvYmLLlskhBKy2vFPLz/ZOcfq/i6cNTOyHZy7YzT3wyvu0I1
+	xts2AR+yVlVzDNa0yjbrnCXLQJA8tEowpLYlJacdCqz/F4kLYNa85JbBZebwSKmby6dYJZ6Hx70
+	nU5K7QE2vfwqOoCKuEFbnTN2mqNjz1eVJoFb/jV3b78Lw1/0qjndK0H25Q+Z7O0UmWIsJWXPgSA
+	CwxtxGFpnFd+79UincV32YZ1yLcSMmLi/V+SMwfEehqLk=
+X-Gm-Gg: AZFdTZfssUkSqxwRgSU9zbhxRLnb+iw/+wXXKHg4fVvXK5AWPgKG8tD2VcxUWYpjd58
+	8g7MdMHUXjW6h22LXUetHn5jnPGo4s/pflKEoIeKOd1cJXimz9jEbA9vgxR5cW8BALCG6pDNw75
+	KwnXLORf0F/hyW51LwvytFuA+vz4htyWERkA4SGH9dMtEWUGue24s8aAYNHmbpsNTJFAlU8AiBi
+	UfdvRQRHYKdIWBqBLl81rGh+29BeRSpHh2sxO2I
+X-Received: by 2002:a05:690e:450d:10b0:677:cbfc:be28 with SMTP id 956f58d0204a3-67df447c2b9mr2926904d50.75.1795505874992;
+        Mon, 23 Nov 2026 23:37:54 -0800 (PST)
+X-Received: by 2002:a05:690e:450d:10b0:677:cbfc:be28 with SMTP id
+ 956f58d0204a3-67df447c2b9mr2926857d50.75.1795505874551; Mon, 23 Nov 2026
+ 23:37:54 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,154 +123,161 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCHv2 1/3] powerpc/execmem: Don't leave kprobes insn pages W+X
- when CONFIG_MODULES=n
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>,
- Hari Bathini <hbathini@linux.ibm.com>
-References: <cover.1794572365.git.ritesh.list@gmail.com>
- <f75f2cf97f44375fd2c8820e0caeab703cdb371c.1794572365.git.ritesh.list@gmail.com>
- <9a7963a6-0033-45ab-90d5-b1f580a4882c@kernel.org>
- <v75v752e.ritesh.list@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <v75v752e.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+References: <20261105-late-2026-mmap_prepare-v1-0-c56aadfbab8a@kernel.org> <20261105-late-2026-mmap_prepare-v1-11-c56aadfbab8a@kernel.org>
+In-Reply-To: <20261105-late-2026-mmap_prepare-v1-11-c56aadfbab8a@kernel.org>
+From: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
+Date: Tue, 24 Nov 2026 08:37:43 +0100
+X-Gm-Features: Aa3M54q5vxZ2pH5GHxV6_gcu1Tnc83EBXhtYw1pJ9H77Fl7U3CQoqAKpEumRrbk
+Message-ID: <CAGgiveX=Z5gS7iJWBanyysVUStDRbgTnVktQwJySXw_-xL+sUA@mail.gmail.com>
+Subject: Re: [PATCH 11/14] tee: convert shm mmap hook to mmap_prepare
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>
+Cc: Juergen Gross <jgross@suse.com>,
+        Stefano Stabellini <sstabellini@kernel.org>,
+        Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+        Dexuan Cui <decui@microsoft.com>,
+        "Michael S. Tsirkin" <mst@redhat.com>,
+        Jason Wang <jasowangio@gmail.com>,
+        =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+        Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+        Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+        "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
+        Paul Moore <paul@paul-moore.com>,
+        Stephen Smalley <stephen.smalley.work@gmail.com>,
+        =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>,
+        Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Ryan Chen <ryan_chen@aspeedtech.com>,
+        Billy Tsai <billy_tsai@aspeedtech.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Abel Vesa <abelvesa@kernel.org>, Jens Wiklander <jenswi@kernel.org>,
+        Sumit Garg <sumit.garg@kernel.org>,
+        Scott Branden <scott.branden@broadcom.com>,
+        Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Richard Cochran <richardcochran@gmail.com>,
+        David Woodhouse <dwmw2@infradead.org>,
+        Andrew Lunn <andrew+netdev@lunn.ch>,
+        "David S. Miller" <davem@davemloft.net>,
+        Eric Dumazet <edumazet@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
+        Paolo Abeni <pabeni@redhat.com>, xen-devel@lists.xenproject.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-hyperv@vger.kernel.org,
+        virtualization@lists.linux.dev, linux-sgx@vger.kernel.org,
+        selinux@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org,
+        op-tee@lists.trustedfirmware.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-GUID: mBmun29fpxnrEy5ioW8EUfbl4D6p62Vv
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDAzMCBTYWx0ZWRfX0cvB+NttGP6H
+ q0ckCASdUqNMKcT4KCTn+xEWTl62WJr0aM0zeV+AcAeC14lyg7mgAjPOU7ZWNvklsJLn6EOCTqa
+ /hyP4fBWztSfMjY/bhIZcZvr/BCZBIc=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDAzMCBTYWx0ZWRfX2JpqHo+SK2ry
+ YjEo2pJUIdnUmGqrzLmOUt/RQHaKtlB8cheKaipyI9mEqoct+N3jkfVEmq6FAvYJ/4L2KRmmV5H
+ 87xnvD7diXpnRaC57/BPZRY5KFCp/SJi91JGTpkoVpnPVFr0sA5cTfZ+HXKnRyB9y0obDXfcAwy
+ jUh7anqqbhAEmSu/TTnx2LxKgZVU0V8nmlsSdWENBS5xQmhXJwSqMrGZEek6PQL5vO30XZf3EI8
+ iRm0ASfz27cEnU6DtjgloduCP5lw2nZgS284ivrU7uTkpb76ebqGLqNoW8K8RjrPbL83H1CrsMY
+ 0vRWPwdvGB5lSw5YkCkTLA4Pr5zVVdg0c9UHVW1mrGhSttWOFaOvHI9p73VlGFWyUY4MU2i6o4Z
+ z7n943K0tIlhAG8ClxiXSf9UM897EucNVg7nPtSdkalPTiO6J3zvRNsirgHpDeIaioghO0UL1eX
+ UwGR+sSj3P3EIXu98tA==
+X-Proofpoint-ORIG-GUID: mBmun29fpxnrEy5ioW8EUfbl4D6p62Vv
+X-Authority-Analysis: v=2.4 cv=V8DoQuni c=1 sm=1 tr=0 ts=6b053ed4 cx=c_pps
+ a=g1v0Z557R90hA0UpD/5Yag==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=eoimf2acIAo5FJnRuUoq:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
+ a=97S62Xg_vF6B0O42EdoA:9 a=QEXdDO2ut3YA:10 a=MFSWADHSvvjO3QEy5MdX:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-24_01,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 suspectscore=0 bulkscore=0 spamscore=0 impostorscore=0
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 phishscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
+ definitions=main-2611240030
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+	SPF_PASS autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Hi Ritesh,
+On Thu, Nov 5, 2026 at 10:08=E2=80=AFPM Lorenzo Stoakes (ARM) <ljs@kernel.o=
+rg> wrote:
+>
+> Move from the deprecated mmap hook to the new mmap_prepare hook, using th=
+e
+> PFN remap mmap action to map the shared memory.
+>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> ---
+>  drivers/tee/tee_shm.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 
-Thanks for your patience,
+Reviewed-by: Jens Wiklander <jens.wiklander@oss.qualcomm.com>
 
-Le 17/11/2026 à 18:15, Ritesh Harjani a écrit :
-> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
-> 
->> Le 13/11/2026 à 13:31, Ritesh Harjani (IBM) a écrit :
->>> commit 2e83e2ce34ff ("arch, mm: promote DEBUG_WX to CHECK_WX"), made
->>> CHECK_WX default STRICT_KERNEL_RWX.
->>>
->>> Now on powerpc, when we boot with CONFIG_KPROBES=y and CONFIG_MODULES=n,
->>> we can see the following warning splat at boot:
->>>
->>>       powerpc/mm: Found insecure W+X mapping at address 000000002ea08992/0xc008000000000000
->>>       WARNING: arch/powerpc/mm/ptdump/ptdump.c:194 at note_page+0x4dc/0x4fc, CPU#0: swapper/0/1
->>>       NIP [c0000000000ac204] note_page+0x4dc/0x4fc
->>>       LR [c0000000000ac200] note_page+0x4d8/0x4fc
->>>       Call Trace:
->>>        note_page+0x4d8/0x4fc (unreliable)
->>>        ptdump_pte_entry+0x70/0x94
->>>        walk_pte_range_inner+0x15c/0x260
->>>        walk_pgd_range+0x6d8/0xd5c
->>>        walk_page_range_debug+0xa4/0xf0
->>>        ptdump_walk_pgd+0xec/0x304
->>>        ptdump_check_wx+0xd8/0x154
->>>        kernel_init+0x94/0x26c
->>>        ret_from_kernel_user_thread+0x14/0x1c
->>>       Checked W+X mappings: FAILED, 1 W+X pages found
->>>
->>> This happens because CHECK_WX noted a writeable + executable mapping.
->>>
->>> This happens because execmem_arch_setup(), checks for
->>> struct_modules_rwx_enabled(), while kprobes depenency on modules was
->>> earlier removed via commit:
->>>       7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
->>> Since the insn slots are only written with patch_instruction(), which
->>> does not need this mapping to be writable. This patch fixes it by
->>> checking for strict_kernel_rwx_enabled() instead.
->>>
->>> Fixes: 7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
->>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>> ---
->>>    arch/powerpc/mm/mem.c | 2 +-
->>>    1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
->>> index b617b69452cd..77b63b52d8f2 100644
->>> --- a/arch/powerpc/mm/mem.c
->>> +++ b/arch/powerpc/mm/mem.c
->>> @@ -388,7 +388,7 @@ static void prealloc_execmem_pgtable(void) { }
->>>    
->>>    struct execmem_info __init *execmem_arch_setup(void)
->>>    {
->>> -	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
->>> +	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
->>>    	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
->>
->> Looking at this, I'd use PAGE_KERNEL_X instead of PAGE_KERNEL_EXEC.
->>
->> Then we could get rid of PAGE_KERNEL_EXEC completely for powerpc.
->>
-> 
-> I think it's best if we keep the definition of PAGE_KERNEL_EXEC on
-> powerpc as PAGE_KERNEL_X, I think the core expects the arch to define
-> this, if not, then it defaults to PAGE_KERNEL e.g. see this:
+Thanks,
+Jens
 
-Yes, which is consistent with what powerpc does when strict modules rwx 
-is enabled.
-
-And indeed it doesn't matter, because module code does a rw allocation 
-at the begining then convert it to ROX or X later in 
-module_enable_text_rox(). See comment :
-
-/*
-  * Since some arches are moving towards PAGE_KERNEL module allocations 
-instead
-  * of PAGE_KERNEL_EXEC, keep module_enable_x() independent of
-  * CONFIG_STRICT_MODULE_RWX because they are needed regardless of 
-whether we
-  * are strict.
-  */
-
-So really PAGE_KERNEL is what is expected nowadays.
-
-> 
-> include/linux/pgtable.h:
->    #ifndef PAGE_KERNEL_EXEC
->    # define PAGE_KERNEL_EXEC PAGE_KERNEL
->    #endif
-> 
-> Also mm/execmem references PAGE_KERNEL_EXEC in __execmem_init().
-> Although it references only when execmem_arch_setup() is not defined by
-> the arch (which is not true for powerpc).
-> 
-> 
-> However, even though nothing breaks today, but later if there are other
-> users of PAGE_KERNEL_EXEC, then PAGE_KERNEL does not have X (execute) bit
-> enabled, so it might break in future. Plus looking at above, I believe
-> there is no harm in keeping it - since core expects the platform to
-> define it's own definition - due to all the other references it has.
-> 
-> Thoughts?
-
-Yes but PAGE_KERNEL not having X is on purpose, module first allocates 
-non-X mem, sets up everything then converts to X or ROX. I don't think 
-there will be any more users of PAGE_KERNEL_EXEC in the future. It is 
-going in the other direction I think.
-
-> 
-> However, if you still think we should remove it (?) - then I feel let's
-> do that as a separate cleanup patch. Since this keeps the usage of EXEC
-> same between prot and kprobes_prot variables in patch-1, which we also
-> need to backport.
-
-At least we should stop using it in our own arch, it would help with 
-readability. And really I think we shoud drop it completely. But OK to 
-have it as a separate patch not to be back-ported.
-
-By the way I also see CONFIG_ARCH_HAS_EXECMEM_ROX, maybe we should 
-investigate in using it on powerpc.
-
-Christophe
+>
+> diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+> index daa4af1e089e..8fcbf0232aeb 100644
+> --- a/drivers/tee/tee_shm.c
+> +++ b/drivers/tee/tee_shm.c
+> @@ -567,10 +567,9 @@ static int tee_shm_fop_release(struct inode *inode, =
+struct file *filp)
+>         return 0;
+>  }
+>
+> -static int tee_shm_fop_mmap(struct file *filp, struct vm_area_struct *vm=
+a)
+> +static int tee_shm_fop_mmap_prepare(struct vm_area_desc *desc)
+>  {
+> -       struct tee_shm *shm =3D filp->private_data;
+> -       size_t size =3D vma->vm_end - vma->vm_start;
+> +       struct tee_shm *shm =3D desc->file->private_data;
+>
+>         /* Refuse sharing shared memory provided by application */
+>         if (shm->flags & TEE_SHM_USER_MAPPED)
+> @@ -580,17 +579,18 @@ static int tee_shm_fop_mmap(struct file *filp, stru=
+ct vm_area_struct *vma)
+>                 return -EINVAL;
+>
+>         /* check for overflowing the buffer's size */
+> -       if (vma->vm_pgoff + vma_pages(vma) > shm->size >> PAGE_SHIFT)
+> +       if (desc->pgoff + vma_desc_pages(desc) > shm->size >> PAGE_SHIFT)
+>                 return -EINVAL;
+>
+> -       return remap_pfn_range(vma, vma->vm_start, shm->paddr >> PAGE_SHI=
+FT,
+> -                              size, vma->vm_page_prot);
+> +       mmap_action_remap_full(desc, shm->paddr >> PAGE_SHIFT);
+> +
+> +       return 0;
+>  }
+>
+>  static const struct file_operations tee_shm_fops =3D {
+>         .owner =3D THIS_MODULE,
+>         .release =3D tee_shm_fop_release,
+> -       .mmap =3D tee_shm_fop_mmap,
+> +       .mmap_prepare =3D tee_shm_fop_mmap_prepare,
+>  };
+>
+>  /**
+>
+> --
+> 2.56.0
+>
 
