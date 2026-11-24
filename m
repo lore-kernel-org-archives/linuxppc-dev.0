@@ -1,81 +1,81 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9946B606A69A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 05:01:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 18792606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 05:01:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Nopl3EES
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=syuMhgWr
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYVyZ3L8Xz2yCP;
-	Tue, 24 Nov 2026 16:01:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::335"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795496486;
-	cv=none; b=GPVpZGdStsS5skjssn41jbpArKxCAyuI3BiqXLlbjeLx8UWw3/4X8ggcPBdU2HOY9Hvo2j3+kDeYP3kcu739zDpn+FffXdd8SCZoHAVnyD4Zk30iKI0O9iPK/yCyxMvjmeGkCfo70bwjqnNKibT8SW/UMcmKAZwQAKqCvfnle+PEygFmLgcd88nI7cHxYvm/+E4kmvtXly9it18sPNHySlBs3k1TiQwexcnslY/6dLNkGzbsbH3L0dqflNJhTNpFhG0rujYAnQ13X6zpveaTVQtjNaHPCk8CyIE4+QWUy4JcD5eevy43oh6p8UsYXnixU0HJ+j9Zy23c38gblcddzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYVyc1SYGz2xf8;
+	Tue, 24 Nov 2026 16:01:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795496488;
+	cv=none; b=E5w3g6XTayCU548P9g0zNioEsnCd2Peq/5dWEnR6UNn+zu62fLiR8ptyUkeSM9vgdfjpdIWqe4c92r9QPsWIbga2F41rFEVRGlO6lqaLxyVnwKeHLxLjfwIf6CTVcsqAsgf2GtFEHGd24rhtRtOWl9NE07KV4m/hAY5JuhtRIfq+qVa65bwR7oxJzetuh01r4/y4XpdkRXrsn6xutwJXazLEv2lVgJ0sHUTzCRzGSNJkA8Wztc7iwvpxa0UhscCNBobyzpM93Wi7oIG6rMyjysAcmx2PWYXamHbv6YrIylqe9A/LIFkKcqjpkYb+e0XEvuY4+PoFsxKwyWImKOi6yQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795496486; c=relaxed/relaxed;
-	bh=ktgJZX8JcFhhcfmNRdxV4CsSaV1czgWtlUVf7nzy85g=;
+	t=1795496488; c=relaxed/relaxed;
+	bh=Vs2X3vFXBgQuWTNtNhfJh5Gfnrco9rGsYZYJIbU5LNg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Wv4gAYZlIUcZoGI9TfyJRUgGX0LCENKDgMgXf5pK01GfQyvlHA753+El2FOme5gStyQktsF1VUO8hcFvhrVcJ+aRGyF11+556wZVonncHRBSAH/pFnjYiiYKTD5hOBxpctSPTJ4Z8vtZ4zOMPY5UMB2USPqZxBZdaiHZJBYe9ifeHZoLUxqSXrp0hPDV2DV3TkHBQyasWJXwNEZCaCEOawtqzOabkX0G7jrknrVt4+IEAkfPdvUc/5qWd9CWaEHjakqdqB5Fuk3p23tfQQwQ/FhU8mDAhGzXflRJssHVgFRIFociO9JqcubiW13ebVkuKEK1NgEcWGoTLnDDEnG4YQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Nopl3EES; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version:Content-Type; b=EU41GFKuRKQv2EGFE7tvsSxi3vL0QUcxclKkt1mF1hjBapaElaTYWypscqeF0GsJKezsfuzj2mTeEuk1bqKhTIhFWrAaTANkenz5mkMJ0GhpZ2SSSmaXLZBMbYxzf7QT4UZcBbJDLlDibB/z6jkV5+4w7rvxWWwgyISMNQZUZU86tEU6Qcro270LfMrUdFQEOOaIV9qyc24WzAMUpBRbMe7KxawQbAqErLO8DVRyYzYRYDY1JessRhEcyyFd5sdLbw8yGGpyDWjT+doUlu1egMKNok9Ik/3v/wkwNwCqpJz874P5DTDA4eY+jUJ1+j+gDHZWaEgIfx+JJ64uly+AYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=syuMhgWr; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Nopl3EES;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=syuMhgWr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYVyY389wz2y2b
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 16:01:25 +1100 (AEDT)
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-4b79502c27aso38869985e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 21:01:25 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYVyZ5wfYz2yLF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 16:01:26 +1100 (AEDT)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-4bb70074ab2so42602745e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 21:01:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795496482; x=1796101282; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1795496483; x=1796101283; darn=lists.ozlabs.org;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=ktgJZX8JcFhhcfmNRdxV4CsSaV1czgWtlUVf7nzy85g=;
-        b=Nopl3EES6WjW/DtON5YTXMplxIk/WKTQdtnN/Uu0NurZYWcxzklU71cuWTCkzqFnPS
-         2bBM48Ahd9mLXRk89jQsYxwAqCUVWKH5wop1cXoOAM9KxVgiXgShfuN6sC333NDU/wPd
-         lPHgfGk/h8nCrwtXVAj8dQRkKfpVjukyNYFehw3K6dsCnKCf6K604KcOh9/KDoJUq9M5
-         N8OC3DOVOF9s29ccY/RqgZ69ACnCkdCWrJ9qUQ/rbMshatJ45B1otnxYWB+eei7J32Lk
-         BrrOJBWh1HkfIWqxDdgnuFQUEryh7BlRCUcX4ND13P3acWvKwDB7sYYyoMHL6Mp9q3Kt
-         m/rg==
+        bh=Vs2X3vFXBgQuWTNtNhfJh5Gfnrco9rGsYZYJIbU5LNg=;
+        b=syuMhgWrp9mMa0qTrWlZIguUnRsivTxvXd/jpdF5aKr/eIMADYnL8EEGmb5WlxUWGn
+         WSNlp/HYjDuJVKSScoy7HAIZa929pISiToA7HjpXosdmiwm9fKiVmfKU1kX73E0UHjD0
+         Sjd4403v6VBvIT5x0k+jkuv0KrLFXwCCTm3QmFv4V8GgJJiDOwrSR05NTAAXK7EDwfHQ
+         0lDH6NFX2cL59+Gy57n00/9HH4pIRY5txyPxSfhxXPcGSV84xjdSXRLcYrn3RmnVzz1I
+         u0NIsGVzh7j0630OrbUKsksrqWE/QywUpeBSLZSZ/iQJtE2IKbWF2Xt0pe08xk81B/gw
+         6p/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795496482; x=1796101282;
+        d=1e100.net; s=20260707; t=1795496483; x=1796101283;
         h=content-transfer-encoding:content-type:mime-version:references
          :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=ktgJZX8JcFhhcfmNRdxV4CsSaV1czgWtlUVf7nzy85g=;
-        b=dsyHU03vVh42Vo7M+Lime4ObmC/6816hoNOKkfq7BDPWA11v58Ws9ADwv4gT7HLXyJ
-         8JT7PRjC27D1qbU2nLZWxuZy8uiAkLVFr8dEsbP88iBdWC/KWzfirKVmz8U3/IHnzlkJ
-         LuLy7MXI957+OyuWXn+hmnvn9iqEcVBCf+yAUZOpbYgLnr0TMlIWD1PgzUN7KVTKq5OI
-         xEWYvxZyhTZvK9L9IPS9BJ4EHKL4mmOmp61uko2+Q9w2g/CDHw6TiXrBx8RUS9YMCdrR
-         k92HtUJ8oxLSV/iDqHp/1DjT/9Pq6/c+YyrWZXRIIJt8w1HtXKZMcKLgOJCfZP4yJjwv
-         6rFQ==
-X-Forwarded-Encrypted: i=1; AL+hErFNsdbpBG81O5JspLIJAO3DJbXMYa1YqFkHGQrNZaUGptoVohP5xMGwmzF5myB7XQPuuw1r44Oth30u7U4=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z8ewh/DI9cpVyVzyEYfXgmaJ61pmpK1rgovN+1tJ8wuD2apBO6U
-	pw81to836BFI2hrOfh5t0r3HGpiyXxlnGaVmmYRu2K4cHz7jZHCWHpDR
-X-Gm-Gg: AZFdTZeo+IMZ0EeTn3deZi+WcRkb+G1q172nLlj7ZDDl0u6pCGCfIY6Tef127R4Ve2M
-	zvSjsyNcRJfnBZN/VCKKmomiKIPtOnD/rSc3f1/pIa0fyxYOP3Djzpse21cmpXy4o4CMfEOPNW5
-	+gI4ymN/J9+TdLVA2ll+uBOhOgBTCFNXQ970qYYteGxui/wIiAZQopDGclYkY542fWho1u4+Hba
-	ty0IxoqqTLxtSwmidJruN9w/iRYTKv0XpedevFSqeWNmxJTpGMisaFjCLpwEUrYoPTT0krd3RWi
-	u7txkW2NubntYtwTsoqTP/aIl9MB8Vgew63j/rXfl/kLaslxODsh3h6/OtSOyg/OWxDX7LhWieL
-	/h35EWbvIQTVgrCTgGbhO9ZYj2x6PJExDGTrVNDUWrDECXXCGggDrSe+Hco2rNZWrd7IpD6XFeK
-	hHBVmL6uL+QmTpPrcYTaQOyUqV0OZYLnX6vRSGPUwiyKUKkwLKPlR89OLTaTJnx50E84ScfcTO+
-	yeONDxQ5QpJJorr8tSr3X22XirWYyhTgrJBqyF3abr/IStto3LCsRd8RCxX+VWXTT2VicTeBuLn
-	vdZQLeUsJZhvhm6wgr5+6AgyWTPBXxtR4DW+xEh1qfgRu/V+PmXVU9utNkwnZIIXetImJnlPyHi
-	nJVr10OiJrgYcPfgvscRl15EwS5MxI8sRgbNhNDVhO3j3NUZiLk2+QMtxeXYNZ4xFSrvX5q6GBC
-	OR3D+O6lVlV1Bo51AlAaPtVq8k4bpqgHb1OgLidEP03nWF3W6jr4fE
-X-Received: by 2002:a05:600c:3b1d:b0:4bb:6991:2330 with SMTP id 5b1f17b1804b1-4bb8881a890mr272747495e9.22.1795496481860;
-        Mon, 23 Nov 2026 21:01:21 -0800 (PST)
+        bh=Vs2X3vFXBgQuWTNtNhfJh5Gfnrco9rGsYZYJIbU5LNg=;
+        b=1UWR1whuGWYLfhPv0sBK8WI4ecz4qC0qUv1X9Z9BqjsZV4fk5rZBu6dVLwpay1L41U
+         suhtxMT/cT4/Ff8/SZm7uW9azftfg2AjaCwQL56RQ13P8PM+u7z53AC515WTfwV0CXnv
+         rYSBeCXqYn10+Tvw2aYZi5WqwlWKFByrDLKPwfHCVZhBZN4CPZtMSyhX3sMEAMHb9sAZ
+         pxdHzIhSmNQKNw1Vm1sFlZ4js6LkN02F4CC03+tDkazaari0TZ85wKzbheHvR+woMrwY
+         cAvM8/ezCMgRlpLzLZ2CVAjwtqAQ9ca0WGDauKD3X8HRuNI2Ct9pofdLS2gHtYJ7NaTJ
+         jImg==
+X-Forwarded-Encrypted: i=1; AL+hErEWKAyjz5G93Ge9CkNJdHdhtQqTNn+8Qugb8WYqF/bhY/C7+zQjATlY+i8G7fSY4niQBrhQUk8xz9n7A/g=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9gySWrYEkH6vA1gZO4YilFhmIS/6iCUtyKTGgukwIOMe+JRjNk
+	wDjKl1qKeIXOLNjfbpqFzAKA1PMuK73a15oM8oj/Tl92aKQ3NdZRepg7
+X-Gm-Gg: AZFdTZcKAaWrn4h6JfRFIvIGgN863UcWZwPewPQ1bMBKi8OH0R4puEX7+rQRqhJhy16
+	OGGlYsgBAUHB37QL68Qczq1F6p1PKyGfymJWgzm1Svol/ZKVYKISdCTb3AbRskgOseVesj2krBc
+	AWijejdXR9Ni4V+uq8aTjYNLrbH8mov1VdPBjDNMBo+h1haJCEubkISEXgWxfodqDNqaml35IRg
+	LQBLesP3frjulcmUSHFyMtmRjdmCP/zRsXMWA2f+unsvYYh74XZQ76I6nwUl4/DFWus2BczQJ2e
+	WKSBD6Gmft2sG+wWTOd/vlJyUgUZXpvdavmKoxCclJNWM16V2Z+VouCkRt9DTAarLrj/T01cWtl
+	OZXXnoJC8lrGZ7329mWU6ikT5MlZi2q5e0j9U3BPZ8i1SGjBP/Knbm1eldWQ8ObUKSJv7G8JMx5
+	qBuDi7YfvExTboiuhIjqHITZYSLwgznKXvc3PHtNd7OtP+UUDR4h3QlBVF3yH1ybra2coFjOCou
+	6vJPpAo1SLWOQJxcv5OmOZKmFWXmN0CG+RjgjKDGRs2ielbEAGKRSpWC1R7U8nyfYzhJg6rIsMc
+	Zse+c+w4O2gnVKKoEGmQQEEnhJVClGtxJOSnluog9BVry6Kzvv0BozugYj9BCNj+mD4v7BvqgVg
+	2WAAqS55Fkz6iE/hHAnP6ifhibF30ogbFQ/+H4G9btVsw8nCVRjJkDZ6AmE1oMjmCHF4GUnUUVr
+	dm6OnrMW1UmwCU7yPQP87N6tUa2g7GBbFeRXkCXQGY/8h2X4nDHUf+
+X-Received: by 2002:a05:600c:4515:b0:4bb:659c:b8db with SMTP id 5b1f17b1804b1-4bb88813b27mr278328245e9.12.1795496483167;
+        Mon, 23 Nov 2026 21:01:23 -0800 (PST)
 Received: from localhost.localdomain (dynamic-2a00-1028-8388-a84e-f512-85ee-fdbe-0621.ipv6.o2.cz. [2a00:1028:8388:a84e:f512:85ee:fdbe:621])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88442693sm353489155e9.1.2026.11.23.21.01.20
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88442693sm353489155e9.1.2026.11.23.21.01.21
         (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 23 Nov 2026 21:01:21 -0800 (PST)
+        Mon, 23 Nov 2026 21:01:22 -0800 (PST)
 From: Josef Schlehofer <pepe.schlehofer@gmail.com>
 To: Wim Van Sebroeck <wim@linux-watchdog.org>,
 	Guenter Roeck <linux@roeck-us.net>,
@@ -97,9 +97,9 @@ Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
 	devicetree@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/3] dt-bindings: watchdog: maxim,max63xx: Add wdi-gpios
-Date: Tue, 24 Nov 2026 06:01:16 +0100
-Message-ID: <20261124050118.87944-2-pepe.schlehofer@gmail.com>
+Subject: [PATCH v4 2/3] watchdog: max63xx_wdt: Add support for specifying WDI logic via GPIO
+Date: Tue, 24 Nov 2026 06:01:17 +0100
+Message-ID: <20261124050118.87944-3-pepe.schlehofer@gmail.com>
 X-Mailer: git-send-email 2.54.0
 In-Reply-To: <20261124050118.87944-1-pepe.schlehofer@gmail.com>
 References: <20261124050118.87944-1-pepe.schlehofer@gmail.com>
@@ -128,45 +128,107 @@ X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 
 From: Pali Rohár <pali@kernel.org>
 
-On some boards only the SET pins of the watchdog are mapped to the
-register, and its WDI (watchdog input) pin is connected to a GPIO. The
-CZ.NIC Turris 1.x routers are wired this way.
+On some boards the WDI (watchdog input) pin of the chip is connected to
+a GPIO, and only the SET pins are mapped to the register.
 
-Add an optional wdi-gpios property for that GPIO.
+Take the GPIO from the optional wdi-gpios property. When it is present,
+ping the watchdog through it instead of the register.
 
 Signed-off-by: Pali Rohár <pali@kernel.org>
-[pepe.schlehofer@gmail.com: rename gpios to wdi-gpios, reword the description]
+[pepe.schlehofer@gmail.com: use wdi-gpios, request the GPIO as an output
+ with devm_gpiod_get_optional(), ping without the lock, include
+ linux/delay.h, update the header comment]
 Signed-off-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
 ---
 
 Notes:
     Changes in v4:
-    - rename the property to wdi-gpios (Rob)
-    - wrap the description at 80 columns (Rob)
+    - take the GPIO from wdi-gpios
+    - request it with devm_gpiod_get_optional() (Tzung-Bi) and
+      GPIOD_OUT_LOW. v3 passed GPIOD_FLAGS_BIT_DIR_OUT alone, which sets
+      no direction
+    - ping without the lock, with gpiod_set_value_cansleep() (Tzung-Bi,
+      Guenter)
+    - include linux/delay.h (Tzung-Bi)
+    - print the error once (Tzung-Bi)
+    - say in the commit message that the GPIO replaces the register for
+      the ping (Tzung-Bi)
+    - update the comment at the top of the file
     
     Changes in v3:
-    * Extend description
+    * Use gpiod_set_value()
+    Changes in v2:
+    * Usage of dev_err_probe()
+    * Fixing assignment of wdt->ping
+    * Remove clearing of wdt->gpio_wdi
+    * Move YAML change to separate patch
 
- .../devicetree/bindings/watchdog/maxim,max63xx.yaml         | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/watchdog/max63xx_wdt.c | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/watchdog/maxim,max63xx.yaml b/Documentation/devicetree/bindings/watchdog/maxim,max63xx.yaml
-index defe0401ded0..72f16d9f4596 100644
---- a/Documentation/devicetree/bindings/watchdog/maxim,max63xx.yaml
-+++ b/Documentation/devicetree/bindings/watchdog/maxim,max63xx.yaml
-@@ -28,6 +28,12 @@ properties:
-     description: This is a 1-byte memory-mapped address
-     maxItems: 1
+diff --git a/drivers/watchdog/max63xx_wdt.c b/drivers/watchdog/max63xx_wdt.c
+index 9e46b86b9b20..482cf9f6bd6e 100644
+--- a/drivers/watchdog/max63xx_wdt.c
++++ b/drivers/watchdog/max63xx_wdt.c
+@@ -7,8 +7,9 @@
+  * Copyright (C) 2009 Marc Zyngier <maz@misterjones.org>
+  *
+  * This driver assumes the watchdog pins are memory mapped (as it is
+- * the case for the Arcom Zeus). Should it be connected over GPIOs or
+- * another interface, some abstraction will have to be introduced.
++ * the case for the Arcom Zeus). The WDI pin can be connected to a GPIO
++ * instead. Should the other pins be connected over GPIOs or another
++ * interface, some abstraction will have to be introduced.
+  */
  
-+  wdi-gpios:
-+    description:
-+      GPIO connected to the WDI (watchdog input) pin, on boards where WDI is
-+      not driven through the memory-mapped register.
-+    maxItems: 1
+ #include <linux/err.h>
+@@ -18,6 +19,8 @@
+ #include <linux/kernel.h>
+ #include <linux/watchdog.h>
+ #include <linux/bitops.h>
++#include <linux/delay.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+@@ -50,6 +53,9 @@ struct max63xx_wdt {
+ 	void __iomem *base;
+ 	spinlock_t lock;
+ 
++	/* optional GPIO connected to the WDI pin */
++	struct gpio_desc *gpio_wdi;
 +
- required:
-   - compatible
-   - reg
+ 	/* WDI and WSET bits write access routines */
+ 	void (*ping)(struct max63xx_wdt *wdt);
+ 	void (*set)(struct max63xx_wdt *wdt, u8 set);
+@@ -155,6 +161,13 @@ static const struct watchdog_info max63xx_wdt_info = {
+ 	.identity = "max63xx Watchdog",
+ };
+ 
++static void max63xx_gpio_ping(struct max63xx_wdt *wdt)
++{
++	gpiod_set_value_cansleep(wdt->gpio_wdi, 1);
++	udelay(1);
++	gpiod_set_value_cansleep(wdt->gpio_wdi, 0);
++}
++
+ static void max63xx_mmap_ping(struct max63xx_wdt *wdt)
+ {
+ 	u8 val;
+@@ -226,6 +239,13 @@ static int max63xx_wdt_probe(struct platform_device *pdev)
+ 	if (err)
+ 		return err;
+ 
++	wdt->gpio_wdi = devm_gpiod_get_optional(dev, "wdi", GPIOD_OUT_LOW);
++	if (IS_ERR(wdt->gpio_wdi))
++		return dev_err_probe(dev, PTR_ERR(wdt->gpio_wdi),
++				     "failed to get the WDI GPIO\n");
++	if (wdt->gpio_wdi)
++		wdt->ping = max63xx_gpio_ping;
++
+ 	platform_set_drvdata(pdev, &wdt->wdd);
+ 	watchdog_set_drvdata(&wdt->wdd, wdt);
+ 
 -- 
 2.54.0 (Apple Git-157)
 
