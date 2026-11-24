@@ -2,72 +2,62 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1376606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 14:28:28 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DDAEC606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 15:12:24 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SuUdRgmn
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Uv6vngwh
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYlXq2jW7z3c20;
-	Wed, 25 Nov 2026 01:28:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795530507;
-	cv=none; b=nc+pcglIpMSjRULDJV1NL+7Y8yQwqSXAdc+xqPihVOFwpqVgOhUe+D3ZgSBaRYfTV9aTsNj/QsfI4YfS9QqLibyDnFC3aA8e67HeyWTYf7R0yf7rRcQIz5/r5r6ay/TVyMXNBhw4biUk/NU9lukQKELmxxgMdyQmo49Wb3bkU4S18KEjTz82WCTnK2iizqLZ2r37PsB5/t0QD+sq+6yUW0ZXlt+5lSFyMnfoP3iaUqeeNoBsr5aEoNoM7omOi4q6JA6cC70/ee2D/MVQ5khJ9XaLTG3dANOQniBBs2Z1eUeQqUyA0W6G7nkHfvXeOla5WtdGNe2/BBx4NpDxUmSUSQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYmWV4BF1z308H;
+	Wed, 25 Nov 2026 02:12:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795533142;
+	cv=none; b=F8pANPfynZ40oqj7HUnjK/uux5RZ1YykJn9BMULC4ldIPeKe/SJzpKuRaOGNSKLcCzd2esVYCqweE42ATXjzlpdVyLsMnrdfNWtfr07KJdAib5W10EWxJlWYyCjgXNnyhZ1IHpZ+xSy57VqSeneVmlRJGQ1t+oP+gZhn3pcj0dw3+LviqK0/BnStOlW+6O1szsqisanYPwGTPdu3TmI9yZ4vKEx6TD3iAHsgxYdDiEXF1yjtvWPT2STAZWy1deR7qKWIZs2AH+j5sftkOWjSZc+4CBh1rf4NdSVVj93hu1gnhIwcrUQqJDGxttMRmMOSLxyuDgK0iH/Ma8j8M/anxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795530507; c=relaxed/relaxed;
-	bh=iryZQVDWMboCr+mzKmPFMcC4rJjIhj+mBGOAQYXnrgQ=;
+	t=1795533142; c=relaxed/relaxed;
+	bh=4i9A70D1gPOP4oksoFqIZyMS3O6430jvP/+79vhurdg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=EcJ399pkmw/dKJ4+6m68y6kg80oUdF94ir++raeob0okTab2jPJ04CObnJS2FBQx2yM+4pB8e/Q/1l47JIVDRF3ooRqYjwCpHWYODgxJuQaJosuLbcnP+4aKYZ1cFDgspwU0IfywU1v/ZnddaXimB0TZXdTGbTLu+dnvFhVsknU5CcV9ldjCph8CmjKcdXQjNULjgshhkRfEyDb8ArmonOMdmxjDuh9jRSIeV3EmoxCIp0dF0rK044CjyB7tAsNFQ/c/uccLYGOzwiIozYbXfnvJr/XZ2hmZ5VrtLnWiHehHvl85t6sJMjY301wuOqCqCPXAJp0wB/dH9Hx04wfKow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SuUdRgmn; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=f3RPz08ERSpmJn5EYqqzesTmMKJt8jOpThYuXjDkeH2NTd8cXBKHTnywNXGzBwQXtEbdPL6pvoASOQTd7pAJ4eFMGEXHvcG1nmI2qT5De9q891hj6LGdym2DnvwgS95jhRiwsmqafGNGPUzmM8VBzPKIeSsBfE3826AzvicziwoxSOOXlXO+3wV/Jr3YXCMKUUbxAF9uarFj2/HOyUIdogmz9Z0Fa2H8hT0RaOJAw9XJkLMiJ5eR97IWM5cb99rjSnJwY/dHW8EgWJjbhgsH4hGyJM1pP7AMHrxQTb8rqC2gSxOClusEuBcZKMoh5gAgziaO0+Rav5l50Kb5T7raAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Uv6vngwh; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SuUdRgmn;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Uv6vngwh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Wed, 25 Nov 2026 02:12:19 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYlXm5VLLz3bxM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 01:28:24 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOB4VkE2236219;
-	Tue, 24 Nov 2026 14:28:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=iryZQV
-	DWMboCr+mzKmPFMcC4rJjIhj+mBGOAQYXnrgQ=; b=SuUdRgmnxoRKE7RsLy2xSW
-	0g/8sLa8/aFDv4r7IKiEumfvoyl9Zzb1nI5a1zmSHU+ZGbrM8OQ31oTEl3ClUyrj
-	tfFHV/YNzy1nWe3vC10E+IYJmLQdPe2361ME/ibS8Wkt4zvl2rNHZnNckjRxzGc/
-	doj0JVjWuoCDE1digOadraJnMiLa3vyckkfTnxGUjkQOpxytuWyZ+mZob+6BcCAb
-	em+wI76RSyKIrhE4Tbt+uTZJueWcNi+YYfDNJXJ6I8CgSgSNnvVL47s32Jf63TD6
-	R+Ra9z9BUss8ZIJ4/IZIExgB8XdsKUibWSuzeNaK5n14YskRnMveQM918N95ZtyA
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34fkg2yw-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 24 Nov 2026 14:28:21 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AOCoR9U3374824;
-	Tue, 24 Nov 2026 14:28:20 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j5axkr9fu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Nov 2026 14:28:20 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AOESDdk39059860
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 24 Nov 2026 14:28:13 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4A0C12004E;
-	Tue, 24 Nov 2026 14:28:13 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD0552004B;
-	Tue, 24 Nov 2026 14:28:10 +0000 (GMT)
-Received: from [9.124.211.71] (unknown [9.124.211.71])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 24 Nov 2026 14:28:10 +0000 (GMT)
-Message-ID: <0b39ff0e-ee51-45f1-a361-5f0cb49d92b5@linux.ibm.com>
-Date: Tue, 24 Nov 2026 19:58:09 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYmWR62sbz2yQl;
+	Wed, 25 Nov 2026 02:12:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795533140; x=1827069140;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=NxeC1Wybb77mO9Kjd+nB0CN+fae9IJOOQ1ybh9mDWzM=;
+  b=Uv6vngwhFsTgYVnQfQgVh4yPloOpHG/OsX7eIPwDQFalxdeg4anLUjU/
+   w+vC1HhWiP0vNV80lhl2dCZsMsv1ae7xRQZIQGpYAN9rjsNura3eF5TXN
+   GCF00smbVeJUbKM5Pa1WgUPBQWiKs3KUanVWDmTx+cNmel5gTjpy56PYq
+   KkDbkfNlfROr/ypO9fkILJLg31s4C+jagE1NayyfsqzEde73VNvaiDohA
+   Etqvdh+KKhN7EdF8/SBUvBFCyYiEagDBaaXYS1RtrdupBPvsmoyONW86Q
+   qryHl57oGss7ZaWMONOKHVsStjBsrUJK2zfHPO6dQUWZHrvzMZdIjxh+Q
+   A==;
+X-CSE-ConnectionGUID: q4hE+AFOQDe0ytfhWVJQJA==
+X-CSE-MsgGUID: 7NFEyjmrT+m4x8ao5LXr+A==
+X-IronPort-AV: E=McAfee;i="6800,10657,11976"; a="4270692"
+X-IronPort-AV: E=Sophos;i="6.27,231,1787036400"; 
+   d="scan'208";a="4270692"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 07:09:40 -0800
+X-CSE-ConnectionGUID: rYqzc2CPTh+6pvl8qSuViA==
+X-CSE-MsgGUID: GXBH/9peRMOWfKr0EK0fKg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,231,1787036400"; 
+   d="scan'208";a="11709101"
+Received: from sghuge-mobl2.amr.corp.intel.com (HELO [10.125.110.20]) ([10.125.110.20])
+  by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Nov 2026 07:05:04 -0800
+Message-ID: <90346f3d-6b46-4786-9d57-3f39b6fdd7b5@intel.com>
+Date: Tue, 24 Nov 2026 07:05:03 -0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,90 +72,113 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 7/7] Subject: [PATCH] selftests/powerpc/rtas: consolidate
- TEST_GEN_PROGS definitions
-To: Shirisha G <shirisha@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kselftest@vger.kernel.org, maddy@linux.ibm.com,
-        venkat88@linux.ibm.com
-References: <20260918052321.932660-1-shirisha@linux.ibm.com>
- <20260918052321.932660-7-shirisha@linux.ibm.com>
+Subject: Re: [PATCH v2 04/13] x86/sgx: convert vepc mmap hook to mmap_prepare
+To: "Lorenzo Stoakes (ARM)" <ljs@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Juergen Gross <jgross@suse.com>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ Jason Wang <jasowangio@gmail.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?=
+ <eperezma@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+ Jarkko Sakkinen <jarkko@kernel.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Thomas Gleixner
+ <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Jan Kara <jack@suse.com>,
+ Paul Moore <paul@paul-moore.com>,
+ Stephen Smalley <stephen.smalley.work@gmail.com>,
+ =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Ryan Chen <ryan_chen@aspeedtech.com>, Billy Tsai
+ <billy_tsai@aspeedtech.com>, Bjorn Andersson <andersson@kernel.org>,
+ Konrad Dybcio <konradybcio@kernel.org>, Abel Vesa <abelvesa@kernel.org>,
+ Jens Wiklander <jenswi@kernel.org>, Sumit Garg <sumit.garg@kernel.org>,
+ Scott Branden <scott.branden@broadcom.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Richard Cochran <richardcochran@gmail.com>,
+ David Woodhouse <dwmw2@infradead.org>, Andrew Lunn <andrew+netdev@lunn.ch>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
+Cc: xen-devel@lists.xenproject.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+ linux-sgx@vger.kernel.org, selinux@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-arm-msm@vger.kernel.org, op-tee@lists.trustedfirmware.org,
+ netdev@vger.kernel.org, linux-mm@kvack.org
+References: <20261124-late-2026-mmap_prepare-v2-0-0b0d99d655f9@kernel.org>
+ <20261124-late-2026-mmap_prepare-v2-4-0b0d99d655f9@kernel.org>
+From: Dave Hansen <dave.hansen@intel.com>
 Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20260918052321.932660-7-shirisha@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Autocrypt: addr=dave.hansen@intel.com; keydata=
+ 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
+In-Reply-To: <20261124-late-2026-mmap_prepare-v2-4-0b0d99d655f9@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDA1NSBTYWx0ZWRfX0pZweAluiFvj
- bf05hTBKthK8xpt45M5cunFlYj0SyDYzz6rQLZ71K2ScTtW7xa6xklO4UIYjqrrn+l/YDyV9Sie
- XyWmPZflKDmQUcZiQ+R+IRfYLW+NeaKpomZ3s+vwC4XyP5rdqeSme1DtqFH+7RqXdo4QeTdz1bc
- OzPooxv66K3ye9eCOVGDJqEIrkovwkKXi9Un+y/5e+4SpGWkdRTAymehXQ5peu+OiGIvwPrtoaR
- B39XTp7Q5O0gj7wK2wnW0PsL8dKSP3DErRE8XevzrFyH5HsS3ClX4wAXD02439K/c/Ef830xjaK
- JFY1F8SnpI2baAag6Er9eDQCIk0k0D2HsiSz3E597uIS22K3dG9sDWatAtI15DkjxqtX9JuGWUj
- vU7BjH9ilElwJvHrOfkcSXvHWE5FtqBxcARn4IMQ/ZK4Z6p2sRrTi6LVf2YVD8UBCt0rywkadHy
- BZSUHpYBEf2rZOvjGaA==
-X-Proofpoint-ORIG-GUID: H7BOJJMqW5UG_I3VeXGFmdSMWdLjl--Y
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDA1NSBTYWx0ZWRfX8bOgBtIT48d2
- rvToiAwD0ZucaaUZxH1ZbToTXN85aeD+do7o2URi220YskacrY12hU2JG/OdW8sFpjrAO+LegBy
- KJeSys9bKSzlqcVNf4XEP66HRW7nNCI=
-X-Authority-Analysis: v=2.4 cv=A9z5rKWG c=1 sm=1 tr=0 ts=6b059f05 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8
- a=d9toeekAIwPyeozeaWsA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: H7BOJJMqW5UG_I3VeXGFmdSMWdLjl--Y
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-24_02,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 adultscore=0 phishscore=0 priorityscore=1501 impostorscore=0
- bulkscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611240055
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+On 11/24/26 06:02, Lorenzo Stoakes (ARM) wrote:
+> Move from the deprecated mmap hook to the new mmap_prepare hook. The hook
+> only checks that the mapping is shared and sets VMA flags, operations and
+> private data.
+> 
+> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+> Signed-off-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
 
-
-On 18/09/26 10:52, Shirisha G wrote:
-> Use a single TEST_GEN_PROGS assignment followed by incremental additions
-> for the RTAS selftests binaries.
->
-> Signed-off-by: Shirisha G <shirisha@linux.ibm.com>
-> ---
->   tools/testing/selftests/powerpc/rtas/Makefile | 16 ++++++++++++++++
->   1 file changed, 16 insertions(+)
->   create mode 100644 tools/testing/selftests/powerpc/rtas/Makefile
->
-> diff --git a/tools/testing/selftests/powerpc/rtas/Makefile b/tools/testing/selftests/powerpc/rtas/Makefile
-> new file mode 100644
-> index 000000000000..eb30f62c5636
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/rtas/Makefile
-> @@ -0,0 +1,16 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +# RTAS tests
-> +
-> +TEST_GEN_PROGS := rtas_rtc_test
-> +TEST_GEN_PROGS += nvram_test
-> +TEST_GEN_PROGS += rtas_proc_test
-> +TEST_GEN_PROGS += fadump_test
-> +TEST_GEN_PROGS += rtas_flash_test
-
-Each test patch should add its own TEST_GEN_PROGS entry. Please move
-these lines into the patches that introduce the corresponding tests.
-
-- Sourabh Jain
-> +
-> +top_srcdir = ../../../../..
-> +include ../../lib.mk
-> +
-> +$(TEST_GEN_PROGS): utils.h
-> +
-> +CFLAGS += -I$(top_srcdir)/tools/testing/selftests/powerpc/include
-> +CFLAGS += -Wall -Werror
-
+Acked-by: Dave Hansen <dave.hansen@linux.intel.com> # x86 bits
 
