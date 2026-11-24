@@ -1,73 +1,51 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 607F1606A326
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 09:35:36 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A6CB2606A334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 10:06:59 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JSxXKSJ+
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flCBnIDd
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYd2v0Fx5z2y2b;
-	Tue, 24 Nov 2026 20:35:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795512934;
-	cv=none; b=nl5LNYpHQUqLqna2R/wTe36ePiYg9ML/W5HLEUEO92AEu8i2u5CoTk6cabbNe1GCtl1he3iAve/YUFECJjm+eOWnq+aJNd0rbgutf+MfLepkCz0g6Ggmzl3l3wCv5av2ob8iYqCXqA7rPxoIl9Tm4dh7YJsSI+5mlKtXiZPYjWTPMbwhjzD3MmBMNfQE64o5hwl0ayQMZYIuW2h1MnY4Elk7NnshzYzaww//7qoud0PEbLvI4BTerHiwVMGW6m7pSnZSFaRbT1bNPCpt8o7U4rSGv0AQY0bn+Njq4mPo5gmuUUhRDO+Ab0PaZL6b/hddYw1oCNYwbfPoTzO/qg669A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYdl619d1z2xL5;
+	Tue, 24 Nov 2026 21:06:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795514818;
+	cv=none; b=gPxHkXVBO/JPxkM1xz6iPPNgrc5LRQfLGixX1m+WB2I5jTK6bAh6CAfJXAEIx+UsDGf9aokvhqJ2C45Bdvyg/GaNqDUiJJw6ZEuq8vjezTGBOR5tGq6hMeyJcrjY9uAjNds6qsTtKyfz+n1T2e8pSdD1w8qq9iP5FvYi1KZOCc4/ShNHzd3qqyaIi4MqbMKUf7XhpMTEubTeY7WzJB/ikD7adfEwljPUd8fgvWlZxZVqotPUAtfs7/Jc8DNINMKo/SuO5+iBOlK6Y0wTiMabcUgvKaME8DYwWT50dZg++ok1X1aF1iDm1ObTyeXPPfH0WtmPcis/5fmuP6xtI7ba1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795512934; c=relaxed/relaxed;
-	bh=D8bVNU7oB3bmU/rHoE2jYFPe9ETXZbQxDjY46ziarvs=;
+	t=1795514818; c=relaxed/relaxed;
+	bh=SXEF56RrG5y5FAdKWjS4+NoaPcHn0Sj4aJ75nFCxeYA=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bx0v3nAQznk6Br0E8iEQIrZbypjhCdjjc6rIZ3gZq1ikqT7M3dbIO4K0BV7hAsOLMM+GkGvqe5zayIEEvJs/TvzIPPsa2dLjMaPMNh0qh+j8ksfxt+BesVOl0fKT2OuH2IRcACTeCAXYx2AZ95WHOtHgQv2e/FO9fMup9EB2eKfHRchd8uCwKuPagAPfRZxDX4Nc4SjFreh2jVcL0g2KLFBrAtG68fjYFofoi78gIlhiw+cHKsy376CGSnBXh/24SEF7+vH++1OZFeOH/emsbd+47klQShqFnsDHympGk7Vo6lygwulEDFuFzRJmOsfHCTBWA2i3UDIjrnAyGzT6lQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JSxXKSJ+; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=heUyb7fDmGxRDj6w8qXKBrIAXvFgbUGlGOko7TewUDPHigF+iePglt/ZIglPEPD6KM/kMnsvn+sB+tJnrjLqLDJdgHdmpb+k+fMsh4SU/6jHpgSi33Q8K021pmErVr9t7PrK9/+QnAm2nC3Bmo+DLIg0Lxr4iz4I//J/49sGYnLSnzQGtEKaFdD7DmmK+xjkb7U/Y6tyIl8tBzcXm5+IuXFTIPYu/3n6k6D7KeyqNV9L1NLQKaKEpg1q57CQ7BEIgLsmJzLkTgtMenHd93P0luYrwC7xnoz3RSdSdmD06tYof3VTRTtQBPfd8MUuVbIuuRSwbBNHqmBuHxf4wJiypQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flCBnIDd; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JSxXKSJ+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=flCBnIDd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYd2s6BzXz2xNT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 20:35:33 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AO356qX1271610;
-	Tue, 24 Nov 2026 09:35:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=D8bVNU
-	7oB3bmU/rHoE2jYFPe9ETXZbQxDjY46ziarvs=; b=JSxXKSJ+eLiQOjPbYWsDck
-	G0EPS8jy1wpoR6EegncLkhUwIFVUF9dWBX5mi7yKqH8985d5SpykLnR54U+lTt/8
-	aopY97RvTnI2vv3NDgbFAkbwdlkbBdMLqNtVcP4A/WXTJ6C8BST9Js7eptnMjbZZ
-	2XFs+BUOW8Shko8I/aW/2KUR4ZEe0gCWlxPNzxTQkB01L0homUrL2aWjipIkn2T0
-	DVs52E8RDNhX9Y81zf8P6APzhoGpgrWGbnCnrdeqMsZonf+97QStl9AtxxmaEShg
-	gvHwvnXXqkUjOKKSOE2TnKlZYCy87toGYh2hNsJG9wdmJzR9Vgh2XrMOlOfkYJ0A
-	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g16mqp-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 24 Nov 2026 09:35:10 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AO8x5Rj3890861;
-	Tue, 24 Nov 2026 09:35:10 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j3q4h9ynp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 24 Nov 2026 09:35:10 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AO9Z61Q28181198
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 24 Nov 2026 09:35:08 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CB76E2005A;
-	Tue, 24 Nov 2026 09:35:06 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CAFBB2004E;
-	Tue, 24 Nov 2026 09:35:02 +0000 (GMT)
-Received: from [9.39.26.220] (unknown [9.39.26.220])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 24 Nov 2026 09:35:02 +0000 (GMT)
-Message-ID: <a2bd3564-0990-47ab-b922-6793dd1de144@linux.ibm.com>
-Date: Tue, 24 Nov 2026 15:05:01 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYdl50vy7z2xK4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 21:06:56 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 8019840FDD;
+	Tue, 24 Nov 2026 10:06:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D1481F000C4;
+	Tue, 24 Nov 2026 10:06:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795514813;
+	bh=SXEF56RrG5y5FAdKWjS4+NoaPcHn0Sj4aJ75nFCxeYA=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=flCBnIDdaewb+skQc1KO+Zef0Qf1B9wCc2dAgiever4x7MW5nx9zb/+o4sW1y0BxP
+	 H+IOx5Xu65qNlumufAS1gkDIpdCSgTbtLOpDv8tw1OOoe6sRtQUhl1VkzLwcJaER3j
+	 md4cj3iCazQGmmzT1pC9W4eHz46jAvTCt5kXrutsUJNG9Hn6yl+H93EbOFLtLKCB0t
+	 OpWPUQuqHCCtHYm0v+p0KZP71uiro0wOGOEd01kh4kRj+pxmoaSCrDg5ktTjqQc7KJ
+	 xcYJ6y4kVJ2/YQsZcE8pS2hwRrk+OqSFVdQabFF3FIuXMEmv7AI8WviQ9Ug/FIUJxz
+	 ZklrsoCYmQ7DQ==
+Message-ID: <0a6fbbd8-6339-444d-bcb0-a74980fb77c8@kernel.org>
+Date: Tue, 24 Nov 2026 11:06:47 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,171 +60,153 @@ Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/5] cacheinfo, powerpc: Move powerpc to generic cacheinfo
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        driver-core@lists.linux.dev
-Cc: christophe.leroy@csgroup.eu, maddy@linux.ibm.com,
-        gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
-        johan@kernel.org, sudeep.holla@kernel.org, ritesh.list@gmail.com,
-        tim.c.chen@linux.intel.com, yu.c.chen@intel.com
-References: <20261118163639.890546-1-sshegde@linux.ibm.com>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <20261118163639.890546-1-sshegde@linux.ibm.com>
+Subject: Re: [PATCHv2 1/3] powerpc/execmem: Don't leave kprobes insn pages W+X
+ when CONFIG_MODULES=n
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Shrikanth Hegde <sshegde@linux.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>
+References: <cover.1794572365.git.ritesh.list@gmail.com>
+ <f75f2cf97f44375fd2c8820e0caeab703cdb371c.1794572365.git.ritesh.list@gmail.com>
+ <9a7963a6-0033-45ab-90d5-b1f580a4882c@kernel.org>
+ <v75v752e.ritesh.list@gmail.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <v75v752e.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Proofpoint-ORIG-GUID: cgxDXRLU7frcthZrm8ywv-bSA6kQLkug
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI0MDAzNiBTYWx0ZWRfX0G7rF0YTsorK
- VAr4IS2zpQiOBEOYkWZsLQSIS9+70PTnTdokW7iXrsRLC52kYhpCKAXPEhuWvozPEu5WZLe/YvA
- 4dU1vsZ3ruMe0jWo452PCNANO6UNmw0=
-X-Proofpoint-GUID: ytxi2pxdeRsI1y50fNAvczzjgJiMbVOH
-X-Authority-Analysis: v=2.4 cv=c8M+0h9l c=1 sm=1 tr=0 ts=6b055a4f cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=RzCfie-kr_QcCd8fBx8p:22 a=VwQbUJbxAAAA:8
- a=7CQSdrXTAAAA:8 a=VnNF1IyMAAAA:8 a=lsGhJCwmx7oV3vd9AWkA:9 a=QEXdDO2ut3YA:10
- a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI0MDAzNiBTYWx0ZWRfX49CZomBWZ+tC
- pdVZlVdQXQSeAeCV/vQxvoxzldYfzMqBZGoUaWE7yCdgkja/BD0PQoeRcrmTKk7DCLzDu0Fy8M0
- usD+MvQXshMfGY9KEDvufTowBKUTqfQ40ZtNK7EZMwdp5QDZjCW+pe6haRBGYD6oL0DAyF0norU
- r0kjG5hNMFiJp0jdkHAeboI1L5tzvfeuR+5UxqI0lXdp4sL6uMWu3+dHvUUb7lK/L/SROdNJpu0
- RQTYQ6i7veRc4eKV0t3xtHIycVH941y+NZdJQ+OJ5PlV4Hd/gjO+ugiXDjikv82v6wRvNoek5Xe
- eJlsjKTwy7gq+FbldYmoqRh1dezg2J6VJ6RTTItmcdC/tLoUaOt3V8Ee+gXPv/mVduZJ7Ec2JM9
- TByPV2sT+3TXzeSN8YN8yYTMnKAv+iRfbSz03nyfNJLpVjfA5QctEqopN8Peo8F6XAviIewisvE
- e0g7XxtgBeyrjAMjGdg==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-24_01,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1015 malwarescore=0 suspectscore=0 bulkscore=0
- priorityscore=1501 phishscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611240036
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+Hi Ritesh,
 
+Thanks for your patience,
 
-On 11/18/26 10:06 PM, Shrikanth Hegde wrote:
-> This is another attempt to move powerpc towards generic cacheinfo
-> framework. This is spiritual successor to earlier attempts by Sudeep
-> Holla [1]
+Le 17/11/2026 à 18:15, Ritesh Harjani a écrit :
+> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 > 
-> The context around this time was, when trying to enable Cache Aware
-> scheduling on powerpc using a llc_override kernel parameter[2], it was
-> pointed out that the llc_bytes which is retreived using
-> get_effective_llc_bytes fails and hence the cache aware scheduling is
-> effectively a NOP, moment the process has a visible footprint.
+>> Le 13/11/2026 à 13:31, Ritesh Harjani (IBM) a écrit :
+>>> commit 2e83e2ce34ff ("arch, mm: promote DEBUG_WX to CHECK_WX"), made
+>>> CHECK_WX default STRICT_KERNEL_RWX.
+>>>
+>>> Now on powerpc, when we boot with CONFIG_KPROBES=y and CONFIG_MODULES=n,
+>>> we can see the following warning splat at boot:
+>>>
+>>>       powerpc/mm: Found insecure W+X mapping at address 000000002ea08992/0xc008000000000000
+>>>       WARNING: arch/powerpc/mm/ptdump/ptdump.c:194 at note_page+0x4dc/0x4fc, CPU#0: swapper/0/1
+>>>       NIP [c0000000000ac204] note_page+0x4dc/0x4fc
+>>>       LR [c0000000000ac200] note_page+0x4d8/0x4fc
+>>>       Call Trace:
+>>>        note_page+0x4d8/0x4fc (unreliable)
+>>>        ptdump_pte_entry+0x70/0x94
+>>>        walk_pte_range_inner+0x15c/0x260
+>>>        walk_pgd_range+0x6d8/0xd5c
+>>>        walk_page_range_debug+0xa4/0xf0
+>>>        ptdump_walk_pgd+0xec/0x304
+>>>        ptdump_check_wx+0xd8/0x154
+>>>        kernel_init+0x94/0x26c
+>>>        ret_from_kernel_user_thread+0x14/0x1c
+>>>       Checked W+X mappings: FAILED, 1 W+X pages found
+>>>
+>>> This happens because CHECK_WX noted a writeable + executable mapping.
+>>>
+>>> This happens because execmem_arch_setup(), checks for
+>>> struct_modules_rwx_enabled(), while kprobes depenency on modules was
+>>> earlier removed via commit:
+>>>       7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
+>>> Since the insn slots are only written with patch_instruction(), which
+>>> does not need this mapping to be writable. This patch fixes it by
+>>> checking for strict_kernel_rwx_enabled() instead.
+>>>
+>>> Fixes: 7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
+>>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>>> ---
+>>>    arch/powerpc/mm/mem.c | 2 +-
+>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>>> index b617b69452cd..77b63b52d8f2 100644
+>>> --- a/arch/powerpc/mm/mem.c
+>>> +++ b/arch/powerpc/mm/mem.c
+>>> @@ -388,7 +388,7 @@ static void prealloc_execmem_pgtable(void) { }
+>>>    
+>>>    struct execmem_info __init *execmem_arch_setup(void)
+>>>    {
+>>> -	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>>> +	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>>>    	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+>>
+>> Looking at this, I'd use PAGE_KERNEL_X instead of PAGE_KERNEL_EXEC.
+>>
+>> Then we could get rid of PAGE_KERNEL_EXEC completely for powerpc.
+>>
 > 
-> Instead of adding more hacks around with custom arch_llc_bytes, this is
-> an attempt to move powerpc to generic cacheinfo instead. This removes
-> the powerpc maintaining a separate sysfs entries for all caches.
-> A few modifications to the generic code is necessary due to some of the
-> conventions followed in the device tree specifications. The details are
-> in the respective patches.
-> 
-> If this approach does not work, then I am afraid we might have to fallback to
-> arch_llc_bytes.
+> I think it's best if we keep the definition of PAGE_KERNEL_EXEC on
+> powerpc as PAGE_KERNEL_X, I think the core expects the arch to define
+> this, if not, then it defaults to PAGE_KERNEL e.g. see this:
 
-Well, though it worked for normal boot and hotplug, LPM is broken and DLPAR is likely
-a problem too if the logical CPUid is reused with different device tree node.
+Yes, which is consistent with what powerpc does when strict modules rwx 
+is enabled.
 
-So I am afraid it is not straightforward to port.
+And indeed it doesn't matter, because module code does a rw allocation 
+at the begining then convert it to ROX or X later in 
+module_enable_text_rox(). See comment :
 
-The current PowerPC implementation owns references to the device-tree cache nodes
-and destroys and rebuilds its cache objects during LPM. It also releases cache
-objects as CPUs are removed during DLPAR.
+/*
+  * Since some arches are moving towards PAGE_KERNEL module allocations 
+instead
+  * of PAGE_KERNEL_EXEC, keep module_enable_x() independent of
+  * CONFIG_STRICT_MODULE_RWX because they are needed regardless of 
+whether we
+  * are strict.
+  */
 
-Generic cacheinfo has a different lifetime model. Its per-CPU info_list is retained
-across CPU offline, and the leaves continue to contain fw_token pointers to the
-device-tree cache nodes. Replacing or freeing those leaves safely is not straightforward
-because scheduler and page allocator users can access them concurrently. Handling this properly
-would need a broader lifetime and synchronization mechanism in generic cacheinfo.
-
-Doing all that heavy lifting for the case of LPM/DLPAR is likely going to be overkill.
-That may still be worth doing independently, but it is substantially more involved than
-what is needed here.
-
-So I am planning to resort to something like below. Introduce a new arch
-specific hook (cacheinfo_get_arch_llc_info) to get the cache size and
-cpus of that cache.
-
-Hopefully should be able to send it out soon. Now would be the good to wake me up if
-there is a better way!!
-
-
-@@ -XXX,15 +XXX,23 @@ static unsigned long get_effective_llc_bytes(int cpu,
-  					     struct sched_domain *sd)
-  {
-  	struct cacheinfo *llc;
-+	unsigned long size;
-  	unsigned int hw_weight;
-  
-  	llc = get_cpu_cacheinfo_llc(cpu);
--	if (!llc)
--		return 0;
-+	if (llc) {
-+		size = llc->size;
-+		hw_weight = cpumask_weight(&llc->shared_cpu_map);
-+	} else if (cacheinfo_get_arch_llc_info(cpu, &size, &hw_weight)) {
-+		return 0;
-+	}
-  
--	hw_weight = cpumask_weight(&llc->shared_cpu_map);
--	if (!hw_weight)
-+	if (!size || !hw_weight)
-  		return 0;
-  
--	return llc->size * sd->span_weight / hw_weight;
-+	return size * sd->span_weight / hw_weight;
+So really PAGE_KERNEL is what is expected nowadays.
 
 > 
-> Note that initial draft of the work[code,changelog] was carried out by LLM.
-> Provided the device tree blob and both powerpc,generic cacheinfo code.
-> With few iterations, LLM did generate the right code with few tweaks.
-> Only the cover-letter and Patch 5 are completely from me. Thanks to
-> LLM, this series is in shape in few days otherwise would have taken
-> more time.
+> include/linux/pgtable.h:
+>    #ifndef PAGE_KERNEL_EXEC
+>    # define PAGE_KERNEL_EXEC PAGE_KERNEL
+>    #endif
 > 
-> Tested the values compatibilty on Power11 Dedicated and Shared LPAR's.
-> All the values are same, except id and uevent which was not there
-> before. That should help rather than hurt any tool.
+> Also mm/execmem references PAGE_KERNEL_EXEC in __execmem_init().
+> Although it references only when execmem_arch_setup() is not defined by
+> the arch (which is not true for powerpc).
 > 
-> This may need more broader checks on different boards/configuration
-> to ensure it is same. Also DLPAR CPU add/remove is not tested yet.
-> Please test and report if your board/platform shows up any different
-> values in those cache entries.
 > 
-> [1]: https://lore.kernel.org/all/1424715500-21725-1-git-send-email-sudeep.holla@arm.com/#t
-> [2]: https://lore.kernel.org/all/20261023131646.2907938-1-sshegde@linux.ibm.com/
+> However, even though nothing breaks today, but later if there are other
+> users of PAGE_KERNEL_EXEC, then PAGE_KERNEL does not have X (execute) bit
+> enabled, so it might break in future. Plus looking at above, I believe
+> there is no harm in keeping it - since core expects the platform to
+> define it's own definition - due to all the other references it has.
 > 
-> This series is needed llc_override patch[2] series to work. A subsequent
-> version of that will be sent out soon.
-> 
-> PS: I am working with 90% coffee and 10% sleep.
-> 
-> Shrikanth Hegde (5):
->    cacheinfo: Allow architectures to provide custom cache IDs
->    cacheinfo: Support unified caches described by d-cache properties
->    cacheinfo: Add teardown and rebuild helpers
->    powerpc/cacheinfo: Move to generic cacheinfo
->    sched/topology: Remove stale comment around llc_bytes on powerpc
-> 
->   arch/powerpc/kernel/cacheinfo.c           | 994 +++-------------------
->   arch/powerpc/kernel/cacheinfo.h           |  13 -
->   arch/powerpc/kernel/sysfs.c               |   3 -
->   arch/powerpc/platforms/pseries/mobility.c |   2 +-
->   drivers/base/cacheinfo.c                  | 111 ++-
->   include/linux/cacheinfo.h                 |   3 +
->   kernel/sched/topology.c                   |   7 -
->   7 files changed, 194 insertions(+), 939 deletions(-)
->   delete mode 100644 arch/powerpc/kernel/cacheinfo.h
-> 
+> Thoughts?
 
+Yes but PAGE_KERNEL not having X is on purpose, module first allocates 
+non-X mem, sets up everything then converts to X or ROX. I don't think 
+there will be any more users of PAGE_KERNEL_EXEC in the future. It is 
+going in the other direction I think.
+
+> 
+> However, if you still think we should remove it (?) - then I feel let's
+> do that as a separate cleanup patch. Since this keeps the usage of EXEC
+> same between prot and kprobes_prot variables in patch-1, which we also
+> need to backport.
+
+At least we should stop using it in our own arch, it would help with 
+readability. And really I think we shoud drop it completely. But OK to 
+have it as a separate patch not to be back-ported.
+
+By the way I also see CONFIG_ARCH_HAS_EXECMEM_ROX, maybe we should 
+investigate in using it on powerpc.
+
+Christophe
 
