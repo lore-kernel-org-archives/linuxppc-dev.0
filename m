@@ -2,106 +2,98 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 57110606A321
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 05:01:51 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BDFDC606A322
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Nov 2026 05:11:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rYsqcdY0
+	dkim=pass (4096-bit key) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=XoN6dl4w
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jYVyd2018z30W5;
-	Tue, 24 Nov 2026 16:01:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::330"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795496489;
-	cv=none; b=bh/yO8jp3hkNup5/YaBi9LgDNcdRPcyqvy4CGrdIueBiDJLRyy+Ud0dBcKrRtwcVrRHoQBS8QS44YgYIB259yZxDWF6AGzMJC2Vxkngird9+L3NGdTZLclUZOCdEF4C+02MNsNiYAPa+YIFp4tZMAna9KwRppFDYkD5HWUvcHQUD5sMTHybY8/dVO3ZbyA+wUMVrgz9BD/FicMwzlhCfxr3Im5wXlMiMnYClNVvYYTkfXUdPR+/rZenH8HJjOQM1G7+Qf4pF+ijgJBn082h7UA2R/J0eXgH1MIIE0IClY781eZ/WMoXb7yzVX48naSxFdpFvHMsZEN2LmIA+HDmUsQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jYW9j1rx4z2y2b;
+	Tue, 24 Nov 2026 16:11:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=65.109.113.108
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795497065;
+	cv=none; b=IFTFC9dhSY+DI/2dr7qVI0lyrMd7BGE6JHOPawB5Sbx1MMGtj2zO4t9UU9KsaiSmd0Ub9kIMsOoL72DbwefF+I0tMVjRTPRTnUFN6I8FKRkV4jaKUv2RI2q9l6EAiuMQjEBbKOmaRgTRYQhK+btAI8aZtRdW2ZRwT0hYWqwzCcQRqrBxooklUrQByfgVfPzLzvCGcSroR8VkRv1AW9Dwi4tHomXK0NXE7sg6UzG8MVQ/YAEYiT8c/+n2fPzmTnGHDNcrWGsPaf2077UhXOKK4oWKHS91c5J5PV/7oX+Ds6cqZfFzmAkiCH8YGDKpS8SguwrYvzS4s9fV035vmjg0Lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795496489; c=relaxed/relaxed;
-	bh=SpABV9aKqp6smud8Wfu98a7VX6J5hPF06e5DetAJnC8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lnbjJNEs8QNnMQBRsnW+e19s7j9A2Vk4aJlMWxJhc8Feg6YKBYvdDvYDUiJMPURs2iHRm72KC3yKBnAJHbpa0gNd4ta/Px/x3MVz+W3pLbCMBb70GRZEr+Gh7EKhLgOj+ulLbpVzICERUGyEkHwglLyGyEusWOFlH7ABqm2NpRqZnJ/iCG9caKE2yq69BVC54whS1KLZsrPm28dp1xbtFaknjwCAyh2pFxfRDOGTSsbmyHLEi/2w7E8ejZf65oBPWIrIWtpXZqFVd5r25pJqjjapWFRU+RZbQhSgvav29XXBFJ712S1v/BgexMRGYPwaNdbUHrI6uL2w13ov+PXZew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rYsqcdY0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795497065; c=relaxed/relaxed;
+	bh=XM+P0UUh8M7+zT3EmoQUfy6DuwH+/xR6iA2fTPRkpYo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dIg8bsX0ZYYGCY8hBs9AVzRLWHQM1vaURGs4yQHfp+mIXCb2L5615IQvHi+Z9ans4LdK9SbLvFAfCqQRrQ0PlhwG8n7h7EP4YfnW/Y5PyS1+42Ob+/PSctWPOR9bohKm3ETazlEojsfiJU4k8CA5u5o3QODNd5Hkj7oHRVEPTpPukNYmZUIZPg1RP+QWlYm4UuO7qKPODjJLEkXoxGxoKpqWjUgGkIJ6SqzuhOksURvHs3Ml9q44hmOr4xIx/NyaXDlki8kKmzEorWNFO2PycGDNGDOM64rkM43R36B8PTjZrdI78ar349BF9qQXMDpkxq/UzGJBoY3452U6Ea9TVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=XoN6dl4w; dkim-atps=neutral; spf=pass (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rYsqcdY0;
+	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=XoN6dl4w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=pepe.schlehofer@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 567 seconds by postgrey-1.37 at boromir; Tue, 24 Nov 2026 16:11:03 AEDT
+Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYVyc27hTz2y2b
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 16:01:27 +1100 (AEDT)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-4bb85e07aadso49236015e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Nov 2026 21:01:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795496484; x=1796101284; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=SpABV9aKqp6smud8Wfu98a7VX6J5hPF06e5DetAJnC8=;
-        b=rYsqcdY0kMc3xCI0bba4cfyeEMgq2Ilc51qKwa2KZrIYnuYBFODXnHT8f6+fBPNDA1
-         IUkqB9n4xTV8gzLB9k/hYdfuwCAHandmMPItEdlY51Ykr9dUVWIZ+SlAEWnZEN4Qt5rn
-         veIptcCQ9B4WX4ms2BFLtFGQtnTqG7dVKEco/bT3vBBq16l+55WEAd1nYnwh+ZWJr+kv
-         QBKrgcA8pPpY7KlucXxCRvtg5HEKKJv4eqLuCoWF+Fstef+OdL1MQBo2Lxg0SZEK3iTg
-         EvZWY62T+uBaU1KSqd7s8s+L7BovyG1E8FKMJ4VD6YG1EkKP2MAg/s1xGNr4l0/isk7j
-         pcIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795496484; x=1796101284;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SpABV9aKqp6smud8Wfu98a7VX6J5hPF06e5DetAJnC8=;
-        b=NVcVGzX1JR0DZaRmJM7G+mxIbh6y++bRbIXdhRXk8iyV4k1QTDpJpNGuPnfNhX7FvW
-         DsTkwpmXT7bFrANScQI1priIfG86i/l6Jr5hE8r0bTdz41i0A4NPvSJQrXNMmmp+M2oI
-         4gzkfYBfOx8QETUL8P5bZmdB6TD55crotcZ7cnAEjAZKy8QOti0VS+FEBqlq8H9Y1yV6
-         cz78pg9CAoZa73XMZBgtEwNBvg3ou/iXsMnKeLnG5wicisZB86l2gzQYsFjhAyKNNm1Z
-         aQd+KEd2rAdb6XM51hpEwt4wiSbXyGYV2A+O5/mm0TO1ilRMqY6YrSkz8+6CnzPopr7h
-         wWvA==
-X-Forwarded-Encrypted: i=1; AL+hErEJxfGA91/cf0B8bssnUngIUesMRk1423Q8B6rd3+4mOqo7t7YzHJL0DuCzIsX2MyRHxQXVlttJ1urRyPM=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+0QjIgRiQUOa69vqPbBlSgIvdCiOC6qz41le1FpsiT47uOdI5+
-	BIL2vd1/xCnTt2b90amaDBC5NmvYZ6VTE+1KmQ8NmfbFa6Hgpn2CFy9M
-X-Gm-Gg: AZFdTZexr1et60QZtUPhGPs1N79J6+JnyPE6MMlAEDz1Tgk5iwZjcuZKcM0xkV2VASg
-	KprS5I6CSbYMM4zk83d/Kbq6I6t3TSb/LVSmoMrYsqCHDejghQ+3/n5jjyvs/L6HBeXBeV1wWYI
-	I/ABIahW59/8p8ZRZd94PFT6cu4BlGjfYDcaJES751LlWeFwJE6TdsTgfPQOrIMtxowQ41XPSjr
-	zO02Vu3CbKOkTAB17mE7hUlLIm2Y1a2prNHRN24Uw2n16wupdAvTItiYvBsrmBkX+LbUtuMRhxq
-	/6oMOPV4+ZHTxPCAgp6/csNwvtPJ443YNHt7v72qmU1SrWvkerQHzbzVS5rQ3vA2RNdDZ7BXwdJ
-	qZHznVPwwp4UkePrs5b/tQteu3H2T+p6oI7NSVIa9IqmpA2HBmWety5PEReKESOT4JiwuUrHh2U
-	YdiROpIO8TWbWfBNb8ZFUj/84px7QW/ZipncdUNh+PskhYh2zLFQugIQc5/jntCjU2xO9/PRUDG
-	ij20hfhC69sZpBko7MUBe6iNvfZX9zbIayiBmmWDMF/RAmRxahyHJHj04d2FF+5zFPA5x+tFI0M
-	O9OQHSSNkI8H5Ni48lpLQwofkoma/gOVmFYC6+zk7462Bw6YWqhft9046j2f+sBuVZaihKmv9hC
-	DDKlnqtNqtjOmcWBMeXQrE6Y+4fMQsqS6VkLhzTHJXapKzGJuiJANGAikU5WkRv1lgIOkezMKhH
-	AxJ8KE5ewC4j70+UoEqwZqlSGnVPIE9rmkTSaDH+5keRKSH+qR3fxt
-X-Received: by 2002:a05:600c:674f:b0:4bb:56bb:1196 with SMTP id 5b1f17b1804b1-4bb8880fb9bmr266365245e9.23.1795496484431;
-        Mon, 23 Nov 2026 21:01:24 -0800 (PST)
-Received: from localhost.localdomain (dynamic-2a00-1028-8388-a84e-f512-85ee-fdbe-0621.ipv6.o2.cz. [2a00:1028:8388:a84e:f512:85ee:fdbe:621])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88442693sm353489155e9.1.2026.11.23.21.01.23
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Mon, 23 Nov 2026 21:01:23 -0800 (PST)
-From: Josef Schlehofer <pepe.schlehofer@gmail.com>
-To: Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-	=?UTF-8?q?Marek=20Beh=C3=BAn?= <kabel@kernel.org>,
-	Tzung-Bi Shih <tzungbi@kernel.org>,
-	Marc Zyngier <maz@kernel.org>,
-	Linus Walleij <linusw@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	linux-watchdog@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v4 3/3] powerpc: dts: turris1x.dts: Use wdi-gpios for the watchdog
-Date: Tue, 24 Nov 2026 06:01:18 +0100
-Message-ID: <20261124050118.87944-4-pepe.schlehofer@gmail.com>
-X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20261124050118.87944-1-pepe.schlehofer@gmail.com>
-References: <20261124050118.87944-1-pepe.schlehofer@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jYW9g6Rjbz2xf8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 16:11:03 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id A5CE440E02A9;
+	Tue, 24 Nov 2026 05:01:28 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
+	header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id 6vKUTZogjik0; Tue, 24 Nov 2026 05:01:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1795496485; bh=XM+P0UUh8M7+zT3EmoQUfy6DuwH+/xR6iA2fTPRkpYo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XoN6dl4w0hO8vS82WF2sVspVH2Ft2yCybHFMhRmD+El3S2igLXKpsYPHgCoUVcvmb
+	 Oz8oGr8HDNWwBeOzl8rrUhUvaApVM9oPECC7d/9Ju/qibMK8Vo9T2dhtQWb95atjRZ
+	 MPFM0BOsEaCCUjHB/s3oXpSVfkL0TSDZNVttkSIEVv2GKzR8SzLlMQ+RW/hewfU6W5
+	 4Lxi7W6xN7fGfE33HLqD7S4d8vlc086is0sSBgTYcxlqpt4HVRdDWog3K8Mzi/W1Xf
+	 UlKcVU9nRdy1tP9J3ON3tF/jnhKp2rFe62GH+8QqxhjC/dt63NbTVdeMLdHCUzfE6+
+	 4AW7xbzjs7BZ1/+frP7bdFDkV52jvKF89A1KzaaLrpf0KbI9gVgkmGgQFkJjYVMo44
+	 DvW/KaEZpAIIQXozkEuWEeDMy4WXvEsMy75lE8aVlUbMF5MxC29dzQ5NVno2nDYq4+
+	 /foqT78Nar8WxvBxBRCsqHunGBN57QcfZswYl5yajf99gaCsX76l9xMNxDemElB4Cj
+	 tcBle8899/aszxRJRuMvOp/ZfdSf3iNFzLRp+u047z7oLqR3blWLgzairNs1uj+r7Y
+	 fjrtn9W6rytSEvHwabaQDXRpMAVcvSbpuc7IdEoHaYy3hSX82+tUZS2V6/Pbnayk03
+	 Gd+BMPN4fLEPETqdC9IO9FsE=
+Received: from stx.tnic (unknown [IPv6:2600:1700:38ca:c00::2b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 2EB5340E0240;
+	Tue, 24 Nov 2026 05:00:48 +0000 (UTC)
+Date: Mon, 23 Nov 2026 21:00:45 -0800
+From: Borislav Petkov <bp@alien8.de>
+To: Pierre Gondois <pierre.gondois@arm.com>
+Cc: linux-kernel@vger.kernel.org, Ashok Raj <ashok.raj@oss.qualcomm.com>,
+	James Morse <james.morse@arm.com>, Mark Brown <broonie@kernel.org>,
+	Thomas Gleixner <tglx@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>, Tony Luck <tony.luck@intel.com>,
+	Hanjun Guo <guohanjun@huawei.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Shuai Xue <xueshuai@linux.alibaba.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Maciej Wieczor-Retman <maciej.wieczor-retman@intel.com>,
+	Pawel Chmielewski <pawel.chmielewski@intel.com>,
+	Yazen Ghannam <yazen.ghannam@amd.com>,
+	Avadhut Naik <avadhut.naik@amd.com>,
+	Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>,
+	Dave Jiang <dave.jiang@intel.com>,
+	Kai-Heng Feng <kaihengf@nvidia.com>,
+	Breno Leitao <leitao@debian.org>,
+	Terry Bowman <terry.bowman@amd.com>, Dan Williams <djbw@kernel.org>,
+	linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	acpica-devel@lists.linux.dev
+Subject: Re: [PATCH v1 09/19] ACPI: extlog: Report errors independently of
+ RAS consumers
+Message-ID: <20261124050045.GOawUZ_S5imwUOyh8B@fat_crate.local>
+References: <20261117111444.4185512-1-pierre.gondois@arm.com>
+ <20261117111444.4185512-10-pierre.gondois@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,47 +107,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20261117111444.4185512-10-pierre.gondois@arm.com>
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The watchdog node passes its WDI GPIO in a gpios property, which the
-maxim,max63xx binding does not define and the max63xx_wdt driver does
-not read. dtbs_check reports it for watchdog@2:
+On Tue, Nov 17, 2026 at 12:10:19PM +0100, Pierre Gondois wrote:
+> The RAS consumer check removes:
+> - trace events when no daemon is registered
+> - CPER console report when one is registered
+> This ties tracing, PCIe recovery and CXL protocol delivery to daemon
+> registration, and can hide a fatal record when userspace cannot process
+> its trace event before a reset.
+> 
+> Remove the RAS consumer registration condition and:
+> - always emit trace events
+> - print the CPER record only for CPER_SEV_FATAL
+> 
+> [1] additionally suggested to have a cmdline parameter to dynamically
+> update the above policy. Keep a simple hard coded policy for now.
+> 
+> [1]
+> https://lore.kernel.org/lkml/20240521183913.GGZkzqUSN1hdE-_OEY@fat_crate.local/
+> 
+> Signed-off-by: Pierre Gondois <pierre.gondois@arm.com>
+> ---
+>  drivers/acpi/acpi_extlog.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/acpi/acpi_extlog.c b/drivers/acpi/acpi_extlog.c
+> index e09ea571c32f5..16a16b12d8ccf 100644
+> --- a/drivers/acpi/acpi_extlog.c
+> +++ b/drivers/acpi/acpi_extlog.c
+> @@ -208,10 +208,9 @@ static int extlog_print(struct notifier_block *nb, unsigned long val,
+>  	if (cper_estatus_len(tmp) > ELOG_ENTRY_LEN || cper_estatus_check(tmp))
+>  		return NOTIFY_DONE;
+>  
+> -	if (!ras_userspace_consumers()) {
+> +	/* Print fatal records regardless of RAS consumer registration. */
+> +	if (tmp->error_severity == CPER_SEV_FATAL)
+>  		print_extlog_rcd(NULL, tmp, cpu);
+> -		goto out;
+> -	}
 
-  Unevaluated properties are not allowed ('gpios' was unexpected)
+So after rereading that link, we had this conversation back then about
+reorganizing and reworking RAS error reporting and Dan (may he rest in peace)
+wanted to unify and dump all the old cruft - especially since
+ras_userspace_consumers() is not really used anymore. Apparently.
 
-Rename it to wdi-gpios, which the binding defines and the driver reads.
+But what else uses it?
 
-Signed-off-by: Josef Schlehofer <pepe.schlehofer@gmail.com>
----
+This is something other luserspace probably relies on and we should probably
+do our due diligence and slowly deprecate it with a warning splat but not just
+whack it unceremoniously.
 
-Notes:
-    Changes in v4:
-    - new patch
+And what I'm missing in all that effort is the big picture. What are you even
+trying to achieve here, what's the point of all that gymnastics?
 
- arch/powerpc/boot/dts/turris1x.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Unify GHES and acpi_extlog? That's it?
 
-diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
-index dff1ea074d9d..494a96a1f78c 100644
---- a/arch/powerpc/boot/dts/turris1x.dts
-+++ b/arch/powerpc/boot/dts/turris1x.dts
-@@ -363,7 +363,7 @@
- 				 */
- 				compatible = "maxim,max6370";
- 				reg = <0x02 0x01>;
--				gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
-+				wdi-gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
- 			};
- 
- 			reboot@d {
+I'm sure there's much more to it than just a plain unification. 
+
+Probably CXL-something is going to use this too eventually?
+
+But I should not be guessing - I should be reading about the big picture
+somewhere. No?
+
+Thx.
+
 -- 
-2.54.0 (Apple Git-157)
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
 
