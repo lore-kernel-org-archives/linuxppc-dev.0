@@ -2,76 +2,76 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 52F26606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 16:53:11 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6B684606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 16:53:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rSuzsaYU
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EX5+p9HK
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZQj56nQlz2xqh;
-	Thu, 26 Nov 2026 03:52:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795625577;
-	cv=none; b=W+3EVMGsXvg2a/U1pZ1/AKtkaBWwt3QYs+imvKpDxLcQMXMCGm8XtSk7norqtjAu6Mjsm+G8nB8kPpZsqbOf8X7IuMytOWcIsl76j3bSXXt6EZgIhgmccy+nlOIe7qTa3F1OJAGnM9hz8IApIGN2KsDNtUqyqV+3jXAkxCh5Kt8l1JnamS5kI3TgfFp6IkrS3YgpaKrOZxdHFnugXCIEHcTVUWAwnvI0jzI12r1LxQW/pQXSiC1qN+Ej0kME/YvSSp6azKJVVJXXFsUR50W4UoRHfkzhoPYowrfkLAVV+rU/jDvwdyitPCqATyDzG008qX0pcOH6+m624L9rsv30pw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZQjB00ckz30dj;
+	Thu, 26 Nov 2026 03:53:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795625581;
+	cv=none; b=SmhM/EAlC1isdBN/F/wZsIhEuNl7UvNvHsHGjLlJ5F0QgogmnsTuxgCzlmCiu7wsRHMupxgWpFpw2eE81blHGZHdC5TP+L9pjKGsmIvaSs13UaRAPT/ZsGnLsDJn4uCAF4es4envLm9M0ffL4gjNX+BGh3dfpPilbsziMbMmTV05GCkrEWlzBRr79XD9yu7OaENgZ6ago377Hj1LJPINrr95WNxNb+w7xuDojyG9Kxy0GP7bkPR7H/uH7JmKe17f0PitP58bJphK+ushKjYR7aWW1b6NCM7n6LyJU0hkw9akvrMhbm5xEJcqir8A4q78DhbqYx3HVZ/zeqeUx2uIHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795625577; c=relaxed/relaxed;
-	bh=JaZ96BFP7w1Op/oWAR3qnpvuRVSOJcqekj9/BhNvATA=;
+	t=1795625581; c=relaxed/relaxed;
+	bh=Oz7Jwrl1fyQvd1SM32ZV4uHhbma6E080yta+7JCPzik=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=LxA5MMbSjqjt2ITlM8k1IBFb5Jz5iDyJDjrpe5JFanObk+74a0dR/Uiuib9cLBJwekg7XgN15hOHh7M+x6gtRwWgP9h5s8D5d93vHdlDiHRtqWezyZmhCHwJ429N2ESD6cz+sOwEJ9dpJFced1JdtBPdQ8KAdVr3m1kE9nmp5K24UeiOLr3qME04pErqH5fooKaSicA9AaRz2yz2yxxQA+tEsk4knTP6cISrvHhui6LVOYiZP1rsYp5WSF5BO1lvtkiTB1skbFGgKOwQaWKLO6f2LV96whhY4JFn1CjDcLQM6OIJ7Cz17ToQO2hssQLseDHaBKr0jLNNzlpiN1D6TA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rSuzsaYU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=nLq7ZPQBwQ3Ana3Keb3UWITyfyYb7OUL2waBUDcqHfcj6Dg4pY46zSLWtr+HuS90xSdeMSXZDc8xbty/gsqlA6u/wcNN1P4CU9wB4ySEOVFtt+qxImtoaRt1hucvPE4a8ZLD18OWmuuE6O1OdcLpNjc2zz2N3aIWR4S5b9SwbSXmoUDNE9sb47lR1HNo+dyiJ55Lo9HC+xhxn1IH7IjevOto4GHtNoc0YL16zDr63KxKKOLdthabm9kwPFG1StpBBzWjNItaeWF4cRLNu1RMFRo3Zw0ciobIjRE4WW5prthm7vS4+0OTB/fb7Zy21ellGQrDsJxrTC9FxFTsdKH1gg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EX5+p9HK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rSuzsaYU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EX5+p9HK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZQj524T8z2xLg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 03:52:57 +1100 (AEDT)
-Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-3282db206d3so487057eec.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 08:52:57 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZQj92MKjz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 03:53:01 +1100 (AEDT)
+Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-386b8f2f671so3036217eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 08:53:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795625575; x=1796230375; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1795625579; x=1796230379; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=JaZ96BFP7w1Op/oWAR3qnpvuRVSOJcqekj9/BhNvATA=;
-        b=rSuzsaYU0ITAwlEsjtHWCOJWTu0v3eGnAsjU/acKB4Q28mQ949Oit6DLLb2Rbbs38d
-         ZcLlkBQrSnu/if/XlbLYaPNBq5LZG97cHaA/b/2ZAhDh6DCBxG1oVixGaMWHWjlCoz4x
-         RuhHC/MpOVKloO7mkkUrDBYRXc7G51HqyrshS1nrQo5n9rpkK8pWoRd7iteXspl+ujEV
-         CW7esgZDwDTZvT6X95G7lumgxeRWuWYI+OeCEH+8jvOo8qhKdBEU4QtM/rAXiayXYsDj
-         A86Lt3Hz2iirB+gOp9YkPbC24yp9zNNCp+aNR9fmVgCVpz8EDV5ErNTRGWLB9emj8TFq
-         pB4Q==
+        bh=Oz7Jwrl1fyQvd1SM32ZV4uHhbma6E080yta+7JCPzik=;
+        b=EX5+p9HK46R49XvDJvqAUDwzF0CfXTCFIhTYupJJQDrCvvaizhafaM4PrwQ4I2KQ/T
+         T0sPcJ84J0ZlcwgwGzlG0l/KMP6P95PYvwFvCfkfJ+hhmN9YF8GeMjaBCiYUSZHOH74w
+         5E37sbBILTZdYPly1s/rB7e8ZrZPv1hVfsL1UXyuIDQ7uWNeCZN/hKphoZ9JCvQTglUx
+         oP6k7Q6fAB3tXUUESMSKV/qcQHMxs2olw73BKXX4P8Zo+aEwvbCyG+PSF2aXd3JBt86m
+         PtpsJltHOdj10f2p7nMPuGFPMU4Pyz3i/MUf++yB+/4P4WJLkZ/kFepJvD946SazCshk
+         2F5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795625575; x=1796230375;
+        d=1e100.net; s=20260707; t=1795625579; x=1796230379;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=JaZ96BFP7w1Op/oWAR3qnpvuRVSOJcqekj9/BhNvATA=;
-        b=YH6oaub2slQITvjQA6FEs8ue990qtep0+5Z8XTkNMX7qtZJXwrfty3wWSXAh9nDplR
-         4rKSDgZ3d70wa+GosZzJyruKortY2IKec9ZaELXygaGi6gfNs+/rV2+w+g6jjAlOn55L
-         K5qwqSV+WNeZiVt/zqqvrrTTbcYYTRrIPljy+I7ooQnoRDSQzoWKUmWzdIPl4FDfDAtE
-         QKR1ahiFAE6vAWAe5qpwHYT53SXUjXI8CGb3AIdrognM3ZUj40OXLu5Hw5YrWci4fGVV
-         DVBZat+jwfMV7PkMuQw1NkeYOo7DZC3AopXqh98jmpcZVGPd6PMdCQh+2Bmfj6w4aG+H
-         Wd4Q==
-X-Gm-Message-State: APuU4Z/SQ3WdcjbpUdxE6BKjmyJuHuFdDsyqOWZ6mNPsil2b48/ZZliT
-	cB2Domb82wxlKbbWK1YAP8t3ImTAAl7ptTX2Nfh0OB+Kop801sr7L0b8bJ2FTg==
-X-Gm-Gg: AZFdTZdcOHxOumJe/4VVN2lfdeamuX8uzYNoLN0HjrwJsMsQa8Fm3i4mvIvp6xjrf9j
-	Tv+KrU51KxocGTy6LnJuH5GyXbgz+0i6ZIkipDEUpS6yFBEohKhKFmiIf+sdxp7JrPJmtYvXeYE
-	vIHW0I1CeJ881MLa86VWaNgWAc8AN5XXQBkG9aRbtLhNIF2t1XOpTf+QfPcBL4DdTz5Fy+1tEdE
-	vKyqbgVG5CCfLdH80z0ONN0P1Z4+/nJA6F9TOWjcEhnt1b18ZIoTRFT2T1Tpt2hE8i7RrzFiFwN
-	e7romV3XknTGujLVTkAguRypRXQASaLuWo+CPoToMH5706r75E7o0hja2pPvr0/L7zvbdP2hy3W
-	wLqxlJFhCbIyU6Z2ZehHic4llbGxn3CY6Lq78y2OjkUZsG9Kti8Izev2yBGq702SNwtXp2x6PoN
-	okSX/HYzQzunpAYSkcsrJ1vHvSsnZv/KYtZmAD/9za8QBjDOzeZPfVdrYIimUATzToAj8U5dN3g
-	B//3QE/yh81pQ4maog/22zZVF5Wq8MtBqF8TZeByVaDjnfYFS232Zbc74S6r8j8emVDbHnoJA25
-	quQUyMaArc4cjEbwzdpOro5TIH6iPfLMJw==
-X-Received: by 2002:a05:693c:8083:b0:377:678:2309 with SMTP id 5a478bee46e88-3856ef47a98mr20213276eec.15.1795625575355;
-        Wed, 25 Nov 2026 08:52:55 -0800 (PST)
+        bh=Oz7Jwrl1fyQvd1SM32ZV4uHhbma6E080yta+7JCPzik=;
+        b=GAFJsQ6oyvUzBLCqC/Dpnxsqw4EsHu3ZI4Ey5i01258doKwmy3f+X3MN3Qd7JVzPJ4
+         eF29iI/nkS7sn32NxB1kvrSzDf8g5hpCu3esOcbvtNer7KVWMD52VNm7V6P1QU/gYYjj
+         f47OOigMck2NzUfFP5rlIGM/itCDnArkD2Vmhgs+tjVmAfWffmQAuKbPJtZccaYIMO02
+         6TP8IgPqKlmsTTZIlmG541vM5vA4Tbe7wwG20EFQ5TrMp0f8FkgQSrZQNjviOg9fmeBo
+         CIE/NmdoQO5VAr2kACj3fwsrgqwrSXUQrhfkdBrfKB8qmd7ilPoWEKbrPCCg/473TyhA
+         N51Q==
+X-Gm-Message-State: APuU4Z85sNSmEFem7UwZuOzDLeFfPtLqgKzG5FRLHY27s7JA0f3SOqi/
+	kjelkthM9QHYTusGhojoRF+PaI2zxCZPi+U6n7mQJJLqLKy5W9WsOaBZLi2qgQ==
+X-Gm-Gg: AZFdTZcCGjTsSSjCqqYfxsInaytxcRSksTuOvQekxy5nelhO1DUzQHBcf8qpDDUnne1
+	73KPEsPhQLMhVWN8VceYKJqqYkzusyqcQjJo8Y+I+RUIqV24Dp+Vb0aXNJE5Co6xWfjLN3PQuMd
+	cfly6pzvFWc2YhJBeaZYPzFEy5qpOr42UHnnkdL9Tx0xiwi8nHi7Lg8MQ67r/x+oLzsfxv+JeOB
+	SdTpIwsRyy8eJRUUKFczPHTSMYiSKBXHQzQLsbphGZzDvszu0tCRtZxA+xmQ5JcwQQRGb52IYnQ
+	sC/bdjp7hDwlgp4GKYeboPheYcZxb57akewlIge3R8WvBpRm9Lc0+IFNUyG8M8+uk/tSL92ScoD
+	PEF+uIwHIaZKmCXBEC9MJnX0S9uo/YeEASvbumWgyYa6sqlyx76PeJ8fQ27apmX5BancR9ZLyw7
+	svLeutkWdq5xwFa/cHURJ0uwoJ+CfjicGXcTE3w8f32jIxb5mxbv30cTTQaXTud0SPKOu+wGyvZ
+	vDmGsPQLgSMJv7LdpHDtt9IKtoG1Xzc52n9EmSr+skwcBBjyfbtaDgKUazJ+DLgmDgRkFC69UfY
+	2vssr5ETxNlN7CTjRLJRzYpZJXVc5dVocg==
+X-Received: by 2002:a05:693c:41c3:10b0:386:acf5:b4b5 with SMTP id 5a478bee46e88-386acf5b7c7mr10136296eec.23.1795625579483;
+        Wed, 25 Nov 2026 08:52:59 -0800 (PST)
 Received: from pve-server.rlab ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385646633d0sm98545358eec.3.2026.11.25.08.52.51
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385646633d0sm98545358eec.3.2026.11.25.08.52.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Nov 2026 08:52:54 -0800 (PST)
+        Wed, 25 Nov 2026 08:52:58 -0800 (PST)
 From: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -82,9 +82,9 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Shrikanth Hegde <sshegde@linux.ibm.com>,
 	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Subject: [PATCHv3 3/4] powerpc/ptdump: Show the exec flag of kernel mappings on e500
-Date: Wed, 25 Nov 2026 22:22:32 +0530
-Message-Id: <0f0c1087b2ce098cd79e2fff86f00ae1acc57bab.1795625038.git.ritesh.list@gmail.com>
+Subject: [PATCHv3 4/4] powerpc/mm: Drop PAGE_KERNEL_EXEC
+Date: Wed, 25 Nov 2026 22:22:33 +0530
+Message-Id: <96692b22febc2c4ee366de072cebb57abd8ffb18.1795625038.git.ritesh.list@gmail.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <cover.1795625038.git.ritesh.list@gmail.com>
 References: <cover.1795625038.git.ritesh.list@gmail.com>
@@ -110,47 +110,56 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On e500, _PAGE_EXEC is made of two bits, _PAGE_BAP_SX and _PAGE_BAP_UX,
-and a kernel mapping only has _PAGE_BAP_SX (supervisor bit). The flag
-table requires all the bits of the mask to be set to print "X", so
-kernel_page_tables never shows a kernel mapping as executable:
+On powerpc PAGE_KERNEL_EXEC is just an alias to PAGE_KERNEL_X.
 
-w/o this patch:
-  0xf1015000-0xf1015fff  0x00000000         4K PTE   r          present  coherent                  accessed
+The comment above it's definition saying
+	("Make modules code happy. We don't set RO yet"), is stale.
+Since commit 4fcc636615b1 ("powerpc/modules: Make module_alloc() Strict Module
+RWX aware") module text is allocated with PAGE_KERNEL when STRICT_MODULE_RWX is
+enabled and only made executable later, so there is no longer a reason for
+a separate name.
 
-Print "X" when any of the bits is set the same way it is done for
-_PAGE_READ and _PAGE_WRITE:
+Convert the remaining users to PAGE_KERNEL_X and remove the definition.
 
-with this patch:
-  0xf1015000-0xf1015fff  0x00000000         4K PTE   r      X   present  coherent                  accessed
+No functional change intended.
 
-This only changes what is displayed. ptdump_check_wx() uses pte_exec()
-which already tests for either of the bits.
-
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 ---
- arch/powerpc/mm/ptdump/shared.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/pgtable.h | 3 ---
+ arch/powerpc/mm/mem.c              | 4 ++--
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/ptdump/shared.c b/arch/powerpc/mm/ptdump/shared.c
-index edc69da19b85..e28a41a8b1ac 100644
---- a/arch/powerpc/mm/ptdump/shared.c
-+++ b/arch/powerpc/mm/ptdump/shared.c
-@@ -22,9 +22,9 @@ static const struct flag_info flag_array[] = {
- 		.clear	= "w",
- 	}, {
- 		.mask	= _PAGE_EXEC,
--		.val	= _PAGE_EXEC,
--		.set	= " X ",
--		.clear	= "   ",
-+		.val	= 0,
-+		.set	= "   ",
-+		.clear	= " X ",
- 	}, {
- 		.mask	= _PAGE_PRESENT,
- 		.val	= _PAGE_PRESENT,
--- 
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index d20ff2ae02f5..ea06a85f0fa8 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -20,9 +20,6 @@ struct mm_struct;
+ #include <asm/nohash/pgtable.h>
+ #endif /* !CONFIG_PPC_BOOK3S */
+
+-/* Make modules code happy. We don't set RO yet */
+-#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
+-
+ /* Advertise special mapping type for AGP */
+ #define PAGE_AGP		(PAGE_KERNEL_NC)
+ #define HAVE_PAGE_AGP
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 8a0fdfd028dd..bc83e45b7ae9 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -388,8 +388,8 @@ static void prealloc_execmem_pgtable(void) { }
+
+ struct execmem_info __init *execmem_arch_setup(void)
+ {
+-	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+-	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
++	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_X;
++	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_X;
+ 	unsigned long fallback_start = 0, fallback_end = 0;
+ 	unsigned long kprobes_start, kprobes_end;
+ 	unsigned long start, end;
+--
 2.39.5
 
 
