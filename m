@@ -2,83 +2,74 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 49C9D606A334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 19:39:38 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6F5E4606A327
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 20:45:06 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sRZ4rUJB
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gYrZDzw1
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZVPN1thxz2xwP;
-	Thu, 26 Nov 2026 06:39:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795635576;
-	cv=none; b=NBqeq8iJBtVCutwz/6xNd/5TbcYtSO5KrD03FYsmneZ3qakJT73MY3xrrogU85SYf9cUq/NTHEMTbfIi7+D2kGhy7A+rMXf4zn+QJFfQdOd63syV1oljKV/om+cD1EGER1tFx0KAnKY6bUF6YBa+NSh6iyrStDBLlb3JAujLuxazGEOV61QRwCl+6jzB9Z9ltqrEnnEPy9DvaPEW++i0iCdsmfT8JUcepxVZiA9atytpA4nuq4nK6ui10WLi0sdwC1TygXQhtcmbnil6ICv8LIUy+R5umdHne+uM9zWBFacTEjIcLrBBTMoQXLHJqak0BQk9Y1XOjnK5twM+39uYfw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZWrw3MFLz2xwP;
+	Thu, 26 Nov 2026 07:45:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795639504;
+	cv=none; b=mozMuLbvp8tWmFy7wfv7gs1V+vN0/OhJv25Gk/H64yIEMoV7DpcfinCQ6JkQt1tFgORLlhLj81K4dzu6a99RdeH2vvx1oE8m+ggsRmsGyY9OnCJwF4nCqehHGX8dX8rEs9TVgvCNguHlAJxX3hSS4JqIvT3BNj9Tv1AHRNktzvaFuqP8DZDGSFns8St8vH32/2P0XvhIRXsiKjO7FwSpGOMOhroesaxsCWwVDfPSwUUfuXOa4SQ9wqH2OiS42qhsSoVC3x+Yk6MUQIXeL7nZvQ9qNLSvF70VX/LwpCf/QqaJsT8HbZ5U3zLKWrCMeUHvTcxJfFoFwTvLRgvCEKvf/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795635576; c=relaxed/relaxed;
-	bh=3p6asDUa5lPHlXaVDZueUpMoU5hpnKaj2Ds/wZ3B/fI=;
+	t=1795639504; c=relaxed/relaxed;
+	bh=Vue2jOZ1khdcISxHu/EhJAQ6nZxM803LHVIcey8TaJw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PR+JvzCjFlRnBTGowBTMAqSeh9faCXIjMWCbUpFGVgY0VEG9HiIuvqsyagktYlYjJ6KR/c5VFZB6XCMcdVDNCKzxP4HyZ+vdi4VXyTHzL8w4afg+mUmmvpx0T03e5fHWcmNhwqIpAw9cx4DB9cmCHFqbvUl5fbT87ztMe4eMJR2M85akLKZ7GA/BUyyI/TRSUlJOrKK+O3i6jPNWfWOggAkuzdV0HAPyKCeOOXRFFVVIAbMAIgBaoBKs779k/ECfXqRB+4Hix+VLfpqy7DyhDWZi+jLSRa7hjQoO0TRuxyAgZbPox85qK3dnzW8SUDwwdHXTmfOjM0NGc8lLeAntaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sRZ4rUJB; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=GHtCdzi1LFGadjvAqXvqa+2DLwQXL1r0VbDp+kRRfjDnZOeC9XgNh/pqq9Oszn+2FeAzHOBP8VR1sMP9ZIYRA9Z3WSzSl94P4kNgrUdt8l2/+vR6AlGL2Nba0a7x17pUi8nbf2crUS5akYo/yYfhRRuvE0ltIgnvB2Ka3lBlB7RYu3X6ElqOQ2jPrefDE6CSjp48sCQ1jhoM8+S2xvrzB7VSldCmNqSJZv/jWdaHflUi1R3ZbPRHMuxEkAiEsrPzcciGVCIj3b2a5wvzVrNgRE5RUCGRXlFqzrWn0ssJFWLFvrFzSQ+v9EBcRT4OsZA/5RX4oWDKbvqcVY+jE5WFvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gYrZDzw1; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sRZ4rUJB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gYrZDzw1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=shivangu@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZVPM0Swtz2xnh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 06:39:34 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6APJYjC32378103;
-	Wed, 25 Nov 2026 19:39:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=3p6asD
-	Ua5lPHlXaVDZueUpMoU5hpnKaj2Ds/wZ3B/fI=; b=sRZ4rUJBJveucf6syXZOyj
-	n7SGZzi8zarUClGETNGt9/Fy101Rzpz8PtcqSm5xf3sSIft9An5olyA9LEsJg3R3
-	W2tYjvEzeTxPWgntFDwYt7QZ42DukYpvOCa7+NgpycdXnCz6Jp1SADEUa/6ifUaj
-	SFz3pQVe5NnFaRESE5AA0FhqstjPEyNLnR8vxr/16OC2P8OMJqmHciTRm7FX1bmN
-	V2VOdrd5s4pODTxLefOw+tOtON2ck6NYExg3g06FoPe+Pb8C8ZfeSb4v0SOcfwmE
-	QpltuKuwcTZYrKmHkOryMrtuTze0Nch+YNBbqNgs/OiSGeBsc1N3SStIClWjfOAg
-	==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34faeb3d-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 25 Nov 2026 19:39:29 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6APJJKTt505588;
-	Wed, 25 Nov 2026 19:39:28 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j5uxx24fx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Nov 2026 19:39:28 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6APJdOV640174044
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 25 Nov 2026 19:39:24 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 23D072004E;
-	Wed, 25 Nov 2026 19:39:24 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A17F62005A;
-	Wed, 25 Nov 2026 19:39:20 +0000 (GMT)
-Received: from shivang.upadyay (unknown [9.67.112.155])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 25 Nov 2026 19:39:20 +0000 (GMT)
-Date: Thu, 26 Nov 2026 01:09:16 +0530
-From: Shivang Upadhyay <shivangu@linux.ibm.com>
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Ritesh Harjani <riteshh@linux.ibm.com>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>, nandinih@linux.ibm.com,
-        LKML <linux-kernel@vger.kernel.org>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [BUG] selftests/powerpc/eeh: eeh-basic breaks the device hosting
- rootfs, ext4 goes read-only and the test harness crashes
-Message-ID: <awc5ZMnS97T51Rpg@shivang.upadyay>
-References: <9113e399-ddd0-405e-9abb-69a9785c726c@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZWrv167gz2xLr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 07:45:03 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 585F745F10;
+	Wed, 25 Nov 2026 20:45:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1378C1F000C4;
+	Wed, 25 Nov 2026 20:44:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795639500;
+	bh=Vue2jOZ1khdcISxHu/EhJAQ6nZxM803LHVIcey8TaJw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=gYrZDzw1Svtl+8sgjl/5MB/bZPKRYGIMwLvJqrXPnugEnMpS6IXVW7+dzSyrvpQPO
+	 v/Z9C1MP5cUpVKkUyskgLguAbOQgjv59VTajMNrZhuzG/Xl3i0S+dom7fbXp9IUCoc
+	 D6Ndq0/F/WFVZ4JfQKt1DATQuimFZvqDRZrwUJ/f9VMUUu8Ll09nYuVEny+arLXqiX
+	 2CrXIKHXfciXgbIKRkrw6gFoRz2Cv86tnyjKNRBlPypARNcrxW9uq5bNRM/pTuH2YG
+	 MQcihpy0KgjOClaEfOCn0tSuNcfqWHLLBpw0FxpfGwGT9+U2scEgnh1De+70ab+wFP
+	 vUdm1DhIgCEjg==
+Date: Wed, 25 Nov 2026 13:44:53 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: "Nysal Jan K.A." <nysal@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Jeevitha Palanisamy <jeevitha@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"David Hildenbrand (Arm)" <david@kernel.org>,
+	Ryan Roberts <ryan.roberts@arm.com>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Usama Arif <usama.arif@linux.dev>,
+	Kevin Brodsky <kevin.brodsky@arm.com>,
+	"Kiryl Shutsemau (Meta)" <kas@kernel.org>,
+	linux-kernel@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH 1/3] powerpc: Add support for 128-bit cmpxchg
+Message-ID: <20261125204453.GC3625068@ax162>
+References: <20261125174035.1412724-1-nysal@linux.ibm.com>
+ <20261125174035.1412724-2-nysal@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,165 +83,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9113e399-ddd0-405e-9abb-69a9785c726c@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI1MDA3OCBTYWx0ZWRfX+9714bEld4+1
- DppQ1XwqdwOT54t3z+zaQzmOKcda8LToadqDMeZERFSBH2h5oMJFijJrMT9tJEI4CLfU87gAYCb
- lkbkCbnvm/OSXIEjsqUXlbn9gf0juQosSOThPmIA2oyca1nvBzhdnTivBVf0660ZJwyDrY/wLLs
- pobBE13T7uzl6+3YkaHGQX2okB4iOU6JDfKhIa5FwRMllEbx4psfSU3XfBL4im1sTtdWO6lpgQF
- TqnCSwRGRe4vMqv8VJX/F/SXQJNL6NYu01/Jtp0eqxBHLhkl6oQYWCGABrmaixDfyMGWLgcHdlc
- mLiEF27QqOlho9VrnVgQvPsP1GFiiYvdnZcE30dkH7wXKhqSKeAGKxP+Ooymcuubqrar5wMMcP2
- GbSjGVn+Hj/In8Y3Rb86mTWW4t1Lqulr5jeFlKZW3ugNHEm9e5nYack5LBT7AAdD9AtZeTV38+l
- rSavVEkVyAZvOh+4nbQ==
-X-Proofpoint-ORIG-GUID: Al7m6LqMcJUW5GR01b2KMsWjQYgX0GyG
-X-Authority-Analysis: v=2.4 cv=U6QHnuru c=1 sm=1 tr=0 ts=6b073971 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=6EctlgBVgvUV7dFz:21 a=8nJEP1OIZ-IA:10 a=zJRp6_cAMcgA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22 a=iQ6ETzBq9ecOQQE5vZCe:22
- a=YAcHw8vTPqq7ut5H_1wA:9 a=3ZKOabzyN94A:10 a=wPNLvfGTeEIA:10
-X-Proofpoint-GUID: Al7m6LqMcJUW5GR01b2KMsWjQYgX0GyG
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI1MDA3OCBTYWx0ZWRfX6c/FG7tr40j6
- Sxs2kFpJXHSTRALOJDgmXPLcwK2/hO/4S4Qsp1x9t8zZ9edSgw7FozQSskDvtD7CdWSjXwENNbM
- YrRKffGW95j7zZxXTTh+eO9WJ4wdwag=
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-25_05,2026-11-25_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 spamscore=0 impostorscore=0
- clxscore=1011 bulkscore=0 suspectscore=0 adultscore=0 phishscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611250078
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+In-Reply-To: <20261125174035.1412724-2-nysal@linux.ibm.com>
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,
+	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 12, 2026 at 11:36:36AM +0530, Venkat Rao Bagalkote wrote:
-> Hello!!!
-> 
-> IBM CI has hit a failure that takes down the test harness, While running the
-> powerpc EEH selftest on a bare-metal POWER system.
-> 
-> The selftest injects an error into the PCI device that hosts the root
-> filesystem. The filesystem goes read-only and the run dies.
-> 
-> [ 1112.079091] EEH: Frozen PHB#3-PE#1fd detected
-> [ 1112.079905] aacraid 0003:01:00.0: aacraid: PCI error detected 2
-> [ 1112.140830] I/O error, dev sdb, sector 3906906472 op 0x1:(WRITE) ...
-> [ 1112.140957] Aborting journal on device sdb2-8.
-> [ 1112.140977] EXT4-fs error (device sdb2) in ext4_dirty_inode:7656: IO
-> failure
-> [ 1112.176664] EXT4-fs error (device sdb2): ext4_journal_check_start:98: ...
-> Detected aborted journal
-> [ 1187.736385] aacraid 0003:01:00.0: aacraid: PCI error - slot reset
-> [ 1217.244306] EXT4-fs (sdb2): Remounting filesystem read-only
-> [ 1220.583495] aacraid 0003:01:00.0: aacraid: PCI error - resume
-> 
-> We need to make appropriate changes to selftest, so that it skips the
-> adapter, if rootfs is hosted on it.
-> 
-> 
-> SetUp:
-> 
-> System: IBM 9006-22C (POWER9), PowerNV, bare metal
-> Firmware: skiboot-v6.8-45-g8246de863
-> Kernel: 7.4.0-rc2+, upstream master at 067c5c24cef2 ("Merge tag
-> 'page_alloc-for-7.4-rc2'", 2026-11-10)
-> 
-> 
-> Issue1: Selftest should skip the adapter that host the rootfs
-> 
-> eeh_can_break() already skips ahci, for similar reason, but has no check for
-> a device that backs /. A friendly LLM has suggested
-> 
-> below change, which I tested and it works.
-> 
-> 0003:01:00.0, Skipped: hosts the root filesystem
-> 
-> Other adapters are tested as before and the run completes
-> 
-> diff --git a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-> b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-> index 70daa3925dcb..f9db1f9be05a 100644
-> --- a/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-> +++ b/tools/testing/selftests/powerpc/eeh/eeh-functions.sh
-> @@ -62,6 +62,42 @@ eeh_test_prep() {
->      echo 5000 > /sys/kernel/debug/powerpc/eeh_max_freezes
->  }
-> 
-> +# Print the resolved sysfs path of a block device followed by the paths of
-> +# every device stacked underneath it (dm, md, etc).
-> +eeh_blk_sysfs_paths() {
-> +    local sys="$1"
-> +    local s
-> +
-> +    realpath "$sys"
-> +    for s in "$sys"/slaves/* ; do
-> +        if [ -e "$s" ] ; then
-> +            eeh_blk_sysfs_paths "$s"
-> +        fi
-> +    done
-> +}
-> +
-> +# Succeeds if the root filesystem lives on a disk behind any function of
-> the
-> +# slot containing the given PCI device.
-> +eeh_hosts_rootfs() {
-> +    local slot="${1%.*}"
-> +    local majmin src sys
-> +
-> +    # Use the last "/" entry so an initramfs rootfs entry is ignored.
-> +    majmin="$(awk '$5 == "/" { mm = $3 } END { print mm }'
-> /proc/self/mountinfo)"
-> +    src="$(awk '$5 == "/" { for (i = 6; i < NF; i++) if ($i == "-") s = $(i
-> + 2) } END { print s }' /proc/self/mountinfo)"
-> +
-> +    if [ -e "/sys/dev/block/$majmin" ] ; then
-> +        sys="/sys/dev/block/$majmin"
-> +    elif [ -b "$src" ] ; then
-> +        # e.g. btrfs reports an anonymous major:minor
-> +        sys="/sys/class/block/$(basename "$(realpath "$src")")"
-> +    else
-> +        return 1
-> +    fi
-> +
-> +    eeh_blk_sysfs_paths "$sys" 2>/dev/null | grep -q "/${slot}\.[0-7]/"
-> +}
-> +
->  eeh_can_break() {
->      # skip bridges since we can't recover them (yet...)
->      if [ -e "/sys/bus/pci/devices/$dev/pci_bus" ] ; then
-> @@ -78,6 +114,14 @@ eeh_can_break() {
->          return 1;
->      fi
-> 
-> +    # Breaking the device that hosts the root filesystem makes I/O fail
-> +    # during recovery, which can abort the journal and leave / read-only
-> +    # (and kill the test harness). Leave it alone.
-> +    if eeh_hosts_rootfs "$1" ; then
-> +        log "$1, Skipped: hosts the root filesystem"
-Well as per my understanding, Testing the device where rootfs is hosted on
-seems like a valid usecase for selftest. Maybe we should keep that ability.
-Atleast keep it as opt-in.
+On Wed, Nov 25, 2026 at 11:10:22PM +0530, Nysal Jan K.A. wrote:
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index c3b6cd655606..79cda056dfc4 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -15,6 +15,9 @@ config CC_HAS_PCREL
+>  	# do pcrel yet.
+>  	def_bool PPC64 && CC_IS_GCC && $(cc-option, -mcpu=power10 -mpcrel)
+>  
+> +config CC_HAS_PTI_MODE_VAR_ATTR
+> +	def_bool $(success,echo 'void foo(void) { unsigned __int128 u128 __attribute__((__mode__(PTI))); }' | $(CC) -x c - -c -o /dev/null)
 
-The above freeze happened because write failed. Can we perhaps create our
-own freeze window so that none of
-filesystem write fail.
+Please use '$(CC) $(CLANG_FLAGS)' so that this works if clang adds
+support for this, which will depend on the target information in
+CLANG_FLAGS.
 
-I am suggesting to test the following (suggested by Friendly LLM :),
+Also, consider following the recently added guidance to
+scripts/Kconfig.toolchain and add some information about when this check
+can go away:
 
-sync
-fsfreeze -f /      # flush dirty data and the journal, then block new writes
-# ... inject the error, wait for EEH recovery ...
-fsfreeze -u /      # thaw
+  https://git.kernel.org/kbuild/c/c285fe817a92f9c747931134f468d2aefeae6bce
 
-Thanks
-~Shivang
+It would probably be something like
 
+  # gcc: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106895 - first fixed in 17.0.0, backported in 16.2.0, 15.4.0, and 14.5.0
+  # clang: not supported - <bug link like Nick requested>
+
+-- 
+Cheers,
+Nathan
 
