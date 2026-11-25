@@ -1,90 +1,73 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 22261606A321
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 09:03:58 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0C623606A331
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 09:10:03 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TrQaUotY
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kSGfSTkY
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZDHw5gfSz2xqh;
-	Wed, 25 Nov 2026 20:03:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1330"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795597436;
-	cv=none; b=hferA++g/o2r7ER4H/CtsRRsT5alHCJShOAcPg1GSzrvyxHDT2R3SfbFL6HIMZhdKrRH5IjyikojPumac8r6PMFaEwMlA2Uv5xNhtTjw69Zfx2CS7wvOJq3HLAz0BiXBZ2XETFCIPspEuLTS2DtTmxA3cqcotfsgCwbNy4kvgwrQxK51NfGtXJNACG2Dm+zgOETfoqKLLPstJuGx4t/wo8uM3nAD3Ou/DaBalTW9CS8dqOVKYDKL2KHfOy9F47tPerD8B82NrniBztUdKVUsEz6Vjiuriw7cn44z066rwEhT5TnKA0GAn/Zh7nDcQ5zPaoCpUCmqY6WUzhlI6lZ9xw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZDQx15Bjz2xqh;
+	Wed, 25 Nov 2026 20:10:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795597801;
+	cv=none; b=jhwgbDzI9EVZfYGjvM34DacUNHiW252zhyiX23CiOH+mUagcIBpofQc6i/sBSurGMgMZx3h5Az6UJYtxOaXnGehj73VwWcPgxZyRqgPaK1/ax8xKgs0DgxG2w4yYFRWqToeMvR8WlpO+wzq8El2JLIxDWC9iEQnhqMR4MUOwyTgt78aCDW0u8xoB+utVRFGP1hFKZZ7OrxjePGuEpBZDPvdwqBJy867rsQooLRVjjv5yH4nGz3VyolXFSWyyZm2mv5KKucy1nhCVyK2uomiFLJpQje2ED5ZjErwYYVSuWXGWZIT2YdIaZg5x5OyVW8ptPMKKG7TcYu/3aB6IMevBsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795597436; c=relaxed/relaxed;
-	bh=V5RSPGAWd3oxeQteUUuoK6f8743toWOpgplcBAfwJJQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VwobrN3HFs9dL2Am3r8lW9curKzp64oI8Gb/sFFeeAafNEaeLUsYvYOkmDdGIKry2eeOD1Shtms9KsHa80LeUly/ikTPRrRJ3EtYO8EsuwfTDqXst3wfnA8ObUbz6jL73rulz4ceLNoTiM/pSPAibnGvA2VKyc1/Lxe3VqGLJTUOX6foMYGc1rTsR7H3hO4viPW44X1clVb9KFZjiYqwqt+TGAb++evxgDxcarloz/RsPudN9egy/84i9ah5JhNI0V/bTvYZsU6PKgghtvx4YcDiAvUqSPP0zcHMR5WibvZ23G1FNscNagp1W3gVvpRN+qMrkdWwyLQDzfD3+lw0Qw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TrQaUotY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com; envelope-from=yigejiang86@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795597801; c=relaxed/relaxed;
+	bh=m20c+6zRaKa6S8P+owjFoXEJMPBcudIxx1JLpQyKEU4=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=Um65QIBJ+KfUO6pOjuHoRb/ObdgAGHr3yo+G7f5UtTNSQvGDnjc7Q+sCTXZ8AvzK1F1VX2sq/R7eSaYLVL+oQJru00353zUNNiXW+M5AW5lAq/WZxKwsGwoVbtx7Kh2TBWa3sg4RZANoA6uWRoL3Ew0B0ePMgKzPB5QAnu/azj+XM455Dn0T2aJW1CRSlEFD6zRsLZdv50WV8m1+7pWCtRXyfU2sehpgc5XcV4BwgTzXaKdURr0JePWkuEb9rxBZhYLjzPPB570bpq+AdyPqWiihA+tdk6daGEC/6LSiYii0tkGOR7Oy2zpE0TlryGqT8OnAIuWayqaE7rBAnTl+dg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kSGfSTkY; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=TrQaUotY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kSGfSTkY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com; envelope-from=yigejiang86@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1330.google.com (mail-dy1-x1330.google.com [IPv6:2607:f8b0:4864:20::1330])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZDHv1DTxz2xjN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 20:03:54 +1100 (AEDT)
-Received: by mail-dy1-x1330.google.com with SMTP id 5a478bee46e88-386ab9ab619so6530039eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 01:03:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795597431; x=1796202231; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=V5RSPGAWd3oxeQteUUuoK6f8743toWOpgplcBAfwJJQ=;
-        b=TrQaUotYKtWfzsyDRLcrZcL4ttXqRB7KD6FcbJvlDvvvRdwrk/XpTZRTRWhJV4Fwwq
-         chQ64IWCi2qOHEpEVEAL3BsAgKnvk6ZkQfmt334E+J3k0nHeCLZEP/m5nOEQTmJSrhYu
-         iio08q7Pztm6WopJxZIhL60vdLqEWISX+DPm0Afmk4J2TYh2yQEh8WcDCMOgVxng2qcn
-         ks+SvU/mQP7K7AjFRe5Hy6LcxGsDiaA4iuhyB9NiSmP1bsRX47xi0SUkdABH05THjFh0
-         hUGubcUmt9szALh23fwnAI/iVGyppyqmAEBWiWxF+3OtAjgHC7JlF/ygFCdCrkyXBc3g
-         oOkA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795597431; x=1796202231;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=V5RSPGAWd3oxeQteUUuoK6f8743toWOpgplcBAfwJJQ=;
-        b=xH7PthsF/zHKuNyv/WWkXE8pjRDLXeM54fBG3r2kQDK4nhrK34yC160RJ065VQOBnS
-         mlh99vXtRhLn3lzb2a+NGD+juyUaZVf+pwrDkSFH5tS48J3cxt881Zx/+/3lg01p1kf2
-         Zo8IARMcX9dz/gsFuH6OjUBD1rmEGjtoNbe6V0HKTT+Jp4ot2u/ygICby04waL9afSxr
-         YxvkvEM6ThHjwdyt+yUOL+X63Z8CTNzjghAq81aOZU4FUL7Be/VKT0Z4czDPw7pcq5/W
-         ua5/Y7AxjJYXcBRjAPegNm2h0OIkj1REmoMXVRdsq7Tfv3hIA0gBLuk9UfQ+GcFtE1Ns
-         wtsA==
-X-Forwarded-Encrypted: i=1; AL+hErEhsxwc/iTGYetSsOk2AIzUVkn0cr4yBs/5zwNIVwkC4qKD/FQHVYXufeG+Tjsw+KCAs5lzLlh4DVZNQmU=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+qc/5Dqf086DuLkH5BShRu8BAlucNTDyh5ZLILoBEv2MO5kWUp
-	r1ttJuytFDcrNzQjoeyejT/Fh+wljbS0U4PRhG3lXS1tN7tIBHTbNTk=
-X-Gm-Gg: AZFdTZd9OOxKpe8eDko/UDLwR7ks43QSBoUYdW6us367KxhmTyobr9z6Akksh9GOG+X
-	3icw3nOcLlWjHqzx5ElTvHo9l2dg8ypA88AJ26swdeAFBT21GfIGOiK7M11vol8EuZb6+n9sadk
-	q5rBeuI5flsaWvxYmRcY2FGaKouHyKnqiLW+uNmRTr9M4obg70UMS+hLPsvNnQ63IC6SwmMOoz5
-	Fmds/IvfbrHIFK/ZYudp1d5x1qxu92u2dJtKexNt288Qzo22dQ7RXaFUy5BbSMkPM6xrVF25XzE
-	2Yo2hZp1kQHsqhSq9WBQn8klC/A2ja8ni2EgPQYRqKmIVUBg0LKGOGWbcRFPkrFV48XXjc0SX2O
-	9JvW64bW/RCzwZgQCQFoYKYmaGwjiQelEvSkRifnMvBDXZM2p5wuq3/uPG/rE45ZYkhevKJDoOY
-	cswU/EGSeDL+XoXDiimK/Kv1vJC4MicCdOOXmgzrd3jOO7b9nxzxCHhZauGsii+l9o0sj9HT+A9
-	H5cVqDikXZ/O73w3ixk8/nuToBD9xXO2ciGQDk05qzgSUhxa08kFjtx5Pl/dy6aIhn2oQ47xJXm
-	p26DEqgbFOnXcBdVxD+H4uAVKR8SPyZnfBMhLyvq5WvXoA2hYMNdw9IBtEnFZLyk0sxbSjh0ogy
-	SlrsQKfQ3m8e2Sg==
-X-Received: by 2002:a05:7301:730c:b0:381:2114:99d0 with SMTP id 5a478bee46e88-38571415bdemr16715777eec.39.1795597430484;
-        Wed, 25 Nov 2026 01:03:50 -0800 (PST)
-Received: from localhost.localdomain ([2406:3003:2002:639c:44a2:4377:d176:9ad1])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38566cd4efesm53859174eec.12.2026.11.25.01.03.48
-        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
-        Wed, 25 Nov 2026 01:03:50 -0800 (PST)
-From: Yige Jiang <yigejiang86@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Yige Jiang <yigejiang86@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Wolfram Sang <wsa@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-i2c@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH] macintosh: therm_windtunnel: Fix i2c adapter reference leak in probe
-Date: Wed, 25 Nov 2026 17:03:43 +0800
-Message-ID: <rc-b1-20261110-vc-23-41d00428efcb@gmail.com>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZDQw1YhHz2xdY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 20:09:59 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AP6YoSD3109893;
+	Wed, 25 Nov 2026 09:09:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=m20c+6
+	zRaKa6S8P+owjFoXEJMPBcudIxx1JLpQyKEU4=; b=kSGfSTkYFsiGWseM3O9V9W
+	MTx3PdUY51wN5PqOY1+I3RAKFz4+dlgrc1sBAcybzErRr1y7V9aYW7H53/QQ82Yl
+	QKh0Ra3Xx3RTLDhE41nRRyIgJW2sB3oykGjxyRdh6B45msGgkRk8dsTlKDzpOtug
+	ONn5UH//sY6jqXOiptsgOCTasj33PNsTPVPfqkt3ygGgsMyxBH+sEn3JOa8+IrWp
+	TObSjGSzkMkFaCxGqhhg9EoFvYrGNnVLh6oxMKz51lhj0ZE8MGkJkVCwMvwsIllw
+	D2MzOcstOA6JYygUC5QDf+oxT4dSBD4DIcINjn7+iVJH+waYZUhHEUgW4wxY4rHg
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g3bmxc-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 25 Nov 2026 09:09:40 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6AP6JKt6408283;
+	Wed, 25 Nov 2026 09:09:40 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j5dcuttsy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Nov 2026 09:09:39 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6AP99c3m39518536
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 25 Nov 2026 09:09:38 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 339D22004E;
+	Wed, 25 Nov 2026 09:09:38 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9701D2004B;
+	Wed, 25 Nov 2026 09:09:34 +0000 (GMT)
+Received: from [9.39.29.113] (unknown [9.39.29.113])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 25 Nov 2026 09:09:34 +0000 (GMT)
+Message-ID: <35d3d17a-15ef-4204-a038-a9018e561535@linux.ibm.com>
+Date: Wed, 25 Nov 2026 14:39:33 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,58 +81,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 0/5] cacheinfo, powerpc: Move powerpc to generic cacheinfo
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        driver-core@lists.linux.dev
+Cc: christophe.leroy@csgroup.eu, maddy@linux.ibm.com,
+        gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
+        johan@kernel.org, sudeep.holla@kernel.org, ritesh.list@gmail.com,
+        tim.c.chen@linux.intel.com, yu.c.chen@intel.com
+References: <20261118163639.890546-1-sshegde@linux.ibm.com>
+ <a2bd3564-0990-47ab-b922-6793dd1de144@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <a2bd3564-0990-47ab-b922-6793dd1de144@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-TM-AS-GCONF: 00
+X-Proofpoint-Reinject: loops=2 maxloops=12
+X-Authority-Analysis: v=2.4 cv=SoQFe/O0 c=1 sm=1 tr=0 ts=6b06a5d5 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=GSrg8US4fy1um4TZnF8A:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI1MDAzNiBTYWx0ZWRfXyQFVIiHOeKqk
+ DiXtQl9oH9DILas27WIDntJeGq6g4W0Yoro5k/6Wgqx2fg8YLWxfk5yuiZPIrskuRw//4WOkw9w
+ Ls1Ryz7jSf2h80qv4WC6L+FxQBq3NZU=
+X-Proofpoint-ORIG-GUID: d0_GswMIP1KdKSs4UAf-MTjOSVRT_Wh4
+X-Proofpoint-GUID: K8a83gD0EIMhDPmoKpesw_nBKKA6SZMt
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI1MDAzNiBTYWx0ZWRfX5w8YAC8MHUUX
+ ponakBauIM4NhqcAd13fsdc+efG8tRxZES3svuf0PDwjw9NYtW8doGhYQzyizKeks46oesnG93r
+ 5ih4ijPR2os5/9jiQ9g7TPoUzmLNAVz9fbgVTJVh1Rc0VYqnUJpAbr4CgUI6o/XgM6y764QPRbK
+ O5dq98DuFmcWcEKNvtBUW7bTlpdFPZJF/+ukxiuDYMHYGGgSsSDzSsmOzj9RsPckXfvy2Ib7a+s
+ laSwIT6kaVcjsbew8EqoLtVLwWwQyIjzNI9B7RYYSaCYniMMdKRPPZQAekw94WG8it8FHzO8cRn
+ KL4DCq+AYSqu6b61VGvwHzv+yPwPrFTT+oojd3GCJCk/wjuKZWKEuX++b2hp7q20EG5Y9CD6yRc
+ EbUYSr2/kfYTyanmJ7r4r07xt3B185zKzB4PmdlB2F2cXZXgjrfMXHBLvp1Ki2W9tw1NaMYfcyQ
+ Ky8IAV6uUraCL0GQ1RA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-25_02,2026-11-23_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 suspectscore=0 spamscore=0 bulkscore=0 adultscore=0
+ lowpriorityscore=0 clxscore=1015 malwarescore=0 impostorscore=0 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611250036
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_PASS,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-therm_of_probe() walks the i2c adapters with i2c_get_adapter() and
-drops each reference with i2c_put_adapter() before taking the next one.
-Once do_attach() has started the control loop, however, it returns 0
-while still holding the reference to the current adapter. The pointer
-is not stored anywhere, so that reference is never dropped. This
-happens on every successful probe, including after an unbind/rebind of
-the platform device, and the extra device reference would make
-i2c_del_adapter() for that bus wait forever for the adapter device to
-be released.
 
-The driver does not use the adapter after do_attach() returns; the
-sensor clients it talks to afterwards are children of the adapter and
-are unregistered by i2c_del_adapter(). Drop the reference right after
-do_attach(), before checking x.running.
+>>
+>> If this approach does not work, then I am afraid we might have to fallback to
+>> arch_llc_bytes.
+> 
+> Well, though it worked for normal boot and hotplug, LPM is broken and DLPAR is likely
+> a problem too if the logical CPUid is reused with different device tree node.
+> 
+> So I am afraid it is not straightforward to port.
+> 
+> The current PowerPC implementation owns references to the device-tree cache nodes
+> and destroys and rebuilds its cache objects during LPM. It also releases cache
+> objects as CPUs are removed during DLPAR.
+> 
+> Generic cacheinfo has a different lifetime model. Its per-CPU info_list is retained
+> across CPU offline, and the leaves continue to contain fw_token pointers to the
+> device-tree cache nodes. Replacing or freeing those leaves safely is not straightforward
+> because scheduler and page allocator users can access them concurrently. Handling this properly
+> would need a broader lifetime and synchronization mechanism in generic cacheinfo.
+> 
+> Doing all that heavy lifting for the case of LPM/DLPAR is likely going to be overkill.
+> That may still be worth doing independently, but it is substantially more involved than
+> what is needed here.
+> 
+> So I am planning to resort to something like below. Introduce a new arch
+> specific hook (cacheinfo_get_arch_llc_info) to get the cache size and
+> cpus of that cache.
+> 
+> Hopefully should be able to send it out soon. Now would be the good to wake me up if
+> there is a better way!!
+> 
 
-Fixes: 3e7bed52719d ("macintosh: therm_windtunnel: drop using attach_adapter")
-Cc: stable@vger.kernel.org
-Signed-off-by: Yige Jiang <yigejiang86@gmail.com>
----
-Based on linux-next next-20261109 (630059a5a632).
-Compile-tested: powerpc (ppc32), GCC 14.2.0, W=1, pmac32_defconfig with CONFIG_THERM_WINDTUNNEL=m, CONFIG_I2C_POWERMAC=y (object only; no new warnings).
-No hardware or runtime test was performed.
-AI assistance was used for analysis and patch preparation.
-Runs on every successful probe of the Windtunnel G4 (PowerMac3,6) fan controller, and again on each unbind/rebind.
+After auditing the code again, the scope appears narrower.
 
- drivers/macintosh/therm_windtunnel.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The scheduler and page allocator consume cacheinfo only while refreshing
+cached state during topology updates. their runtime paths use sd->llc_bytes and
+PCP flags rather than retaining cacheinfo pointers.
 
-diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
-index 0b2e08a1bee0..4f2581d9dec9 100644
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -472,9 +472,9 @@ static int therm_of_probe(struct platform_device *dev)
- 	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
- 	while (adap) {
- 		do_attach(adap);
-+		i2c_put_adapter(adap);
- 		if (x.running)
- 			return 0;
--		i2c_put_adapter(adap);
- 		adap = i2c_get_adapter(++i);
- 	}
- 
+The other runtime users relevant to this conversion participate in
+CPU hotplug read-side locking, while early scheduler-domain construction cannot
+overlap LPM or DLPAR.
 
-base-commit: 630059a5a632377b9b7b487baccde92b7ae1dd47
+So, let me give this approach another try to see if it holds good for LPM.
+
+> 
+> @@ -XXX,15 +XXX,23 @@ static unsigned long get_effective_llc_bytes(int cpu,
+>                            struct sched_domain *sd)
+>   {
+>       struct cacheinfo *llc;
+> +    unsigned long size;
+>       unsigned int hw_weight;
+> 
+>       llc = get_cpu_cacheinfo_llc(cpu);
+> -    if (!llc)
+> -        return 0;
+> +    if (llc) {
+> +        size = llc->size;
+> +        hw_weight = cpumask_weight(&llc->shared_cpu_map);
+> +    } else if (cacheinfo_get_arch_llc_info(cpu, &size, &hw_weight)) {
+> +        return 0;
+> +    }
+> 
+> -    hw_weight = cpumask_weight(&llc->shared_cpu_map);
+> -    if (!hw_weight)
+> +    if (!size || !hw_weight)
+>           return 0;
+> 
+> -    return llc->size * sd->span_weight / hw_weight;
+> +    return size * sd->span_weight / hw_weight;
+> 
 
