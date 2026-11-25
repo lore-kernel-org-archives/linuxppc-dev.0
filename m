@@ -1,91 +1,74 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A3793606A326
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 11:42:34 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 13961606A321
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 12:01:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Dsg0lUmt
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lweNZejM;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QAIDFWPg
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZHpx2pSQz2yCr;
-	Wed, 25 Nov 2026 22:42:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795586315;
-	cv=none; b=Hg76W0Gc9v5+lZqxSuCplJJz3ZOI4cVxce8rLWG6B8vrJbaDAQHBrLNz0jwpoZ9HcVRn/sCXWm3R3oWIQXlL2IbwBvorEwnl9G8U104/wkYDgzKZ2KNJ4Ycf23gB7nNGHTRA79tQc8B0XzgyEBdxynyruQauBaM4TNNFj1gSUZwQP5TR3wV7m3S8ifxSlUtc3eNA6lAobEbsM+qlV8nW13GMVVKng8N4beS3MfJrdwMUpGT4fdxxV7YKygciFQOW+jqNWtlgcZkR55VsOYyGvW6AadXPlwMMgkDW9W1nmstxQCvfQ8h992bxkLTRxJnlrQfx8JalVQbF4IJFyBY0ow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZJFH52Xdz2xjN;
+	Wed, 25 Nov 2026 23:01:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795608115;
+	cv=none; b=KAMxBdXD3Qj2j8eCFSmrksQG5g8fu2SLXSvOq813m/wPMqScxv6kNbBhgz96R4hr1B+DQG4/dlZAcM1jwHeZRxitLqmQTL1wUCoJrgF8JtKWq3LgCdA1TXD1wHq1wrbLi385pFHUfPm+rov+SdcafytjL3J4+dbpSNbSUeDBSA9c43PeVt4nqK51MiKZHScoZjhvl/9/JHmRnhAkYyMp6UomrkGbcOh2VnqefCk/8Xi6GYjQaxxb8tQW0VPgOcTqH39n6wNrIxdzF3TJGQOPV5II0zM8MceW8FC38O/QgoYMIvXovWaFmTXbiqTMOtX+noOVUpGv1ErDvngm9ot5ow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795586315; c=relaxed/relaxed;
-	bh=xFMuh8nwFoEFZnPvdlHZ2jAd51FcFwkpbhkwnf+oNII=;
+	t=1795608115; c=relaxed/relaxed;
+	bh=g85ZtScV2I4XNTHq3zpYSJXggv8P2pnkPwzz2Ze7ydw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DYKY6y9U8aCRqZQBiIQB6F6Tuvkbvo8XOmQbcSznPSKVnUSjKzBrLEbEslifysFNND5Xcxli46RIwl+1a/Fet72I3vSQkCbbYFu3RKm6FNWJTzdJKvJa/pMCffFNYuO1LBsja0C5AcauX30V6H0+KTKcyntrqyv5ToLTfoQIuZg9YJv7CgKkZExaS8wyNADTnBCtcQ7PilcFN7nAWWXCQNyRyJeGeL+himVFlrXAFSuJsX2VQS9T2LatzI08KKsa0+DEhyBXg5+hbxZJe2AzKddBsdUOqCeYIHfFve9wLuURGXkKbLlavSkKRphdQ8Xzj0Y/LI4g5gviEiQ1ZBst7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Dsg0lUmt; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=hi6IWm7oS7DHHdXMhQymH1hNyltsVhVzBJgRLWzte9CH/XkOsAat72RQT8acuGZ4Qbz0bA7ld0hA2F0iuc98kd8e/yb+//VK+GMpZXiRGHKYDkV3kYDOCeCM2x2tTSNFlIu0Cs0EBzo3pnSBRWo/Rk+X2hYk642XgtKHZ9Ts1osBb5gYYQJgn8n5g99od7YyRHvy9i6Pl6Lu7GB/9DtqNiMWmUGuiF+mKDIj4nIyrReY2UmO0k3v3DrEbm/qzMnjmLw3sJF9JY0g5QIX7rpc/7giBFZkEDRNVqVI9tQ3gp2XeIhhJ/Av//dXcLxsLLHCWa6BBrQ1sG9QMzGXPHfHuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lweNZejM; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QAIDFWPg; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Dsg0lUmt;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lweNZejM;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QAIDFWPg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=mkchauras@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZ8B26mr9z2xLr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 16:58:34 +1100 (AEDT)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2f03f3631b2so29265225ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Nov 2026 21:58:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795586312; x=1796191112; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=xFMuh8nwFoEFZnPvdlHZ2jAd51FcFwkpbhkwnf+oNII=;
-        b=Dsg0lUmt3q91dKbEHy6lAwvkc4f8IARykklvv6tb+wnspfltW4gJ6CzM24Hktvuor5
-         NdDoqWTezVyvgI7QRc6QNunmsgurt6T8zGvgxqQLAUlg2uZwEKkaX68b+r9B98Q4CT0Y
-         xXCZ6mUggMruZv7mPlVFTJ8YmmFkTjm13W5xGyxphhbT7Z084BsQeMUf4sp31vH5hA05
-         kGOFM0cPjMlrktza0KcKRDOpsqGh8VV3UuR/t55TKHGV18TAnv1gULrJpYSwvcFBQQB6
-         ArWOWLCLmkuAtLDNPSrJ4Kjjr1P3wBarfgFnzz7nxLXm2guVrT9Qy16uvm3FUrscCVQ8
-         dp9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795586312; x=1796191112;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=xFMuh8nwFoEFZnPvdlHZ2jAd51FcFwkpbhkwnf+oNII=;
-        b=1hAGs7UkVP29tyQLRbVqfdaYmATEOnsJeXbhzwu6fojDYelLavwA1fnP93zSKYeKe1
-         RnsIKPI6q0jlFz3CXkHzHnHYyoiI7nEIoustKYWJO7PDbVTcZZvg8Gmteha2WliSHcM0
-         Xah+xYIupJBdg+qeZlQ1nrUqeHSIO6Xj6EDMbdFvY9VABZncRMy2mgmVR+hKmkfUemAN
-         Z6oL9mxZnBUl99jZNgSN/GPVry9tSAfymH6488c4gGBKtUb5EIfXejokbk7NGeDCRfTQ
-         UUiVZ23DzVkpkajT/DU/EWERpMz0yupSZIZSV3AoZBdjs/jDxQrlNr6W9xapZ/NPftZd
-         iSZg==
-X-Gm-Message-State: APuU4Z8zkfq4oEEiabs+vKXZy1rLBqgTRxsZ0ljgXnRXs3OzHyCwl0g9
-	fYUaqC1/22hnFx4ndUDfg7wDCafNH1lNPQ5nTP8VIWG7VnwzdzzYZhvN
-X-Gm-Gg: AZFdTZfy/YReITh3MNllzbUIcPiUVV+B9/35MxW6O0aVJuFeW9AcsPMWuC8iXnd3ZG5
-	GgKEnSjOEppirc8PZcRLHyp7Tas3w9Y999KX1FmA5weAXOWbI/CoQwj6DbEbKj1eH5QiO20+Qbh
-	lgrNeXUtCOV35w2a4tgrCoC2gKJ3h/THUYxVjrg/1aqAuDK7IqtrF5HZV/iLDGODgm/RfnkODUd
-	bKQtbUeVoRraiAtUayqdcpyMsT0oUlR4vQM2BEhF5g9xKzzpYHm0gWlROf+0WApvhHRCVGP54xq
-	r8JHvrLC02OFN48yLtgKg+6Vke+FFuPhSb7PQjY618oPFgfTqK+9RUUy6hcgedYzkqW4Rkf5maZ
-	nNn1DF0pqDqOtCsAZnN1GqZwyej4ArVYT0ZPztgbxOnIy57i302NBAQmJDbzHKU7DQT3lF9bKJz
-	nzXdJl1RcbWsFHu7JMUgk4HFkNjRxCqMNAN7tWYIBf5o9khSKEb7BX3pyvpuGx3nayebInBVFZN
-	b9pZ+R8cRKU81XDlUnvGNbPNVJbe+W95NB8lTep61mQ824USUh/LXWa+qBaS4c43ECjGnBOpq0R
-	Mcx3I3+RsY5NGq641fLE14ihTv0EEfzAZqlowP8n8MDgha4gBV25PFJxhTRyPE6ilzdWD/mtz43
-	Vz2eNVPcuWMFHfLTLGnNAIw==
-X-Received: by 2002:a17:902:da8e:b0:2f0:3647:6224 with SMTP id d9443c01a7336-2f03f261825mr147681875ad.61.1795586312275;
-        Tue, 24 Nov 2026 21:58:32 -0800 (PST)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com ([122.161.51.99])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03ee84294sm78212685ad.9.2026.11.24.21.58.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Nov 2026 21:58:31 -0800 (PST)
-Date: Wed, 25 Nov 2026 11:28:26 +0530
-From: Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZJFG3Qb2z2xKQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 23:01:54 +1100 (AEDT)
+Date: Wed, 25 Nov 2026 13:01:42 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1795608104;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=g85ZtScV2I4XNTHq3zpYSJXggv8P2pnkPwzz2Ze7ydw=;
+	b=lweNZejMWRcfnmeBRHYPK8ptOMUZoF9wWQiFgD1Un0ZNl4/S71bUpfAEPgqec9Dr92aGmr
+	ywFMraGx9AgmcJDuhVn3gamewb08i7O1pRCT3F7SVSMNc2rZPkdd+XoY5aHBMllZpwWsfT
+	PQd8b7NCG3qBqPAQjercIHjry4vyjfALBoIsSC/1WFy5VgxttymDX9vDPQ1vPa6mFA3Zjc
+	QgUp790p24qvkDhwNsTYGbAITxVTPIvPwciqtPmN6iRYfSa+GQeiXyCtnzyznUTuerqQZP
+	dlrQJcbrQiLP6EYUCfJtaU2vlw9eyNzVZNccQQzvAl+BJNwMWDTzwclBkTHkCg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1795608104;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=g85ZtScV2I4XNTHq3zpYSJXggv8P2pnkPwzz2Ze7ydw=;
+	b=QAIDFWPgqhD/EhRvXQzB1vdIdnif7+H/wL6YaSrkwwD5a3cFTTiYPO7NnanqHJq6NQnURE
+	lz9q6UxfNDuvqoAg==
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, 
-	linux-kernel@vger.kernel.org, chleroy@kernel.org, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, stable@vger.kernel.org
-Subject: Re: [PATCHv3 4/4] powerpc/kvm-hv-pmu: Free hostwide stats buffers if
- perf_pmu_register() fails
-Message-ID: <awZ4ZhK1GFHKi9Tr@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
-References: <cover.1795441238.git.ritesh.list@gmail.com>
- <a9e4029d0e11b3c944f4b4cb781fc5ff1696709b.1795441238.git.ritesh.list@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-kernel@vger.kernel.org, chleroy@kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Mukesh Kumar Chaurasiya <mkchauras@gmail.com>,
+	stable@vger.kernel.org
+Subject: Re: [PATCHv4 1/4] powerpc/64: Leave lockdep hardirq context around
+ replayed interrupts
+Message-ID: <20261125120142.Uw7Srj9z@linutronix.de>
+References: <cover.1795603946.git.ritesh.list@gmail.com>
+ <6a02babe73f316616cf829af3ddbbfc61fb4066a.1795603946.git.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,57 +82,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <a9e4029d0e11b3c944f4b4cb781fc5ff1696709b.1795441238.git.ritesh.list@gmail.com>
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <6a02babe73f316616cf829af3ddbbfc61fb4066a.1795603946.git.ritesh.list@gmail.com>
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Mon, Nov 23, 2026 at 07:21:53PM +0530, Ritesh Harjani (IBM) wrote:
-> kvmppc_register_pmu() calls kvmppc_init_hostwide(), which allocates
-> gsm_l0_stats and gsb_l0_stats. It then registers the pmu. If
-> perf_pmu_register() fails we return without freeing them.
-> 
-> Call kvmppc_cleanup_hostwide() on that error path.
-> 
-> Fixes: f0c9c49c5067 ("powerpc/kvm-hv-pmu: Implement GSB message-ops for hostwide counters")
+On 2026-11-25 16:56:03 [+0530], Ritesh Harjani (IBM) wrote:
+> With PROVE_LOCKING, boot warns once and lockdep turns itself off:
+>   DEBUG_LOCKS_WARN_ON(lockdep_hardirq_context())
+>   WARNING: kernel/locking/lockdep.c:4448 at lockdep_hardirqs_on_prepare+0=
+x22c/0x2d4, CPU#0: swapper/0/0
+=E2=80=A6
+> Fixes: bee25f97ad24 ("powerpc: Enable GENERIC_ENTRY feature")
 > Cc: stable@vger.kernel.org
+> Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
+> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Closes: https://lore.kernel.org/linuxppc-dev/b44aefc5-e066-478b-8d34-50d2=
+d0deab6b@linux.ibm.com/
+> Closes: https://lore.kernel.org/linuxppc-dev/20260922150619.lwWqj1AO@linu=
+tronix.de/
 > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> ---
->  arch/powerpc/perf/kvm-hv-pmu.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/perf/kvm-hv-pmu.c b/arch/powerpc/perf/kvm-hv-pmu.c
-> index a58634f656e9..ec05b4855736 100644
-> --- a/arch/powerpc/perf/kvm-hv-pmu.c
-> +++ b/arch/powerpc/perf/kvm-hv-pmu.c
-> @@ -402,8 +402,10 @@ static int __init kvmppc_register_pmu(void)
-> 
->  		/* Register the pmu */
->  		rc = perf_pmu_register(&kvmppc_pmu, kvmppc_pmu.name, -1);
-> -		if (rc)
-> +		if (rc) {
-> +			kvmppc_cleanup_hostwide();
-Just a question.
-Inside this function, should we also take lock just to set the pointers
-NULL rather than putting the whole logic(free also) inside the lock like
-we did in previous patch?
 
-Apart from this, all looks good.
+Tested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-Reviewed-by: Mukesh Kumar Chaurasiya (IBM) <mkchauras@gmail.com>
->  			goto out;
-> +		}
-> 
->  		pr_info("Registered kvm-hv pmu");
->  	}
-> --
-> 2.39.5
-> 
-
+Sebastian
 
