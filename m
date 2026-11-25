@@ -2,72 +2,86 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 737A2606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 16:04:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8ABF7606A327
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 16:07:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kguypUXm
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ENpgOhP3
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZPcg1C52z2xS6;
-	Thu, 26 Nov 2026 03:04:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795622643;
-	cv=none; b=kNSDi0BYSiSSOsBzjhKSO8iVxeoVUCEJIbKvoXlcPFcYovubGAvvI2BZTv9NwXhzjtDQdCm8n0PWjM8Os2g1JEhaz463rpod8cABBGiRbjMRY8NO7VWxgcDVH75Qt5PSB+CsLDp4BdJ+frA/rLK+59h9Lx9KwgKPAGD0BU2+xwuNtj7khXsN6/9dWBhLPS3QAA8kI3lBUBBYqfNRN5M9xAI0nOHKNdT+pBJqEazHydFfYVnoOfZWgyICbyelEU1YopzmF8CKjhjlbhOhuLnY6ugaC2t1Q9E2ZRmwAHB19664msx8fs3Y5HCJQB+Dkq5qLf0ir29SAQU4sc63waHipQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZPhR1lWPz2xS6;
+	Thu, 26 Nov 2026 03:07:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1236"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795622839;
+	cv=none; b=IhpZJsHUjT+rX86+y/n6kPuVXxh6nZmkhrnEPYUnFyk9+W3xAeWS5tLCFNNu7B+nBHukBxDGZ834AnqskktdiyDmzTulRHNkRdmXsnE4Bvhh2jiG2GvEGvnUpDp7L3ezyG34FK0SSO4222fTnPovyZBQVR34B83WmsgvJ7yoInyj2/zuGP82d3v24CjrQHxHuEyfMLM4NOFl/5cmxxOvXALYGtk5id0caYbrQnxYxO4nTMGAomqepe6JAqngcp+GZ36lXXb3/yJjhnsDKV04oUWSqXou44DHV9UsiM21Jw0zCg86OTmJqK1uIOBulzCNuweNiVeLy5Bgr8RfrR4vJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795622643; c=relaxed/relaxed;
-	bh=K2e98L6/aN2ChnmYQ/goFOMSmsEfvyw6aOZ4gHKO/mI=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=Le5TtOQWyDtdDzdlEiGhfrHLxJCta0R4PLU91UC3u3PGvl6fS1D6Jit089EwXqLlHWu8hD6gNc48xiRUb1594whte93QQW01+UoJtdzaK4epu83AFge1Dkdwh4kVMzpjeED3/HVwfQzUGUBmHliDJ1XUNqDBCGMN4smdkmohtg9xuXGifBhUCbDSQWMcX9qkAR2/mEyDjW5EeMg6uGM/AcTqODF1bXV39SdtHyrAHmRWKL3/jItJIKpmgC0/MGqsGpNjzVrICsIIAQpkhPmB3LuL/SBvtSkyA0GX/iP9guJcT2eTcXViqLF0nwcFwwyYZUkqurJFnJIfyr9RLXrY+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kguypUXm; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1795622839; c=relaxed/relaxed;
+	bh=V+c7efN+kejpOWutWyfpTAMXZ8OZ1LgKeXSCI+Lspfg=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=GNzIipZ2HtZLiyYaBmxXaUPm6S1pFDyY51kPedEhn484OTF8KqU2aub39F4Vc7qTjHUMSraGdwg6cdEJFbSpUojS1Yq7VkI68IDEsENeol4jhLWWZFzOGmr1OwT0xs3ODNNicMoi8YYhp8Ql/0GvzBGMN58ER9KtA8J+UavkmwuMA7BP9drlLsB6Okz25nv5enYiwIJzVGBcGXrdZQthF5l2yDDFc4Mlb6r8GnZ9Y02e8yb7szoYQciWpUHBSSu5WC0s1pxHKEWSGFv+d6gVu9LODqZZG1mYd58ANe+Iro0f7RkrsdPctOgszcjb6Jwb1V3sKvemHJWHiMsiUVF0MQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ENpgOhP3; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kguypUXm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=ENpgOhP3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1236; helo=mail-dl1-x1236.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1236.google.com (mail-dl1-x1236.google.com [IPv6:2607:f8b0:4864:20::1236])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZPcf1Wl9z2xL5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 03:04:01 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6APEYXwS4179544;
-	Wed, 25 Nov 2026 16:03:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=K2e98L
-	6/aN2ChnmYQ/goFOMSmsEfvyw6aOZ4gHKO/mI=; b=kguypUXmNNc0nP1IWXBmNh
-	P9r60NR/aE4ynP3tcAGH2XavaJLJp1f99xt4S87e1HXrsgvBJRGuhX1HxgnPfM06
-	qUdUbFaYVwWPllzGeTNmk6qSz1GxCCh5lHRsFYXrtBaUW9SkGAeWFhJvmB2FgIgs
-	HgWe8c3gencH9bblw5fxVjK+f/uu+BUDZVo41eE7FpLP+EgEH0zIsKRlPnxw2mb6
-	q4WXbHehnx6Mlerq5psVI98HghAq/QU22IVdH+x/rxl+pOFRF86mVIoUvNeKgtB4
-	b1S/rw7i6deo5vYAVv2pb0yAhKFuWqh3yRhNNui8EwkWc9tUw8PRFlq1OrVq2JWw
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34g3d95j-1
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 25 Nov 2026 16:03:40 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6APEKGbF810358;
-	Wed, 25 Nov 2026 16:03:40 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j5axkvf8q-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 25 Nov 2026 16:03:40 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6APG3aeG39059840
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 25 Nov 2026 16:03:36 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 895B420049;
-	Wed, 25 Nov 2026 16:03:36 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 44D742004B;
-	Wed, 25 Nov 2026 16:03:34 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.39.29.35])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Wed, 25 Nov 2026 16:03:34 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZPhP4w2Zz2xLh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 03:07:17 +1100 (AEDT)
+Received: by mail-dl1-x1236.google.com with SMTP id a92af1059eb24-14394530ec6so8344483c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 08:07:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795622834; x=1796227634; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=V+c7efN+kejpOWutWyfpTAMXZ8OZ1LgKeXSCI+Lspfg=;
+        b=ENpgOhP3ZqiHOuvzU84UzJmsSUYWOKn8UqG5+bxhp7MKVJldt5EcfsZU6Iw86CakZV
+         +7aDN2Aq/CaRbwPVsixL0yHkb9TpPN/CXhPr1yC3EWSsMI6CegRKD2DrwHZHZrcObA8V
+         24v+a2+J114LxVY6ZX0N6vIca7g97zN1v2XkNPNETLZp/DrXwaE0PYQPF8wUauEPuJeC
+         tEnD4D86BJUTeXmaoQSsqRk+qFhE4TjBKc17j83V/xvyInuceh9gbo3CbPbUa2AeP3aX
+         q2ScdMfd957XVsjo9EQvyWZ0l3LgtCExZRbyhMWjaIxn81KJl3lIm5F95GwjOFm1/caD
+         4hFQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795622834; x=1796227634;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=V+c7efN+kejpOWutWyfpTAMXZ8OZ1LgKeXSCI+Lspfg=;
+        b=X3R/jfEfzwU4O541dWWIMMDUDhfkwPVXSjjxI+eCnSwA80EwGAkzldqfFPUVMGaOvB
+         Sun7/LvtcaGXSGXwK/qKiUWKHNj6AEHFIzF4zwmdwKYcRPnnRetH255o9Kj5eAxmyHnd
+         x+rtEFXEorjAvYnfvSx5Dq297mZlkw17EOO1+M2uhh8MU593Wf2A0U0ST8ZKDrf9e3h+
+         5Gv0vV6072a7MtUVVNM8/SXxm+aULcCUWCfcI3ShpQ2KyZDbqU4cFcU07STU+q95/3KO
+         wQH5fkv1S/n3FWG43qWyaGowkRjgy6RG2jgp3dG5mkaFEX8LN/lWNtli5humh6yPi+hk
+         MBsA==
+X-Forwarded-Encrypted: i=1; AL+hErFT1MWA2JNLhmlLoQx+vcqH/h0cAN1ql/BnoNQ4CkLEIjH8VenZ6gFpzjcDjaJZ6BEa613SRKgPXgcNnfY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8a2JSEzEyB11S/zSYnGnCKRpWtMYhGn952dx8486u6RFs9UrnE
+	m1avtJfsZcW4M5dERUZfl0vJHWfjP+vXD3FgZHv2kFjLcu/kDJiCyIGj
+X-Gm-Gg: AZFdTZekMWtah20rIt0iu6NAAAPDpQhNqLOTJJyfCwgMr0ysDAY6B6/OEmi5Nt5LjNx
+	KGnhIKFWgAKQmtPK5Or2NPOxVS/0lTKXpBr9QnrV57yWVarlcfKNtLMBGnnVzGubExHfEC0s18X
+	JrZA7qHp+1nAcpuzpRjWuX08q4Zqlvei1qXmBjSivIQ7bEp5tLkbYynH6gIc8yWS6vuhQR76brl
+	qFUxhzvtoFES35QlKEmpVbJIF04OKgqzYXxSIvKerGKNvh4OpTFsNuLpgAkRY7RZVhkoyH58oUq
+	4loDpXfHHGsUY97l/0GctHsDOWHoAEKIPqgGzzShDitRA+KsVzMdIVcp+8tmXrNa33XbApH5niN
+	rI+WDL7t39q6voUpMUfp0QkfkGPFJgkS80tnxTl8HWveF8ziSaoJ2KEAXWmbyHfhGBfRKTRTQg1
+	kZMrrbMJAdt3gnHATTxf0plgD8ELzS6l6c3vgvsLJD21XJQqkWAiIpy9oUGvOYthgPgPo4waI1T
+	EUbxh6QpzYThAkh5hAXLNWNqdESbbeVRm8MS//77Hzk6XXopVMibK3Mc6b3ZeiFY4FAaOKPBjtd
+	7d9JtzQxQXGSj8jDwy7QYnViwUA=
+X-Received: by 2002:a05:7022:f109:b0:1b3:8814:8383 with SMTP id a92af1059eb24-1b55689fca6mr14160449c88.9.1795622833867;
+        Wed, 25 Nov 2026 08:07:13 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b556840494sm43726453c88.12.2026.11.25.08.07.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Nov 2026 08:07:13 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>
+Subject: Re: [PATCHv2 1/3] powerpc/execmem: Don't leave kprobes insn pages W+X when CONFIG_MODULES=n
+In-Reply-To: <0a6fbbd8-6339-444d-bcb0-a74980fb77c8@kernel.org>
+Date: Wed, 25 Nov 2026 18:35:47 +0530
+Message-ID: <mrqxjc2c.ritesh.list@gmail.com>
+References: <cover.1794572365.git.ritesh.list@gmail.com> <f75f2cf97f44375fd2c8820e0caeab703cdb371c.1794572365.git.ritesh.list@gmail.com> <9a7963a6-0033-45ab-90d5-b1f580a4882c@kernel.org> <v75v752e.ritesh.list@gmail.com> <0a6fbbd8-6339-444d-bcb0-a74980fb77c8@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,213 +94,166 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.300.41.1.7\))
-Subject: Re: [PATCH] powerpc/perf: vpa-dtl: fix resource leak on allocation
- failure
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-In-Reply-To: <60D6C3C4-BEC7-47CD-BD12-A3C3A426CDA3@linux.ibm.com>
-Date: Wed, 25 Nov 2026 21:33:22 +0530
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, sshegde@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        Tanushree Shah <tshah@linux.ibm.com>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <219B6184-256F-4DA4-9319-1B71120CF614@linux.ibm.com>
-References: <20261112134455.6880-1-mdshahid03@gmail.com>
- <ld6q74um.ritesh.list@gmail.com>
- <60D6C3C4-BEC7-47CD-BD12-A3C3A426CDA3@linux.ibm.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, mdshahid03@gmail.com
-X-Mailer: Apple Mail (2.3864.300.41.1.7)
-X-TM-AS-GCONF: 00
-X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=SoQFe/O0 c=1 sm=1 tr=0 ts=6b0706dd cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=RnoormkPH1_aCDwRdu11:22 a=uAbxVGIbfxUO_5tXvNgY:22 a=VnNF1IyMAAAA:8
- a=pGLkceISAAAA:8 a=8xFpP55X2xZeg0S8b5oA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI1MDA2MiBTYWx0ZWRfX34PZLcvvDNoy
- 4VDWQXr9XUifEkgAEBX6BsRGpH/gE6Sz0Eo3tnKZ4z20Zmruh/FG4Y/71/lWPoy4tsH0WqHpXd8
- ALhjfCdhOiFICbtjM+N3U2jSiLFqnZ8=
-X-Proofpoint-ORIG-GUID: atDRj3km5rIblynXKp6QaqJeHyLBOtWU
-X-Proofpoint-GUID: HF3SB-Pqoc4NsY9HBaEwraEDOJMeFbhm
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI1MDA2MiBTYWx0ZWRfX4ULaq0XvOf0L
- p04pF82YNUUhkRnxjIPEmULENa9IC++Scg76ZjcAXAB6b9Rdd9hPAL/fFNnnhwaPRz81kEjfvNx
- Y1lSpfufO6bwK9euF8d1Ke3VTCMfiSI7mYCGvUYs/Z3gpq+eQ5MhLcAoIyQyww7ywyVZFc/wYtw
- OQ+3oWlc7sLQMord2jr5xc+Y+e74ToGvGfxOPDCfgUcGpyW9lMyjuwxxGDpYRlgI1pEoq4E+oVu
- g+mLC1YgJgvs5iaIQYXiGQ5Cz8OLHLGvDV0cIwn7QTtOiw/piEA/QsoSzpbUjuAjzueK8zBz/Zs
- xy0dMSpOafKh8FPxC13S/EGPPyZYm9QLvoNKFvEo8La5vQJ6YYLr+3yvAVpxLg89yfJj6fX1zce
- beLQ+HxIViqsTLyekpbGTDGOO295LTRkQAOzJrqetkCjdESs3v5yNA+n0jbU8ELvgpHMkkNdXJ5
- 4fdvPWg/12ylqU/3JoQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-25_04,2026-11-23_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 suspectscore=0 spamscore=0 bulkscore=0 adultscore=0
- lowpriorityscore=0 clxscore=1015 malwarescore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611250062
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 
+> Hi Ritesh,
+>
+> Thanks for your patience,
+>
+> Le 17/11/2026 à 18:15, Ritesh Harjani a écrit :
+>> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
+>> 
+>>> Le 13/11/2026 à 13:31, Ritesh Harjani (IBM) a écrit :
+>>>> commit 2e83e2ce34ff ("arch, mm: promote DEBUG_WX to CHECK_WX"), made
+>>>> CHECK_WX default STRICT_KERNEL_RWX.
+>>>>
+>>>> Now on powerpc, when we boot with CONFIG_KPROBES=y and CONFIG_MODULES=n,
+>>>> we can see the following warning splat at boot:
+>>>>
+>>>>       powerpc/mm: Found insecure W+X mapping at address 000000002ea08992/0xc008000000000000
+>>>>       WARNING: arch/powerpc/mm/ptdump/ptdump.c:194 at note_page+0x4dc/0x4fc, CPU#0: swapper/0/1
+>>>>       NIP [c0000000000ac204] note_page+0x4dc/0x4fc
+>>>>       LR [c0000000000ac200] note_page+0x4d8/0x4fc
+>>>>       Call Trace:
+>>>>        note_page+0x4d8/0x4fc (unreliable)
+>>>>        ptdump_pte_entry+0x70/0x94
+>>>>        walk_pte_range_inner+0x15c/0x260
+>>>>        walk_pgd_range+0x6d8/0xd5c
+>>>>        walk_page_range_debug+0xa4/0xf0
+>>>>        ptdump_walk_pgd+0xec/0x304
+>>>>        ptdump_check_wx+0xd8/0x154
+>>>>        kernel_init+0x94/0x26c
+>>>>        ret_from_kernel_user_thread+0x14/0x1c
+>>>>       Checked W+X mappings: FAILED, 1 W+X pages found
+>>>>
+>>>> This happens because CHECK_WX noted a writeable + executable mapping.
+>>>>
+>>>> This happens because execmem_arch_setup(), checks for
+>>>> struct_modules_rwx_enabled(), while kprobes depenency on modules was
+>>>> earlier removed via commit:
+>>>>       7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
+>>>> Since the insn slots are only written with patch_instruction(), which
+>>>> does not need this mapping to be writable. This patch fixes it by
+>>>> checking for strict_kernel_rwx_enabled() instead.
+>>>>
+>>>> Fixes: 7582b7be16d0 ("kprobes: remove dependency on CONFIG_MODULES")
+>>>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>>>> ---
+>>>>    arch/powerpc/mm/mem.c | 2 +-
+>>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>>>> index b617b69452cd..77b63b52d8f2 100644
+>>>> --- a/arch/powerpc/mm/mem.c
+>>>> +++ b/arch/powerpc/mm/mem.c
+>>>> @@ -388,7 +388,7 @@ static void prealloc_execmem_pgtable(void) { }
+>>>>    
+>>>>    struct execmem_info __init *execmem_arch_setup(void)
+>>>>    {
+>>>> -	pgprot_t kprobes_prot = strict_module_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>>>> +	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
+>>>>    	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
+>>>
+>>> Looking at this, I'd use PAGE_KERNEL_X instead of PAGE_KERNEL_EXEC.
+>>>
+>>> Then we could get rid of PAGE_KERNEL_EXEC completely for powerpc.
+>>>
+>> 
+>> I think it's best if we keep the definition of PAGE_KERNEL_EXEC on
+>> powerpc as PAGE_KERNEL_X, I think the core expects the arch to define
+>> this, if not, then it defaults to PAGE_KERNEL e.g. see this:
+>
+> Yes, which is consistent with what powerpc does when strict modules rwx 
+> is enabled.
+>
+> And indeed it doesn't matter, because module code does a rw allocation 
+> at the begining then convert it to ROX or X later in 
+> module_enable_text_rox(). See comment :
+>
+> /*
+>   * Since some arches are moving towards PAGE_KERNEL module allocations 
+> instead
+>   * of PAGE_KERNEL_EXEC, keep module_enable_x() independent of
+>   * CONFIG_STRICT_MODULE_RWX because they are needed regardless of 
+> whether we
+>   * are strict.
+>   */
+>
+> So really PAGE_KERNEL is what is expected nowadays.
+>
 
-> On 22 Nov 2026, at 9:47=E2=80=AFPM, Athira Rajeev =
-<atrajeev@linux.ibm.com> wrote:
->=20
->=20
->=20
->> On 18 Nov 2026, at 5:02=E2=80=AFPM, Ritesh Harjani (IBM) =
-<ritesh.list@gmail.com> wrote:
->>=20
->>=20
->> mdshahid03@gmail.com writes:
->>=20
->>> From: Mohammad Shahid <mdshahid03@gmail.com>
->>>=20
->>> vpa_dtl_event_init acquires dtl_access_lock when initializing the
->>> first vpa_dtl PMU event.
->>>=20
->>> If vpa_dtl_mem_alloc() fails,the function returns -ENOMEM without
->>> releasing the semaphore.
->>>=20
->>> Release the semaphore when buffer allocation fails and no other
->>> PMU events are active.
->>>=20
->>> Signed-off-by: Mohammad Shahid <mdshahid03@gmail.com>
->>> ---
->>> arch/powerpc/perf/vpa-dtl.c | 2 ++
->>> 1 file changed, 2 insertions(+)
->>>=20
->>> diff --git a/arch/powerpc/perf/vpa-dtl.c =
-b/arch/powerpc/perf/vpa-dtl.c
->>> index 3e3d65b6c796..20eafeaffa6b 100644
->>> --- a/arch/powerpc/perf/vpa-dtl.c
->>> +++ b/arch/powerpc/perf/vpa-dtl.c
->>> @@ -396,6 +396,8 @@ static int vpa_dtl_event_init(struct perf_event =
-*event)
->>>=20
->>> /* Allocate dtl buffer memory */
->>> if (vpa_dtl_mem_alloc(event->cpu)) {
->>> + if (dtl_global_refc =3D=3D 0)
->>> + up_write(&dtl_access_lock);
->>> spin_unlock(&dtl_global_lock);
->>> return -ENOMEM;
->>> }
->>=20
->>=20
->> I looked at this code and I am unable to wrap my head around it. We =
-have
->> dtl_access_lock and dtl_global_lock. Then we have vpa_dtl, which is a
->> per-cpu variable anyway.
->>=20
->> So I am not sure why we need both locks held while doing
->> vpa_dtl_mem_alloc(). What exactly are they protecting?  Can we move =
-the
->> allocation out of the lock and just assign dtl->buf later within the
->> lock?  In one other place I see dtl->buf =3D NULL without any lock.  =
-Also,
->> do we need a spinlock to protect dtl_global_refc? Would an atomic
->> variable not work here?
->>=20
->> The above fix is not wrong per se, based on today's code, but it =
-would
->> be better if someone who owns this code takes another look and fixes =
-its
->> design while we are at it.
->=20
-> Thanks Mohammad for the patch and Ritesh for sharing your comments.
->=20
-> Reasons for having the different locks:
-> dtl_access_lock with down_write_trylock : There are other dtl users, =
-example: debugfs dtl=20
-> or /proc/powerpc/vcpudispatch_stats. These locks are used to ensure at =
-same time these
-> interfaces are not used, ie to exclude the debugfs dtl and =
-vcpudispatch_stats users.
->=20
-> dtl_global_refc :  global reference count variable. One perf record =
-opens one event per CPU,=20
-> and all of them share one acquisition of the lock. The count says when =
-the last CPU event is gone=20
-> and the lock can be released. And dtl_global_lock is used to prevent =
-race condition on this.=20
->=20
-> But the allocation observation which Ritesh pointed out seems valid to =
-me.=20
-> It can be moved out of dtl_global_lock.
->=20
-> I am looking closer at the other points raised here, including the =
-buffer
-> lifetime and whether the spinlock/refcount can be simplified, and will
-> respond back soon.
+Thanks. Yes, I looked at the git history and I agree with you.
 
-Hi Mohammad, Ritesh
+>> 
+>> include/linux/pgtable.h:
+>>    #ifndef PAGE_KERNEL_EXEC
+>>    # define PAGE_KERNEL_EXEC PAGE_KERNEL
+>>    #endif
+>> 
+>> Also mm/execmem references PAGE_KERNEL_EXEC in __execmem_init().
+>> Although it references only when execmem_arch_setup() is not defined by
+>> the arch (which is not true for powerpc).
+>> 
+>> 
+>> However, even though nothing breaks today, but later if there are other
+>> users of PAGE_KERNEL_EXEC, then PAGE_KERNEL does not have X (execute) bit
+>> enabled, so it might break in future. Plus looking at above, I believe
+>> there is no harm in keeping it - since core expects the platform to
+>> define it's own definition - due to all the other references it has.
+>> 
+>> Thoughts?
+>
+> Yes but PAGE_KERNEL not having X is on purpose, module first allocates 
+> non-X mem, sets up everything then converts to X or ROX. I don't think 
+> there will be any more users of PAGE_KERNEL_EXEC in the future. It is 
+> going in the other direction I think.
+>
+>> 
+>> However, if you still think we should remove it (?) - then I feel let's
+>> do that as a separate cleanup patch. Since this keeps the usage of EXEC
+>> same between prot and kprobes_prot variables in patch-1, which we also
+>> need to backport.
+>
+> At least we should stop using it in our own arch, it would help with 
+> readability. And really I think we shoud drop it completely. But OK to 
+> have it as a separate patch not to be back-ported.
+>
 
-Please find my points below:
+Right. Agreed Christophe, thanks for sharing the pointers.
 
- - dtl->buf =3D NULL in event_del() without a lock:=20
-    vpa_dtl_cpu is per-CPU, and event->add/event->del run on the event's =
-CPU, so no lock is needed there.=20
-    event_init can run on any CPU, but it only writes dtl->buf for the =
-target CPU before the event is added.
+After looking at the history of changes in there, I see that since commit:
+  4fcc636615b1 ("powerpc/modules: Make module_alloc() Strict Module RWX aware")
+module text is allocated with PAGE_KERNEL, when STRICT_MODULE_RWX is
+enabled and only made executable later, so there is no longer a reason
+for a separate name there.
 
-- Moving vpa_dtl_mem_alloc() out of the lock:
-    Agreed. dtl_global_lock only needs to protect dtl_global_refc and =
-the first-user/last-user
-    handling. of dtl_access_lock. The allocation doesn't need it.
+So, let me add a separate patch in this series, which will drop
+PAGE_KERNEL_EXEC definition from powerpc and it's last remaining users
+will be converted to it's alias PAGE_KERNEL_X.
 
--  Atomic for dtl_global_refc:
-   One perf record opens one event per CPU, and all of them share a =
-single
-   acquisition of dtl_access_lock. The count tells us when the last =
-event is gone, so the lock can be
-   released. The "refc =3D=3D 0, then down_write_trylock(), then refc++" =
-sequence, and the =E2=80=9Crefc--,
-   then refc =3D=3D 0, then up_write()" sequence, have to be atomic with =
-respect to each other.
-   An atomic variable doesn't cover that, so dtl_global_lock is still =
-needed.
+> By the way I also see CONFIG_ARCH_HAS_EXECMEM_ROX, maybe we should 
+> investigate in using it on powerpc.
+>
 
-Redesign changes:=20
-  Agreed that the locking and buffer lifetime need cleanup, including =
-the clang context analysis
-  annotations. I'd like to handle that as a separate follow-up series, =
-so it doesn't hold up this fix.
+Yes, while doing this work I came across it too. Surely, will take a
+look at it from powerpc perspective.
 
-Mohammad,
-could you post a v2 of this patch as a minimal fix ? A few changes:
+> Christophe
 
-1) Move the allocation before spin_lock(&dtl_global_lock). If it fails, =
-return -ENOMEM.
-    Then no up_write() special case is needed, and the if =
-(dtl_global_refc =3D=3D 0) check goes away.
-2) If we move the allocation out of the lock, take care to free the =
-buffer if try lock fails
-3) We might not need GFP_ATOMIC in vpa_dtl_mem_alloc once it is moved =
-out of the spin lock.
-4) please add Fixes tag
+Thanks for the reviews! Will soon spin up the next revision with all
+comments addressed and add this cleanup patch at the end.
 
-I'll take the broader redesign, including the clang context analysis =
-annotations, as a follow-up.
-
-Thanks
-Athira
-
->=20
-> Thanks
-> Athira
->=20
->>=20
->> Another motivation for doing this work now is to bring in clang's
->> context analysis for arch/powerpc/perf/, which can statically check
->> that such locking rules are followed, provided there are proper
->> annotations for every lock and the data it protects.
->>=20
->> -ritesh
-
+-ritesh
 
 
