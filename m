@@ -1,47 +1,87 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C8948606E95C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 06:18:24 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 00959606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Nov 2026 06:31:11 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=ovp3BYRG;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=oLwxUna+
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZ8cv2x6Lz2xdY;
-	Wed, 25 Nov 2026 17:18:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=213.95.11.211
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795587503;
-	cv=none; b=FnSirO59lgkAwGx42KUy1vQZLfQPiJHUM9c9n9SFHKf1iEtlFOPGeoA4H4VjbkitNhjPivv+iQdio9rNyJt1+4QCXHJe2EVqPUfHgUgpG6KovF5C7U4j1/LMJLB7nDGkMkmb/Aq+jNzd1umxyYkp7EeR7ddhr34BK1sUA8cw6oNq+YrU9GzR4prFpVRAvxfkbj578pDkSRIIK+TSyf3pQkQp2mWefMCLSQ0s+c+mVDgpHVxY/HtM/Pgj+2LFOXwHesf9zUySi2B3Ni1OFjEp4QxQgjJOutPZ8W0IQNSkk49anzV5IVEYJSeLxoaCVbwP+I3ZPpeopd8sSbjRHeUK0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795587503; c=relaxed/relaxed;
-	bh=jaN/WIqfszFLrNNj/gphAZn4uRhMsiZROimoWt6zDMY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MAj+nahoozv4/HF1H+k8zGzwF1G6QJOt4RDhz1az65FeyAAgn9iUlHabuWRwb9NnBTo2VGoJcuQKRO62En3t8YSdnj7Kp1VTDC32iRPIfmQYuZJJLa0KvnmF8kpvl3euqVAEh1NlkTZ/niJM8umvLk3mJbmkMvIHKWOWM5h515wYa0Mmf4HkXRCkr9MuPWUh8bWyqpgO56+/r+if6gxJSCjAhfnzv3W4UXwihL1jZDi1ZKew4nDyUPHPE2VKp1q+62/uozfn2+fviwx/lqdl1bJxiSiuGADZwqOu2fj5CXcy+aipYuXhtBuQnE3IYKqd62Up7TtByUe6RzUzMLnYsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de; spf=pass (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org) smtp.mailfrom=lst.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lst.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=lists.ozlabs.org)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZ8vd3Pbdz2xdY;
+	Wed, 25 Nov 2026 17:31:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.166 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795588269;
+	cv=pass; b=ahWHbRVUWIOd0wpKNwPaU4+WQfXMaB9ProybhFgHHJTNCR7iH5Aji4+irmSDx5cl+JTxjBNoHy9BYY3ChgowBVc5As90qs2eXSOHsHB/ZAihTFV5VWD8rIQ3E76PdPehxiJ8rsxIhLC2PvoeRhtNU+LHICLqWqxMebGiIvXhw0cheLL4Xdc4xaY1s/OqA1ZI3wDQe1DhTOSKllfvqqR5lRavKV5aQ6gjXvEnpGnt4fDoTLuugDul3N82bqvJCTOfQxY0kUA7aIhVqO8z0O2btQViLMaMNnaAMkFAll8YaEGk3Omyj59yC7U1HbHZp/fE6QnPCt7lTuIbf1A3C3c6pg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795588269; c=relaxed/relaxed;
+	bh=o8jZajVnvf/GJfi1qlNmvvNyUIVCwi/c/PQu82rl+LI=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=kaAcrQFgx46PqcuK1aM+P1fSJF3StWVRpdXT8DIftenTwW84c4O60Pr8XrQ/z18kjXlJn6UDOAibVUGzUMuUEit2ezjmK/7hI7k+sdOXPrXrvwv1xm/S1E3B8vLiEiiD4+d6FYfYbxmXseyWrgT7lEROPpbbqa0J89aH2AcBhoiJ8JRmsB3JtRZgxSJeuwv2o0d/3twQ+4D+tIJ8p2KhNaCq8/hIWLP+RlEFE4/7vEbS8eVNv/MH4AJfZH6Ta1XsV2TSvVwRFl0Ug8k05qZFgLI2TrS494V2t8VzY/86Map13TGsiC1/uAf+ldGp6FPCPgxFMh2kVo5POJf37xvTcw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=ovp3BYRG; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=oLwxUna+; dkim-atps=neutral; spf=pass (client-ip=81.169.146.166; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=ovp3BYRG;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=oLwxUna+;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.166; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.166])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZ8ct1qjMz2xJT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 17:18:21 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id 69A8968AFE; Wed, 25 Nov 2026 07:18:14 +0100 (CET)
-Date: Wed, 25 Nov 2026 07:18:14 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Daejun Park <daejun7.park@samsung.com>
-Cc: Carlos Maiolino <cem@kernel.org>,
-	"linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
-	Dave Chinner <david@fromorbit.com>,
-	"Darrick J. Wong" <djwong@kernel.org>,
-	Amir Goldstein <amir73il@gmail.com>,
-	Brian Foster <bfoster@redhat.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: (2) [PATCH v2 2/2] xfs: skip the fsync flush when a later
- flush has completed
-Message-ID: <20261125061814.GC20968@lst.de>
-References: <20261120181706.GB1954@lst.de> <20261111-xfs-fsync-flush-seq-v2-0-b5c00c25d276@samsung.com> <20261111-xfs-fsync-flush-seq-v2-2-b5c00c25d276@samsung.com> <CGME20261120181715epcas2p3fe7b223290792dc835b5dff5374b2cbc@epcms2p7> <20261124023930epcms2p76ee61d14c5333dd04b4466b9f11bbcf8@epcms2p7>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZ8vX6QZgz2xYw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Nov 2026 17:31:02 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1795588256; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=WSfa9Gt6vZ7LC7bZm4px7zPy31tDunwtAdJYnD2KfarBGmBugnLhQHsMvkuE6ubMPC
+    DJmz5P2VLccL7v43XZsibI24cs5iq0MvKJ2JPJZ7NLR911YbZB+EjiBIHVI+i4R8Ur55
+    mLYfQA3tZzpDNj5ZpFXaFmGgMRxzhCW4zJbjjBtRiQen5tqkIiSkD36ZTBrf8UXknPNA
+    ECTq+EdncIA9FV8R/SaH3bGgWpjjG//mTCjIkp+H570UwHDBmGdGOWLg36TqDXYhqXEt
+    jhOEy5ByDlZrq1V7hTHSw8OTNSMTcyiUCHM6Qe4UNNZJJZqG0rc0y5usPh73bPPaMbuY
+    KNag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1795588256;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=o8jZajVnvf/GJfi1qlNmvvNyUIVCwi/c/PQu82rl+LI=;
+    b=N6B/P6ZWrZO/j881vmsAyhdJIRI/5vvgNojKgIwLZd0pOdAO+AN1cvSvClNIcZwouJ
+    O1O06zejNjCn85oKisfWGnaSlqoBuwcm/XuN/NpmQkKkIKSAq6ooDDLYkQ/gjXyQojlS
+    N5j8j+23B97G1Eh1dKZmGhNCfpFGPJm1YH1lg+ftUHq8F7npVXcFELR/dZZGPXNK9zWO
+    K6quSJeu4BNhDym1RNv+ZUhigew+bvNcvYxZ3MNoFvcrl2AfbuayU77hhPPEOM85czh1
+    k94oGmDvoUvpKUqLZgB1hzGLqasudOYFt2cov0n4grVpAsUog1YMSy8zQkQHdw/mdAHO
+    kIAA==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1795588256;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=o8jZajVnvf/GJfi1qlNmvvNyUIVCwi/c/PQu82rl+LI=;
+    b=ovp3BYRGMrvszB1cB781SDBvkG/FwHK+0efSto+EH91Dv3JZfInvAufCgdZ5POSWVV
+    pZLNXUvqiGOUhm6c4z0W1nypwhJXHYbPRmrBGmWP1t1Uvyi6GKnIXBx1Wp0M3RtMYRjt
+    OptGFKqTEdeX0f3mXXP0hC7dBMhc8KjkViZj5zGRyMheLb6YwcgXnDet9d/LCJNWTpfy
+    pyB0iPBVRvYh3vpM0VGoHC6iebQHjgzrt0dXlIncFKjuACO2UhmEDciaIjOQSPqpTFTl
+    T3qE3e2cjlcyxSnf70sGmGKBro3tYNxkuCgwLgIkKLWBb73UZZqUdOOW41KvEYNtUu70
+    GsEQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1795588256;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=o8jZajVnvf/GJfi1qlNmvvNyUIVCwi/c/PQu82rl+LI=;
+    b=oLwxUna+SxJ7Pjz7FYBQtXHqIoiwhCTz+UcYHJ1+/xz0lMRrLm8bReMWLr2km9FVQ+
+    1dqiy7QkCpxDiZqyO6BQ==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5mzs3mRC3wE2YFOCcU01WtcQwPmgG2z3vC42vs="
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 55.6.3 AUTH)
+    with ESMTPSA id e825d92AP6Utdgj
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Wed, 25 Nov 2026 07:30:55 +0100 (CET)
+Content-Type: multipart/alternative; boundary=Apple-Mail-BF0521A1-9488-499E-A24D-32DD6E69B3A9
+Content-Transfer-Encoding: 7bit
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,32 +94,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261124023930epcms2p76ee61d14c5333dd04b4466b9f11bbcf8@epcms2p7>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=4.0.1
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PREEMPT] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted
+Date: Wed, 25 Nov 2026 07:30:44 +0100
+Message-Id: <D0ECD6B8-7F15-48C8-87A4-DFE5F35A42D8@xenosoft.de>
+References: <c7636032-b541-4ae9-b3b6-e3bf6fcec143@xenosoft.de>
+Cc: Ritesh Harjani <ritesh.list@gmail.com>,
+ Narayana Murty N <nnmlinux@linux.ibm.com>, maddy@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
+ christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org, msuchanek@suse.de,
+ harshpb@linux.ibm.com, gautam@linux.ibm.com, amachhiw@linux.ibm.com,
+ venkat88@linux.ibm.com, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ mad skateman <madskateman@gmail.com>,
+ Damien Stewart <hypexed@yahoo.com.au>,
+ Christian Zigotzky <info@xenosoft.de>
+In-Reply-To: <c7636032-b541-4ae9-b3b6-e3bf6fcec143@xenosoft.de>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+X-Mailer: iPhone Mail (24B156)
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,HTML_MESSAGE,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	UNWANTED_DEVICE_2 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Tue, Nov 24, 2026 at 11:39:30AM +0900, Daejun Park wrote:
-> > > +	 * DAX writes are not block I/O, so DAX only skips the flush when
-> > > +	 * this log force flushed, as before.
-> >
-> > I don't get the DAX part.  As far as cache flushes are concerned we
-> > don't special case DAX anywhere else, why here?
-> 
-> I was not sure that a flush issued by another CPU covers DAX data on
-> powerpc, so I kept the old behaviour for DAX. I never verified that.
-> The existing log_flushed skip may already rely on such a flush.
 
-Yeah, if that is an issue on powerpc, xfs and others alredy hit it.
-Adding the author and maintainer who signed off on PAPR SCM to clarify
-if this is an issue.  Although if it is it probably needs to be worked
-around in the driver.
+--Apple-Mail-BF0521A1-9488-499E-A24D-32DD6E69B3A9
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
+On 06 November 2026 at 07:09 am, Shrikanth Hegde wrote:
+
+Hi Christian.
+
+We had one known issue which michal had brought up.
+Do you have tracing enabled or running a bpf/bcc program?
+
+- - -
+
+Yes, we have BPF and Tracing activated in the kernel config.
+
+Nemo kernel config: https://github.com/chzigotzky/kernels/blob/main/configs/=
+x1000_defconfig=
+
+--Apple-Mail-BF0521A1-9488-499E-A24D-32DD6E69B3A9
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html class=3D"apple-mail-supports-explicit-dark-mode"><head><meta http-equi=
+v=3D"content-type" content=3D"text/html; charset=3Dutf-8"></head><body dir=3D=
+"auto"><div dir=3D"ltr"><div id=3D"AppleMailSignature" dir=3D"ltr"><div id=3D=
+"AppleMailSignature" dir=3D"ltr">On 06 November 2026 at 07:09 am, Shrikanth H=
+egde wrote:</div><div id=3D"AppleMailSignature" dir=3D"ltr"><br></div><div i=
+d=3D"AppleMailSignature" dir=3D"ltr">Hi Christian.</div><div id=3D"AppleMail=
+Signature" dir=3D"ltr"><br></div><div id=3D"AppleMailSignature" dir=3D"ltr">=
+We had one known issue which michal had brought up.</div><div id=3D"AppleMai=
+lSignature" dir=3D"ltr">Do you have tracing enabled or running a bpf/bcc pro=
+gram?</div><div id=3D"AppleMailSignature" dir=3D"ltr"><br></div><div id=3D"A=
+ppleMailSignature" dir=3D"ltr">- - -</div><div id=3D"AppleMailSignature" dir=
+=3D"ltr"><br></div><div id=3D"AppleMailSignature" dir=3D"ltr">Yes, we have B=
+PF and Tracing activated in the kernel config.</div><div id=3D"AppleMailSign=
+ature" dir=3D"ltr"><br></div><div id=3D"AppleMailSignature" dir=3D"ltr">Nemo=
+ kernel config: https://github.com/chzigotzky/kernels/blob/main/configs/x100=
+0_defconfig</div></div></div></body></html>=
+
+--Apple-Mail-BF0521A1-9488-499E-A24D-32DD6E69B3A9--
 
