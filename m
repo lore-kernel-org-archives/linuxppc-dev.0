@@ -2,94 +2,49 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3A38A606A326
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 22:32:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E98F606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 23:05:20 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=lixom-net.20260707.gappssmtp.com header.i=@lixom-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=kfz3tnSL
+	dkim=pass (2048-bit key, unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=DX8YmRhf
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbBBk6njpz2y8m;
-	Fri, 27 Nov 2026 09:32:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::72a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795728915;
-	cv=pass; b=oAvI+bpA2TzI7ESHgwtdmjzPgr8kywloxgu5iUS4vyXLase3CDlmKUXtmf5FvVhwI9qz+m1zS5rcc+gMYBixLl95bZEjEXB+26MpwyPibhkHzVGU7/Vy/GYsg/MiO0YB+pB5TX8HVXyPDE88whTmFEG7a9uSiT1h4aRM28vSdEc+esuzWBT2ytnOx8awrVPGLmZzzTcz2laeHjh6gAHiDzCTJJWpNVRNulGr04x6+6BH6ukSlHMOxz4HXuaMEbO2mwQG9GesqqCeiAStFZZWvwCMHxWY+B1hJ+YZUjSyLYZZ8prMXHpMdP1Bym2v1Rv8hV283AbPdAbccQ+agN5PjA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795728915; c=relaxed/relaxed;
-	bh=imr/pu1mUMJ71goiXUQ4VVEylGbSw20Gr7BPKxEeuK0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=KSS0P2L4CoMjIM8EcXLzhk2QsTYJs+8cFqXjK32mZ0iRC7Ks1DLPO704vClo9H80VWTs0yqfMSm0o8ZuYVDPs/Fq8uYiqth9wU3oE8eoa5VeuYe0T3QTLVwJAXAJeACkggPSY9QUfCATa0AMEmPffiuvsrFAkaz8izMM5f6zds4VWGopyDsOyTy+VdjuChjPQ3u6K4a27pa1zB+KbQcIMiRMOvx1W2sPAiXfkPO/rcCYRAeOPaBnibVVAG5PW5Auy87J/kGCwwfYZwnd58Zv/8CK+QGR6z0ENAanWzsmict4DlD/gEUWuyq/r53vrcRR51W/jyL+BOL+qSeK14Ww5Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lixom.net; dkim=pass (2048-bit key; unprotected) header.d=lixom-net.20260707.gappssmtp.com header.i=@lixom-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=kfz3tnSL; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=olof@lixom.net; receiver=lists.ozlabs.org) smtp.mailfrom=lixom.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lixom.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbBwG67wfz2yCS;
+	Fri, 27 Nov 2026 10:05:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=81.187.240.206
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795734318;
+	cv=none; b=d0yKuZNrFMlmXAHCROqabqydEWMhP8L+9CbvOoXzeCIlawfSKzVPaZEJC5n27abGb7KWlEI8rpIlWbaw29zvVA10lhGD+Osayn9WMXJ2P7b1ClvQrWi8TB58lknIsUIoA3IU8AciNSA5lza7rvJEbyZYvmzNDe0iph8KaPDBiK9eMAxynmYUxQiczSf56DU561eB9FzZjdeZuVgA6HAMHwvWm4cmseWcqJ9/n35zVyxLXLZttefbsoJoYmPYYogjOhVUc9kA6ulrImAgIfG9N2AN829IF+8QXISlgN2+IadWSm4betWObGxbMeDZjoNgyMx1v3tiqd5dpoFX05Ev3A==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795734318; c=relaxed/relaxed;
+	bh=Sj/aWkcJoX8osNOaYguPCPfPhZLRWGD842MdJCjN+4Y=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=WOtNxRA+ZcwFUv7Hox+R92t/DSxqKH6a+QkR2PowKKsn87I8Ouq6uF1LJ4eOmt7G66WDHEP4FS0ddDPdkOLYaAlx7xAAMQonejV7fkZlSRiv2rpHnUtveiYafzMTiHYHQewlqOQcKtLuoGdxtMLCqNpofMHffcBujMWeucZMOetx8QuCHAMAmTpDTkJOHFAluFoe9YAQrpgD5iR05cjdX27P5vajhJOPmQYE/IwVfoieriXPbp3oVlH8p5gsKRvyZTKroCpNPvSdsv5AYqEWuHlmziNGm7Cx1fukOY6vnF14TKXA6DdL4z1Pt++WllXFl5njD/0RE3Ug2fqSG9G8CA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=dim-sum.org; dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=DX8YmRhf; dkim-atps=neutral; spf=pass (client-ip=81.187.240.206; helo=chowmein.spicy.dim-sum.org; envelope-from=drw@dim-sum.org; receiver=lists.ozlabs.org) smtp.mailfrom=dim-sum.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=dim-sum.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=lixom-net.20260707.gappssmtp.com header.i=@lixom-net.20260707.gappssmtp.com header.a=rsa-sha256 header.s=20260707 header.b=kfz3tnSL;
+	dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=DX8YmRhf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lixom.net (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=olof@lixom.net; receiver=lists.ozlabs.org)
-Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com [IPv6:2607:f8b0:4864:20::72a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dim-sum.org (client-ip=81.187.240.206; helo=chowmein.spicy.dim-sum.org; envelope-from=drw@dim-sum.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 422 seconds by postgrey-1.37 at boromir; Fri, 27 Nov 2026 10:05:16 AEDT
+Received: from chowmein.spicy.dim-sum.org (chowmein.spicy.dim-sum.org [81.187.240.206])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jb8wL0Rk3z2xSZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 08:35:12 +1100 (AEDT)
-Received: by mail-qk1-x72a.google.com with SMTP id af79cd13be357-94965745d92so733414785a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 13:35:12 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795728909; cv=none;
-        d=google.com; s=arc-20260327;
-        b=T0s2ZiHnswLSVF2+40GB7pVSDDl1kgvznMuiowGTprA9TazqPPgLB2qmqKKxzK4ZkC
-         GOrEHoqBe5UbyM1pCI0zFv0maBYjv5KSnsBmvEY+gBh0k2gyWkuSJ43YrZQRg+pPIeg7
-         eew1Ww5gq9qDnjEZ3O2Kj4QCgJO8wxA2gdZtmiTR55BYNfZAWQC8WfhfDVvkM/utl95+
-         teZT6yiAYNrtq5fCS062gpZXDl/ULeziToJLFDGVQGR8k/UqLRK0BHmbebGxHaXIqAZ0
-         uWHRB1YnuyWML5M5E3Ziv4a0bhV6p1aUsRqJ3DZv1WxaswR5fk4sRY8CPX80Tfd2ZH0n
-         a0yw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=imr/pu1mUMJ71goiXUQ4VVEylGbSw20Gr7BPKxEeuK0=;
-        fh=9MdMIhf7K0MDGd4/QC/rzVSsAZ02/BWSdFWePot3guU=;
-        b=hZ1EwMgxKCl3p2kEQHxUUUUJJNWi1T0oqmGNEWxkR7X4CElAQOj0Xr6gJH6rZp1nz4
-         zO4kV03YcGCnAQcUt6jSNu9nRK6VK1J3DQRcp1CxdQI2EZmqNbhHV39H8pWj+XSlCjCk
-         /EdhSWieRlazg59SxcndkNblUseO6YFlqNf/mqUOV8smeok+TW2PgZjbapFY9lBeT42T
-         CRwk4bToBjGzPkQ1AZcMb+DBI022/km136ziI+GfPz4PCMvsTT10rIPB4Jdr7iLTvAhE
-         O+ffIqDlrTpsK5VzaW9VwwPMTMiJ4FSea4rhfk2E+fF7IiMD9EAucmyEZsw0qIlu2T74
-         uVAA==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=lixom-net.20260707.gappssmtp.com; s=20260707; t=1795728909; x=1796333709; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=imr/pu1mUMJ71goiXUQ4VVEylGbSw20Gr7BPKxEeuK0=;
-        b=kfz3tnSLLPtwNB1ev/YIxUjJg/br2eoyrC50nnPJBX5zt3lvtoDS5mK6mIv1l+E6tS
-         V3sFK9aEWVDoiZ4XLyDRWhIzPdyMOXOVZbYHMPdZBD7Dl7BoTRlB8ARrWDdtnjaj7/Oi
-         ikexfYCDBokrZ0bsCMSrYf5xzWBmQl8jMGtFen49oQvpL1fkG4kr/EA9vk8j9czqCTis
-         glr0n+PWxSzEo4tuCVHX0AYE8sv+xTUVBLhG+bISKzhwZUTK156XnHySW9lho2yZZQnb
-         foAj0bXYaKk5ZpSsknovfkQV6hNo907Wr66maBa5/0u/nf4sUbGbblb1gxDNztKrymKT
-         T4Eg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795728909; x=1796333709;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=imr/pu1mUMJ71goiXUQ4VVEylGbSw20Gr7BPKxEeuK0=;
-        b=umAZovwp4obL4wkgXVyfpLXAsQWDsGB+dJh3N/9/lTA6G6IvHy+XqPpRq/8F33QiYf
-         iKFGRcT15SHg5uze9Lvgt8EKzyXBRWMD8ciwUQX1Dexh55rJofgeo8j2ATOvbl1ZxdB5
-         CwaqGKBALdujONwPMy30nPMJxmcR1CdutEBWcMSWQ2rOiW2Qu8lKHaEePnMH6akvwM/G
-         r+osD9Oc6Jrj3C/H9hIda8WQ9NybttY9kCXJ8rTS6uixYR43OLOZpEUF0Y+bM41sfWyH
-         C83DVoDChLhrliwrGJSMIBYJaT/e9HU+PGmmEEMvUA1V5Qf1pGVQRsqc36F0AYIU94q/
-         FrOg==
-X-Forwarded-Encrypted: i=1; AL+hErFx4KZxvecs71cI5+gLT4IkRuUCaBaFrjdpiPadY2mNx79UT5NVww4/SAOZCkTFhhbbRmeAQ1yDNR/slvI=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+goR4bSFheBZhrUlSIH+5M8rP5BUYszaxhPITbVtiyGT/syYBA
-	1YPCtpUA3X8NnMFd96hqZ0T4ezqiESEsL8xoa5iVVzwwSzBZoydMmnAip2Pf/DIwhtH4vkw5xKe
-	K6kx2jXvGt2J8ryD/eHi6+w4w0iVDHAQYGqZLMEQfdQ==
-X-Gm-Gg: AZFdTZfgpQ08OYucBt3xWit22+NvnElerJFoMS99guCzF5E9rUIVOJJvtHXI4smGZHt
-	OCeaLWydSFdY3r7JTbLbZ7hNxOvUHcUgnQjO+d3zMYf6X14kUeJSutyfXUe2JQzrgU8SKxDuzxg
-	pkZb1eah72f1YDxcD9jpmBFExwR8QtDiLWx/NptFBWcJOJK3xues8V9fIgonf+GJ9hTxTU8Kp6X
-	zRoaZGbEyA5ujq/qb1Z6Ogw/ENpg1M/0e//WGOWNBvdAaQvUXN0d6BtxPYNN8RfefW1aIDIZ4ls
-	IKvwPqfiZ4gD8z/9rIN1iEczUnhSMFBr2bSplrncyxs8Zf4BjUy8M4NJAAuwprszN1brtu7y4B1
-	g579OmxZxZP2ojPA1oxX1GHWB6e7ZPvdSjRH968TssdCClxf5jhIheW7hR/cHUlc9gO3JsKM=
-X-Received: by 2002:a05:620a:450e:b0:949:a13a:34eb with SMTP id
- af79cd13be357-949ba966a19mr4162430685a.29.1795728909325; Thu, 26 Nov 2026
- 13:35:09 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbBwD0KwCz2y96
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 10:05:15 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=dim-sum.org;
+	s=chowmein; t=1795733882;
+	bh=lLSmzbK5NyJ4QRnqYbL+KLBr5kMfkKFsEvEgBH8TQP4=;
+	h=Subject:From:In-Reply-To:Date:Cc:References:To:From;
+	b=DX8YmRhf83EN3YIuwv9weX8O6SjISbzZjkrR8IRHNZO3qZd1HAx/7v7lzMgWtOdiz
+	 WdYd7gncUeWBPwS0K/1lPEIpV/9Z6CqyCGlbqKEN5nYrKv3obDzkRTWagelYoXCPNh
+	 S7ON7LMk9Q1THeWIh0UgqqW08D7FIsSz9zFd0A5ylsGjJCj3TgcKAX+dvz2xV3FapM
+	 XPnhI1k1Ea7CA5a4HYhvccrqNZd5DHlTj0ZazMznwX35GTCKHO3vb4JcOkv9XP2MQR
+	 Ao01VXZWOWxXuwM6/dgsPYPgPqKSCQS0P4vWr5gDqbhlLn2IKrL3Jfx2xr8k8FuEsO
+	 HwvzY3yckWj9Q==
+Received: from smtpclient.apple (unknown [IPv6:2001:8b0:ff99:15:1a2:f725:9750:5716])
+	by chowmein.spicy.dim-sum.org (Postfix) with ESMTPS id 34EB6BF54A;
+	Thu, 26 Nov 2026 22:58:01 +0000 (GMT)
+Content-Type: text/plain;
+	charset=utf-8
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,46 +57,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-References: <20261126081637.13160-2-fourier.thomas@gmail.com>
-In-Reply-To: <20261126081637.13160-2-fourier.thomas@gmail.com>
-From: Olof Johansson <olof@lixom.net>
-Date: Thu, 26 Nov 2026 13:34:58 -0800
-X-Gm-Features: Aa3M54o_c7qk5OPhsBIELSwKORdkmm8n7w3FX-EvieIWjU54dxA2oRgOKSssmhM
-Message-ID: <CAOesGMge=cyKz-MLG3Ud_jcUBm-QiZk_VaMXe_Tn85pB0YuQ6g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/pasemi: Fix pasemi_dma_free_buf()
-To: Thomas Fourier <fourier.thomas@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, 
-	Jeff Garzik <jeff@garzik.org>, 
-	"open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.200.71.1.16\))
+Subject: Re: Should the community reconsider their efforts on PowerPC?
+From: Dan Whitehouse <drw@dim-sum.org>
+In-Reply-To: <5793bff62d5995d322659d4a1d311bc4c795a829.camel@physik.fu-berlin.de>
+Date: Thu, 26 Nov 2026 22:57:51 +0000
+Cc: debian-powerpc <debian-powerpc@lists.debian.org>,
+ gentoo-powerpc <gentoo-powerpc@lists.gentoo.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Transfer-Encoding: quoted-printable
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
+Message-Id: <86799B87-DFD3-44F3-8A04-00972FBADF9C@dim-sum.org>
+References: <5793bff62d5995d322659d4a1d311bc4c795a829.camel@physik.fu-berlin.de>
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+X-Mailer: Apple Mail (2.3901.200.71.1.16)
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Thu, Nov 26, 2026 at 12:21=E2=80=AFAM Thomas Fourier
-<fourier.thomas@gmail.com> wrote:
->
-> dma_free_coherent() is called with the wrong arguments. The two last
-> arguments must be the virtual address and the DMA address but the
-> DMA address and the allocation flags are passed. If this function were
-> called, it would call kfree() on a DMA address and dma_unmap() on the
-> allocation flag.
->
-> Add the buffer argument to pasemi_dma_free_buf() and pass the right
-> arguments to dma_free_coherent().
->
-> Fixes: 8ee9d8577935 ("pasemi: DMA engine management library")
-> Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+Adrian,
+Before I write anything else on this subject I would like you to know =
+that I=E2=80=99m extremely grateful for your efforts.
+I cannot possibly express how much I appreciate the hard work you have =
+put in to not only the PPC ports, but all the work you do not only for =
+the Debian project, but also free software in general.
+Selfishly I would like you to continue working on PPC however I=E2=80=99ve=
+ witnessed things like kvm-pr wither on the vine and seen Red Hat =
+deprecate kvm on IBM=E2=80=99s PPC platforms.
 
-Just remove the dead code instead.
+To make a long story short, speaking selfishly, I would answer your =
+question with a resounding =E2=80=9CNO!=E2=80=9D. However, that =
+doesn=E2=80=99t mean that I don=E2=80=99t (at some level) understand the =
+challenges you face and would not understand if you decided to call it a =
+day.
+If it=E2=80=99s not fun anymore and is more trouble than its worth, I =
+won=E2=80=99t begrudge you putting it to bed. I=E2=80=99ll still be =
+appreciative of all the work you have done and I won=E2=80=99=E2=80=99t =
+begrudge you spending your efforts on other ports.
+
+Thanks again,
+
+Dan=20
 
 
--Olof
+> On 26 Nov 2026, at 21:04, John Paul Adrian Glaubitz =
+<glaubitz@physik.fu-berlin.de> wrote:
+>=20
+> Hello,
+>=20
+> as some of you may know, IBM has been pushing to deprecate any PowerPC
+> platforms that they aren't earning money with anymore. This includes
+> mainly POWER platforms before POWER8 and big-endian PowerPC.
+>=20
+> Recently, IBM engineers have remove JIT support in OpenJDK after =
+sending
+> an email for feedback to a non-public, unmonitored Debian email =
+address [1].
+>=20
+> Since IBM engineers have also killed off support for big-endian =
+PowerPC
+> in Golang, V8 and also don't look after LLVM on big-endian PowerPC =
+anymore,
+> I wonder what is left for the community working on PowerPC.
+>=20
+> I personally feel that IBM thinks they own the PowerPC platform in the
+> open-source world and can single-handedly decide whether a certain =
+project
+> will support older PowerPC targets or not. And I'm starting to feel =
+that
+> this will sooner or later also happen to the kernel parts, GCC and =
+binutils.
+>=20
+> As someone who has invested endless hours of my free time into working
+> Linux and open-source software on PowerPC, I feel really let down by
+> how IBM is handling this and currently I feel like it's starting to =
+become
+> pointless to invest my free time working on PowerPC support in Linux
+> and open-source projects.
+>=20
+> Adrian
+>=20
+>> [1] https://bugs.openjdk.org/browse/JDK-8331859
+>=20
+> --=20
+> .''`.  John Paul Adrian Glaubitz
+> : :' :  Debian Developer
+> `. `'   Physicist
+>  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+>=20
+
 
