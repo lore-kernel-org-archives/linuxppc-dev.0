@@ -2,52 +2,98 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 21CC4606A681
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:23:12 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A108606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:27:41 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A4KjeMfo
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yGx75se5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvL667NZz3bsm;
-	Thu, 26 Nov 2026 22:23:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692190;
-	cv=none; b=bPM8YJtMWE6Bo+VZdB07dL4Qw2lKAM5qk8TLjY5Ujbfn7H7bq29J1J7UT09ZpSerN10hTIk9bo23eBKk1VIgFwVaqX/QrNPsXZYoqn5EDWoyDk4Z7ZAfNhdQhcFitub+xk8McD7Xf0NVrU4drKYNbaCmnrEisZt4q1onapU6I/6jFVClcbukiPe3TC5kg76Cg3ym/bEOq0U5n4t54fXpCzfLF7EOYRoGLLiiMbJiaEEQpkwwA4gjUJFtEz/jhDolWwBwvukwcNWzjrBNzuL0ubxTHp9EKfHIEZjZO7z7FnkNWdjcr7ditgvl9XrF5QJpEWJxKPRI+bPZdERtcnqk5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvRH3QFFz2yPq;
+	Thu, 26 Nov 2026 22:27:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692459;
+	cv=none; b=kIGZqD8nXzFleYsFdv0HWoHllL85SSEJuBtigWwpJm5dm8S4IZysobe/zmieKX6PcvvsAIimXTZpYKJBleMmL9W4XlDq3jbSlmnFvOjn4QHpiHQrHzcbz92oDHzO5j82JHdXjR99tIBY4wQQ/K8SiwJiDGJVvPpr1woVGd1pXsDW4szW4qajpyGYJ7r8kbQ/QadCSl8iyi+V4eHjZy0bcKHXWVhEDygvhBZCzq2WTXlAbOA8W2fGVup1rcb4glw18feDK0JlrZ4t6+S1QJHAXP5WckFekc/Lq331mDVyqo55D97WlP2HhihAJvjK8vXGXjFohHnl3llqiISKsNwH0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795692190; c=relaxed/relaxed;
-	bh=38wWX1LyIKznTPHkYokKRmEmCsvcuuigVsBb/B7K/pw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=e0mpfNfP1CAIX5eqUaz6NKLbzrSxzwq6juwU8N8nMDBj4GwQNcFqAuUk/8sT2DjVYECUtxrKcMpAnyNagRbVz2FoSiu42kFXyuMBuHljF+Q9jwM8O6zomqKaBPOCk6pcJXu/zFb/qMsF4+xIfY7ty4Tz/vHpCr9NSf3gf1bKU5H8aEdieB+APE7VweIJJ8b8QsfcdtJ292JomJb5lA7brnnTVmdaeYMV1By1x6ObJFmgruB2ao7WGQFHlJoIiTzrF+zYGNqA2gJaz6cgh02xfqAMGJRx8f6ODRkua+nWwxKf9O1OLDto/EDBVE1o8BDrYca7U3HDrbkcELPvvSK9cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A4KjeMfo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1795692459; c=relaxed/relaxed;
+	bh=0BkCbk1BZezpNWO2fSE0tmudVFsNXM8eMjdZoP6Bz5s=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=cnRcwrxkfZ34iiAalvKxlgzERSVxQSGisskJqXO2iio+t0NNHAe8vrXCFKMcKrg0RVNKaPfM00TEMykrpR9sBGjhURIgYdSowZziDmDqEGLp30RunB4E3nbA8P63GRMobXB7FsTwPPxhzgClay1t/MKAojWu/aZPMlJ1RVptDbih30GrS95XfljgDYiiYoRpYrJkyUUXSFBFkTPCLRNbyfaO//y00I45WYl739H1PZ3pj+nfJ0IAJv7M5hqTgEdiHa68S9FUksDGHYgmHGD3fCGT8ShQfSjH6DYCznxHXi16c6Ct4XYErnvi2+F96vR0neMk+8TZt9+G6kyFgcbkfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yGx75se5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=A4KjeMfo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yGx75se5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvL55rJnz3bWX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:23:09 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id DF9A8633DF;
-	Thu, 26 Nov 2026 11:23:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B09751F000C0;
-	Thu, 26 Nov 2026 11:22:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795692187;
-	bh=38wWX1LyIKznTPHkYokKRmEmCsvcuuigVsBb/B7K/pw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=A4KjeMfoFY32iUGl7djJYsYhg+4oGEfOWaNVWfXQNOGKm+R1SPziMoo0T9FUVkVaW
-	 fFPfLoak3gHxi7lTuPxjivNEphPTx7KKaNtLd/glp6KWXq9U7U4qORKSWyTbc301zU
-	 QPG+YUnZEwXXdBShtqAnt187iKv9LR1F1fduwTYjEWQoiA+2+8szyjKHTBeNdXXICj
-	 9qyzELenHf2+tAdoGIGFgFVnzYUb4UVoGsIi62b51EavLCULalPcIj7jrDHDG+x43Q
-	 gkYuip9wepznQuxkzTfW2ST+wos48VEZjTRE7/DisSCsxr/tUvQ+SUb8aqIinLqY07
-	 wTEdBi2jVHpOQ==
-From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:15:07 +0200
-Subject: [PATCH RFC v2 54/54] mm/pageattr: document CPA core and the
- architecture hooks
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvRF49dHz2yLH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:27:37 +1100 (AEDT)
+Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-4bb6ba3b244so70382135e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 03:27:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795692449; x=1796297249; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=0BkCbk1BZezpNWO2fSE0tmudVFsNXM8eMjdZoP6Bz5s=;
+        b=yGx75se5Y+kDM1aLDfEvkpEbmS8QotuS1cnURBSg34eYto6ZdRbwhy69atgwFPylQM
+         quOiBFYkqQ1/r7cdAeda1sKH9M9M8vPL3Wfx5GiquH0AxxEG4WSz6g4/is7vpDwoCpRb
+         55k4ZKp3CcgDtreLvgEKKGQXa14q+q4qd/YIw3bHvo42U/YXEFCkLWW/GY1hfG0pBFWg
+         LwUZAe4k1/I+KI7CYL4aEmv5wgeevmzBI0slptB+Kv69ZrTDchMiv7dd5cgM+i9Zjtz5
+         n8OctHMdcgnyuWONbWKryP4CSwmrXwmFZxWtSdZCGFS+OEfD1mXLovCZAcwBF2Q4fVHl
+         SQug==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795692449; x=1796297249;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=0BkCbk1BZezpNWO2fSE0tmudVFsNXM8eMjdZoP6Bz5s=;
+        b=rYwgnkMeO/avogS51RC4k1VhnksZ0p6La/6CLRRg4EWy4doawscL13fSLMj1sXABh3
+         EvciLpWoe1J7Dy/783gHWvLbJfDuHsGF0YwKpf/7+SE6y9c5ySy5MQMtwoUTCqAB6/LF
+         JleU1eU+Hl4jdabPj1q3CvNfoyO1Li2CmXV/UtIIqM8s4hcP3j0B8bWfKsTr20f8yH2h
+         UpShAy5HWOn1G7uLKf3sx3lbFRx84Oicdg3c11vHNvkxNAkoGY9lSO103aK77p9qt9vy
+         4mY3eJW6ys/Quom+mYkPJ+S3VdQDiiqW6F6BKQWvVMfU+AZE0eHXG7NiC2Y6pxzW3H8x
+         8WAQ==
+X-Gm-Message-State: APuU4Z+Tmv4uHWoYxKgw1PA+x4Cjn1v+9LkabNG1dFLkQuodE+09X03A
+	8WFTku0OhRiAn0D0TI03KmxjtKo2dNzfliOaIs2WcnVCyiLAtupvpqv7
+X-Gm-Gg: AZFdTZeEdwdN9gWHgiX2FluznMeuJwzEU9425GhYB7wqNkiTTRM32Kg6D+I3ZnoU0Oa
+	FGRGyytmU4+UHM3Sf2OFvZGMcY6KKkqHA2/6XtZa1wQh/e0/+EyXw5MBMAAbaT1wSIKJ0DrodHe
+	qSZWOoJ+NpcbQHkaAFuf6NHJbO1VJmlyTabc01J8MMy4YhyAmEOrmLdxhC5fvHlSNU3dgeMN0bh
+	qm9vasDALFpxiibVHeA9j1yvFUqKw2q8wQ57/L+EnMa8RcbL7i7O1YxgxUMQx4M5KhwmXfO5M60
+	GzXDLsbWUGZA0qUELy2BTeuERoaLmPbGW1xUOCUyZ8l1XDpVPG+5CC/pzpCECSEC0FjprFWXStf
+	SadwLx0qUpv4tAj26D69Znd5quyz4aeC7yOLcYXZGcug2wW661JEVv9eCqx4tI0QJ6torYXniQt
+	srIAKmRmRchZ594oyr8YoO+5CDy2e4sfeMHr8XjQTP4qYYCU7Y8xVRVeS3N5rVa2b7DzUvUJbrM
+	OZJri+8BdIy31tMMJ4zGHCOZ1sUr6zTLFSKe7JQtWvlb2xe26SsYQ+/eibl8e9O1fu04Kp/va+C
+	eR42fRzMjNBnH+p0H6BN3wB9MWQmRdL6I9qsw58Wx/13fTCpjuhIROjJ0b7PrqwSTJY=
+X-Received: by 2002:a05:600c:4f4c:b0:4bb:8503:69f4 with SMTP id 5b1f17b1804b1-4bb888097a2mr516443125e9.5.1795692448756;
+        Thu, 26 Nov 2026 03:27:28 -0800 (PST)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb884b7515sm816437995e9.13.2026.11.26.03.27.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2026 03:27:28 -0800 (PST)
+Date: Thu, 26 Nov 2026 11:27:14 +0000
+From: David Laight <david.laight.linux@gmail.com>
+To: "Nysal Jan K.A." <nysal@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jeevitha Palanisamy
+ <jeevitha@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)"
+ <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Nathan
+ Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>,
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>, "David Hildenbrand (Arm)"
+ <david@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>, Andreas Larsson
+ <andreas@gaisler.com>, Usama Arif <usama.arif@linux.dev>, Kevin Brodsky
+ <kevin.brodsky@arm.com>, "Kiryl Shutsemau (Meta)" <kas@kernel.org>,
+ linux-kernel@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH 1/3] powerpc: Add support for 128-bit cmpxchg
+Message-ID: <20261126112714.021a3e66@pumpkin>
+In-Reply-To: <20261125174035.1412724-2-nysal@linux.ibm.com>
+References: <20261125174035.1412724-1-nysal@linux.ibm.com>
+	<20261125174035.1412724-2-nysal@linux.ibm.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,451 +107,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-54-723f1e33c3d8@kernel.org>
-References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
-In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
-To: linux-mm@kvack.org
-Cc: =?utf-8?q?Adrian_Barna=C5=9B?= <abarnas@google.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- Andy Lutomirski <luto@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
- Borislav Petkov <bp@alien8.de>, Brendan Jackman <brendan.jackman@linux.dev>, 
- Catalin Marinas <catalin.marinas@arm.com>, 
- Dave Hansen <dave.hansen@linux.intel.com>, 
- David Hildenbrand <david@kernel.org>, 
- Gerald Schaefer <gerald.schaefer@linux.ibm.com>, 
- Heiko Carstens <hca@linux.ibm.com>, Huacai Chen <chenhuacai@kernel.org>, 
- Ingo Molnar <mingo@kernel.org>, Kevin Brodsky <kevin.brodsky@arm.com>, 
- "Liam R. Howlett" <liam@infradead.org>, Lorenzo Stoakes <ljs@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, Michal Hocko <mhocko@suse.com>, 
- Mike Rapoport <rppt@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, 
- Paul Walmsley <pjw@kernel.org>, Peter Zijlstra <peterz@infradead.org>, 
- Russell King <linux@armlinux.org.uk>, 
- Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner <tglx@kernel.org>, 
- Vasily Gorbik <gor@linux.ibm.com>, Vlastimil Babka <vbabka@kernel.org>, 
- Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, x86@kernel.org
-X-Mailer: b4 0.16.1-dev
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Status: No, score=-19.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Add kernel-doc for the API and the hooks in include/linux/pageattr.h.
+On Wed, 25 Nov 2026 23:10:22 +0530
+"Nysal Jan K.A." <nysal@linux.ibm.com> wrote:
 
-Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
----
- include/linux/pageattr.h | 277 ++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 275 insertions(+), 2 deletions(-)
+> Implement arch_cmpxchg128() and arch_cmpxchg128_local() for 64-bit
+> little-endian PowerPC (POWER8 and later) using the lqarx and stqcx.
+> instructions.
+> 
+> This enables HAVE_CMPXCHG_DOUBLE, which allows SLUB to use the lockless
+> __update_freelist_fast() path and provides kmalloc_nolock() required by
+> BPF task-local storage and arena allocations.
+> Select HAVE_ALIGNED_STRUCT_PAGE to ensure 16-byte alignment for struct
+> page as required by quadword load/store instructions.
+> 
+> The lqarx and stqcx. instructions require a consecutive even/odd
+> register pair, with the most significant 64 bits in the even register
+> and the least significant 64 bits in the odd register. Leverage GCC's
+> PTI mode variable attribute to allow the compiler to allocate suitable
+> register pairs. On little-endian, the halves are swapped to match the
+> memory layout.
+> 
+> Link: https://github.com/linuxppc/issues/issues/463
+> Link: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106895
+> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
+> ---
+...
+> index dbb50c06f0bf..b3164c3c0b81 100644
+> --- a/arch/powerpc/include/asm/cmpxchg.h
+> +++ b/arch/powerpc/include/asm/cmpxchg.h
+> @@ -6,6 +6,7 @@
+>  #include <linux/compiler.h>
+>  #include <asm/synch.h>
+>  #include <linux/bug.h>
+> +#include <linux/types.h>
+>  
+>  #ifdef __BIG_ENDIAN
+>  #define BITOFF_CAL(size, off)	((sizeof(u32) - size - off) * BITS_PER_BYTE)
+> @@ -617,6 +618,65 @@ __cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_HAVE_CMPXCHG_DOUBLE
+> +union __u128_halves {
+> +	u128 full __mode(PTI);
+> +	struct {
+> +		u64 low, high;
 
-diff --git a/include/linux/pageattr.h b/include/linux/pageattr.h
-index a2a7235a633e..855c65295f6e 100644
---- a/include/linux/pageattr.h
-+++ b/include/linux/pageattr.h
-@@ -5,10 +5,69 @@
- #include <linux/mm.h>
- #include <linux/pgtable.h>
- 
-+/**
-+ * DOC: Kernel Page Table Protection Modifications
-+ *
-+ * There are two families of APIs that allow modifying the protection of the
-+ * kernel mappings:
-+ *
-+ * set_memory_*() change the protection of an arbitrary kernel mapping.
-+ *
-+ * set_direct_map_*() change the protection of the direct/identity/linear
-+ * mapping.
-+ *
-+ * change_page_attr() and change_page_attr_noflush(), or CPA for short,
-+ * implement the generic part of these APIs and leave the page table
-+ * specifics to the architecture.
-+ *
-+ * CPA walks the kernel page tables, determines at what level the
-+ * protection change must be done, splits large mappings if necessary and
-+ * updates the protection of the requested range.
-+ *
-+ * CPA keeps the mappings as large as it can. A large page stays intact
-+ * when a request changes all of it the same way, and is split only when a
-+ * request changes a part of it.
-+ *
-+ * The same holds for a contiguous block of entries that the TLB may cache as
-+ * one translation, like, for example, the contiguous bit of arm64.
-+ *
-+ * CPA keeps the alias mappings of the memory consistent: when the protection
-+ * of a page changes, its other mappings, like the direct map, change with it
-+ * according to architecture requirements.
-+ *
-+ * Every step of a request looks up and changes the page tables under
-+ * cpa_lock. It keeps concurrent requests from splitting or changing the same
-+ * large mapping at the same time, and a collapse, which holds it as well,
-+ * from freeing page tables under a CPA lookup. A step drops cpa_lock to
-+ * allocate a page table for a split and repeats the lookup after retaking the
-+ * lock.
-+ *
-+ * Page table walkers that don't take cpa_lock, like ptdump and text poking,
-+ * rely on the init_mm mmap lock instead. A collapse frees page tables, so it
-+ * holds that lock for writing.
-+ *
-+ * The architecture describes its page tables with the hooks below: the format
-+ * of a page table entry, how a large page is split and whether it can be split
-+ * at all, which mappings are aliases and how the TLB is flushed.
-+ *
-+ * The hooks that have a default are optional.
-+ */
-+
- struct seq_file;
- 
--/*
-- * The current flushing context - we pass it instead of 5 arguments:
-+/**
-+ * struct cpa_data - a request to change the protection of kernel mappings
-+ * @addr: the virtual address of the first page
-+ * @pgd: the page tables to change, NULL for init_mm
-+ * @mask_set: the protection bits to set, in the architecture's PTE format
-+ * @mask_clr: the protection bits to clear, in the architecture's PTE format
-+ * @numpages: the number of pages; while the walk runs, the number of pages
-+ *	of the current step
-+ * @curpage: the index of the first page of the current step
-+ * @pfn: the pfn of the first page of the current step; for an architecture
-+ *	that populates holes, the caller sets it to the first pfn to map
-+ * @flags: CPA_REQ_* request flags set by the caller
-+ * @state: CPA_ST_* state flags set by change_page_attr()
-  */
- struct cpa_data {
- 	unsigned long	addr;
-@@ -22,6 +81,18 @@ struct cpa_data {
- 	unsigned int	state;
- };
- 
-+/**
-+ * struct cpa_leaf - a mapping found by the lookup
-+ * @kpte: the page table entry corresponding to @addr or the first entry in a
-+ *	contiguous block
-+ * @level: the level at which the lookup found the mapping
-+ * @addr: the first virtual address of the mapping
-+ * @size: the size of the mapping: the size of @level, or of the contiguous
-+ *	block
-+ * @pfn: the first pfn of the mapping
-+ * @prot: the protection of the mapping in the architecture's PTE format, as
-+ *	decoded by arch_cpa_decode_leaf()
-+ */
- struct cpa_leaf {
- 	pte_t			*kpte;
- 	enum pgtable_level	level;
-@@ -63,14 +134,46 @@ static inline unsigned long cpa_addr(struct cpa_data *cpa, unsigned long idx)
- 	return cpa->addr + idx * PAGE_SIZE;
- }
- 
-+/* Helpers for the hooks */
- int cpa_process_fault(struct cpa_data *cpa);
- int cpa_change_alias(struct cpa_data *cpa, struct cpa_data *alias);
- void cpa_flush_tlb_kernel_range(struct cpa_data *cpa);
- 
-+/**
-+ * change_page_attr() - change the protection of kernel mappings and flush the
-+ *	TLB
-+ * @cpa: the request
-+ *
-+ * Unmaps the unused kmap and the lazily freed vmap aliases first, as they
-+ * may map the pages with the old protection. With CPA_REQ_COLLAPSE, also
-+ * collapses large pages after the flush.
-+ *
-+ * On failure, the pages processed before it keep their new protection, and
-+ * arch_cpa_flush() is called with CPA_ST_FLUSH_ALL if any of them changed.
-+ *
-+ * Context: May sleep.
-+ * Return: 0 on success, -errno on failure.
-+ */
- int change_page_attr(struct cpa_data *cpa);
- 
-+/**
-+ * change_page_attr_noflush() - change the protection of kernel mappings
-+ * @cpa: the request
-+ *
-+ * Unlike change_page_attr(), it doesn't unmap the kmap and vmap aliases of
-+ * the pages, and the caller is responsible for flushing the TLB.
-+ *
-+ * Context: May sleep to allocate a page table for a split.
-+ * Return: 0 on success, -errno on failure.
-+ */
- int change_page_attr_noflush(struct cpa_data *cpa);
- 
-+/*
-+ * The direct map counters behind the DirectMap lines of /proc/meminfo.
-+ * change_page_attr() counts the large pages of the direct map it splits,
-+ * and the architecture counts every other change of its direct map. The
-+ * architecture prints the counters with cpa_report_meminfo().
-+ */
- #ifdef CONFIG_PROC_FS
- void direct_map_count_update(enum pgtable_level level, long pages);
- void direct_map_count_split(enum pgtable_level level);
-@@ -83,12 +186,60 @@ static inline void direct_map_count_split(enum pgtable_level level) { }
- static inline void direct_map_count_collapse(enum pgtable_level level) { }
- #endif
- 
-+/**
-+ * arch_cpa_decode_leaf() - decode a page table entry
-+ * @leaf: the mapping to decode
-+ *
-+ * Fill @leaf->pfn and @leaf->prot from the entry @leaf->kpte at @leaf->level.
-+ * If the entry is a part of a contiguous block, extend @leaf to the block.
-+ *
-+ * @leaf->prot has the same format at every level: the PTE format, without
-+ * the pfn and without the bits that tell a large entry from a small one.
-+ * arch_cpa_modify_leaf() converts it back. The entry may be not present,
-+ * but it is never empty.
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ */
- void arch_cpa_decode_leaf(struct cpa_leaf *leaf);
- 
-+/**
-+ * arch_cpa_modify_leaf() - change the protection of a mapping
-+ * @leaf: the mapping to change
-+ * @prot: the new protection
-+ *
-+ * Store the entry of @leaf, or every entry of its contiguous block, with
-+ * @prot. The TLB is flushed after the walk, by arch_cpa_flush() or by the
-+ * caller of change_page_attr_noflush().
-+ * An architecture whose TLB may cache an entry that is not valid handles an
-+ * entry that becomes valid here.
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ */
- void arch_cpa_modify_leaf(struct cpa_leaf *leaf, pgprot_t prot);
- 
-+/**
-+ * arch_cpa_flush() - flush the TLB for the pages of a request
-+ * @cpa: the request
-+ *
-+ * CPA_ST_FLUSH_ALL in @cpa->state means an alias of the pages changed as
-+ * well, or the request failed.
-+ * An architecture without aliases, one that flushes the aliases in
-+ * arch_cpa_process_alias(), or one whose page table updates flush the TLB by
-+ * themselves may ignore it.
-+ */
- void arch_cpa_flush(struct cpa_data *cpa);
- 
-+/**
-+ * arch_cpa_new_prot() - adjust the protections calculated in cpa_req_prot()
-+ * with architecture constraints
-+ * @cpa: the request
-+ * @leaf: the mapping to change
-+ *
-+ * A large page is split when the result differs from cpa_req_prot().
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ * Return: the new protection of @leaf.
-+ */
- #ifndef arch_cpa_new_prot
- static inline pgprot_t arch_cpa_new_prot(struct cpa_data *cpa,
- 					 struct cpa_leaf *leaf)
-@@ -98,12 +249,42 @@ static inline pgprot_t arch_cpa_new_prot(struct cpa_data *cpa,
- #endif
- 
- #ifndef arch_cpa_can_split
-+/**
-+ * arch_cpa_can_split() - check if a large page can be split
-+ * @cpa: the request
-+ * @leaf: the large page
-+ *
-+ * Refuse a split before a page table is allocated for it. A request that
-+ * needs a split the architecture cannot do fails with a warning and
-+ * -EINVAL. The default refuses every split.
-+ *
-+ * An architecture must override both arch_cpa_can_split() and
-+ * arch_cpa_split_leaf() or none.
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ * Return: true if arch_cpa_split_leaf() can split @leaf.
-+ */
- static inline bool arch_cpa_can_split(struct cpa_data *cpa,
- 				      struct cpa_leaf *leaf)
- {
- 	return false;
- }
- 
-+/**
-+ * arch_cpa_split_leaf() - split a large page
-+ * @cpa: the request
-+ * @leaf: the large page
-+ * @table: the page table page from arch_cpa_alloc_pgtable(), NULL for a
-+ *	contiguous block
-+ *
-+ * Replace @leaf with @table, filled with entries that map the same memory
-+ * with the same protection. A contiguous block is split by making each of
-+ * its entries a mapping of its own.
-+ * In both cases, do the TLB maintenance the CPU requires for the change.
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ * Return: 0 on success, -errno on failure.
-+ */
- static inline int arch_cpa_split_leaf(struct cpa_data *cpa,
- 				      struct cpa_leaf *leaf, void *table)
- {
-@@ -112,11 +293,35 @@ static inline int arch_cpa_split_leaf(struct cpa_data *cpa,
- #endif
- 
- #ifndef arch_cpa_alloc_pgtable
-+/**
-+ * arch_cpa_alloc_pgtable() - allocate the page table for a split
-+ * @leaf: the large page to split
-+ *
-+ * An architecture must override both arch_cpa_alloc_pgtable() and
-+ * arch_cpa_free_pgtable() or none.
-+ *
-+ * Context: May sleep.
-+ * Return: the page table, NULL on failure.
-+ */
- void *arch_cpa_alloc_pgtable(struct cpa_leaf *leaf);
- 
-+/**
-+ * arch_cpa_free_pgtable() - free a page table from arch_cpa_alloc_pgtable()
-+ * @leaf: the large page the table was allocated for
-+ * @table: the page table
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ */
- void arch_cpa_free_pgtable(struct cpa_leaf *leaf, void *table);
- #endif
- 
-+/**
-+ * cpa_is_direct_map() - check if an address is in the direct map
-+ * @addr: the virtual address
-+ *
-+ * Return: true if @addr is in the range of the direct map, which may have
-+ * holes.
-+ */
- #ifndef cpa_is_direct_map
- static inline bool cpa_is_direct_map(unsigned long addr)
- {
-@@ -124,6 +329,22 @@ static inline bool cpa_is_direct_map(unsigned long addr)
- }
- #endif
- 
-+/**
-+ * arch_cpa_process_fault() - handle a page without a mapping
-+ * @cpa: the request, its current page has no mapping
-+ *
-+ * On entry @cpa->numpages is the number of pages left in the request, and
-+ * @cpa->pfn is the pfn of the previous step, or the one the caller set. To
-+ * skip pages, set @cpa->numpages to their number and return 0. Without
-+ * CPA_ST_ALIAS in @cpa->state, also set @cpa->pfn to the pfn of the first
-+ * skipped page, which arch_cpa_process_alias() uses next.
-+ *
-+ * The default skips a page of an alias and a page in a hole of the direct
-+ * map, and fails with a warning for any other address.
-+ *
-+ * Context: cpa_lock held, must not sleep.
-+ * Return: 0 to continue the walk, -errno to fail the request.
-+ */
- #ifndef arch_cpa_process_fault
- static inline int arch_cpa_process_fault(struct cpa_data *cpa)
- {
-@@ -131,6 +352,19 @@ static inline int arch_cpa_process_fault(struct cpa_data *cpa)
- }
- #endif
- 
-+/**
-+ * arch_cpa_process_alias() - change the aliases of the current pages
-+ * @cpa: the request
-+ *
-+ * Change the aliases of the @cpa->numpages pages at @cpa->pfn that the
-+ * current step of the walk processed. Each alias is changed with
-+ * cpa_change_alias() on a copy of @cpa with the address and the masks of
-+ * the alias. cpa_change_alias() sets CPA_ST_FLUSH_ALL in @cpa when the
-+ * alias changed; an architecture may flush the alias here instead.
-+ *
-+ * Context: May sleep to split the large pages of an alias.
-+ * Return: 0 on success, -errno on failure.
-+ */
- #ifndef arch_cpa_process_alias
- static inline int arch_cpa_process_alias(struct cpa_data *cpa)
- {
-@@ -138,12 +372,23 @@ static inline int arch_cpa_process_alias(struct cpa_data *cpa)
- }
- #endif
- 
-+/**
-+ * arch_cpa_collapse() - collapse the large pages of a request
-+ * @cpa: the request
-+ *
-+ * Replace the page tables of the range of a CPA_REQ_COLLAPSE request with
-+ * large pages where all their entries map contiguous memory with the same
-+ * protection. The TLB is already flushed for the request.
-+ *
-+ * Context: init_mm write locked, cpa_lock held, must not sleep.
-+ */
- #ifndef arch_cpa_collapse
- static inline void arch_cpa_collapse(struct cpa_data *cpa)
- {
- }
- #endif
- 
-+/* The operations of set_memory_*() and set_direct_map_*_noflush() */
- enum cpa_op {
- 	CPA_OP_RO,
- 	CPA_OP_RW,
-@@ -155,6 +400,12 @@ enum cpa_op {
- 	CPA_OP_NR
- };
- 
-+/**
-+ * struct cpa_op_prot - the masks and flags of an operation
-+ * @set: the protection bits to set, in the architecture's PTE format
-+ * @clr: the protection bits to clear, in the architecture's PTE format
-+ * @req: CPA_REQ_* flags of the request
-+ */
- struct cpa_op_prot {
- 	pgprot_t	set;
- 	pgprot_t	clr;
-@@ -169,15 +420,37 @@ static inline void cpa_init_op(struct cpa_data *cpa,
- 	cpa->flags |= prot->req;
- }
- 
-+/**
-+ * arch_cpa_prepare() - prepare the request of an operation
-+ * @cpa: the request with the address and the number of pages
-+ * @op: the operation
-+ *
-+ * Fill the masks and the flags of @cpa for @op, usually with cpa_init_op()
-+ * from a table of the operations. A request with empty masks succeeds
-+ * without changing anything.
-+ *
-+ * Return: 0 on success, -errno to refuse the request.
-+ */
- int arch_cpa_prepare(struct cpa_data *cpa, enum cpa_op op);
- 
- #ifndef arch_cpa_enter
-+/**
-+ * arch_cpa_enter() - start the request of an operation
-+ *
-+ * Together with arch_cpa_leave() it brackets the request of set_memory_*() and
-+ * set_direct_map_*_noflush(), so that an architecture can batch the page table
-+ * updates of the request, for example in lazy MMU mode. The request may sleep.
-+ * A direct call of change_page_attr() is not bracketed.
-+ */
- static inline void arch_cpa_enter(void)
- {
- }
- #endif
- 
- #ifndef arch_cpa_leave
-+/**
-+ * arch_cpa_leave() - end the request of an operation
-+ */
- static inline void arch_cpa_leave(void)
- {
- }
+There seems to be a mismatch between the register order that PTI
+assigns and the one that C uses.
+It might be less confusing to swap low and high in the above
+and only use 'full' (probably renamed) in the asm statement.
 
--- 
-2.53.0
+> +	};
+> +};
+> +
+> +#define __CMPXCHG128(name, entry_mb, exit_mb)			\
+> +static __always_inline u128					\
+> +__cmpxchg_u128##name(volatile u128 *p, u128 old, u128 new)	\
+> +{								\
+> +	union __u128_halves tmp, r, o = { .full = (old) };	\
 
+You don't need 'o' in a register pair, it might be better
+to just have two u64 for the two halves.
+
+> +								\
+> +	__asm__ __volatile__ (					\
+> +	entry_mb						\
+> +"1:     lqarx   %[r],0,%[ptr]\n"				\
+> +"       xor     %L[t],%L[r],%[ol]\n"				\
+> +"       xor     %[t],%[r],%[oh]\n"				\
+> +"       or.     %[t],%[t],%L[t]\n"				\
+> +"       bne-    2f\n"						\
+> +"       mr      %L[t],%[n]\n"					\
+> +"       mr      %[t],%L[n]\n"					\
+> +"       stqcx.  %[t],0,%[ptr]\n"				\
+> +"       bne-    1b\n"						\
+> +	exit_mb							\
+> +"2:     mr      %[t],%[r]\n"					\
+> +"       mr      %[r],%L[r]\n"					\
+> +"       mr      %L[r],%[t]\n"					\
+
+If you leave this exchange to the C code it will likely get
+optimised away.
+
+The same is true for the fallback code in the next patch
+where you can use asm("r14") and asm("r15) for the two halves
+of 'r' and then combine them with arithmetic for the return.
+
+This would all be more readable with slightly longer variable names.
+
+I'm sure the above and the fallback code could be made similar
+enough to avoid the duplication.
+
+David
+
+> +	: [r] "=&r" (r.full),					\
+> +	  [t] "=&r" (tmp.full), "+m" (*p)			\
+> +	: [ptr] "r" (p),					\
+> +	  [ol] "r" (o.low), [oh] "r" (o.high),			\
+> +	  [n] "r" (new)						\
+> +	: "cc", "memory");					\
+> +								\
+> +	return r.full;						\
+> +}
+...
 
