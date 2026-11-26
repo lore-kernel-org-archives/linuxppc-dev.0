@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44969606A323
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:22:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3AA6B606A336
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:22:53 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OouPlr/S
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zl+CRlyx
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvKZ02DLz3bs0;
-	Thu, 26 Nov 2026 22:22:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692161;
-	cv=none; b=UVS4/ujwzCh3xH0OvD2TlxrL1sykTbELEB5EmClVspzJsjdrR6GFXDbA3B3ZBwP1NpiQoNFlQ5bVzRCSZQ2pG4X7aaGPTNBrdy3gaV+8HgrF916Mf1nBI70drpvTSJYcagq2YiAK8W2clRP5fFKCDBpyrqOs1kHnXYu6SrtYQk+2n6Qg1NUIifBLTiwazfayygIs+B5AXQjkIGYTpGfgkcJiEEI/55gWeTOfeaEbggFiYJTQF7ZUN9R3YZ/gTK/D9XE4dmXCeWkqD/kCnG5oC8V7JrSCwp1fI0FS3LfthZVus3AGCuBJHN6bPIZXB+dyacAPwqodQdwXn5m5+49Pgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvKl6sVcz3bV6;
+	Thu, 26 Nov 2026 22:22:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692171;
+	cv=none; b=jUxNb8yrPqGjO3aJJG6z/diMgohKsgEVSOR6pV/uuGgWKhIb5clURwl82osnRG8twrCwoRGqjMJB9l63QdSnzV3+9gSl4c9On0njbmRqsTy5rc5Zbhby43ZhtlnwI1/TaZm4QvL7snTlZ19Q8u7weR4tLHfQrUdMLKBPGg7h5CMvpuMiGqr7xbs0LM+l1PB50XNDH1GzTTkMiwEl9GtHmpqK5AS3dnfswHYqxmnxHkRFPiWjWNXhK9IqqeYFhMfmB3k1hhYtxwlwAPbqFFfmkEq/WyvJht/HaXyBdk1tjMa35YFE4hIgmc9OWb7aJ2asNcsOPRyfX+gxni2BVRgKQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795692161; c=relaxed/relaxed;
-	bh=x9nhB1RW8+V8Xp4nOlz+JVECnctRj+T1Gz/CePKun4g=;
+	t=1795692171; c=relaxed/relaxed;
+	bh=6WYcKE+tNEbcV6PVwG1N7LpHdq4HcIVT1zq0dfG4sec=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=RgZHeS1ReVUKyTIGX48Rtdx4Ma33lYyEkajeAokPdBPIzn8sfhGZ0+aKD2GwFBdVeUdtmN7MRjtt/hoIYN8xQWKKKqqFX/Jo/kIXbtfeoknTSGPqiveix+eFwXnVZHawbgk0pMvjQCFQLvD7MLoMZ2HV+GsPMnBNuU4dSH2VxMTKL7p1ZI9SlTrHKYdoO64dtMoBTTOly3Pdu2kXTz1dJaV7Oaxf/9Xzy2eH9ZYPrf5GyygWz2+/+vSRKf+ogF5zo4GJ6OYbtztoiJTt3+T0P+Iw123KydpVZCgBRiDjWYTBpV/Iy738datXvyRSCoE3xV/ph9N888YsLUZPNf3geA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OouPlr/S; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=UwpMKOR8KSQ7OsFCtyvXL182IrUy0D0mrtOVn+85uaAPxgVhmFqskKiVlS7Zjp8+bnBKeRVg5KBJVGidcmiAcsu4FYRB9lseZYpDV/E4HTryZk0IPfRaCpB6L05HlvaJP6GINqTJpjeg1PxK2gHvUGbS8wvrO7/rix2f5/xNfziobm19gqiWt8Y4YAfhBD6f4v5Pgic2uO0g7VhTGfWL0mYvWkeyvgq+b3bdqjVMg+O8Oflfi5UO89ovwjlvvaVC+Ja/XJzpdlCBKof+WfnG16+9NBFEL83VGOcemBOWOGSn+jtTv25la5Ypa/MdjUQGZr7LOhQnDtjQ3cX2+/bMDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zl+CRlyx; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OouPlr/S;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Zl+CRlyx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvKY01v2z3brx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:22:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvKl1QXHz3bV5
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:22:51 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7680542AED;
-	Thu, 26 Nov 2026 11:22:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 761211F00A3E;
-	Thu, 26 Nov 2026 11:22:30 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4EB9560D9A;
+	Thu, 26 Nov 2026 11:22:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3EB421F000CF;
+	Thu, 26 Nov 2026 11:22:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795692159;
-	bh=x9nhB1RW8+V8Xp4nOlz+JVECnctRj+T1Gz/CePKun4g=;
+	s=k20260515; t=1795692168;
+	bh=6WYcKE+tNEbcV6PVwG1N7LpHdq4HcIVT1zq0dfG4sec=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=OouPlr/SAZWddhWz03Hx5JOd+oPtbY33NpRXwE5d7ae2uquSj5lbDn/AlNeEFLCTn
-	 0EylNMwOIIMTzBn7R5350kHm1n4Z3FOEz2uS0csQrk2g7m+jh6DtGWnkCGAwYylWDD
-	 gOK6Wl2ye6LnpJGYb1Ug+XRXogUmBXeZcNoToxEGcUodL91ZQcQ0iQ9Lf2l2bCA0WN
-	 eO2gSzH1DRY3brbY+byxbloPguegH3B9JNxtxwgfqs69AKWGEBl/25D4rtkyZBLW8Q
-	 Qutiv71ucCsvOWf75UIiVRU16q8Ni7tcNU2lzz0NkdYwb5cgTQUjY6YSOiWfdNx9Q8
-	 VxfpImA2nLJrg==
+	b=Zl+CRlyx2I87IdbB1JjDCBPiNmKv4bM3IAC45ktE5s3I91L2jmCmRUoptnipGkKgl
+	 BUE5kN97wXFLUC85uzwNpJJy7KixHU2IXlqkidLGKe+3woRJZHzcPXmlb+AxWDuKBB
+	 UPGryb2k5YbIZxUqTu22JWldXgFR2GhweHJsnywyofX6FCMS+197XcSD+PpDSV91di
+	 0Robh4VbtGiy65suWKd5uGtTAUBp0SYHIy2Y2NU+abhtWG5slvBzvF2XW7wLKh3XBs
+	 MK+nfJOsSsKaW0gMv9BnXjO4gNsLD+feKOCcYwglUygk2LWwCivUbj7eMLAOX1Qa1b
+	 ua3YBSB8LM7wg==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:15:04 +0200
-Subject: [PATCH RFC v2 51/54] arm64: let the generic CPA core split large
- mappings
+Date: Thu, 26 Nov 2026 13:15:05 +0200
+Subject: [PATCH RFC v2 52/54] arm64: count the mappings of the linear map
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-51-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-52-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -93,439 +92,164 @@ X-Mailer: b4 0.16.1-dev
 X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-When BBML3 is available, set_memory_*() calls split both ends of a request
-to base pages before updating the protections, under a mutex, whether the
-request needs that or not.
+The core keeps a counter of the direct map entries at every page table
+level. A split moves an entry to the level below and counts a
+direct_map_level2_splits or direct_map_level3_splits event in /proc/vmstat.
+The counters start from what the architecture mapped.
 
-The KFENCE pool is split by a walk of its own under the same mutex.
+arm64 never counts its linear map, so the core finds no large pages to take
+a split from, and the split events stay at zero.
 
-Implement arch_cpa_can_split() and arch_cpa_split_leaf() hooks to let CPA
-core logic decide which large mappings should be split and synchronize the
-splits against other CPA operations.
+Count the linear map when it is created at boot and on memory hotplug, and
+when memory is removed. map_mem() maps the kernel alias and the KFENCE pool
+before it maps all of memory over them, so only the entries that were empty
+count. The split of the linear map at boot, when not all CPUs support
+BBML3, bypasses the core, so count its splits as well.
 
-The CPA core makes sure that only the blocks and contiguous entries that
-must be split are actually split.
-
-Before it splits a mapping, the core calls arch_cpa_can_split(), which
-allows a split only where the CPU supports BBML3:
-
-* after the capabilities are finalized, when system_supports_bbml3()
-* before that, only on the boot CPU, when cpu_supports_bbml3()
-
-With BBML3 a translation of the old size may linger in the TLB, so the
-split needs no TLB flush, as before.
-
-With that:
-
-* the late KFENCE pool is split by a CPA_REQ_SPLIT request, straight to
-  base pages, so that it cannot race with the splits of the core
-* split_kernel_leaf_mapping(), the mutex and page_alloc_available go; a
-  split before the page allocator is populated fails with -ENOMEM from the
-  allocation instead of a warning
-* the boot time split of the linear map keeps its current implementation
+Report the counters in /proc/meminfo.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/arm64/include/asm/mmu.h      |   3 -
- arch/arm64/include/asm/pageattr.h |   5 +
- arch/arm64/mm/init.c              |   3 -
- arch/arm64/mm/mmu.c               | 222 +++++++-------------------------------
- arch/arm64/mm/pageattr.c          |  22 +---
- 5 files changed, 45 insertions(+), 210 deletions(-)
+ arch/arm64/mm/mmu.c      | 28 ++++++++++++++++++++++++++++
+ arch/arm64/mm/pageattr.c | 13 +++++++++++++
+ 2 files changed, 41 insertions(+)
 
-diff --git a/arch/arm64/include/asm/mmu.h b/arch/arm64/include/asm/mmu.h
-index 5e1211c540ab..9b7f16fa24d0 100644
---- a/arch/arm64/include/asm/mmu.h
-+++ b/arch/arm64/include/asm/mmu.h
-@@ -70,7 +70,6 @@ extern void create_pgd_mapping(struct mm_struct *mm, phys_addr_t phys,
- 			       pgprot_t prot, bool page_mappings_only);
- extern void *fixmap_remap_fdt(phys_addr_t dt_phys, int *size, pgprot_t prot);
- extern void mark_linear_text_alias_ro(void);
--extern int split_kernel_leaf_mapping(unsigned long start, unsigned long end);
- extern void linear_map_maybe_split_to_ptes(void);
- 
- /*
-@@ -104,7 +103,5 @@ void kpti_install_ng_mappings(void);
- static inline void kpti_install_ng_mappings(void) {}
- #endif
- 
--extern bool page_alloc_available;
--
- #endif	/* !__ASSEMBLER__ */
- #endif
-diff --git a/arch/arm64/include/asm/pageattr.h b/arch/arm64/include/asm/pageattr.h
-index 9634cb523298..2f8c16d39d23 100644
---- a/arch/arm64/include/asm/pageattr.h
-+++ b/arch/arm64/include/asm/pageattr.h
-@@ -4,6 +4,11 @@
- 
- #define cpa_is_direct_map(addr)	__is_lm_address(__tag_reset(addr))
- 
-+int arch_cpa_split_leaf(struct cpa_data *cpa, struct cpa_leaf *leaf,
-+			void *table);
-+bool arch_cpa_can_split(struct cpa_data *cpa, struct cpa_leaf *leaf);
-+#define arch_cpa_can_split arch_cpa_can_split
-+
- int arch_cpa_process_alias(struct cpa_data *cpa);
- #define arch_cpa_process_alias arch_cpa_process_alias
- 
-diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-index 4e7682dfe366..84ba461861c5 100644
---- a/arch/arm64/mm/init.c
-+++ b/arch/arm64/mm/init.c
-@@ -379,11 +379,8 @@ void __init arch_mm_preinit(void)
- 	}
- }
- 
--bool page_alloc_available __ro_after_init;
--
- void __init mem_init(void)
- {
--	page_alloc_available = true;
- 	swiotlb_update_mem_attributes();
- }
- 
 diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
-index c8f3961b4555..40c5ac95f574 100644
+index 40c5ac95f574..c415b81fb6f3 100644
 --- a/arch/arm64/mm/mmu.c
 +++ b/arch/arm64/mm/mmu.c
-@@ -670,115 +670,44 @@ static void split_pud(pud_t *pudp, pud_t pud, pmd_t *pmdp, bool to_cont)
- 	__pud_populate(pudp, pmd_phys, tableprot);
+@@ -160,9 +160,19 @@ static void init_clear_pgtable(void *table)
+ 	dsb(ishst);
  }
  
--static void *split_pgtable_alloc(enum pgtable_level level, gfp_t gfp)
-+bool arch_cpa_can_split(struct cpa_data *cpa, struct cpa_leaf *leaf)
++static void linear_map_count(unsigned long addr, enum pgtable_level level,
++			     long nr)
++{
++	if (__is_lm_address(addr))
++		direct_map_count_update(level, nr);
++}
++
+ static void init_pte(pte_t *ptep, unsigned long addr, unsigned long end,
+ 		     phys_addr_t phys, pgprot_t prot)
  {
--	phys_addr_t phys;
-+	if (system_capabilities_finalized())
-+		return system_supports_bbml3();
++	unsigned long start = addr;
++	long nr = 0;
++
+ 	do {
+ 		pte_t old_pte = __ptep_get(ptep);
  
--	phys = pgd_pgtable_alloc_init_mm_gfp(level, gfp);
--	if (phys == INVALID_PHYS_ADDR)
--		return NULL;
--
--	return phys_to_virt(phys);
-+	return num_online_cpus() == 1 && cpu_supports_bbml3();
+@@ -179,8 +189,12 @@ static void init_pte(pte_t *ptep, unsigned long addr, unsigned long end,
+ 		BUG_ON(!pgattr_change_is_safe(pte_val(old_pte),
+ 					      pte_val(__ptep_get(ptep))));
+ 
++		if (pte_none(old_pte))
++			nr++;
+ 		phys += PAGE_SIZE;
+ 	} while (ptep++, addr += PAGE_SIZE, addr != end);
++
++	linear_map_count(start, PGTABLE_LEVEL_PTE, nr);
  }
  
--static int split_kernel_leaf_mapping_locked(unsigned long addr)
-+int arch_cpa_split_leaf(struct cpa_data *cpa, struct cpa_leaf *leaf,
-+			void *table)
- {
--	pgd_t *pgdp, pgd;
--	p4d_t *p4dp, p4d;
--	pud_t *pudp, pud;
--	pmd_t *pmdp, pmd;
--	pte_t *ptep, pte;
--	void *table;
--	int ret = 0;
--
--	/*
--	 * PGD: If addr is PGD aligned then addr already describes a leaf
--	 * boundary. If not present then there is nothing to split.
--	 */
--	if (ALIGN_DOWN(addr, PGDIR_SIZE) == addr)
--		goto out;
--	pgdp = pgd_offset_k(addr);
--	pgd = pgdp_get(pgdp);
--	if (!pgd_present(pgd))
--		goto out;
--
--	/*
--	 * P4D: If addr is P4D aligned then addr already describes a leaf
--	 * boundary. If not present then there is nothing to split.
--	 */
--	if (ALIGN_DOWN(addr, P4D_SIZE) == addr)
--		goto out;
--	p4dp = p4d_offset(pgdp, addr);
--	p4d = p4dp_get(p4dp);
--	if (!p4d_present(p4d))
--		goto out;
-+	bool to_cont = !(cpa->flags & CPA_REQ_SPLIT);
-+	enum pgtable_level level = leaf->level;
-+	pmd_t *pmdp = (pmd_t *)leaf->kpte;
-+	pud_t *pudp = (pud_t *)leaf->kpte;
-+	pte_t *ptep = leaf->kpte;
-+	pud_t pud;
+ static bool pte_range_has_valid_noncont(pte_t *ptep)
+@@ -274,6 +288,9 @@ static int init_pmd(pmd_t *pmdp, unsigned long addr, unsigned long end,
+ 			 */
+ 			BUG_ON(!pgattr_change_is_safe(pmd_val(old_pmd),
+ 						      READ_ONCE(pmd_val(*pmdp))));
++
++			if (pmd_none(old_pmd))
++				linear_map_count(addr, PGTABLE_LEVEL_PMD, 1);
+ 		} else {
+ 			int ret;
  
--	/*
--	 * PUD: If addr is PUD aligned then addr already describes a leaf
--	 * boundary. If not present then there is nothing to split. Otherwise,
--	 * if we have a pud leaf, split to contpmd.
--	 */
--	if (ALIGN_DOWN(addr, PUD_SIZE) == addr)
--		goto out;
--	pudp = pud_offset(p4dp, addr);
--	pud = pudp_get(pudp);
--	if (!pud_present(pud))
--		goto out;
--	if (pud_leaf(pud)) {
--		table = split_pgtable_alloc(PGTABLE_LEVEL_PMD,
--					    GFP_PGTABLE_KERNEL);
--		if (!table) {
--			ret = -ENOMEM;
--			goto out;
--		}
--		split_pud(pudp, pud, table, true);
-+	if (leaf->size != pgtable_level_size(level)) {
-+		if (level == PGTABLE_LEVEL_PTE)
-+			split_contpte(ptep);
-+		else
-+			split_contpmd(pmdp);
-+		return 0;
- 	}
+@@ -410,6 +427,9 @@ static int alloc_init_pud(p4d_t *p4dp, unsigned long addr, unsigned long end,
+ 			 */
+ 			BUG_ON(!pgattr_change_is_safe(pud_val(old_pud),
+ 						      READ_ONCE(pud_val(*pudp))));
++
++			if (pud_none(old_pud))
++				linear_map_count(addr, PGTABLE_LEVEL_PUD, 1);
+ 		} else {
+ 			ret = alloc_init_cont_pmd(pudp, addr, next, phys, prot,
+ 						  pgtable_alloc, flags);
+@@ -750,6 +770,7 @@ static int split_to_ptes_pud_entry(pud_t *pudp, unsigned long addr,
+ 		return -ENOMEM;
  
--	/*
--	 * CONTPMD: If addr is CONTPMD aligned then addr already describes a
--	 * leaf boundary. If not present then there is nothing to split.
--	 * Otherwise, if we have a contpmd leaf, split to pmd.
--	 */
--	if (ALIGN_DOWN(addr, CONT_PMD_SIZE) == addr)
--		goto out;
--	pmdp = pmd_offset(pudp, addr);
--	pmd = pmdp_get(pmdp);
--	if (!pmd_present(pmd))
--		goto out;
--	if (pmd_leaf(pmd)) {
--		if (pmd_cont(pmd))
--			split_contpmd(pmdp);
--		/*
--		 * PMD: If addr is PMD aligned then addr already describes a
--		 * leaf boundary. Otherwise, split to contpte.
--		 */
--		if (ALIGN_DOWN(addr, PMD_SIZE) == addr)
--			goto out;
--		table = split_pgtable_alloc(PGTABLE_LEVEL_PTE,
--					    GFP_PGTABLE_KERNEL);
--		if (!table) {
--			ret = -ENOMEM;
--			goto out;
--		}
--		split_pmd(pmdp, pmd, table, true);
-+	if (level == PGTABLE_LEVEL_PMD) {
-+		split_pmd(pmdp, pmdp_get(pmdp), table, to_cont);
-+		return 0;
- 	}
+ 	split_pud(pudp, pud, pmdp, false);
++	direct_map_count_split(PGTABLE_LEVEL_PUD);
  
--	/*
--	 * CONTPTE: If addr is CONTPTE aligned then addr already describes a
--	 * leaf boundary. If not present then there is nothing to split.
--	 * Otherwise, if we have a contpte leaf, split to pte.
--	 */
--	if (ALIGN_DOWN(addr, CONT_PTE_SIZE) == addr)
--		goto out;
--	ptep = pte_offset_kernel(pmdp, addr);
--	pte = __ptep_get(ptep);
--	if (!pte_present(pte))
--		goto out;
--	if (pte_cont(pte))
--		split_contpte(ptep);
-+	pud = pudp_get(pudp);
-+	if (level == PGTABLE_LEVEL_PUD && pud_leaf(pud)) {
-+		split_pud(pudp, pud, table, to_cont);
-+		return 0;
-+	}
- 
--out:
--	return ret;
-+	return -EINVAL;
+ 	return 0;
  }
- 
- static inline bool force_pte_mapping(void)
-@@ -793,85 +722,17 @@ static inline bool force_pte_mapping(void)
- 	return rodata_full || arm64_kfence_can_set_direct_map() || is_realm_world();
- }
- 
--static DEFINE_MUTEX(pgtable_split_lock);
- static bool linear_map_requires_bbml3;
- 
--int split_kernel_leaf_mapping(unsigned long start, unsigned long end)
-+static void *split_pgtable_alloc(enum pgtable_level level, gfp_t gfp)
- {
--	int ret;
--
--	/*
--	 * If the region is within a pte-mapped area, there is no need to try to
--	 * split. Additionally, CONFIG_DEBUG_PAGEALLOC and CONFIG_KFENCE may
--	 * change permissions from atomic context so for those cases (which are
--	 * always pte-mapped), we must not go any further because taking the
--	 * mutex below may sleep. Do not call force_pte_mapping() here because
--	 * it could return a confusing result if called from a secondary cpu
--	 * prior to finalizing caps. Instead, linear_map_requires_bbml3 gives us
--	 * what we need.
--	 */
--	if (!linear_map_requires_bbml3 || is_kfence_address((void *)start))
--		return 0;
--
--	if (!system_supports_bbml3()) {
--		/*
--		 * BBML3 systems should not be trying to change
--		 * permissions on anything that is not pte-mapped in the first
--		 * place. Just return early and let the permission change code
--		 * raise a warning if not already pte-mapped.
--		 */
--		if (system_capabilities_finalized())
--			return 0;
--
--		/*
--		 * Boot-time: split_kernel_leaf_mapping_locked() allocates from
--		 * page allocator. Can't split until it's available.
--		 */
--		if (WARN_ON(!page_alloc_available))
--			return -EBUSY;
--
--		/*
--		 * Boot-time: Started secondary cpus but don't know if they
--		 * support BBML3 yet. Can't allow splitting in this window
--		 * in case they don't.
--		 */
--		if (WARN_ON(num_online_cpus() > 1))
--			return -EBUSY;
--	}
--
--	/*
--	 * Ensure start and end are at least page-aligned since this is the
--	 * finest granularity we can split to.
--	 */
--	if (start != PAGE_ALIGN(start) || end != PAGE_ALIGN(end))
--		return -EINVAL;
--
--	mutex_lock(&pgtable_split_lock);
--	lazy_mmu_mode_enable();
-+	phys_addr_t phys;
- 
--	/*
--	 * The split_kernel_leaf_mapping_locked() may sleep, it is not a
--	 * problem for ARM64 since ARM64's lazy MMU implementation allows
--	 * sleeping.
--	 *
--	 * Optimize for the common case of splitting out a single page from a
--	 * larger mapping. Here we can just split on the "least aligned" of
--	 * start and end and this will guarantee that there must also be a split
--	 * on the more aligned address since the both addresses must be in the
--	 * same contpte block and it must have been split to ptes.
--	 */
--	if (end - start == PAGE_SIZE) {
--		start = __ffs(start) < __ffs(end) ? start : end;
--		ret = split_kernel_leaf_mapping_locked(start);
--	} else {
--		ret = split_kernel_leaf_mapping_locked(start);
--		if (!ret)
--			ret = split_kernel_leaf_mapping_locked(end);
--	}
-+	phys = pgd_pgtable_alloc_init_mm_gfp(level, gfp);
-+	if (phys == INVALID_PHYS_ADDR)
-+		return NULL;
- 
--	lazy_mmu_mode_disable();
--	mutex_unlock(&pgtable_split_lock);
--	return ret;
-+	return phys_to_virt(phys);
- }
- 
- static int split_to_ptes_pud_entry(pud_t *pudp, unsigned long addr,
-@@ -1088,12 +949,6 @@ static void mark_linear_data_alias_valid(bool valid)
- 		.mask_clr = valid ? invalid_prot : valid_prot,
- 		.flags = CPA_REQ_NO_CHECK_ALIAS,
- 	};
--	int ret;
--
--	ret = split_kernel_leaf_mapping(cpa.addr,
--					cpa.addr + cpa.numpages * PAGE_SIZE);
--	if (WARN_ON_ONCE(ret))
--		return;
- 
- 	arm64_change_page_attr(&cpa);
- }
-@@ -1177,8 +1032,11 @@ static void __init arm64_kfence_map_pool(void)
- 
- bool arch_kfence_init_pool(void)
- {
--	unsigned long start = (unsigned long)__kfence_pool;
--	unsigned long end = start + KFENCE_POOL_SIZE;
-+	struct cpa_data cpa = {
-+		.addr = (unsigned long)__kfence_pool,
-+		.numpages = KFENCE_POOL_SIZE >> PAGE_SHIFT,
-+		.flags = CPA_REQ_SPLIT,
-+	};
- 	int ret;
- 
- 	/* Exit early if we know the linear map is already pte-mapped. */
-@@ -1189,9 +1047,7 @@ bool arch_kfence_init_pool(void)
- 	if (kfence_early_init)
- 		return true;
- 
--	mutex_lock(&pgtable_split_lock);
--	ret = range_split_to_ptes(start, end, GFP_PGTABLE_KERNEL);
--	mutex_unlock(&pgtable_split_lock);
-+	ret = arm64_change_page_attr(&cpa);
+@@ -771,6 +792,7 @@ static int split_to_ptes_pmd_entry(pmd_t *pmdp, unsigned long addr,
+ 	if (pmd_cont(pmd))
+ 		split_contpmd(pmdp);
+ 	split_pmd(pmdp, pmd, ptep, false);
++	direct_map_count_split(PGTABLE_LEVEL_PMD);
  
  	/*
- 	 * Since the system supports bbml3, tlb invalidation is not
+ 	 * We have split the pmd directly to ptes so there is no need to
+@@ -1424,6 +1446,8 @@ static void unmap_hotplug_pte_range(pmd_t *pmdp, unsigned long addr,
+ 			flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+ 			free_hotplug_page_range(pte_page(pte),
+ 						PAGE_SIZE, altmap);
++		} else {
++			direct_map_count_update(PGTABLE_LEVEL_PTE, -1);
+ 		}
+ 		/* unmap_hotplug_range() flushes TLB for !free_mapped */
+ 	} while (addr += PAGE_SIZE, addr < end);
+@@ -1458,6 +1482,8 @@ static void unmap_hotplug_pmd_range(pud_t *pudp, unsigned long addr,
+ 				flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+ 				free_hotplug_page_range(pmd_page(pmd),
+ 							PMD_SIZE, altmap);
++			} else {
++				direct_map_count_update(PGTABLE_LEVEL_PMD, -1);
+ 			}
+ 			/* unmap_hotplug_range() flushes TLB for !free_mapped */
+ 			continue;
+@@ -1489,6 +1515,8 @@ static void unmap_hotplug_pud_range(p4d_t *p4dp, unsigned long addr,
+ 				flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+ 				free_hotplug_page_range(pud_page(pud),
+ 							PUD_SIZE, altmap);
++			} else {
++				direct_map_count_update(PGTABLE_LEVEL_PUD, -1);
+ 			}
+ 			/* unmap_hotplug_range() flushes TLB for !free_mapped */
+ 			continue;
 diff --git a/arch/arm64/mm/pageattr.c b/arch/arm64/mm/pageattr.c
-index 14a791b8e645..a2f5266b77b2 100644
+index a2f5266b77b2..5e6782ef4b6c 100644
 --- a/arch/arm64/mm/pageattr.c
 +++ b/arch/arm64/mm/pageattr.c
-@@ -130,7 +130,6 @@ int arch_cpa_process_alias(struct cpa_data *cpa)
- 	pteval_t prot = pgprot_val(cpa->mask_set) | pgprot_val(cpa->mask_clr);
- 	unsigned long vaddr = cpa_addr(cpa, cpa->curpage);
- 	struct cpa_data alias_cpa;
--	unsigned long alias;
- 	int ret;
+@@ -9,6 +9,7 @@
+ #include <linux/sched.h>
+ #include <linux/vmalloc.h>
+ #include <linux/pageattr.h>
++#include <linux/proc_fs.h>
  
- 	if (!rodata_full || !(prot & PTE_RDONLY))
-@@ -140,14 +139,8 @@ int arch_cpa_process_alias(struct cpa_data *cpa)
- 	if (cpa_is_direct_map(vaddr) || !pfn_valid(cpa->pfn))
- 		return 0;
+ #include <asm/cacheflush.h>
+ #include <asm/pgtable-prot.h>
+@@ -16,6 +17,18 @@
+ #include <asm/tlbflush.h>
+ #include <asm/kfence.h>
  
--	alias = (unsigned long)page_address(pfn_to_page(cpa->pfn));
--	ret = split_kernel_leaf_mapping(alias,
--					alias + cpa->numpages * PAGE_SIZE);
--	if (WARN_ON_ONCE(ret))
--		return ret;
--
- 	alias_cpa = *cpa;
--	alias_cpa.addr = alias;
-+	alias_cpa.addr = (unsigned long)page_address(pfn_to_page(cpa->pfn));
- 	pgprot_val(alias_cpa.mask_set) &= PTE_RDONLY | PTE_WRITE;
- 	pgprot_val(alias_cpa.mask_clr) &= PTE_RDONLY | PTE_WRITE;
- 
-@@ -181,19 +174,11 @@ static const struct cpa_op_prot cpa_ops[CPA_OP_NR] = {
- 
- int arch_cpa_prepare(struct cpa_data *cpa, enum cpa_op op)
++#ifdef CONFIG_PROC_FS
++void arch_report_meminfo(struct seq_file *m)
++{
++	unsigned long levels = BIT(PGTABLE_LEVEL_PTE) | BIT(PGTABLE_LEVEL_PMD);
++
++	if (pud_sect_supported())
++		levels |= BIT(PGTABLE_LEVEL_PUD);
++
++	cpa_report_meminfo(m, levels);
++}
++#endif
++
+ void arch_cpa_decode_leaf(struct cpa_leaf *leaf)
  {
--	unsigned long start = PAGE_ALIGN_DOWN(cpa->addr);
--	unsigned long end = start + cpa->numpages * PAGE_SIZE;
--	int ret;
--
- 	/* Nothing in the linear map is invalid without can_set_direct_map() */
- 	if ((op == CPA_OP_DIRECT_MAP_INVALID ||
- 	     op == CPA_OP_DIRECT_MAP_DEFAULT) && !can_set_direct_map())
- 		return 0;
- 
--	ret = split_kernel_leaf_mapping(start, end);
--	if (WARN_ON_ONCE(ret))
--		return ret;
--
- 	cpa_init_op(cpa, &cpa_ops[op]);
- 
- 	/*
-@@ -297,11 +282,6 @@ static int __change_memory_common(unsigned long start, unsigned long size,
- 		.mask_clr = clear_mask,
- 		.flags = CPA_REQ_NO_CHECK_ALIAS,
- 	};
--	int ret;
--
--	ret = split_kernel_leaf_mapping(start, start + size);
--	if (WARN_ON_ONCE(ret))
--		return ret;
- 
- 	return arm64_change_page_attr(&cpa);
- }
+ 	enum pgtable_level level = leaf->level;
 
 -- 
 2.53.0
