@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A0C78606A332
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:21:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A81BF606A68E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:21:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MdONGc5D
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SNX3cDEN
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvJ62gvlz30g6;
-	Thu, 26 Nov 2026 22:21:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692086;
-	cv=none; b=MRye8kqj1gVanpzpiocvfZbZSlixYuLSVIVJ4MPCM8093w7+3K6tTpRyJKgL1DGZn6kMGwUlozFGpI7WV+R1/6qeVM/IROsGi1x7+Ypt8vjtE6nnZTJzzAQNYZ4Dre5MyJQ5hYpfj20w7vjUFn34UN8lUD2yFkeMnU/+Z1EsvNb435+Tho+teWa77O7Hj6mPKw4y7+j/jeWo4WVWmHMVBuPeI/fGrMMFVial+Cmwlw3IfsnTbWKnfahMA4BDEBaq7vZ/FpguQ4AUJfSPIM/iOrG6xgukohEUEYNKj4Gx+DN1beuy6BpxSE6oNPoJytr5FaPVtnEAYFqH7bIsNbq/LQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvJJ2yZ5z3bpM;
+	Thu, 26 Nov 2026 22:21:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692096;
+	cv=none; b=Sn/DGUk9kVOroOqq1boygBFkg4uVkSa1ww975uXvG6D9+R4svJ+csWdW4KLgTt/16WZE+5zfqIBOI/ZDNugno/m9HWi2dP3mmNbf6yqcXQEHs9OhJcL0qLm+vTrkLgvFujonmNUqNIcjWRfBApoFaoSl2zIpb1AZtGzTD4CBLz9+fTI6g7+ncsGV8tYPVOybrVpUvpH5hDAVZncNqyRq6I6WabO7dKjrRamkxuedJTM+gekPAehVxvKoE46qzoTrVzr35osMeYMKyRUCB6ycV/96UoG9kOmtj8Cbg0OSHyjcRxqduETQQoQfrhAonPFrdP77yaYy2Tk4Y2pKEQRMuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795692086; c=relaxed/relaxed;
-	bh=oczPXoX6LmrOL71NJs0ylkVxm4d3C/x+BrDR38WYHaE=;
+	t=1795692096; c=relaxed/relaxed;
+	bh=vigwkAWRONvzPByx/zhPfJ9SVHH2ehEcBxoq+qTMC8E=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=UHrE6iE9Ke4bX6QAPFrDIZlMnUhpvJdE5so6DKz4AC3yk0mm3ohmOxoRsFeDxJ3vJDBppJT4lcSS5QoQaVHY3f2X16dm1GOSzLa30cXN6fQUhteEkyLl3CkxLc78izND4p22Mh80arvbBjWSP8P61RXkX5ACNLA3hNn1Ijz068PYNI+W5d3RBTYJEfFNfchxTmblrV9kh8Y2jHjYvNPR1Lt9jz1DtNAZ6v6rBcU6wDVEdVmnPNEdRfaw4kAQp1j+KgSRGrrFCnk1zO+tpSyQUGE7wW+TBmFsqYePON6NY7KOb2kVnoAx39vNNj96LYs9P6MnDQupC5YDaE6PN609kg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MdONGc5D; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=E3Rqo/g2Gplt7qhS4tHVMq9XWtiEDcv/ZuSbIDVOcJdcyASAvwFW6c+qt81ukm1IHHYZOH93FrMRFYaoxbdEUtFmS5PtEOjvzpccZa2Ce6iLgB2zWSO+y/gEOkZL5iZxWRKE/YzQPlA3IqgilNLL6mWaisPu9edjBeUONvS7vMDaCOQHO2Wc6MliLw5eBWTzGQvSZRpKgraQ+Q3gIqxRnlF/wIN2+bT2LZwdACv13e98qfzkFMIR/4k7gFApT9GDuMcqReIf98+ZU+jVVURpWOI1+E97owGWcy6H+B4WjtsQdZhNhZyv/AdOfpfjuL4v5fhJcB2oBAf1kO3X+qOR6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SNX3cDEN; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MdONGc5D;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=SNX3cDEN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvJ54Tz9z30Wg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:21:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvJH3zJsz3bpH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:21:35 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1184943D04;
+	by tor.source.kernel.org (Postfix) with ESMTP id A569C6338F;
+	Thu, 26 Nov 2026 11:21:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 734441F00AD4;
 	Thu, 26 Nov 2026 11:21:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E1641F000C0;
-	Thu, 26 Nov 2026 11:21:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795692083;
-	bh=oczPXoX6LmrOL71NJs0ylkVxm4d3C/x+BrDR38WYHaE=;
+	s=k20260515; t=1795692092;
+	bh=vigwkAWRONvzPByx/zhPfJ9SVHH2ehEcBxoq+qTMC8E=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=MdONGc5D6rm4fAIyBNnofa7zpl+ADVHNhC4NDJwfkNfn8091gbfJmZAzoRVlM/UAl
-	 38krRg5mk0qAmdNSn25jievEXiTiFYMnALk5q/eCta1QCgZ9gXPatAvYcRG58uVVBE
-	 3wm4HYstziFwb74euNhfATKEVwYpu+Z970spJ7A+TWt8ilM4sCBjHWuMBCVIPGSzRx
-	 /6zudqAJDsL4am9+DVg43+2gXxLgl6UsPiaIN70VlmvNQeb+uYNXnrQTMkVGavd135
-	 nxFSo02+WGH/4IoofGf/gRphDaH3v6Nduf1B5F3XSAOCSmOauduVMTOdJZelQ13K7m
-	 +/5p7bR7Qt+Hg==
+	b=SNX3cDENiO5DzlG2beALu6yElwtfAJXpHrvTqpxO60LzbbVU27yDaIgMMSFUrC3qK
+	 +gif9ob2GHrwxtQZ2uGiKiYmg7Dy16SvDHGHzdFUsr1dSx+qMH8iVYn8rJD5ozxCDu
+	 ZLenCOZbN2Wt7s8cZ1jwGUELsfeht4miRfQl7N/J1msWxoJt4085AIm4mT+Ff3Hjww
+	 0rvY138mhTHgAPV+UhUHEzrCijrGWuVoJt3D8ag2qDG35f5eTy1vTkHDWY+1GMsIhv
+	 Z/IC6JEKsjS2y2gDXBkm1BfHhyIJPZCVGsNCbFMHzeqMQhFUU9ScTYCUcWKZiWuLGQ
+	 jEz1spOt2dAIA==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:56 +0200
-Subject: [PATCH RFC v2 43/54] mm/pageattr: let an architecture allocate the
- page tables for a split
+Date: Thu, 26 Nov 2026 13:14:57 +0200
+Subject: [PATCH RFC v2 44/54] mm/pageattr: derive direct map counter
+ updates from the level sizes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-43-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-44-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,81 +97,62 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The core allocates the page table for a split with pte_alloc_one_kernel()
-and pmd_alloc_one(). s390 cannot use them.
+The direct map counters add PTRS_PER_PTE entries at the next level for
+every split.
 
-vmem_map_init() write protects the kernel image before the page allocator
-is up, so a split at that time has to allocate from memblock.
+That is right on x86, riscv and arm64, where all levels have the same
+number of entries and PTRS_PER_PTE is the same as PTRS_PER_PMD.
 
-A fallback to memblock in the core would not be enough. With CMMA, the
-decompressor marks all memory as no-DAT, and a page has to be switched back
-to DAT before it is used as a page table.
+This is not the case on s390.
 
-vmem_pte_alloc() and vmem_crst_alloc() do both: they fall back to memblock
-and initialize the page.
+An s390 segment table has 2048 entries and a page table has 256, i.e.
+PTRS_PER_PMD is 2048 and PTRS_PER_PTE is 256.
 
-Memory hot-remove frees the tables of the identity map with
-vmem_free_pages(), so a segment table in the identity map has to come from
-vmem_crst_alloc() rather than from pmd_alloc_one().
+A split of a PUD mapping on s390 would add 2048 entries to the PMD
+counters.
 
-Let an architecture provide arch_cpa_alloc_pgtable() and
-arch_cpa_free_pgtable().
-
-There are no users yet. s390 will use them when it switches to the core.
+Replace the hard-coded PTRS_PER_PTE in the counter update with a helper
+that derives the number of entries from the sizes of the two levels.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- include/linux/pageattr.h | 6 ++++++
- mm/pageattr.c            | 6 ++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ mm/pageattr.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/pageattr.h b/include/linux/pageattr.h
-index 091408ad328f..1a4e7c5dca98 100644
---- a/include/linux/pageattr.h
-+++ b/include/linux/pageattr.h
-@@ -111,6 +111,12 @@ static inline int arch_cpa_split_leaf(struct cpa_data *cpa,
- }
- #endif
- 
-+#ifndef arch_cpa_alloc_pgtable
-+void *arch_cpa_alloc_pgtable(struct cpa_leaf *leaf);
-+
-+void arch_cpa_free_pgtable(struct cpa_leaf *leaf, void *table);
-+#endif
-+
- #ifndef cpa_is_direct_map
- static inline bool cpa_is_direct_map(unsigned long addr)
- {
 diff --git a/mm/pageattr.c b/mm/pageattr.c
-index 2f357a8c24d2..e05281a2b169 100644
+index e05281a2b169..555e55e7ecea 100644
 --- a/mm/pageattr.c
 +++ b/mm/pageattr.c
-@@ -249,7 +249,8 @@ static pte_t *cpa_lookup(struct cpa_data *cpa, unsigned long address,
- 	return leaf->kpte;
+@@ -48,6 +48,11 @@ void direct_map_count_update(enum pgtable_level level, long pages)
+ 	atomic_long_add(pages, &cpa_direct_map_pages[level]);
  }
  
--static void *arch_cpa_alloc_pgtable(struct cpa_leaf *leaf)
-+#ifndef arch_cpa_alloc_pgtable
-+void *arch_cpa_alloc_pgtable(struct cpa_leaf *leaf)
++static long nr_entries(enum pgtable_level level)
++{
++	return pgtable_level_size(level) / pgtable_level_size(level - 1);
++}
++
+ void direct_map_count_split(enum pgtable_level level)
  {
- 	if (leaf->level == PGTABLE_LEVEL_PMD)
- 		return pte_alloc_one_kernel(&init_mm);
-@@ -257,13 +258,14 @@ static void *arch_cpa_alloc_pgtable(struct cpa_leaf *leaf)
- 	return pmd_alloc_one(&init_mm, leaf->addr);
+ 	if (atomic_long_dec_if_positive(&cpa_direct_map_pages[level]) < 0)
+@@ -59,7 +64,7 @@ void direct_map_count_split(enum pgtable_level level)
+ 		else if (level == PGTABLE_LEVEL_PUD)
+ 			count_vm_event(DIRECT_MAP_LEVEL3_SPLIT);
+ 	}
+-	atomic_long_add(PTRS_PER_PTE, &cpa_direct_map_pages[level - 1]);
++	atomic_long_add(nr_entries(level), &cpa_direct_map_pages[level - 1]);
  }
  
--static void arch_cpa_free_pgtable(struct cpa_leaf *leaf, void *table)
-+void arch_cpa_free_pgtable(struct cpa_leaf *leaf, void *table)
- {
- 	if (leaf->level == PGTABLE_LEVEL_PMD)
- 		pte_free_kernel(&init_mm, table);
- 	else
- 		pmd_free(&init_mm, table);
+ void direct_map_count_collapse(enum pgtable_level level)
+@@ -71,7 +76,7 @@ void direct_map_count_collapse(enum pgtable_level level)
+ 		else if (level == PGTABLE_LEVEL_PUD)
+ 			count_vm_event(DIRECT_MAP_LEVEL3_COLLAPSE);
+ 	}
+-	atomic_long_sub(PTRS_PER_PTE, &cpa_direct_map_pages[level - 1]);
++	atomic_long_sub(nr_entries(level), &cpa_direct_map_pages[level - 1]);
  }
-+#endif
  
- static int should_split_large_page(struct cpa_data *cpa, struct cpa_leaf *leaf)
- {
+ void cpa_report_meminfo(struct seq_file *m, unsigned long levels)
 
 -- 
 2.53.0
