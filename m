@@ -2,86 +2,125 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 54AFD606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 13:44:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DC293606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 13:50:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bUc6D4y+
+	dkim=pass (2048-bit key) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=pKiP9Bb5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZyTW07zDz2y2h;
-	Fri, 27 Nov 2026 00:44:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1231"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795700686;
-	cv=none; b=BvF0Pt3foPF0pQybT0HuFOccHxK/2un7rwhhGRDRQipkUfqzHXKyuwz1yzQWfcHHe+VPDSjsQoAuR27yX5ef69FrWtehawgU77WhYIM/8VH87T/3qhVDQwSCMgIWY6IvISAPBq8ykAafeaXFYiIQswTaujPZjirbOQAujvFyMTTwOo225WNIxSwi5VxWvtr02oVZITwAGv5S3KpIX2kNsJp4qQ3hK9YHXKjf70rspOGsmgovmLzg7xvm+zCnzTe9nZzTWQRPRX962r45FgbwceLZGU0hD8fq6nhdl+X5Yfclz2jlPpKH10vPxsSU5iHW1JzR+9xT6UZ1MEjVTxEUCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZybm1tN1z2y2h;
+	Fri, 27 Nov 2026 00:50:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795701012;
+	cv=none; b=iroqDgpBsOpM1YjSA38WqgdZh19OvGFG/Xq/zJrehXZOstAwHcaPhkqlX6jqWILUN55ia8NDyt3Nd2ocTsTSfoXPHMwY+7zbFPxjcNpLHMnwMfCpNYAH9Z93t4pEt2GoH8qcRohh7bw9FkAPbUUiQIqiA1ld2AypoPenxRZPI0YF4jFyzUEafNYKX9iT9hMqf4GS1/pWOM2I2FusEn5kUO8k2iBngKU5eno6hN8YaSySRzr2pKGC0lcLa4hrFumbc5dFHlUjPnLGF2O42vYWO2LST/8In9bRk4JmkSOZh5+Ina6ZsW7NKhDMDtL2KLM9fKKTDOsXPAxPr+8+4LFAdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795700686; c=relaxed/relaxed;
-	bh=FutE3Dt4WAYQzSyNTGkp0eGUi0NDw5s5dO55H2LHifs=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=BAkC8uLDf7a2V0XQYHG+EGzhwkeqINWjYYwAg2bckCCRP48o4gdqmL0VqugOEKbCRhRT9atB7aZkgjCuSFGlsJNtx3nLAgmluIDcvvlc2jeLi3yX8KKyB9gW63pRHAnAZnGWJWJCONrx4wF7cNivfHm3DdXgXWFk12fw4FnipxSpeA6s0bM0UIEF+jVS71iW8yWar+Mn8jZ6jFpYsmxizX5bM5sTfy++PaOXYzgtpYB+UU/8SPGR5cj9lGkc2h4jm5dMxRwB6wOkjUpD1nGdLQSACq5wqMNFEyiyQ6j6bDx35sVGH84NPGOUNdze/cqtDI9AMIzd//dA8p/zVut/QQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bUc6D4y+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795701012; c=relaxed/relaxed;
+	bh=ayDmQOMbnPDID0tnpH0Cz9zV9aQl1tR/L4IizHW7J4A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QDkGvA1C26ghAwt1WLRdeNGDmnJCqG7bk0CrJTti0N/C4wKHyGiFZ4IttDlLOrzpfo6zwzTg1wdot+pNX/2aoMZQxY9oYRKvHqcXZV6X4z0onLUm1Q98rIPOfmx2lop8Y/9RedmPSlv9v8hqENhBe5E2yXcqYhER4u5H5GR3+bXfFSojqmToVCKTu4qWg0wND8NQfbxTcc59KqpIoBH2A3j7yBcTbVpvinspYq9nm3br82/FXLqwGvzmwOC7rSIkztOrzhjDdVDx2r9yAvOg22Xk45NpBAgmVuWHDaq53BOycegR8/6xPFZ4gbggGdAjWS5+zcf08B6nQUehMnrWjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=pKiP9Bb5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=baylibre.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=bUc6D4y+;
+	dkim=pass (2048-bit key; secure) header.d=baylibre.com header.i=@baylibre.com header.a=rsa-sha256 header.s=google header.b=pKiP9Bb5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1231; helo=mail-dl1-x1231.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-x1231.google.com (mail-dl1-x1231.google.com [IPv6:2607:f8b0:4864:20::1231])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZyTT6988z2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 00:44:45 +1100 (AEDT)
-Received: by mail-dl1-x1231.google.com with SMTP id a92af1059eb24-1b546061d58so16142688c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 05:44:44 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZybj1rJpz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 00:50:07 +1100 (AEDT)
+Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-491846221ffso6129921f8f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 05:50:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795700683; x=1796305483; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
+        d=baylibre.com; s=google; t=1795701004; x=1796305804; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
          :date:message-id:reply-to:content-type;
-        bh=FutE3Dt4WAYQzSyNTGkp0eGUi0NDw5s5dO55H2LHifs=;
-        b=bUc6D4y+rfh4FbGB8yCxmKMP+Ai+CdpDs2vhA1jK/N/3+cwVbYWCTrBj0+4Ek0aURY
-         Ypk5PRffk7T0AMwxLcIJ37w4Cp/yc3nw+PoEG6gEJbcjUj+zCkIyrgh1ri/DIfxQdJfY
-         dIan/ML/56WbHPuI/rVesjj6plZS8VZfbJyRPzdicOPK/Ep7pgO/+YCQGH7D25wqe41V
-         3rb6DJhr2GvsTpA1D4iMP4yU4L7k9ZpJ3SFZcZlH8XKIEOOwaxYopKEO08m1DJlkuuEJ
-         ZXi49FwpchvNcrj6IzRNRos2jCeAB/TGBFLLO037wlLCOTo5SmwzEoKXsoC20Yaly2lf
-         YiUg==
+        bh=ayDmQOMbnPDID0tnpH0Cz9zV9aQl1tR/L4IizHW7J4A=;
+        b=pKiP9Bb5EydkzmEcltKVDfDxdXNjX8hovH3IaP4/8eNcl5zqN244YJXu3WS+9UXVgW
+         U2/94yC9nfImfulDy8Z81WmGFC+dNyB4fuDW0CMDpXEQ3AyjofpfwuPC0qOpzepnKgjT
+         JwAG+Hnr3SmDlEiAV8NNCvLYM03tcXDDuoeeW6JdNG+3Z8fm2y6/gox+pWjVmhd8NdLN
+         S0lC+pKCIxwYZtgDJKzdScHs5HrZNp5v+uMnVJXTYWbcorjbK0mchOU/+HE9RaLkZ9sx
+         w/zzGFqafLar6NRVFbwjLGNprQe8OzK8H2PBtD9hL1Hi/aLISLBcTXAGZbyHM/QYW5Tw
+         QfFQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795700683; x=1796305483;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+        d=1e100.net; s=20260707; t=1795701004; x=1796305804;
+        h=in-reply-to:content-disposition:content-type:mime-version
+         :references:message-id:subject:cc:to:from:date:x-gm-gg
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=FutE3Dt4WAYQzSyNTGkp0eGUi0NDw5s5dO55H2LHifs=;
-        b=XVylAB8PsF+tlOcllo7GMCiruIsZCHfwYwGWK8JHjQnA4V+eJlmzH00W+2ZUUiHjZS
-         iJd4r+tqjU0ENr0g5Pzeg9+oY0SddT4hy9QywZxWOHiBqfpzYA0zY59UrLVdEXprcioW
-         q0ORs8Dlny3DICf1u1KPNxfrwsHNu1Z2cj8DhCvehN2wJI74A/6hb91FGOlObsEE/8ie
-         sgirCmy3DH18QqzN7nEy3906XKixRZh/XCIIPo6dN+si+m8eKBeTYlUwrhrjeBeT367o
-         gmizA4J6E7iKoLGFqgadd1dMIiEh6k9u9GUoN2mKYqbvc64cG6xOHA1+EM0UBOEHrmHf
-         g9iA==
-X-Forwarded-Encrypted: i=1; AL+hErHv/88eB1UjilmD9Z6puFc2kDmz0x8AcE3zQvVGw8agK5D5EYWQYNW0NYThAQVMG0dbNNdfY8cJ+HGJgDI=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z+Ju4Z+9WVE575UNVlnTMWBgsRZUitVXbW1s6IIUaHpljfLE+xl
-	4MrH3XdcB1iXbznX4tR3CpwlQu1y/BUNC1sxgSTNTVH07RxSB4ZVRrXh
-X-Gm-Gg: AZFdTZcLNPp4FwT2ETGbzl0E04FhH90YnK2hd0mM4zExu6ce43olylUiILwDd5FfekE
-	Jp4BAiOb+ivEM6oDU4sIyFGp6AXyG9IzTWBlg12f/Ce2aBAajx3Dtc93WoKZm+wVlrn0FaF6Pbo
-	beKzWifgHkOQ+FrJZvmsybSMB0bwTZLmPCUyWMxRWDhMB8K1NuT+0EH8d1rML4hzD9Ha6bVzYdJ
-	cejLa37fjlwCur+k9aAttDe0upmCkwPbGaBj0VELIEiq3p8CK+cl5l++MBEtHx8EMxPnCqOXh2f
-	XxNk1pLa7zimIBtN5P/wKq+BXSFnivSIQuc+XA7aowv5CbYIdcoDhbRfwp4Yxo/MSc8DD976vsf
-	GDpc23zgdTW/9dIq3LiGgMXAmH+3YzN74towxs1RrklVuLWTeFFQSPdBu3FcNj6RvHMB1Hf+xEd
-	gCK8J9ZggzY0v7a6/V9wSw9A3+7Cp9lzoG/MSOdy7q52ZWNpjialxniuB2bsSrmDjghVdOuMezB
-	9kiYOTAcRNWqm+atr91AEruVJjlqFKZtGtkCgZ333W3q+gVOgq4N5TNcwEo28Njkz8u9QWIF44k
-	FhQLYuGzzNzaoplYtFAA2bHNd8eZ708iH6MzdJkbnCGg0+DY
-X-Received: by 2002:a05:701b:21cd:b0:1b5:e9d:c641 with SMTP id a92af1059eb24-1b5568bc08amr20788013c88.18.1795700682366;
-        Thu, 26 Nov 2026 05:44:42 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b55682d301sm50563787c88.10.2026.11.26.05.44.38
+        bh=ayDmQOMbnPDID0tnpH0Cz9zV9aQl1tR/L4IizHW7J4A=;
+        b=1tijrHMBMt8T+ODN91CwBE7k7CEeMWG/QxW/Sh+ZvERUn/1E3R9UOWxZw6XRfbHYJ6
+         sOFzy2YTEioswMwlP3bbxfy9e/VfTJq61L+dMnzXCCjb3qwJ2jHWQUH7UAgBGBSEhk+h
+         6iW4Wh3Aq/n7z8KbAr2+Y4NoAX2w0csv6N31Dg8iPiYeSAVSv8U7j1+rICRc4UTqDgZj
+         t2ofl+HM51GbNu1+VppCdnOnOVFOw2iCL3E9j5bMJgsaNJP0xyRQqiRfPcotUWiddph8
+         AJPVAR6AzplcsaWT6mDUjvusxUCri26KbmKYzZtZOpQOn++/wvM4S3ZQMiuIJb4TJeJQ
+         WVEw==
+X-Forwarded-Encrypted: i=1; AL+hErH015XH4HX7r26fgT/R/60J4KCJkZmLBLz81lEcm4hTL5bsj5EXd40PGlctwNjkmDxFi9oqod3ItyRb5G8=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9BrwHf0W8M0AyrzLPVipKJHLN8ExIcVQoPVwksM96M8TRE/nKj
+	q14RtBEZMrYtDUPQ86iSXeiKGBzy4ZigV8nlDn+rnXkKiU6WgkqH8Y8aJ/sTtwxvTZ0=
+X-Gm-Gg: AZFdTZdW2gpUnySjC0vMag8V/nm9FZjhLaKWbPVssqiv6B+1CrsUwRXhYL0aZfnN+D0
+	09DE7+ralRdrBNn7C1awxZoJx8snaiS+12FyFgXhGzpvK75L6kYgCygnzDLUR08sFMJUPIOokPS
+	qxIzqBdh7FCJaxAIwwaO49XszB2RpkDaevIZGcZs6AbwUOnTwh1o/++ujzVJKt3M7uuJmNRIenz
+	tFg9tA9XGTnP3ewl0QgUwX40rlloNrWhi7s1zLdE4zUwlZC1PIRoNw2ZcM8iE8iqgx0FnGje2rb
+	ASPMv/YP4l7HwXwJ3rtv440YdvwCMgaQlsmkl647Uzu/Oj0R0GJPxdVk6lHLPSwM8j1LxCldeI1
+	3It1gHToNyh6zJoAmODD0qzu8X9nkIdb4HqF8wGEzQMWeIl57sof+pVpYTP4J6rNavYzEpmYdYT
+	S76Q4+WqubmnVTeTnjRdcXg+13gcFGHvWwZd/fmTY6O1thgR/1ELV5UAulXFQB0r24/cDlDcWe5
+	wp0duvtWtxtsk7uc1sio3Z2A6xBXUUGxv6Dkcrvj2+Da5GGYgj2K4lcAy6J+bLrTLITrWop2l+i
+	6Wt04Za9l6Iy0WH34EXRYvs9LVPQD1vtjvhxbgKmExLNxa2SnE3baVAWnZI8zYdLPQDYdyq9Grf
+	tepoEa+NbmOoSJN/jD1douBswcN1ACR8LlDx/
+X-Received: by 2002:a05:6000:4b17:b0:48e:f47:273c with SMTP id ffacd0b85a97d-4abaac57a40mr41489070f8f.8.1795701003612;
+        Thu, 26 Nov 2026 05:50:03 -0800 (PST)
+Received: from localhost (p200300f65f19a904aae808b8a2e91502.dip0.t-ipconnect.de. [2003:f6:5f19:a904:aae8:8b8:a2e9:1502])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-4ab6ae2dcf9sm40247966f8f.32.2026.11.26.05.50.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Nov 2026 05:44:41 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>
-Subject: Re: [PATCH v4 2/4] powerpc/execmem: Allocate kprobes insn pages from the modules area on book3s/32 and 8xx
-In-Reply-To: <d7633118-f091-487d-993e-38a03f9be58c@kernel.org>
-Date: Thu, 26 Nov 2026 18:56:46 +0530
-Message-ID: <ik1jk9k9.ritesh.list@gmail.com>
-References: <cover.1795666663.git.ritesh.list@gmail.com> <e8f8d59f9a3c88f45f873c91a2ff94586b68d928.1795666663.git.ritesh.list@gmail.com> <d7633118-f091-487d-993e-38a03f9be58c@kernel.org>
+        Thu, 26 Nov 2026 05:50:02 -0800 (PST)
+Date: Thu, 26 Nov 2026 14:50:01 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Pawel Zalewski <pzalewski@thegoodpenguin.co.uk>, 
+	Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+	Pratyush Yadav <pratyush@kernel.org>, Michael Walle <mwalle@kernel.org>, 
+	Takahiro Kuwano <takahiro.kuwano@infineon.com>, Vladimir Zapolskiy <vz@mleia.com>, 
+	Robert Jarzmik <robert.jarzmik@free.fr>, Alexander Usyskin <alexander.usyskin@intel.com>, 
+	Joern Engel <joern@lazybastard.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
+	Shrikanth Hegde <sshegde@linux.ibm.com>, Michal Simek <michal.simek@amd.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Brian Norris <computersforpeace@gmail.com>, 
+	Kamal Dasu <kamal.dasu@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, William Zhang <william.zhang@broadcom.com>, 
+	Anand Gore <anand.gore@broadcom.com>, Kursad Oney <kursad.oney@broadcom.com>, 
+	Florian Fainelli <florian.fainelli@broadcom.com>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, 
+	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Han Xu <han.xu@nxp.com>, 
+	Paul Cercueil <paul@crapouillou.net>, Harvey Hunt <harveyhuntnexus@gmail.com>, 
+	Keguang Zhang <keguang.zhang@gmail.com>, Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>, 
+	Liang Yang <liang.yang@amlogic.com>, Neil Armstrong <neil.armstrong@linaro.org>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Frank Li <Frank.Li@nxp.com>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Heiko Stuebner <heiko@sntech.de>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Chen-Yu Tsai <wens@kernel.org>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, 
+	Stefan Agner <stefan@agner.ch>, Lucas Stach <dev@lynxeye.de>, 
+	Thierry Reding <thierry.reding@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
+	Tudor Ambarus <tudor.ambarus@linaro.org>, Linus Walleij <linusw@kernel.org>, 
+	Kyungmin Park <kyungmin.park@samsung.com>, linux-mtd@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, imx@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-sunxi@lists.linux.dev, linux-tegra@vger.kernel.org
+Subject: Re: [PATCH 00/10] mtd: use desginated initializers in *_device_id
+ arrays
+Message-ID: <awg4ubbFu0FksThB@monoceros>
+References: <20261125-acpi-mtd-v1-0-42ad2f645bee@thegoodpenguin.co.uk>
+ <awcZcuSbse5g3FWK@monoceros>
+ <87v75jyiw2.fsf@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,116 +133,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_PASS,SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="fjhsfzw7maxs7oq6"
+Content-Disposition: inline
+In-Reply-To: <87v75jyiw2.fsf@bootlin.com>
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-"Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
 
-> Le 26/11/2026 à 05:26, Ritesh Harjani (IBM) a écrit :
->> On book3s/32, a kprobe on an instruction that can't be emulated and has
->> to be single stepped out of line, crashes the kernel. For e.g. with the
->> following cmds...
->>      ~> echo 9 > /proc/sys/kernel/printk
->>      ~> mount -t debugfs debugfs /sys/kernel/debug
->>      ~> echo 'p:wx filldir64+0xb8' > /sys/kernel/debug/tracing/kprobe_events
->>      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/wx/enable
->>      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
->>      ~> ls
->> 
->> ...we can see the following crash:
->>      kernel tried to execute exec-protected page (f101a008) - exploit attempt? (uid: 0)
->>      BUG: Unable to handle kernel instruction fetch
->>      Faulting instruction address: 0xc02b919c
->>      Vector: 400 (Instruction Access) at [f19a9d60]
->
-> Unrelated to this patch, but shouldn't the above address [f19a9d60] be 
-> identical to the one in the "kernel tried to execute exec-protected page 
-> (f101a008)" ?
->
+--fjhsfzw7maxs7oq6
+Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 00/10] mtd: use desginated initializers in *_device_id
+ arrays
+MIME-Version: 1.0
 
-Actually this log is taken from xmon. So [f19a9d60] is not a fault
-address. xmon prints the address of the exception frame (pt_regs) there,
-i.e.
+Hey Miquel,
 
-arch/powerpc/xmon/xmon.c
-static void excprint(struct pt_regs *fp)
-{
-	unsigned long trap;
+On Thu, Nov 26, 2026 at 11:41:33AM +0100, Miquel Raynal wrote:
+> >> Signed-off-by: Pawel Zalewski <pzalewski@thegoodpenguin.co.uk>
+> >
+> > Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
+> >
+> > with or without addressing the nitpick I had for one of the patches.
+>=20
+> Let me know what you intend to do.
 
-#ifdef CONFIG_SMP
-	printf("cpu 0x%x: ", smp_processor_id());
-#endif /* CONFIG_SMP */
+Your mail was sent To: me, but that was directed to Pawel, right? (FTR:
+I intend to do nothing here ;-)
 
-	trap = TRAP(fp);
-	printf("Vector: %lx %s at [%px]\n", fp->trap, getvecname(trap), fp);
+Best regards
+Uwe
 
-    ^^^ it comes from this print here 
+--fjhsfzw7maxs7oq6
+Content-Type: application/pgp-signature; name="signature.asc"
 
->>          pc: c02b919c: filldir64+0xb8/0x2dc
->>          lr: c02b9148: filldir64+0x64/0x2dc
->>          sp: f19a9e20
->>         msr: 10029032
->>        current = 0xc112e900
->>          pid   = 102, comm = ls
->>      enter ? for help
->>      [f19a9e20] c1a8d420 (unreliable)
->>      [f19a9e50] c02e4074 dcache_readdir+0x208/0x2a8
->>      [f19a9e90] c02b8c5c iterate_dir+0x88/0x1fc
->>      [f19a9ec0] c02b96e0 sys_getdents64+0x88/0x198
->>      [f19a9f10] c0014400 system_call_exception+0xf8/0x20c
->>      [f19a9f30] c00191ac ret_from_syscall+0x0/0x2c
->>      ---- Exception: c00 (System Call) at a7596164
->>      SP (af802310) is in userspace
->> 
->> This happens because on book3s/32 the exec permission is per segment
->> (256MB), not per page. The page tables have no hardware exec bit, only
->> the segment registers have a no-execute (N) bit. mmu_mark_initmem_nx()
->> sets N on all the kernel segments except the ones of the modules area.
->> So nothing in the vmalloc area can be executed, even when the page is
->> mapped with PAGE_KERNEL_ROX or PAGE_KERNEL_EXEC, because _PAGE_EXEC is
->> a software only bit there and the segment's N bit is what the MMU
->> enforces.
->> 
->> 8xx and 603 (which is book3s/32) have one more problem. Their ITLB miss
->> handlers walk only the current task's PGD, whose kernel entries are
->> copied from swapper_pg_dir in pgd_alloc(). Only kernel text and the
->> modules area are sure to be in that copy, the modules area because
->> prealloc_execmem_pgtable() creates its page tables at boot. Unlike the
->> DTLB path, nothing fixes up a missing entry on an ITLB miss. So an insn
->> page in a vmalloc area mapped after the task's PGD was allocated can't
->> be executed.
->> 
->> Before commit 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes
->> allocations"), the kprobes insn pages came from module_alloc(). That
->> commit moved them to the whole of the vmalloc space, on the grounds that
->> kprobes use a breakpoint and don't need to be near the kernel text.
->> That is fine on platforms where the exec permission is per page,
->> as PAGE_KERNEL_ROX is then enough to make a vmalloc page executable.
->> It is not on book3s/32 and 8xx, where the modules area is not only close to
->> the kernel text but is also the only page-mapped area whose segment is
->> left executable. So the insn pages must keep coming from there.
->> 
->> MODULES_VADDR is only defined on book3s/32 and 8xx, so use the modules
->> area for EXECMEM_KPROBES whenever it is defined.
->> 
->> Fixes: 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes allocations")
->> Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
->> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
->> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
->> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->
-> Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
->
+-----BEGIN PGP SIGNATURE-----
 
-Thanks Christophe for your reviews and suggestions!
+iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmsIOQcACgkQj4D7WH0S
+/k7VGwf+JohDT6rUS7ETNio1M8Z7P9mW/dw41gur3gOUE8OBNxOfsasQ0n/riOvo
+4sT4fsGJWgm+ezHKcYcrXNknVg5Hmfpk4HeA47K1y+P9G6LhwsBLtqRGMM/7dCMd
+nWmBVR77ExMyThLv6M2Li7HrkLHKSnuq7/HXqOD93OrqD6YYrrRBvTsBklbEdhWB
+wm40UJgQd+3R2Lwq+CSDVUYqVGj8LP+XGj2vNoHXEfGlk93ZED7JguilGU62561G
+N5qNDGfQC+CzqYC7tQ2tj0TNnOK6kYXrK6jxThQovh4ubLadqtHT7mVLa3qbS36h
+iO7uFgMsn6ww6nNgTXKWH62VZzkJPg==
+=6HjX
+-----END PGP SIGNATURE-----
 
--ritesh
-
+--fjhsfzw7maxs7oq6--
 
