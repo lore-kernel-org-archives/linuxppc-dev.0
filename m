@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 7F64E606A684
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:17:48 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C9897606A333
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:17:57 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aS+hd1Aj
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dcbFXVnB
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvCv1lF0z2yRP;
-	Thu, 26 Nov 2026 22:17:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691867;
-	cv=none; b=L81U2B/zaUN0HNQA0SDKm/Laowj7WFyIB5K/7kuBLDoWkeHmh3/TuYoTAA2hoGTDemMK9HUv+ql6wysvsDkswzNlvMFtP8gnmDfgGiRbq1f5CQ2I4FoeKC4Zj2LJtskDvWkNHjaXUtGPF4fnhnkPeziuO63kYBzxBT7HjQOkG4yJfBXNclAW6hA9Ee0uRp67jrV0nlrwzj/awoMe8cM+4lZbGkjmx8jwp1kWPp0dp6z6l3POsXA6JGEg0VP6yfBQ+xvqVEWHrfnvmVB0cQuJCCd0L5UZ+5vVK/Fcg4PVzcikNdAaw0By/SWok4hcYR1A6Y3RrN9zMyqifZ4d9mp9sg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvD43vSHz2yRn;
+	Thu, 26 Nov 2026 22:17:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691876;
+	cv=none; b=UYbsJ8SMnOktdu3LbtQOjFjg2tYjb02PJ+4wyP5G2DdCUNSs9CB3OebSNiWgGiapE36sun7bhOlztjhCCLIw7j+4fNA9lnFaxWh88wpio+3VYXYFU+YJK51jqXxELYUjJwem/l5DpGelhp8F0xzHM4MuZj+vqoEnR59aDFEMUeBKXCWPbfEGu1zAE49BlkwvJYZKvk9+Os4EJLpz9wo8w9rpfJe/HWbnBhvMHmYAwtNq2QVJ3ZfHg2bnSNl7x8C0uOjkMlGClxeXRIEVU1tW+Y00N/sFowsVWZJ2/IP4AcdnfPoneVnLFPev0ayf202SEopSQTqWEJafnvGAkoGYzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691867; c=relaxed/relaxed;
-	bh=Kz6N2VohMG3ZruiYALtY6EKQITdyxhPrOz7uPba4HMk=;
+	t=1795691876; c=relaxed/relaxed;
+	bh=9zfNRstAKqDcmy9+oyhz/qeqyjNth/cpMelt2bCIyNU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KSlGJlOFlvnR892PC7YO1dBZhTVF78GpUhNIRHOu1uDmkzt/k4IiAmGpIN5qqJkVEMiAVsU4PKsg3RDmCVw10kjossKIjCessBj+Mh2gVknPHfMOKEYF9CuHJYBj5B1j7PyLokz6FeQLMiK+18vthlSU3Cldw6CnkJmx64Cy4cNOKEWGVC/dJeCsTSAg80X5cVbaOMaWj3v5E+beEvS0sRs0uxmujY2p8LO8FpFE+P2TPm6a2Z4KyROw/u2gZAFc4LboUVubD1+i6ZYGdu4uNMzC2YYFuN/ablpORi2BIgXey3BlfU+4A8mtiFOi1NuC05KvaypHnxvHOWTRciMNcA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aS+hd1Aj; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=XIVZQx2jPulj2SkULPHS304Zb8lW25SkOxz4r8Tu3EO8Geb4JoBuyQVqt5zcmMYLsCUfMUI14zLwbGl5qh1WfIHfCu5ytjyzvcOMknEfod+ayz2Ks7vA3kdD20fwI89aGf6n0lf4JrldlmAi+UWaszFItccrGnf9kLbVf+RuWAkTS0lcY/W6LW62aFfbB+nTdZIkuaOJ4ALZD3ga7G5e3CS5VlOuwxtdxjcsN6Ngu4t6+uwhwnfQIskkWaHGf1DV+Pa6IWgrSKKo39yu7T6qvd21I/eggg1mW6WL8+ujosTZnyEbqU7u/D858AOjyIyQ1j8fU4BdyyAx5cspc8NibQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dcbFXVnB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aS+hd1Aj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=dcbFXVnB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvCt3dLNz3bZm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:17:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvD35N13z2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:17:55 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9FC01623F6;
-	Thu, 26 Nov 2026 11:17:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFBF11F000D3;
-	Thu, 26 Nov 2026 11:17:35 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 3D698446A6;
+	Thu, 26 Nov 2026 11:17:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 611F21F000E1;
+	Thu, 26 Nov 2026 11:17:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691864;
-	bh=Kz6N2VohMG3ZruiYALtY6EKQITdyxhPrOz7uPba4HMk=;
+	s=k20260515; t=1795691873;
+	bh=9zfNRstAKqDcmy9+oyhz/qeqyjNth/cpMelt2bCIyNU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=aS+hd1AjkS1QYoJbIi4PHFdZ3P7Ob8y0ffR5ZfLo62IfN0ojR0cCjfeG5n9B6hoDy
-	 DJTkKQptCFQo0yZe66PyRV9+XE9vT4gM+yFas4z11qWmHPoo4MEtGlKja4KD8en9BX
-	 iP5ilV4a53PHoXVGD88tMFuhNGWLEK4Y+I3FlbuBSFaOv4/EO+aFIZs0B/fuysY4Og
-	 y6oRmrVksohemPg8fT47vG6i8WMkRJPhSPg0aNVOakR1Nf4wu9JfIwAK6pWhyh9PmR
-	 ySKwFA6052jSfoaJBZ4+M7JdT5078pxsqgHVdEfV2o3i5YRL2PL4llJZQ20Vcss786
-	 m2CPOwU53f+tw==
+	b=dcbFXVnBfT1s7qKP7tGcScBMYsU83rp+fAcwT8XfmGgLYSyRFs2M34BJKHaYR1hx1
+	 vp8GF7QJE3guwpFZAe++MU3SqjiPtcOiwRin1GwI799quo5MZHZHBaRkVOdTdWfWWd
+	 GMHQ5SBrChd4mT0GlRsOOR7pMITn4eIhjeoWzeBjsmXB0VBQ6c4OKtSnxPyAl75j2S
+	 wDOmfVxdRgbTFn+2BPKktPtPiMe0wf1JoVKZ1WwQgDhLKTyq9iQKDhorfgp+xK9wAn
+	 uqVNctkLJRbanUPFy8ocO3T2Kmt9oyn3dnUyJU1cHp3jR+GoT1mD4ysP5dke6uFihc
+	 xuzDO44U7LRBA==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:33 +0200
-Subject: [PATCH RFC v2 20/54] x86/mm/pat: index the CPA statistics by page
- table level
+Date: Thu, 26 Nov 2026 13:14:34 +0200
+Subject: [PATCH RFC v2 21/54] x86/mm/pat: introduce struct cpa_leaf
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-20-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-21-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,184 +96,348 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The CPA statistics have a variable per page size and every helper picks one
-with a level check. This works for the x86 page sizes, but other
-architectures can have different page sizes.
+The functions that handle a mapping found by the CPA lookup get the page
+table entry, its level and the address. Each of them decodes the pfn and
+the protection again.
 
-Index the counters by enum pgtable_level and derive the page size printed
-for each line from the level.
+Add struct cpa_leaf that describes the mapping and is filled once by
+cpa_lookup().
 
-The output changes on 32-bit kernels without PAE: the large page lines say
-"4M pages" instead of "2M pages", and so do the always zero lines of the
-folded PUD level instead of "1G pages". The 4K line is spelled "4k" as in
-/proc/meminfo.
+The leaf keeps the protection in the 4K format at every level, so the large
+page path applies the requested changes as is and converts the resulting
+protection to the large page format only to write a page table entry.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/x86/mm/pat/set_memory.c | 87 ++++++++++++++++++++++++--------------------
- 1 file changed, 48 insertions(+), 39 deletions(-)
+ arch/x86/mm/pat/set_memory.c | 194 ++++++++++++++++++++++---------------------
+ 1 file changed, 100 insertions(+), 94 deletions(-)
 
 diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index 36f5031f1a0e..44e350c54899 100644
+index 44e350c54899..304b7ad26c45 100644
 --- a/arch/x86/mm/pat/set_memory.c
 +++ b/arch/x86/mm/pat/set_memory.c
-@@ -142,54 +142,64 @@ static inline void collapse_page_count(int level) { }
+@@ -51,6 +51,15 @@ struct cpa_data {
+ 	unsigned int	state;
+ };
  
- #ifdef CONFIG_X86_CPA_STATISTICS
- 
--static unsigned long cpa_1g_checked;
--static unsigned long cpa_1g_sameprot;
--static unsigned long cpa_1g_preserved;
--static unsigned long cpa_2m_checked;
--static unsigned long cpa_2m_sameprot;
--static unsigned long cpa_2m_preserved;
--static unsigned long cpa_4k_install;
-+static unsigned long cpa_checked[PGTABLE_LEVEL_NUM];
-+static unsigned long cpa_sameprot[PGTABLE_LEVEL_NUM];
-+static unsigned long cpa_preserved[PGTABLE_LEVEL_NUM];
- 
--static inline void cpa_inc_1g_checked(void)
-+static inline void cpa_inc_pxd_checked(enum pgtable_level level)
- {
--	cpa_1g_checked++;
-+	cpa_checked[level]++;
- }
- 
--static inline void cpa_inc_2m_checked(void)
-+static inline void cpa_inc_pte_install(void)
- {
--	cpa_2m_checked++;
-+	cpa_checked[PGTABLE_LEVEL_PTE]++;
- }
- 
--static inline void cpa_inc_4k_install(void)
-+static inline void cpa_inc_pxd_sameprot(enum pgtable_level level)
- {
--	cpa_4k_install++;
-+	cpa_sameprot[level]++;
- }
- 
--static inline void cpa_inc_lp_sameprot(int level)
-+static inline void cpa_inc_pxd_preserved(enum pgtable_level level)
- {
--	if (level == PGTABLE_LEVEL_PUD)
--		cpa_1g_sameprot++;
--	else
--		cpa_2m_sameprot++;
-+	cpa_preserved[level]++;
- }
- 
--static inline void cpa_inc_lp_preserved(int level)
-+static const char *cpa_size_str(enum pgtable_level level, char *buf, size_t len)
- {
--	if (level == PGTABLE_LEVEL_PUD)
--		cpa_1g_preserved++;
-+	unsigned long size = pgtable_level_size(level);
++struct cpa_leaf {
++	pte_t			*kpte;
++	enum pgtable_level	level;
++	unsigned long		addr;
++	unsigned long		size;
++	unsigned long		pfn;
++	pgprot_t		prot;
++};
 +
-+	if (size >= SZ_1G)
-+		snprintf(buf, len, "%luG", size >> 30);
-+	else if (size >= SZ_1M)
-+		snprintf(buf, len, "%luM", size >> 20);
- 	else
--		cpa_2m_preserved++;
-+		snprintf(buf, len, "%luk", size >> 10);
+ enum cpa_warn {
+ 	CPA_PROTECT,
+ 	CPA_DETECT,
+@@ -887,12 +896,53 @@ static pte_t *cpa_lookup_in_pgd(pgd_t *pgdp, unsigned long address,
+ 	return pte_offset_kernel(pmdp, address);
+ }
+ 
+-static pte_t *_lookup_address_cpa(struct cpa_data *cpa, unsigned long address,
+-				  enum pgtable_level *level)
++static void cpa_decode_leaf(struct cpa_leaf *leaf)
++{
++	enum pgtable_level level = leaf->level;
++	pte_t *kpte = leaf->kpte;
++	pte_t pte;
++	pmd_t pmd;
++	pud_t pud;
 +
-+	return buf;
++	switch (level) {
++	case PGTABLE_LEVEL_PTE:
++		pte = *kpte;
++		leaf->pfn = pte_pfn(pte);
++		leaf->prot = pte_pgprot(pte);
++		break;
++	case PGTABLE_LEVEL_PMD:
++		pmd = *(pmd_t *)kpte;
++		leaf->pfn = pmd_pfn(pmd);
++		leaf->prot = pgprot_large_2_4k(pmd_pgprot(pmd));
++		break;
++	case PGTABLE_LEVEL_PUD:
++		pud = *(pud_t *)kpte;
++		leaf->pfn = pud_pfn(pud);
++		leaf->prot = pgprot_large_2_4k(pud_pgprot(pud));
++		break;
++	default:
++		leaf->pfn = 0;
++		leaf->prot = __pgprot(0);
++		break;
++	}
 +}
 +
-+static void cpastats_show_level(struct seq_file *m, enum pgtable_level level)
-+{
-+	char sz[20];
-+
-+	cpa_size_str(level, sz, sizeof(sz));
-+	seq_printf(m, "%s pages checked:     %16lu\n", sz, cpa_checked[level]);
-+	seq_printf(m, "%s pages sameprot:    %16lu\n", sz, cpa_sameprot[level]);
-+	seq_printf(m, "%s pages preserved:   %16lu\n", sz,
-+		   cpa_preserved[level]);
- }
- 
- static int cpastats_show(struct seq_file *m, void *p)
++static pte_t *cpa_lookup(struct cpa_data *cpa, unsigned long address,
++			 struct cpa_leaf *leaf)
  {
--	seq_printf(m, "1G pages checked:     %16lu\n", cpa_1g_checked);
--	seq_printf(m, "1G pages sameprot:    %16lu\n", cpa_1g_sameprot);
--	seq_printf(m, "1G pages preserved:   %16lu\n", cpa_1g_preserved);
--	seq_printf(m, "2M pages checked:     %16lu\n", cpa_2m_checked);
--	seq_printf(m, "2M pages sameprot:    %16lu\n", cpa_2m_sameprot);
--	seq_printf(m, "2M pages preserved:   %16lu\n", cpa_2m_preserved);
--	seq_printf(m, "4K pages set-checked: %16lu\n", cpa_4k_install);
-+	char sz[20];
+ 	pgd_t *pgd = cpa_pgd(cpa, address);
+ 
+-	return cpa_lookup_in_pgd(pgd, address, level);
++	leaf->kpte = cpa_lookup_in_pgd(pgd, address, &leaf->level);
++	if (!leaf->kpte)
++		return NULL;
++	if (leaf->level == PGTABLE_LEVEL_PTE && pte_none(ptep_get(leaf->kpte)))
++		return NULL;
 +
-+	cpastats_show_level(m, PGTABLE_LEVEL_PUD);
-+	cpastats_show_level(m, PGTABLE_LEVEL_PMD);
-+	seq_printf(m, "%s pages set-checked: %16lu\n",
-+		   cpa_size_str(PGTABLE_LEVEL_PTE, sz, sizeof(sz)),
-+		   cpa_checked[PGTABLE_LEVEL_PTE]);
- 	return 0;
++	leaf->size = pgtable_level_size(leaf->level);
++	leaf->addr = address & pgtable_level_mask(leaf->level);
++	cpa_decode_leaf(leaf);
++
++	return leaf->kpte;
  }
  
-@@ -213,11 +223,10 @@ static int __init cpa_stats_init(void)
+ /*
+@@ -1035,53 +1085,36 @@ static pte_t cpa_pte(enum pgtable_level level, unsigned long pfn, pgprot_t prot)
+ 	return pfn_pte(pfn, prot);
  }
- late_initcall(cpa_stats_init);
- #else
--static inline void cpa_inc_1g_checked(void) { }
--static inline void cpa_inc_2m_checked(void) { }
--static inline void cpa_inc_4k_install(void) { }
--static inline void cpa_inc_lp_sameprot(int level) { }
--static inline void cpa_inc_lp_preserved(int level) { }
-+static inline void cpa_inc_pxd_checked(enum pgtable_level level) { }
-+static inline void cpa_inc_pte_install(void) { }
-+static inline void cpa_inc_pxd_sameprot(enum pgtable_level level) { }
-+static inline void cpa_inc_pxd_preserved(enum pgtable_level level) { }
- #endif
  
+-static int should_split_large_page(pte_t *kpte, unsigned long address,
+-				   enum pgtable_level level,
+-				   struct cpa_data *cpa)
++static int should_split_large_page(struct cpa_data *cpa, struct cpa_leaf *leaf)
+ {
+-	unsigned long numpages, pmask, psize, lpaddr, pfn, old_pfn;
+-	pgprot_t old_prot, new_prot, req_prot;
++	unsigned long address = __cpa_addr(cpa, cpa->curpage);
++	enum pgtable_level level = leaf->level;
++	unsigned long lpaddr = leaf->addr;
++	unsigned long old_pfn = leaf->pfn;
++	unsigned long psize = leaf->size;
++	pgprot_t old_prot = leaf->prot;
++	unsigned long numpages, pfn;
++	pgprot_t new_prot, req_prot;
++	pte_t *kpte = leaf->kpte;
+ 	pte_t new_pte;
  
-@@ -1041,17 +1050,17 @@ static int should_split_large_page(pte_t *kpte, unsigned long address,
- 	case PGTABLE_LEVEL_PMD:
- 		old_prot = pmd_pgprot(*(pmd_t *)kpte);
- 		old_pfn = pmd_pfn(*(pmd_t *)kpte);
--		cpa_inc_2m_checked();
- 		break;
- 	case PGTABLE_LEVEL_PUD:
- 		old_prot = pud_pgprot(*(pud_t *)kpte);
- 		old_pfn = pud_pfn(*(pud_t *)kpte);
--		cpa_inc_1g_checked();
- 		break;
- 	default:
+ 	if (cpa->flags & CPA_REQ_SPLIT)
+ 		return 1;
+ 
+-	switch (level) {
+-	case PGTABLE_LEVEL_PMD:
+-		old_prot = pmd_pgprot(*(pmd_t *)kpte);
+-		old_pfn = pmd_pfn(*(pmd_t *)kpte);
+-		break;
+-	case PGTABLE_LEVEL_PUD:
+-		old_prot = pud_pgprot(*(pud_t *)kpte);
+-		old_pfn = pud_pfn(*(pud_t *)kpte);
+-		break;
+-	default:
++	if (level != PGTABLE_LEVEL_PMD && level != PGTABLE_LEVEL_PUD)
  		return -EINVAL;
- 	}
+-	}
  
-+	cpa_inc_pxd_checked(level);
-+
- 	psize = pgtable_level_size(level);
- 	pmask = pgtable_level_mask(level);
+ 	cpa_inc_pxd_checked(level);
  
-@@ -1097,7 +1106,7 @@ static int should_split_large_page(pte_t *kpte, unsigned long address,
+-	psize = pgtable_level_size(level);
+-	pmask = pgtable_level_mask(level);
+-
+ 	/*
+ 	 * Calculate the number of pages, which fit into this large
+ 	 * page starting at address:
+ 	 */
+-	lpaddr = (address + psize) & pmask;
+-	numpages = (lpaddr - address) >> PAGE_SHIFT;
++	numpages = (lpaddr + psize - address) >> PAGE_SHIFT;
+ 	if (numpages < cpa->numpages)
+ 		cpa->numpages = numpages;
+ 
+-	/*
+-	 * We are safe now. Check whether the new pgprot is the same:
+-	 * Convert protection attributes to 4k-format, as cpa->mask* are set
+-	 * up accordingly.
+-	 */
+-
+-	/* Clear PSE (aka _PAGE_PAT) and move PAT bit to correct position */
+-	req_prot = pgprot_large_2_4k(old_prot);
+-
++	req_prot = old_prot;
+ 	pgprot_val(req_prot) &= ~pgprot_val(cpa->mask_clr);
+ 	pgprot_val(req_prot) |= pgprot_val(cpa->mask_set);
+ 
+@@ -1092,11 +1125,6 @@ static int should_split_large_page(pte_t *kpte, unsigned long address,
+ 	pfn = old_pfn + ((address & (psize - 1)) >> PAGE_SHIFT);
+ 	cpa->pfn = pfn;
+ 
+-	/*
+-	 * Calculate the large page base address and the number of 4K pages
+-	 * in the large page
+-	 */
+-	lpaddr = address & pmask;
+ 	numpages = psize >> PAGE_SHIFT;
+ 
+ 	/*
+@@ -1105,7 +1133,7 @@ static int should_split_large_page(pte_t *kpte, unsigned long address,
+ 	 * required independent of alignment and length of the requested
  	 * range.
  	 */
- 	if (pgprot_val(req_prot) == pgprot_val(pgprot_large_2_4k(old_prot))) {
--		cpa_inc_lp_sameprot(level);
-+		cpa_inc_pxd_sameprot(level);
+-	if (pgprot_val(req_prot) == pgprot_val(pgprot_large_2_4k(old_prot))) {
++	if (pgprot_val(req_prot) == pgprot_val(old_prot)) {
+ 		cpa_inc_pxd_sameprot(level);
  		return 0;
  	}
+@@ -1147,44 +1175,25 @@ static int should_split_large_page(pte_t *kpte, unsigned long address,
+ }
  
-@@ -1133,7 +1142,7 @@ static int should_split_large_page(pte_t *kpte, unsigned long address,
- 	new_pte = cpa_pte(level, old_pfn, new_prot);
- 	__set_pmd_pte(kpte, address, new_pte);
- 	cpa->state |= CPA_ST_FLUSHTLB;
--	cpa_inc_lp_preserved(level);
-+	cpa_inc_pxd_preserved(level);
+ static int
+-__split_large_page(struct cpa_data *cpa, pte_t *kpte, unsigned long address,
+-		   enum pgtable_level level, pte_t *pbase)
++__split_large_page(struct cpa_data *cpa, struct cpa_leaf *leaf, pte_t *pbase)
+ {
+-	unsigned long ref_pfn, pfn, pfninc = 1;
++	unsigned long address = __cpa_addr(cpa, cpa->curpage);
+ 	struct page *base = virt_to_page(pbase);
+-	pgprot_t ref_prot;
++	enum pgtable_level level = leaf->level;
++	unsigned long pfn = leaf->pfn;
++	pgprot_t prot = leaf->prot;
++	pte_t *kpte = leaf->kpte;
++	unsigned long pfninc;
+ 	unsigned int i;
+ 
+-	paravirt_alloc_pte(&init_mm, page_to_pfn(base));
+-
+-	switch (level) {
+-	case PGTABLE_LEVEL_PMD:
+-		ref_prot = pmd_pgprot(*(pmd_t *)kpte);
+-		/*
+-		 * Clear PSE (aka _PAGE_PAT) and move
+-		 * PAT bit to correct position.
+-		 */
+-		ref_prot = pgprot_large_2_4k(ref_prot);
+-		ref_pfn = pmd_pfn(*(pmd_t *)kpte);
+-		break;
+-
+-	case PGTABLE_LEVEL_PUD:
+-		ref_prot = pud_pgprot(*(pud_t *)kpte);
+-		ref_pfn = pud_pfn(*(pud_t *)kpte);
+-		pfninc = PMD_SIZE >> PAGE_SHIFT;
+-		ref_prot = pgprot_large_2_4k(ref_prot);
+-		break;
+-
+-	default:
++	if (level != PGTABLE_LEVEL_PMD && level != PGTABLE_LEVEL_PUD)
+ 		return -EINVAL;
+-	}
+ 
+-	/*
+-	 * Get the target pfn from the original entry:
+-	 */
+-	pfn = ref_pfn;
++	paravirt_alloc_pte(&init_mm, page_to_pfn(base));
++
++	pfninc = pgtable_level_size(level - 1) >> PAGE_SHIFT;
+ 	for (i = 0; i < PTRS_PER_PTE; i++, pfn += pfninc)
+-		set_pte(pbase + i, cpa_pte(level - 1, pfn, ref_prot));
++		set_pte(pbase + i, cpa_pte(level - 1, pfn, prot));
+ 
+ 	if (within(address, PAGE_OFFSET,
+ 		   PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT)))
+@@ -1222,10 +1231,11 @@ __split_large_page(struct cpa_data *cpa, pte_t *kpte, unsigned long address,
  	return 0;
  }
  
-@@ -1866,7 +1875,7 @@ static int __change_page_attr(struct cpa_data *cpa)
+-static int split_large_page(struct cpa_data *cpa, pte_t *kpte,
+-			    unsigned long address)
++static int split_large_page(struct cpa_data *cpa, struct cpa_leaf *leaf)
+ {
+-	enum pgtable_level level;
++	unsigned long address = __cpa_addr(cpa, cpa->curpage);
++	pte_t *kpte = leaf->kpte;
++	struct cpa_leaf tmp;
+ 	pte_t *pte;
+ 	int ret = 0;
+ 
+@@ -1239,10 +1249,11 @@ static int split_large_page(struct cpa_data *cpa, pte_t *kpte,
+ 	 * Check for races, another CPU might have split this page
+ 	 * up for us already:
+ 	 */
+-	if (_lookup_address_cpa(cpa, address, &level) != kpte)
++	if (cpa_lookup(cpa, address, &tmp) != kpte)
+ 		goto out;
++	*leaf = tmp;
+ 
+-	ret = __split_large_page(cpa, kpte, address, level, pte);
++	ret = __split_large_page(cpa, leaf, pte);
+ 	if (ret)
+ 		goto out;
+ 
+@@ -1851,26 +1862,21 @@ static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr)
+ 
+ static int __change_page_attr(struct cpa_data *cpa)
+ {
+-	enum pgtable_level level;
+ 	unsigned long address;
+-	pte_t *kpte, old_pte;
+-	int do_split, err;
++	struct cpa_leaf leaf;
++	int do_split, ret;
+ 
+ 	address = __cpa_addr(cpa, cpa->curpage);
+ repeat:
+-	kpte = _lookup_address_cpa(cpa, address, &level);
+-	if (!kpte)
++	if (!cpa_lookup(cpa, address, &leaf))
+ 		return __cpa_process_fault(cpa, address);
+ 
+-	old_pte = *kpte;
+-	if (pte_none(old_pte))
+-		return __cpa_process_fault(cpa, address);
+-
+-	if (level == PGTABLE_LEVEL_PTE) {
++	if (leaf.level == PGTABLE_LEVEL_PTE) {
++		pte_t old_pte = *leaf.kpte;
++		pgprot_t old_prot = leaf.prot;
++		pgprot_t new_prot = leaf.prot;
++		unsigned long pfn = leaf.pfn;
+ 		pte_t new_pte;
+-		pgprot_t old_prot = pte_pgprot(old_pte);
+-		pgprot_t new_prot = pte_pgprot(old_pte);
+-		unsigned long pfn = pte_pfn(old_pte);
+ 
  		pgprot_val(new_prot) &= ~pgprot_val(cpa->mask_clr);
  		pgprot_val(new_prot) |= pgprot_val(cpa->mask_set);
+@@ -1887,13 +1893,13 @@ static int __change_page_attr(struct cpa_data *cpa)
+ 		 * after all we're only going to change its attributes
+ 		 * not the memory it points to
+ 		 */
+-		new_pte = cpa_pte(level, pfn, new_prot);
++		new_pte = cpa_pte(leaf.level, pfn, new_prot);
+ 		cpa->pfn = pfn;
+ 		/*
+ 		 * Do we really change anything ?
+ 		 */
+ 		if (pte_val(old_pte) != pte_val(new_pte)) {
+-			set_pte_atomic(kpte, new_pte);
++			set_pte_atomic(leaf.kpte, new_pte);
+ 			cpa->state |= CPA_ST_FLUSHTLB;
+ 		}
+ 		cpa->numpages = 1;
+@@ -1904,7 +1910,7 @@ static int __change_page_attr(struct cpa_data *cpa)
+ 	 * Check, whether we can keep the large page intact
+ 	 * and just change the pte:
+ 	 */
+-	do_split = should_split_large_page(kpte, address, level, cpa);
++	do_split = should_split_large_page(cpa, &leaf);
+ 	/*
+ 	 * When the range fits into the existing large page,
+ 	 * return. cp->numpages and cpa->tlbflush have been updated in
+@@ -1916,11 +1922,11 @@ static int __change_page_attr(struct cpa_data *cpa)
+ 	/*
+ 	 * We have to split the large page:
+ 	 */
+-	err = split_large_page(cpa, kpte, address);
+-	if (!err)
++	ret = split_large_page(cpa, &leaf);
++	if (!ret)
+ 		goto repeat;
  
--		cpa_inc_4k_install();
-+		cpa_inc_pte_install();
- 		/* Hand in lpsize = 0 to enforce the protection mechanism */
- 		new_prot = static_protections(new_prot, address, pfn, 1, 0,
- 					      CPA_PROTECT);
+-	return err;
++	return ret;
+ }
+ 
+ static int __change_page_attr_set_clr(struct cpa_data *cpa);
 
 -- 
 2.53.0
