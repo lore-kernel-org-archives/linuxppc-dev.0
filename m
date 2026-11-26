@@ -2,98 +2,106 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2A108606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:27:41 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 89AB3606A323
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:45:15 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yGx75se5
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S2hH+FUi
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvRH3QFFz2yPq;
-	Thu, 26 Nov 2026 22:27:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692459;
-	cv=none; b=kIGZqD8nXzFleYsFdv0HWoHllL85SSEJuBtigWwpJm5dm8S4IZysobe/zmieKX6PcvvsAIimXTZpYKJBleMmL9W4XlDq3jbSlmnFvOjn4QHpiHQrHzcbz92oDHzO5j82JHdXjR99tIBY4wQQ/K8SiwJiDGJVvPpr1woVGd1pXsDW4szW4qajpyGYJ7r8kbQ/QadCSl8iyi+V4eHjZy0bcKHXWVhEDygvhBZCzq2WTXlAbOA8W2fGVup1rcb4glw18feDK0JlrZ4t6+S1QJHAXP5WckFekc/Lq331mDVyqo55D97WlP2HhihAJvjK8vXGXjFohHnl3llqiISKsNwH0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvqY4mRvz2yKn;
+	Thu, 26 Nov 2026 22:45:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795693513;
+	cv=none; b=f1Y8p/J++FihA98feZnYzBGg2VYDBP97QIVbzfaDM769hsBjwyx5QKFnkgUO+V57dp9NKl+fRntYj+HvvXluD0cltru02cfJNkMABipf2CGz0nvxV8WV1i7Wrx5utXP5jA9SGhW+4+On8Zd2Xr2Rx516FTiEO6N/G26B4lIVBxefnDmGiJvrxeaFHQ1wL1KP29KVdYlvAlx7ACxnB1K0zyX9IPYH//0muLQuYvRhdzuJpWc0SBgW2SeBlecaVbWEyfXKDuh4xgAKMaLXWpsZqlHfg9apDfVT3h4NEsHH8y5xnziZJsiJ2Es8V4JkMix/J0O3K+15OHmE+L7mjzXXqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795692459; c=relaxed/relaxed;
-	bh=0BkCbk1BZezpNWO2fSE0tmudVFsNXM8eMjdZoP6Bz5s=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cnRcwrxkfZ34iiAalvKxlgzERSVxQSGisskJqXO2iio+t0NNHAe8vrXCFKMcKrg0RVNKaPfM00TEMykrpR9sBGjhURIgYdSowZziDmDqEGLp30RunB4E3nbA8P63GRMobXB7FsTwPPxhzgClay1t/MKAojWu/aZPMlJ1RVptDbih30GrS95XfljgDYiiYoRpYrJkyUUXSFBFkTPCLRNbyfaO//y00I45WYl739H1PZ3pj+nfJ0IAJv7M5hqTgEdiHa68S9FUksDGHYgmHGD3fCGT8ShQfSjH6DYCznxHXi16c6Ct4XYErnvi2+F96vR0neMk+8TZt9+G6kyFgcbkfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yGx75se5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1795693513; c=relaxed/relaxed;
+	bh=5BVeDoXywdonN8l0fahN7PgNc5xFYXRHYBZPC3PlIr4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=iEXsWsnqCa36p16VQGstKQZchew9E2OQ/dodElhGGVFuGHFg/bgjVgTrSChAeZlRVEnoIhLeHItOJU4wbgvLZ9y3O0WLKidzqFjU1RtOVwIg4PAM189ELMRZBKSYcICvm4m33yMD+aafHEEqy4ypw2MhpjhA5dcD24WyLUfIqIVVwtKUoXWPskuD897Iw+nlwl7MroSC4EDpfSqq+ZacUoXA8OiwrIMbuSbQnqSooxr3o2b6EdQOG+KlM6n87u7pauT4ko4wkZ2gIpAqvunx89egFJUA4v79REN6GG7SOu68jDYbekZZLqkgHkNrPznKWgA1+gu65wdEY06533MkDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S2hH+FUi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yGx75se5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=S2hH+FUi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvRF49dHz2yLH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:27:37 +1100 (AEDT)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-4bb6ba3b244so70382135e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 03:27:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795692449; x=1796297249; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=0BkCbk1BZezpNWO2fSE0tmudVFsNXM8eMjdZoP6Bz5s=;
-        b=yGx75se5Y+kDM1aLDfEvkpEbmS8QotuS1cnURBSg34eYto6ZdRbwhy69atgwFPylQM
-         quOiBFYkqQ1/r7cdAeda1sKH9M9M8vPL3Wfx5GiquH0AxxEG4WSz6g4/is7vpDwoCpRb
-         55k4ZKp3CcgDtreLvgEKKGQXa14q+q4qd/YIw3bHvo42U/YXEFCkLWW/GY1hfG0pBFWg
-         LwUZAe4k1/I+KI7CYL4aEmv5wgeevmzBI0slptB+Kv69ZrTDchMiv7dd5cgM+i9Zjtz5
-         n8OctHMdcgnyuWONbWKryP4CSwmrXwmFZxWtSdZCGFS+OEfD1mXLovCZAcwBF2Q4fVHl
-         SQug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795692449; x=1796297249;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=0BkCbk1BZezpNWO2fSE0tmudVFsNXM8eMjdZoP6Bz5s=;
-        b=rYwgnkMeO/avogS51RC4k1VhnksZ0p6La/6CLRRg4EWy4doawscL13fSLMj1sXABh3
-         EvciLpWoe1J7Dy/783gHWvLbJfDuHsGF0YwKpf/7+SE6y9c5ySy5MQMtwoUTCqAB6/LF
-         JleU1eU+Hl4jdabPj1q3CvNfoyO1Li2CmXV/UtIIqM8s4hcP3j0B8bWfKsTr20f8yH2h
-         UpShAy5HWOn1G7uLKf3sx3lbFRx84Oicdg3c11vHNvkxNAkoGY9lSO103aK77p9qt9vy
-         4mY3eJW6ys/Quom+mYkPJ+S3VdQDiiqW6F6BKQWvVMfU+AZE0eHXG7NiC2Y6pxzW3H8x
-         8WAQ==
-X-Gm-Message-State: APuU4Z+Tmv4uHWoYxKgw1PA+x4Cjn1v+9LkabNG1dFLkQuodE+09X03A
-	8WFTku0OhRiAn0D0TI03KmxjtKo2dNzfliOaIs2WcnVCyiLAtupvpqv7
-X-Gm-Gg: AZFdTZeEdwdN9gWHgiX2FluznMeuJwzEU9425GhYB7wqNkiTTRM32Kg6D+I3ZnoU0Oa
-	FGRGyytmU4+UHM3Sf2OFvZGMcY6KKkqHA2/6XtZa1wQh/e0/+EyXw5MBMAAbaT1wSIKJ0DrodHe
-	qSZWOoJ+NpcbQHkaAFuf6NHJbO1VJmlyTabc01J8MMy4YhyAmEOrmLdxhC5fvHlSNU3dgeMN0bh
-	qm9vasDALFpxiibVHeA9j1yvFUqKw2q8wQ57/L+EnMa8RcbL7i7O1YxgxUMQx4M5KhwmXfO5M60
-	GzXDLsbWUGZA0qUELy2BTeuERoaLmPbGW1xUOCUyZ8l1XDpVPG+5CC/pzpCECSEC0FjprFWXStf
-	SadwLx0qUpv4tAj26D69Znd5quyz4aeC7yOLcYXZGcug2wW661JEVv9eCqx4tI0QJ6torYXniQt
-	srIAKmRmRchZ594oyr8YoO+5CDy2e4sfeMHr8XjQTP4qYYCU7Y8xVRVeS3N5rVa2b7DzUvUJbrM
-	OZJri+8BdIy31tMMJ4zGHCOZ1sUr6zTLFSKe7JQtWvlb2xe26SsYQ+/eibl8e9O1fu04Kp/va+C
-	eR42fRzMjNBnH+p0H6BN3wB9MWQmRdL6I9qsw58Wx/13fTCpjuhIROjJ0b7PrqwSTJY=
-X-Received: by 2002:a05:600c:4f4c:b0:4bb:8503:69f4 with SMTP id 5b1f17b1804b1-4bb888097a2mr516443125e9.5.1795692448756;
-        Thu, 26 Nov 2026 03:27:28 -0800 (PST)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb884b7515sm816437995e9.13.2026.11.26.03.27.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Nov 2026 03:27:28 -0800 (PST)
-Date: Thu, 26 Nov 2026 11:27:14 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: "Nysal Jan K.A." <nysal@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Jeevitha Palanisamy
- <jeevitha@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, "Ritesh Harjani (IBM)"
- <ritesh.list@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, Nathan
- Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>,
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
- Andrew Morton <akpm@linux-foundation.org>, "David Hildenbrand (Arm)"
- <david@kernel.org>, Ryan Roberts <ryan.roberts@arm.com>, Andreas Larsson
- <andreas@gaisler.com>, Usama Arif <usama.arif@linux.dev>, Kevin Brodsky
- <kevin.brodsky@arm.com>, "Kiryl Shutsemau (Meta)" <kas@kernel.org>,
- linux-kernel@vger.kernel.org, llvm@lists.linux.dev
-Subject: Re: [PATCH 1/3] powerpc: Add support for 128-bit cmpxchg
-Message-ID: <20261126112714.021a3e66@pumpkin>
-In-Reply-To: <20261125174035.1412724-2-nysal@linux.ibm.com>
-References: <20261125174035.1412724-1-nysal@linux.ibm.com>
-	<20261125174035.1412724-2-nysal@linux.ibm.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvqX6Gbhz2yFb
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:45:12 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3D76643F1B;
+	Thu, 26 Nov 2026 11:45:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D8741F000C4;
+	Thu, 26 Nov 2026 11:44:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795693510;
+	bh=5BVeDoXywdonN8l0fahN7PgNc5xFYXRHYBZPC3PlIr4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References;
+	b=S2hH+FUi1whGz3Tc5erJ4wvaQIsa7/tWSP/c6X9vu53OBUKo1B0WiNAclJt6yAFgm
+	 pGz1Ex70shjn/h1DHItCYjmiSeUn89UCHCA4G1w1wWeCAdswE3zJrMKPMwFzKMZlDd
+	 nC0SY1V0v4hU5bqu5wSTOQsO02ln/4LBS8/pU19gTTq8a94zu1u2oRzquyVVWvfoyJ
+	 A9Q9F5dRlSSngm44CD8uAUW6WllAHTLL/ZABWNrv2paiBktHMVqFSwsqVP75fnKoBF
+	 d/7+x6dvllgHhWRvd2tJbeHoIPzncqy0ud8b0/7wXvqdGK8WsxcZSCgR/1wb4XGsOs
+	 rx6swYcSlIfow==
+From: Mike Rapoport <rppt@kernel.org>
+To: Albert Ou <aou@eecs.berkeley.edu>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Baoquan He <baoquan.he@linux.dev>,
+	Borislav Petkov <bp@alien8.de>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Helge Deller <deller@gmx.de>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Pasha Tatashin <pasha.tatashin@soleen.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Pratyush Yadav <pratyush@kernel.org>,
+	Rich Felker <dalias@libc.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Will Deacon <will@kernel.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	x86@kernel.org,
+	"Mike Rapoport (Microsoft)" <rppt@kernel.org>
+Cc: Alexandre Ghiti <alex@ghiti.fr>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Cong Wang <cwang@multikernel.io>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	WANG Xuerui <kernel@xen0n.name>,
+	kexec@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev
+Subject: Re: [PATCH 0/2] arch, kexec: declare kexec and crash capabilities in Kconfig.kexec
+Date: Thu, 26 Nov 2026 13:44:53 +0200
+Message-ID: <179569348034.4110350.10768570671103859123.b4-ty@b4>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261119-arch-kconfig-v1-0-37c276fe4d26@kernel.org>
+References: <20261119-arch-kconfig-v1-0-37c276fe4d26@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -107,118 +115,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-19.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=4.0.1
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-On Wed, 25 Nov 2026 23:10:22 +0530
-"Nysal Jan K.A." <nysal@linux.ibm.com> wrote:
+From: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-> Implement arch_cmpxchg128() and arch_cmpxchg128_local() for 64-bit
-> little-endian PowerPC (POWER8 and later) using the lqarx and stqcx.
-> instructions.
-> 
-> This enables HAVE_CMPXCHG_DOUBLE, which allows SLUB to use the lockless
-> __update_freelist_fast() path and provides kmalloc_nolock() required by
-> BPF task-local storage and arena allocations.
-> Select HAVE_ALIGNED_STRUCT_PAGE to ensure 16-byte alignment for struct
-> page as required by quadword load/store instructions.
-> 
-> The lqarx and stqcx. instructions require a consecutive even/odd
-> register pair, with the most significant 64 bits in the even register
-> and the least significant 64 bits in the odd register. Leverage GCC's
-> PTI mode variable attribute to allow the compiler to allocate suitable
-> register pairs. On little-endian, the halves are swapped to match the
-> memory layout.
-> 
-> Link: https://github.com/linuxppc/issues/issues/463
-> Link: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106895
-> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
-> ---
-...
-> index dbb50c06f0bf..b3164c3c0b81 100644
-> --- a/arch/powerpc/include/asm/cmpxchg.h
-> +++ b/arch/powerpc/include/asm/cmpxchg.h
-> @@ -6,6 +6,7 @@
->  #include <linux/compiler.h>
->  #include <asm/synch.h>
->  #include <linux/bug.h>
-> +#include <linux/types.h>
->  
->  #ifdef __BIG_ENDIAN
->  #define BITOFF_CAL(size, off)	((sizeof(u32) - size - off) * BITS_PER_BYTE)
-> @@ -617,6 +618,65 @@ __cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
->  }
->  #endif
->  
-> +#ifdef CONFIG_HAVE_CMPXCHG_DOUBLE
-> +union __u128_halves {
-> +	u128 full __mode(PTI);
-> +	struct {
-> +		u64 low, high;
+On Thu, 19 Nov 2026 08:16:56 +0200, Mike Rapoport (Microsoft) wrote:
+> The intention is to take it via kexec tree.
 
-There seems to be a mismatch between the register order that PTI
-assigns and the one that C uses.
-It might be less confusing to swap low and high in the above
-and only use 'full' (probably renamed) in the asm statement.
+Applied to kexec-7.5 branch of liveupdate/linux.git tree, thanks!
 
-> +	};
-> +};
-> +
-> +#define __CMPXCHG128(name, entry_mb, exit_mb)			\
-> +static __always_inline u128					\
-> +__cmpxchg_u128##name(volatile u128 *p, u128 old, u128 new)	\
-> +{								\
-> +	union __u128_halves tmp, r, o = { .full = (old) };	\
+[1/2] MAINTAINERS: add kernel/Kconfig.kexec to KEXEC
+      commit: 09ade745fcd10af7fa62c73a918cae6814c5b0d8
+[2/2] arch, kexec: declare kexec and crash capabilities in Kconfig.kexec
+      commit: e583fcbe5b58597fdd81bcf150115fb801d6507f
 
-You don't need 'o' in a register pair, it might be better
-to just have two u64 for the two halves.
+tree: https://git.kernel.org/pub/scm/linux/kernel/git/liveupdate/linux
+branch: kexec-7.5
 
-> +								\
-> +	__asm__ __volatile__ (					\
-> +	entry_mb						\
-> +"1:     lqarx   %[r],0,%[ptr]\n"				\
-> +"       xor     %L[t],%L[r],%[ol]\n"				\
-> +"       xor     %[t],%[r],%[oh]\n"				\
-> +"       or.     %[t],%[t],%L[t]\n"				\
-> +"       bne-    2f\n"						\
-> +"       mr      %L[t],%[n]\n"					\
-> +"       mr      %[t],%L[n]\n"					\
-> +"       stqcx.  %[t],0,%[ptr]\n"				\
-> +"       bne-    1b\n"						\
-> +	exit_mb							\
-> +"2:     mr      %[t],%[r]\n"					\
-> +"       mr      %[r],%L[r]\n"					\
-> +"       mr      %L[r],%[t]\n"					\
+--
+Sincerely yours,
+Mike.
 
-If you leave this exchange to the C code it will likely get
-optimised away.
-
-The same is true for the fallback code in the next patch
-where you can use asm("r14") and asm("r15) for the two halves
-of 'r' and then combine them with arithmetic for the return.
-
-This would all be more readable with slightly longer variable names.
-
-I'm sure the above and the fallback code could be made similar
-enough to avoid the duplication.
-
-David
-
-> +	: [r] "=&r" (r.full),					\
-> +	  [t] "=&r" (tmp.full), "+m" (*p)			\
-> +	: [ptr] "r" (p),					\
-> +	  [ol] "r" (o.low), [oh] "r" (o.high),			\
-> +	  [n] "r" (new)						\
-> +	: "cc", "memory");					\
-> +								\
-> +	return r.full;						\
-> +}
-...
 
