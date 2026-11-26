@@ -1,51 +1,112 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D89D4606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 10:16:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0F6F6606A682
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 10:42:13 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jKqITnP5
+	dkim=pass (2048-bit key) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=cTb4l1cJ
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZssR4Swcz2xl0;
-	Thu, 26 Nov 2026 21:16:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795688203;
-	cv=none; b=eXRf4FuqSeTpTBdFY+rkUJHQBf8YNqlUo+GiWPvu9O+Q4s7oZ4kRH+us2vBixbZY22TY9c41bJLp+Jg4MjthK4toiXk9xj5d/VY6B0/yYaTskVRIzTprxu8Toe74qGj8jd00SUUHJEANL68f6lGWstvAlemZ2zlRwB3EDBwmviTjUaUpW0jZGwW9FbsXtwoS3NipGWqDrjJYn1/x4XCd9gdR1+hNwvpCmGFs1rqyuQAIAE8wDyWvwIg7i6LdHQWp3GFzBt1KUIZMoOW81TscMenX/5IZ27/ffPXF4gUcS9x0oNQMmOJygwACSINdVVbdFXM94JgwF+rL5g92sQKckA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZtQq4mGZz2xMt;
+	Thu, 26 Nov 2026 21:42:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795689731;
+	cv=none; b=F94zK++67PuVTZTlw7Kklmdk4smrgEpHl53WcIOyKt22tg7oT3b3DYpbs9YI03E90bS1VLEAlODl2Ixv7Kpqia/YjAl+R5iSsZWf4Hqmd8vKdjTv3gW4MeylOxKS4rUp249w4lVrqFSeb2CynOo2OtXQRSWW7RcQobavkCLWh/13UCWHTng+EGmHFBzRsK27+NIbChncRd9kcujPsP4xS0YjDJhsSOVZBYd9kuoMI/CQvHUgUFcUwUxMYaKDtNErFOGOHHUEsILPP0CiPEvOnTppixGgEk/402swTQsZ1rNEx3YUlK4ZzQTf7GKJybDh/FtjxQirIL65VhQ8S4Yn6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795688203; c=relaxed/relaxed;
-	bh=9F3e3qoADYvEtMrkzIhPLVVLYaRfKlHMHElOy4yBHDM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=h3ZV9TvWRSSEoLgDcwzPf/Ub90nhor84mopHkmlqD6BzQpadFjWUYld10Z2a09s3J4Ks/ffoyqE0iE9kguI4wIoFIQfvROpyUe4P23pvQEVpaSCwLNQmuccQJMZeOFn0FHrIwJjEtFRLPKytlGP86qCT0bNYO5Yip33UeV0u4u9hVByLWpvksC2lbRF0kGyajZFnOI1Llev9XbQHmNCFsHLxnEmL+B+oHKH8XOnJBlHBjotFkerLJUO1yJ3zzTHkWnr37WWrYWFpW8mAN8jHfL6xz3A4ifrGTjBnL/oG5IeInU+pUtJst5WuiJzOwPOD6Vm6FLAjs55k/4x9BXyxUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jKqITnP5; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1795689731; c=relaxed/relaxed;
+	bh=uheoRvhmn+YrPKS27YmgoKtAWg9YwsclVsNF7+M1D2A=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=kJHb9ACOR8nS/dS732nEvJAr6KkFOJqCbuCDD2DfP6nmbOMpPD888NdFy+4lFVMCQODM+LI9VQJonexxhWPgDi4xqxJCYnAMEcjSYV2/BvRvnDjXONNELsX0DAVLoRSz5mQZmrwclgA2cKUHLShRIp3OvmMOCv3/J1zq1rDzkYpbMIO697ktL3ceeWELwkejwf0rQ0PLx8LUSP3RAPN3eoX95I2E8FMXcYu5jCTF9HBBWPPPVK1L+HJWdeF/a5PEqSv+l/jV4y/XZVeNgAn37Qg3fItgaDJR8ssqzFDo9xvG4jlY63fhlNoSnPXR+i/JoY0OOdFmzH58iHrkz/tMhw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=cTb4l1cJ; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=jKqITnP5;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=cTb4l1cJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZssQ5xccz2xGw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 21:16:42 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 07BF240B4E;
-	Thu, 26 Nov 2026 10:16:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8F1441F000C6;
-	Thu, 26 Nov 2026 10:16:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795688199;
-	bh=9F3e3qoADYvEtMrkzIhPLVVLYaRfKlHMHElOy4yBHDM=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=jKqITnP5wU/Q5r+vGq93o6JtncPMq5zle1NGmwV+sJcp2oBW20YZB25SKuEk45rCS
-	 lJbuesqLdlKooLcZNowtQ677pgvNzxsLG4VamTCS6S8Z2lyENT4v3wbGBk/LeUeNWD
-	 yMBY03FT9lAPnZ2gzFMM/BuLsqOP/q6ss9uF92JZ3A6ziAriaARGJhuOBQyXHqEUme
-	 3EszC/ZOyJhDYoZ+WPVueYq/TTkZP+LnOGXjZAVTA4EcDHuyfPv7Dcu5Q0dfAmkjf2
-	 cPd1OWJyDeGIvSsI0OIW355VTqf+7NrHkiSpRRidig4bsGSEaOEcdcL+jZ3E59IFCu
-	 VVMmUsRIGLytA==
-Message-ID: <d7633118-f091-487d-993e-38a03f9be58c@kernel.org>
-Date: Thu, 26 Nov 2026 11:16:34 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZtQp1TKKz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 21:42:08 +1100 (AEDT)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 816E74E4179F;
+	Thu, 26 Nov 2026 10:42:02 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 3EFF06075B;
+	Thu, 26 Nov 2026 10:42:02 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 364FC11E6B305;
+	Thu, 26 Nov 2026 11:41:33 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1795689714; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=uheoRvhmn+YrPKS27YmgoKtAWg9YwsclVsNF7+M1D2A=;
+	b=cTb4l1cJpCcYp3q2aGIWlRj7FvBcgz0uUKYYlYqqa5UwcH1jUj6SQXyQX9kJf5GRsaH3fE
+	7nzKsqBjHYbI4v0yCa6EvGvnchrfXj/QG4Q25dBsKtPEHRP6nOAzZQdKNAcGel8NxWuCl8
+	/UogoCled4Abz5qqLhRfe9EBcPYCKq0lj0YlM421XKJiKVLb8J73HWnTbfFaidWAakRDUI
+	b8g6uiU/7Zm+9NDBBgVq+1RGa6wbQcoFDyM9l3vgGrsGxkIamS5EMGTKNmHk1jRT2TFSKO
+	50QKKDM+v40MpF0N1CCiiA2gnNeu7HhRjnzL0TiEgFu/pSWGmX084+BB/y5b7w==
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
+Cc: Pawel Zalewski <pzalewski@thegoodpenguin.co.uk>,  Richard Weinberger
+ <richard@nod.at>,  Vignesh Raghavendra <vigneshr@ti.com>,  Pratyush Yadav
+ <pratyush@kernel.org>,  Michael Walle <mwalle@kernel.org>,  Takahiro
+ Kuwano <takahiro.kuwano@infineon.com>,  Vladimir Zapolskiy <vz@mleia.com>,
+  Robert Jarzmik <robert.jarzmik@free.fr>,  Alexander Usyskin
+ <alexander.usyskin@intel.com>,  Joern Engel <joern@lazybastard.org>,
+  Madhavan Srinivasan <maddy@linux.ibm.com>,  Michael Ellerman
+ <mpe@ellerman.id.au>,  Nicholas Piggin <npiggin@gmail.com>,  "Christophe
+ Leroy (CS GROUP)" <chleroy@kernel.org>,  "Ritesh Harjani (IBM)"
+ <ritesh.list@gmail.com>,  Shrikanth Hegde <sshegde@linux.ibm.com>,  Michal
+ Simek <michal.simek@amd.com>,  Nicolas Ferre
+ <nicolas.ferre@microchip.com>,  Alexandre Belloni
+ <alexandre.belloni@bootlin.com>,  Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>,  Brian Norris <computersforpeace@gmail.com>,
+  Kamal Dasu <kamal.dasu@broadcom.com>,  Broadcom internal kernel review
+ list <bcm-kernel-feedback-list@broadcom.com>,  William Zhang
+ <william.zhang@broadcom.com>,  Anand Gore <anand.gore@broadcom.com>,
+  Kursad Oney <kursad.oney@broadcom.com>,  Florian Fainelli
+ <florian.fainelli@broadcom.com>,  =?utf-8?Q?Rafa=C5=82_Mi=C5=82ecki?=
+ <rafal@milecki.pl>,  Ray
+ Jui <rjui@broadcom.com>,  Scott Branden <sbranden@broadcom.com>,  Han Xu
+ <han.xu@nxp.com>,  Paul Cercueil <paul@crapouillou.net>,  Harvey Hunt
+ <harveyhuntnexus@gmail.com>,  Keguang Zhang <keguang.zhang@gmail.com>,
+  Piotr Wojtaszczyk <piotr.wojtaszczyk@timesys.com>,  Liang Yang
+ <liang.yang@amlogic.com>,  Neil Armstrong <neil.armstrong@linaro.org>,
+  Kevin Hilman <khilman@baylibre.com>,  Jerome Brunet
+ <jbrunet@baylibre.com>,  Martin Blumenstingl
+ <martin.blumenstingl@googlemail.com>,  Matthias Brugger
+ <matthias.bgg@gmail.com>,  AngeloGioacchino Del Regno
+ <angelogioacchino.delregno@collabora.com>,  Frank Li <Frank.Li@nxp.com>,
+  Sascha Hauer <s.hauer@pengutronix.de>,  Pengutronix Kernel Team
+ <kernel@pengutronix.de>,  Fabio Estevam <festevam@gmail.com>,  Manivannan
+ Sadhasivam <mani@kernel.org>,  Heiko Stuebner <heiko@sntech.de>,  Maxime
+ Coquelin <mcoquelin.stm32@gmail.com>,  Alexandre Torgue
+ <alexandre.torgue@foss.st.com>,  Chen-Yu Tsai <wens@kernel.org>,  Jernej
+ Skrabec <jernej.skrabec@gmail.com>,  Samuel Holland <samuel@sholland.org>,
+  Stefan Agner <stefan@agner.ch>,  Lucas Stach <dev@lynxeye.de>,  Thierry
+ Reding <thierry.reding@kernel.org>,  Jonathan Hunter
+ <jonathanh@nvidia.com>,  Jacky Huang <ychuang3@nuvoton.com>,  Shan-Chun
+ Hung <schung@nuvoton.com>,  Tudor Ambarus <tudor.ambarus@linaro.org>,
+  Linus Walleij <linusw@kernel.org>,  Kyungmin Park
+ <kyungmin.park@samsung.com>,  linux-mtd@lists.infradead.org,
+  linux-arm-kernel@lists.infradead.org,  linuxppc-dev@lists.ozlabs.org,
+  imx@lists.linux.dev,  linux-mips@vger.kernel.org,
+  linux-amlogic@lists.infradead.org,  linux-kernel@vger.kernel.org,
+  linux-mediatek@lists.infradead.org,  linux-arm-msm@vger.kernel.org,
+  linux-rockchip@lists.infradead.org,
+  linux-stm32@st-md-mailman.stormreply.com,  linux-sunxi@lists.linux.dev,
+  linux-tegra@vger.kernel.org
+Subject: Re: [PATCH 00/10] mtd: use desginated initializers in *_device_id
+ arrays
+In-Reply-To: <awcZcuSbse5g3FWK@monoceros> ("Uwe =?utf-8?Q?Kleine-K=C3=B6ni?=
+ =?utf-8?Q?g=22's?= message of
+	"Wed, 25 Nov 2026 18:25:04 +0100")
+References: <20261125-acpi-mtd-v1-0-42ad2f645bee@thegoodpenguin.co.uk>
+	<awcZcuSbse5g3FWK@monoceros>
+User-Agent: mu4e 1.12.12; emacs 30.2
+Date: Thu, 26 Nov 2026 11:41:33 +0100
+Message-ID: <87v75jyiw2.fsf@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,153 +120,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/4] powerpc/execmem: Allocate kprobes insn pages from
- the modules area on book3s/32 and 8xx
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>, Mike Rapoport <rppt@kernel.org>
-References: <cover.1795666663.git.ritesh.list@gmail.com>
- <e8f8d59f9a3c88f45f873c91a2ff94586b68d928.1795666663.git.ritesh.list@gmail.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <e8f8d59f9a3c88f45f873c91a2ff94586b68d928.1795666663.git.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=4.0.1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Last-TLS-Session-Version: TLSv1.3
+X-Spam-Status: No, score=-10.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
 
+>> Signed-off-by: Pawel Zalewski <pzalewski@thegoodpenguin.co.uk>
+>
+> Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@baylibre.com>
+>
+> with or without addressing the nitpick I had for one of the patches.
 
-Le 26/11/2026 à 05:26, Ritesh Harjani (IBM) a écrit :
-> On book3s/32, a kprobe on an instruction that can't be emulated and has
-> to be single stepped out of line, crashes the kernel. For e.g. with the
-> following cmds...
->      ~> echo 9 > /proc/sys/kernel/printk
->      ~> mount -t debugfs debugfs /sys/kernel/debug
->      ~> echo 'p:wx filldir64+0xb8' > /sys/kernel/debug/tracing/kprobe_events
->      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/wx/enable
->      ~> echo 1 > /sys/kernel/debug/tracing/events/kprobes/enable
->      ~> ls
-> 
-> ...we can see the following crash:
->      kernel tried to execute exec-protected page (f101a008) - exploit attempt? (uid: 0)
->      BUG: Unable to handle kernel instruction fetch
->      Faulting instruction address: 0xc02b919c
->      Vector: 400 (Instruction Access) at [f19a9d60]
+Let me know what you intend to do.
 
-Unrelated to this patch, but shouldn't the above address [f19a9d60] be 
-identical to the one in the "kernel tried to execute exec-protected page 
-(f101a008)" ?
+Not related but since you were removing the /* sentinel */ comment
+sometimes, when do we get rid of those extra entries entirely?
 
->          pc: c02b919c: filldir64+0xb8/0x2dc
->          lr: c02b9148: filldir64+0x64/0x2dc
->          sp: f19a9e20
->         msr: 10029032
->        current = 0xc112e900
->          pid   = 102, comm = ls
->      enter ? for help
->      [f19a9e20] c1a8d420 (unreliable)
->      [f19a9e50] c02e4074 dcache_readdir+0x208/0x2a8
->      [f19a9e90] c02b8c5c iterate_dir+0x88/0x1fc
->      [f19a9ec0] c02b96e0 sys_getdents64+0x88/0x198
->      [f19a9f10] c0014400 system_call_exception+0xf8/0x20c
->      [f19a9f30] c00191ac ret_from_syscall+0x0/0x2c
->      ---- Exception: c00 (System Call) at a7596164
->      SP (af802310) is in userspace
-> 
-> This happens because on book3s/32 the exec permission is per segment
-> (256MB), not per page. The page tables have no hardware exec bit, only
-> the segment registers have a no-execute (N) bit. mmu_mark_initmem_nx()
-> sets N on all the kernel segments except the ones of the modules area.
-> So nothing in the vmalloc area can be executed, even when the page is
-> mapped with PAGE_KERNEL_ROX or PAGE_KERNEL_EXEC, because _PAGE_EXEC is
-> a software only bit there and the segment's N bit is what the MMU
-> enforces.
-> 
-> 8xx and 603 (which is book3s/32) have one more problem. Their ITLB miss
-> handlers walk only the current task's PGD, whose kernel entries are
-> copied from swapper_pg_dir in pgd_alloc(). Only kernel text and the
-> modules area are sure to be in that copy, the modules area because
-> prealloc_execmem_pgtable() creates its page tables at boot. Unlike the
-> DTLB path, nothing fixes up a missing entry on an ITLB miss. So an insn
-> page in a vmalloc area mapped after the task's PGD was allocated can't
-> be executed.
-> 
-> Before commit 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes
-> allocations"), the kprobes insn pages came from module_alloc(). That
-> commit moved them to the whole of the vmalloc space, on the grounds that
-> kprobes use a breakpoint and don't need to be near the kernel text.
-> That is fine on platforms where the exec permission is per page,
-> as PAGE_KERNEL_ROX is then enough to make a vmalloc page executable.
-> It is not on book3s/32 and 8xx, where the modules area is not only close to
-> the kernel text but is also the only page-mapped area whose segment is
-> left executable. So the insn pages must keep coming from there.
-> 
-> MODULES_VADDR is only defined on book3s/32 and 8xx, so use the modules
-> area for EXECMEM_KPROBES whenever it is defined.
-> 
-> Fixes: 1b750c2fbf82 ("powerpc: extend execmem_params for kprobes allocations")
-> Suggested-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> Reviewed-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-Reviewed-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-
-> ---
->   arch/powerpc/mm/mem.c | 11 +++++++++--
->   1 file changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 77b63b52d8f2..8a0fdfd028dd 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -391,6 +391,7 @@ struct execmem_info __init *execmem_arch_setup(void)
->   	pgprot_t kprobes_prot = strict_kernel_rwx_enabled() ? PAGE_KERNEL_ROX : PAGE_KERNEL_EXEC;
->   	pgprot_t prot = strict_module_rwx_enabled() ? PAGE_KERNEL : PAGE_KERNEL_EXEC;
->   	unsigned long fallback_start = 0, fallback_end = 0;
-> +	unsigned long kprobes_start, kprobes_end;
->   	unsigned long start, end;
-> 
->   	/*
-> @@ -410,9 +411,15 @@ struct execmem_info __init *execmem_arch_setup(void)
->   	}
-> 
->   	end = MODULES_END;
-> +
-> +	kprobes_start = MODULES_VADDR;
-> +	kprobes_end = MODULES_END;
->   #else
->   	start = VMALLOC_START;
->   	end = VMALLOC_END;
-> +
-> +	kprobes_start = VMALLOC_START;
-> +	kprobes_end = VMALLOC_END;
->   #endif
-> 
->   	prealloc_execmem_pgtable();
-> @@ -428,8 +435,8 @@ struct execmem_info __init *execmem_arch_setup(void)
->   				.fallback_end	= fallback_end,
->   			},
->   			[EXECMEM_KPROBES] = {
-> -				.start	= VMALLOC_START,
-> -				.end	= VMALLOC_END,
-> +				.start	= kprobes_start,
-> +				.end	= kprobes_end,
->   				.pgprot	= kprobes_prot,
->   				.alignment = 1,
->   			},
-> --
-> 2.39.5
-> 
-
+Thanks,
+Miqu=C3=A8l
 
