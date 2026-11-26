@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DD8F4606A321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:18:44 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2FA25606A330
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:18:54 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bn5mKTE/
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M2K3sPPk
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvDz4RVvz3bfR;
-	Thu, 26 Nov 2026 22:18:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691923;
-	cv=none; b=hXeLCWxHNkjMDPOiYcbct7RbE0HYIbPn4b0QQ7BRbo6StUuMUJsaFoHGQwocsuNO5xX0pbXofKb3z1LGWiyL3r/uHoMIA34hGE7jluFy5vLjhnWYxNykv98mdl0OpyFZDBcQGCJw2uk+HjKe/T1z0wkK2v565RTH4YSZGu8Zl/vchOglXYmUJNiOv952Ma9c1CLbQXqIDBE7ty4XOGRy9Z10r68K9yrkIS7pXOqrYJ8Ekx1CdDK3clUU/qryTL7/sROpde6cgZolhHHt1kt+RVD0SYe5vkI6meV6n7jSqK2plBCTGp32NTp9M44CTTy1DgXRg0F153vkfaqiQYMM3g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvF86bHwz2yQG;
+	Thu, 26 Nov 2026 22:18:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691932;
+	cv=none; b=Ew22TGfEtOaHm/2U5NMM4r040SeUZVoll6OVX9QuLSnwJ674ESocdyaX0gyNwhxuk+o6kirNxjXozG3oN2DVSr5CAA62/LAIPYxjyZa7pCK+gZ5j93jGCycL4+w5LXK+rFi1BA70qkj0+AOWLtXB5Ps3JuW2wETF2HGTkh1Ba0X6/n51xzAYx9DpMfN5O1GXz0+esjWrNXb6wF5vT75jD3WiXP4ofdE1nshbeT74OG7Z66Q+LWu2AwmhX5hC0XO5WyVMMGmhss2JUkVP/9pEWViOZ0K3lb6WGfCNdEavajn6u+81IpWf1K6Pe3utvmZakzQZ3qTn7ymhWYGZaqRa4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691923; c=relaxed/relaxed;
-	bh=ktJ4sBRXGqvJMbIXWYsuN6usspS+V4heWNTrcbuxgIc=;
+	t=1795691932; c=relaxed/relaxed;
+	bh=iRZMtIW2MugvkVR76yuHAqsoWEOAtNfsgb89NvFPOYA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Rci8jiDV2czp91rC/zKiWC5rpb+Djdft9ETSmT77p6D+XGGSmoJ2VhT7Z+5MdoiO+S0LfIKidID70PrcdYsWVhQDzXQy7TZG8EXX7lWz6jE+nsoVWQJAfQc7aVkxUaEogYGpzWo5qhRKPTmsmeObUfDWNciDv5EA29uLV4GSiTsYj7yPgmVJRmGq43DJGdLhXgjsLjJqwfY6yOUBY1FCy0b+RQDfWI0itf36JEc0t16Q6SXuz7Vc4flcO7wKrIURSLPnb0itdfF5czrGrI6uzc5o8RwNXpKW03YUj9yC++UInQt+10yvJDIgpHEzD7/5AUzaegtaPCDjYAQ4N4Ww+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bn5mKTE/; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=FuYMUDKwmfcKJ16YOT0QvoRfR94B/UONBZv7JM1gTfrtvcRZdd5uAH7crwajyW0hP+OW/EJ9xv08O42DK+rmx/SXaLu4odEjSVWogYu6FohqkUfZlpDA4v2fef58uBvrN8m8HpL3sL3HGLRwo8ZlLDHiNwAtHt1JfGcImMD754OU3D2AJtDJBoNx1RKi1q7PmY/zl7b4Fnm9eb6afJit+WFHEf0cBW6dvO7ZnPb132ZfjBy7fbeI77nxy/0rRX5eB5nmNArOrLxxeYL4t/ysqHjG8hvJnyp5JiCm0yhbPwyHsCAh8u5jHVx1BfiRjQ5gOWo6IBe8xVSJguLFMW8mwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M2K3sPPk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Bn5mKTE/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=M2K3sPPk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvDy57tkz3bfP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:18:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvF80kx8z2yKn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:18:52 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D4202630FE;
-	Thu, 26 Nov 2026 11:18:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E6DB1F00A3C;
-	Thu, 26 Nov 2026 11:18:31 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7585B46595;
+	Thu, 26 Nov 2026 11:18:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAF021F0093C;
+	Thu, 26 Nov 2026 11:18:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691920;
-	bh=ktJ4sBRXGqvJMbIXWYsuN6usspS+V4heWNTrcbuxgIc=;
+	s=k20260515; t=1795691930;
+	bh=iRZMtIW2MugvkVR76yuHAqsoWEOAtNfsgb89NvFPOYA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Bn5mKTE/VKF0HJEEoCN0Lbpnlc3goN5OBDOvDBpKdffqcM+AUpAHhRIM6xAf6UuPq
-	 288ZdRDBV8joQHv1fPm2LkZ2YM4GN52DDLnOGbi33khOgCJhf31P39Zk7Br47p2A9f
-	 YT8TicuEe2cXONCKMBJbUEy3C6k9jptyndArWLGucL6L+G0fZ585921z2saIBKMJDq
-	 v+PQ6T0GU09nZ3Ght95fzc1ZloiDWK/J9zRlxnBRd4gZLdNYL3e0uv1lAsyRFXIo3a
-	 RnTkrQeImkHiGHyirJdrhR7AqsaXVb2A0dVsGEMw9fonvAGasUOHAfgurGffcuU10F
-	 MfilxsToEh6bQ==
+	b=M2K3sPPkN2wjX6UdoOPOB2E6NUYjuFP15lUtDNCRv+M/AT7W+/1be2jTXCi9creoH
+	 Vzn5fE3niCZeSKPAlOKUP59TBuOM2jyn84PEm3o2JjxvL92JC1v+DF1aOJp/wZCLxU
+	 BGxgZLaI7KM4V/6wwCMbPH4d6LuJgcXYKH20w1pUpVHn2iVMiFl4ufwHgkiV/b2RKY
+	 V6i4f9hqQEk1nzPH/e7OcvKNvXrlJAj/fDk4sXrnFnIFmTwvfajSMnfXDoY0oCLVBh
+	 wPKWGNke9HHQH9EsrEm9pqWJph6LvPyxT1ODI5MHz+0XZaOknNB6zAgZcm+gvF8Q10
+	 Ig1ST0p/2W1Cw==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:39 +0200
-Subject: [PATCH RFC v2 26/54] x86/mm/pat: implement set_memory_*() with a
- table of operations
+Date: Thu, 26 Nov 2026 13:14:40 +0200
+Subject: [PATCH RFC v2 27/54] x86/mm/pat: prepare the direct map counters
+ for the generic code
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-26-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-27-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,211 +97,310 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Every architecture that implements set_memory_*() and
-set_direct_map_*_noflush() has a function for each operation, and the
-functions differ only in the masks they pass to the page table walk. s390
-and powerpc already translate an operation to masks in one place.
+The direct map counters are going to move to the generic CPA core, so that
+every architecture that uses the core gets them.
 
-These entry points are going to become generic, with the masks of each
-operation provided by the architecture.
+Prepare them for the move:
 
-Describe the operations of x86 in a table of masks and request flags, and
-implement set_memory_*() and set_direct_map_*_noflush() with a single
-function that takes the request from the table.
+* rename them to direct_map_count_*(), which better describes what they do
+  and does not collide with the update_page_count() of powerpc and s390
+* declare direct_map_count_update() in mm_internal.h, where enum
+  pgtable_level is visible
+* print the DirectMap lines of /proc/meminfo in a loop over the page table
+  levels, so that every architecture can choose its levels
 
-No functional change.
+The output in /proc/meminfo does not change, except that 2-level x86-32
+booted with "gbpages" no longer prints a DirectMap1G line. It never maps 1G
+pages, so the line was always 0 kB.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/x86/mm/pat/set_memory.c | 136 ++++++++++++++++++++++++++++---------------
- 1 file changed, 88 insertions(+), 48 deletions(-)
+ arch/x86/include/asm/pgtable_types.h |  6 ---
+ arch/x86/mm/init_32.c                |  4 +-
+ arch/x86/mm/init_64.c                | 14 +++---
+ arch/x86/mm/mm_internal.h            |  7 +++
+ arch/x86/mm/pat/set_memory.c         | 92 ++++++++++++++++++++----------------
+ 5 files changed, 66 insertions(+), 57 deletions(-)
 
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index b1a669e775f4..60ee4209c528 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -551,12 +551,6 @@ enum pg_level {
+ 	PG_LEVEL_NUM
+ };
+ 
+-#ifdef CONFIG_PROC_FS
+-extern void update_page_count(int level, unsigned long pages);
+-#else
+-static inline void update_page_count(int level, unsigned long pages) { }
+-#endif
+-
+ /*
+  * Helper function that returns the kernel pagetable entry controlling
+  * the virtual address 'address'. NULL means no pagetable entry present.
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 1895a71316c2..d9e835aaf912 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -367,8 +367,8 @@ kernel_physical_mapping_init(unsigned long start,
+ 		 * update direct mapping page count only in the first
+ 		 * iteration.
+ 		 */
+-		update_page_count(PGTABLE_LEVEL_PMD, pages_2m);
+-		update_page_count(PGTABLE_LEVEL_PTE, pages_4k);
++		direct_map_count_update(PGTABLE_LEVEL_PMD, pages_2m);
++		direct_map_count_update(PGTABLE_LEVEL_PTE, pages_4k);
+ 
+ 		/*
+ 		 * local global flush tlb, which will flush the previous
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 7587b8ef88bb..e2592ed2d905 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -508,7 +508,7 @@ phys_pte_init(pte_t *pte_page, unsigned long paddr, unsigned long paddr_end,
+ 		paddr_last = (paddr & PAGE_MASK) + PAGE_SIZE;
+ 	}
+ 
+-	update_page_count(PGTABLE_LEVEL_PTE, pages);
++	direct_map_count_update(PGTABLE_LEVEL_PTE, pages);
+ 
+ 	return paddr_last;
+ }
+@@ -592,7 +592,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned long paddr, unsigned long paddr_end,
+ 		pmd_populate_kernel_init(&init_mm, pmd, pte, init);
+ 		spin_unlock(&init_mm.page_table_lock);
+ 	}
+-	update_page_count(PGTABLE_LEVEL_PMD, pages);
++	direct_map_count_update(PGTABLE_LEVEL_PMD, pages);
+ 	return paddr_last;
+ }
+ 
+@@ -680,7 +680,7 @@ phys_pud_init(pud_t *pud_page, unsigned long paddr, unsigned long paddr_end,
+ 		spin_unlock(&init_mm.page_table_lock);
+ 	}
+ 
+-	update_page_count(PGTABLE_LEVEL_PUD, pages);
++	direct_map_count_update(PGTABLE_LEVEL_PUD, pages);
+ 
+ 	return paddr_last;
+ }
+@@ -1116,7 +1116,7 @@ remove_pte_table(pte_t *pte_start, unsigned long addr, unsigned long end,
+ 	/* Call free_pte_table() in remove_pmd_table(). */
+ 	flush_tlb_all();
+ 	if (direct)
+-		update_page_count(PGTABLE_LEVEL_PTE, -pages);
++		direct_map_count_update(PGTABLE_LEVEL_PTE, -pages);
+ }
+ 
+ static void __meminit
+@@ -1162,7 +1162,7 @@ remove_pmd_table(pmd_t *pmd_start, unsigned long addr, unsigned long end,
+ 
+ 	/* Call free_pmd_table() in remove_pud_table(). */
+ 	if (direct)
+-		update_page_count(PGTABLE_LEVEL_PMD, -pages);
++		direct_map_count_update(PGTABLE_LEVEL_PMD, -pages);
+ }
+ 
+ static void __meminit
+@@ -1196,7 +1196,7 @@ remove_pud_table(pud_t *pud_start, unsigned long addr, unsigned long end,
+ 	}
+ 
+ 	if (direct)
+-		update_page_count(PGTABLE_LEVEL_PUD, -pages);
++		direct_map_count_update(PGTABLE_LEVEL_PUD, -pages);
+ }
+ 
+ static void __meminit
+@@ -1228,7 +1228,7 @@ remove_p4d_table(p4d_t *p4d_start, unsigned long addr, unsigned long end,
+ 	}
+ 
+ 	if (direct)
+-		update_page_count(PGTABLE_LEVEL_P4D, -pages);
++		direct_map_count_update(PGTABLE_LEVEL_P4D, -pages);
+ }
+ 
+ /* start and end are both virtual address. */
+diff --git a/arch/x86/mm/mm_internal.h b/arch/x86/mm/mm_internal.h
+index 7c4a41235323..8e461ae43d5f 100644
+--- a/arch/x86/mm/mm_internal.h
++++ b/arch/x86/mm/mm_internal.h
+@@ -24,6 +24,13 @@ void update_cache_mode_entry(unsigned entry, enum page_cache_mode cache);
+ 
+ extern unsigned long tlb_single_page_flush_ceiling;
+ 
++#ifdef CONFIG_PROC_FS
++void direct_map_count_update(enum pgtable_level level, long pages);
++#else
++static inline void direct_map_count_update(enum pgtable_level level,
++					   long pages) { }
++#endif
++
+ #ifdef CONFIG_NUMA
+ void __init x86_numa_init(void);
+ #endif
 diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index cbbc51be4de7..08dc69317931 100644
+index 08dc69317931..36d63119df71 100644
 --- a/arch/x86/mm/pat/set_memory.c
 +++ b/arch/x86/mm/pat/set_memory.c
-@@ -2392,42 +2392,98 @@ int clear_mce_nospec(unsigned long pfn)
- EXPORT_SYMBOL_GPL(clear_mce_nospec);
- #endif /* CONFIG_X86_64 */
+@@ -90,17 +90,33 @@ static inline pgprot_t cachemode2pgprot(enum page_cache_mode pcm)
+ 	return __pgprot(cachemode2protval(pcm));
+ }
  
--int set_memory_x(unsigned long addr, int numpages)
-+enum cpa_op {
-+	CPA_OP_RO,
-+	CPA_OP_RW,
-+	CPA_OP_X,
-+	CPA_OP_NX,
-+	CPA_OP_ROX,
-+	CPA_OP_DIRECT_MAP_INVALID,
-+	CPA_OP_DIRECT_MAP_DEFAULT,
-+	CPA_OP_NR
-+};
-+
-+struct cpa_op_prot {
-+	pgprot_t	set;
-+	pgprot_t	clr;
-+	unsigned int	req;
-+};
-+
-+static const struct cpa_op_prot cpa_ops[CPA_OP_NR] = {
-+	[CPA_OP_RO]	= { .clr = __pgprot(_PAGE_RW | _PAGE_DIRTY) },
-+	[CPA_OP_RW]	= { .set = __pgprot(_PAGE_RW) },
-+	[CPA_OP_X]	= { .clr = __pgprot(_PAGE_NX) },
-+	[CPA_OP_NX]	= { .set = __pgprot(_PAGE_NX) },
-+	[CPA_OP_ROX] = {
-+		.clr = __pgprot(_PAGE_RW | _PAGE_DIRTY | _PAGE_NX),
-+		.req = CPA_REQ_COLLAPSE,
-+	},
-+	[CPA_OP_DIRECT_MAP_INVALID] = {
-+		.clr = __pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY),
-+	},
-+	[CPA_OP_DIRECT_MAP_DEFAULT] = {
-+		.set = __pgprot(_PAGE_PRESENT | _PAGE_RW),
-+	},
-+};
-+
-+static void cpa_init_op(struct cpa_data *cpa, const struct cpa_op_prot *prot)
- {
--	if (!(__supported_pte_mask & _PAGE_NX))
--		return 0;
-+	cpa->mask_set = prot->set;
-+	cpa->mask_clr = prot->clr;
-+	cpa->flags |= prot->req;
-+}
-+
-+static int arch_cpa_prepare(struct cpa_data *cpa, enum cpa_op op)
++#if defined(CONFIG_PROC_FS) || defined(CONFIG_X86_CPA_STATISTICS)
++static const char *cpa_size_str(enum pgtable_level level, char *buf, size_t len)
 +{
-+	cpa_init_op(cpa, &cpa_ops[op]);
++	unsigned long size = pgtable_level_size(level);
++
++	if (size >= SZ_1G)
++		snprintf(buf, len, "%luG", size >> 30);
++	else if (size >= SZ_1M)
++		snprintf(buf, len, "%luM", size >> 20);
++	else
++		snprintf(buf, len, "%luk", size >> 10);
++
++	return buf;
++}
++#endif
++
+ #ifdef CONFIG_PROC_FS
+-static atomic_long_t direct_pages_count[PGTABLE_LEVEL_NUM];
++static atomic_long_t cpa_direct_map_pages[PGTABLE_LEVEL_NUM];
  
--	return change_page_attr_clear(addr, numpages, __pgprot(_PAGE_NX));
-+	if (!(__supported_pte_mask & _PAGE_NX)) {
-+		pgprot_val(cpa->mask_set) &= ~_PAGE_NX;
-+		pgprot_val(cpa->mask_clr) &= ~_PAGE_NX;
+-void update_page_count(int level, unsigned long pages)
++void direct_map_count_update(enum pgtable_level level, long pages)
+ {
+-	atomic_long_add(pages, &direct_pages_count[level]);
++	atomic_long_add(pages, &cpa_direct_map_pages[level]);
+ }
+ 
+-static void split_page_count(int level)
++static void direct_map_count_split(enum pgtable_level level)
+ {
+-	if (atomic_long_dec_if_positive(&direct_pages_count[level]) < 0)
++	if (atomic_long_dec_if_positive(&cpa_direct_map_pages[level]) < 0)
+ 		return;
+ 
+ 	if (system_state == SYSTEM_RUNNING) {
+@@ -109,44 +125,50 @@ static void split_page_count(int level)
+ 		else if (level == PGTABLE_LEVEL_PUD)
+ 			count_vm_event(DIRECT_MAP_LEVEL3_SPLIT);
+ 	}
+-	atomic_long_add(PTRS_PER_PTE, &direct_pages_count[level - 1]);
++	atomic_long_add(PTRS_PER_PTE, &cpa_direct_map_pages[level - 1]);
+ }
+ 
+-static void collapse_page_count(int level)
++static void direct_map_count_collapse(enum pgtable_level level)
+ {
+-	atomic_long_inc(&direct_pages_count[level]);
++	atomic_long_inc(&cpa_direct_map_pages[level]);
+ 	if (system_state == SYSTEM_RUNNING) {
+ 		if (level == PGTABLE_LEVEL_PMD)
+ 			count_vm_event(DIRECT_MAP_LEVEL2_COLLAPSE);
+ 		else if (level == PGTABLE_LEVEL_PUD)
+ 			count_vm_event(DIRECT_MAP_LEVEL3_COLLAPSE);
+ 	}
+-	atomic_long_sub(PTRS_PER_PTE, &direct_pages_count[level - 1]);
++	atomic_long_sub(PTRS_PER_PTE, &cpa_direct_map_pages[level - 1]);
+ }
+ 
+-static unsigned long direct_pages(int level)
++static void cpa_report_meminfo(struct seq_file *m, unsigned long levels)
+ {
+-	return atomic_long_read(&direct_pages_count[level]);
++	enum pgtable_level level;
++	char label[32], sz[20];
++
++	for (level = PGTABLE_LEVEL_PTE; level <= PGTABLE_LEVEL_PGD; level++) {
++		if (!(levels & BIT(level)))
++			continue;
++
++		snprintf(label, sizeof(label), "DirectMap%s:",
++			 cpa_size_str(level, sz, sizeof(sz)));
++		seq_printf(m, "%-16s%8lu kB\n", label,
++			   atomic_long_read(&cpa_direct_map_pages[level]) *
++			   (pgtable_level_size(level) >> 10));
 +	}
+ }
+ 
+ void arch_report_meminfo(struct seq_file *m)
+ {
+-	seq_printf(m, "DirectMap4k:    %8lu kB\n",
+-		   direct_pages(PGTABLE_LEVEL_PTE) << 2);
+-#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+-	seq_printf(m, "DirectMap2M:    %8lu kB\n",
+-		   direct_pages(PGTABLE_LEVEL_PMD) << 11);
+-#else
+-	seq_printf(m, "DirectMap4M:    %8lu kB\n",
+-		   direct_pages(PGTABLE_LEVEL_PMD) << 12);
+-#endif
+-	if (direct_gbpages)
+-		seq_printf(m, "DirectMap1G:    %8lu kB\n",
+-			   direct_pages(PGTABLE_LEVEL_PUD) << 20);
++	unsigned long levels = BIT(PGTABLE_LEVEL_PTE) | BIT(PGTABLE_LEVEL_PMD);
 +
-+	return 0;
- }
- 
--int set_memory_nx(unsigned long addr, int numpages)
-+static int set_memory_op(unsigned long addr, int numpages, enum cpa_op op)
- {
--	if (!(__supported_pte_mask & _PAGE_NX))
--		return 0;
-+	struct cpa_data cpa = {
-+		.addr = addr,
-+		.numpages = numpages,
-+	};
-+	int ret;
++	if (direct_gbpages && PUD_SIZE == SZ_1G)
++		levels |= BIT(PGTABLE_LEVEL_PUD);
 +
-+	ret = arch_cpa_prepare(&cpa, op);
-+	if (ret)
-+		return ret;
++	cpa_report_meminfo(m, levels);
+ }
+ #else
+-static inline void split_page_count(int level) { }
+-static inline void collapse_page_count(int level) { }
++static inline void direct_map_count_split(enum pgtable_level level) { }
++static inline void direct_map_count_collapse(enum pgtable_level level) { }
+ #endif
  
--	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_NX));
-+	return change_page_attr_set_clr(addr, numpages, cpa.mask_set,
-+					cpa.mask_clr, cpa.flags);
+ #ifdef CONFIG_X86_CPA_STATISTICS
+@@ -175,20 +197,6 @@ static inline void cpa_inc_pxd_preserved(enum pgtable_level level)
+ 	cpa_preserved[level]++;
  }
  
--int set_memory_ro(unsigned long addr, int numpages)
-+int set_memory_x(unsigned long addr, int numpages)
- {
--	return change_page_attr_clear(addr, numpages,
--				      __pgprot(_PAGE_RW | _PAGE_DIRTY));
-+	return set_memory_op(addr, numpages, CPA_OP_X);
- }
- 
--int set_memory_rox(unsigned long addr, int numpages)
-+int set_memory_nx(unsigned long addr, int numpages)
- {
--	pgprot_t clr = __pgprot(_PAGE_RW | _PAGE_DIRTY);
-+	return set_memory_op(addr, numpages, CPA_OP_NX);
-+}
- 
--	if (__supported_pte_mask & _PAGE_NX)
--		clr.pgprot |= _PAGE_NX;
-+int set_memory_ro(unsigned long addr, int numpages)
-+{
-+	return set_memory_op(addr, numpages, CPA_OP_RO);
-+}
- 
--	return change_page_attr_set_clr(addr, numpages, __pgprot(0), clr,
--					CPA_REQ_COLLAPSE);
-+int set_memory_rox(unsigned long addr, int numpages)
-+{
-+	return set_memory_op(addr, numpages, CPA_OP_ROX);
- }
- 
- int set_memory_rw(unsigned long addr, int numpages)
- {
--	return change_page_attr_set(addr, numpages, __pgprot(_PAGE_RW));
-+	return set_memory_op(addr, numpages, CPA_OP_RW);
- }
- 
- int set_memory_np(unsigned long addr, int numpages)
-@@ -2692,50 +2748,34 @@ int set_pages_rw(struct page *page, int numpages)
- 	return set_memory_rw(addr, numpages);
- }
- 
--static int __set_pages_p(struct page *page, int numpages)
-+static int set_direct_map(struct page *page, unsigned int nr, enum cpa_op op)
- {
--	struct cpa_data cpa = { .addr = (unsigned long)page_address(page),
--				.pgd = NULL,
--				.numpages = numpages,
--				.mask_set = __pgprot(_PAGE_PRESENT | _PAGE_RW),
--				.mask_clr = __pgprot(0),
--				.flags = CPA_REQ_NO_CHECK_ALIAS };
--
--	/*
--	 * No alias checking needed for setting present flag. otherwise,
--	 * we may need to break large pages for 64-bit kernel text
--	 * mappings (this adds to complexity if we want to do this from
--	 * atomic context especially). Let's keep it simple!
--	 */
--	return __change_page_attr_set_clr(&cpa);
--}
-+	struct cpa_data cpa = {
-+		.addr = (unsigned long)page_address(page),
-+		.numpages = nr,
-+		.flags = CPA_REQ_NO_CHECK_ALIAS,
-+	};
-+	int ret;
- 
--static int __set_pages_np(struct page *page, int numpages)
+-static const char *cpa_size_str(enum pgtable_level level, char *buf, size_t len)
 -{
--	struct cpa_data cpa = { .addr = (unsigned long)page_address(page),
--				.pgd = NULL,
--				.numpages = numpages,
--				.mask_set = __pgprot(0),
--				.mask_clr = __pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY),
--				.flags = CPA_REQ_NO_CHECK_ALIAS };
-+	ret = arch_cpa_prepare(&cpa, op);
-+	if (ret)
-+		return ret;
+-	unsigned long size = pgtable_level_size(level);
+-
+-	if (size >= SZ_1G)
+-		snprintf(buf, len, "%luG", size >> 30);
+-	else if (size >= SZ_1M)
+-		snprintf(buf, len, "%luM", size >> 20);
+-	else
+-		snprintf(buf, len, "%luk", size >> 10);
+-
+-	return buf;
+-}
+-
+ static void cpastats_show_level(struct seq_file *m, enum pgtable_level level)
+ {
+ 	char sz[20];
+@@ -1231,7 +1239,7 @@ __split_large_page(struct cpa_data *cpa, struct cpa_leaf *leaf, pte_t *pbase)
+ 		set_pte(pbase + i, cpa_pte(level - 1, pfn, prot));
+ 
+ 	if (cpa_is_direct_map(address))
+-		split_page_count(level);
++		direct_map_count_split(level);
  
  	/*
--	 * No alias checking needed for setting not present flag. otherwise,
--	 * we may need to break large pages for 64-bit kernel text
--	 * mappings (this adds to complexity if we want to do this from
--	 * atomic context especially). Let's keep it simple!
-+	 * set_direct_map_*_noflush() change only the direct map, not its
-+	 * aliases.
- 	 */
- 	return __change_page_attr_set_clr(&cpa);
- }
+ 	 * Install the new, split up pagetable.
+@@ -1381,7 +1389,7 @@ static int collapse_pmd_page(pmd_t *pmd, unsigned long addr,
+ 	}
  
- int set_direct_map_invalid_noflush(struct page *page, unsigned int nr)
- {
--	return __set_pages_np(page, nr);
-+	return set_direct_map(page, nr, CPA_OP_DIRECT_MAP_INVALID);
- }
+ 	if (cpa_is_direct_map(addr))
+-		collapse_page_count(PGTABLE_LEVEL_PMD);
++		direct_map_count_collapse(PGTABLE_LEVEL_PMD);
  
- int set_direct_map_default_noflush(struct page *page, unsigned int nr)
- {
--	return __set_pages_p(page, nr);
-+	return set_direct_map(page, nr, CPA_OP_DIRECT_MAP_DEFAULT);
+ 	return 1;
  }
+@@ -1428,7 +1436,7 @@ static int collapse_pud_page(pud_t *pud, unsigned long addr,
+ 	set_pud(pud, pfn_pud(pfn, pmd_pgprot(first)));
  
- #ifdef CONFIG_DEBUG_PAGEALLOC
+ 	if (cpa_is_direct_map(addr))
+-		collapse_page_count(PGTABLE_LEVEL_PUD);
++		direct_map_count_collapse(PGTABLE_LEVEL_PUD);
+ 
+ 	return 1;
+ }
 
 -- 
 2.53.0
