@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61764606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:16:42 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE591606A32A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:16:51 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aYpj+ngS
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C6JaML8N
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvBd0rfMz30dj;
-	Thu, 26 Nov 2026 22:16:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691801;
-	cv=none; b=VGfMBQfNYYZQcJRpz0YhHaPnykWEHYtHEs5xO8p334t8vn9WtckR8K14nvUtuIndWxchhnFUM1vP+w0ioA7vuUn9ZA9nH9aVCEv616u1abr/jIa1Epn7mUjxlpBvvwZoeXqDgXVSctL6PUg9t46N40BmfHurMdUL8sB+2LPeY6/HG73eADpaesmVKzwp7esOHHaBY6CADL9qA8yxtoIEz0z3z4LOA3sUTt5p80YEn9i6b3/ErLuvd5nM5iy/ZsEQu4MOVVCPRjTcuWl2x/y5XQgsCzkPwm/LIVkwDMb1tzoub2mDXGbll2HQNS8bnJdw2+hXaQdzSZNYay0Oserwfw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvBp4yFXz3bNr;
+	Thu, 26 Nov 2026 22:16:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691810;
+	cv=none; b=nSkikRogKdYw2fBZal35QsimyvZM/cRHul5uQEobQFv5/5wccUW4DTU4XVP41I6ZGwIJfFZH6LvbyfsQE4D1TI2KA/eIXdGvQADg4NNryKoC9GWY1x3cGflYTnEa66Rrd0VbAGEUEEIIr5GuOhIeomTBbXJa3J3bVmu3LyuumO9xIFw9f5mV4BfeaqJcVN/MUgPht6tTZGwyyrjGOhDomStVK6cNxZcxfYff4fKRNY2WPzhpsOKZ+loxyUb92QMQ1580fmiHAKqSDNyxx7uvraJUzZjZwWV165nsUliGPm6AYflqbZTgeDJ7DUx10b1uKBYHdKfTm0ok044S/sRH0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691801; c=relaxed/relaxed;
-	bh=JWC/vBALKCjgB3Vp7e+Dp/3jppLyPAzKiZgZB+giSqk=;
+	t=1795691810; c=relaxed/relaxed;
+	bh=ia0IpFMuZ2KgIGlhSeCcR6ahLTVFLFvimBCAHBa8K7A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AV/ZY/vJttDTIeiXhMnGibMcFWh9yPUEjUPDGqd/ZjOJnVipmU8Osw4X4wyPTqCuUW5pIHfrJ+VR2m+sfUn7z9/9UbZ8Dwdzjr5aYkjZoCwMSg/DWcfdljYUzOGJzPybEhLsx+a2tT8Kidj8sZTFjINRBFxc/I+hOt/PSOu8Vr3eouTa3Q6xxdiX1dYYQ+37IwLq0t7B67ppG/ArJvwQ6xp3Cl6kKkyfQbhpAJhSVG1mKwfbzQkqqZ9AI9RJnt25WhQJpdOi8sNR0KPjYyuNK0bG60B91cC2aUNVzLUkWqPk1vtsglh/ci4tUbcjnJqvejtyOvj4fFLZ1KmTnkVwpQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aYpj+ngS; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=m9SdF40FTTKxBb7qN2OnR6dhoDTsvda11aOooMImr0qxFLjfuxLOy0r2gtKwTA5NDXwgtIkPDedVVVcsffWcdRMhMwwvNbfwHtuNNr3WgGG2L6c28EESKlI5ZVHvEFXw547WtJVTgLtTVw+nucg1xIv8W7dC2OofgC7dk2tLXPjPx/wTmR/Ur+KFIqBHCHFHuvrbenV9gbSw/09lSsU03pgTQxSqiqhFmhoBKDsWPik8FP79dlJ17akzoBAGSFTh618MH4Rf5U5iNrmgwX7+b5iL8nHsBrwO9OsE194eBc5FoT8vMqYC8ckTnV2/FtSOFeHNddYpBFKlwKNEjwch/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C6JaML8N; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aYpj+ngS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=C6JaML8N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvBc286zz30Wg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:16:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvBn6Tlnz2yNj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:16:49 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5BFA643B55;
+	by tor.source.kernel.org (Postfix) with ESMTP id 0DDCD62BFE;
+	Thu, 26 Nov 2026 11:16:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BEB7F1F000C0;
 	Thu, 26 Nov 2026 11:16:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 733D71F000C4;
-	Thu, 26 Nov 2026 11:16:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691797;
-	bh=JWC/vBALKCjgB3Vp7e+Dp/3jppLyPAzKiZgZB+giSqk=;
+	s=k20260515; t=1795691807;
+	bh=ia0IpFMuZ2KgIGlhSeCcR6ahLTVFLFvimBCAHBa8K7A=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=aYpj+ngSiVFqOgPwkjKWlL43cMwZ+c5qm9pyvtLBv6pRVxFQz/EnGMvT3cqG60CKV
-	 gp17gvtMKi2AUU8TijAS5yNkCTOTjH2Hcpzo5zl5CqJX4AX6FkoKmRtDnCuSFqV1Me
-	 F5l2AWld4jnr12BgoJ/0hRgE9SX3p1+lkLsNAfVFhqEKgJ6rZL/qR7qp6M7cgLZYkA
-	 cajyHtUCZrnpDkX20HptjbPShYFK0PskDHvCpXjIeQQYNmZuANQV5dGi67AmHknFT9
-	 b0dh9ehw25xnd7VAFSRbYHeAn3Icdmn02VTQRbc8OoQpSYOJECww1+H2cR7XMAw8q2
-	 JUPAaB2anngGA==
+	b=C6JaML8N2aNTeIzENf2nvr8+aQgkt9RA0b/lUdY93mcchmhUi11+e2a0tScZ3CniC
+	 QcRTPjB5Vvm2IKDrI4w2dr9YP7aKd6XiEFEQSWgHsN3oqfBPSbyJh4msiz7bJhFJnY
+	 iHdEmk5VqDZ48vtOq9/cNB+6cQtOxm6d8cwlsfOe1vf3GC7TxG6ITRc00G6AjGH+kS
+	 B1xDuZEPBtfEFIxDXf4DYfMJfU9pqQnNKwdDbA+opSwvI0DnVrHPn5m+cXAEC5semk
+	 KHjBJ98o8aoZmxj2R6CX3JQmkDMDMQuLboY0NzWq2S7adY5QVhdyX0S7Rlpx6YLmpG
+	 3SAUQuPMNGeGg==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:26 +0200
-Subject: [PATCH RFC v2 13/54] x86/mm/pat: make the direct map counters
- atomic
+Date: Thu, 26 Nov 2026 13:14:27 +0200
+Subject: [PATCH RFC v2 14/54] x86/mm/pat: take pgd_lock only around the
+ pgd_list walks
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-13-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-14-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,98 +97,138 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-In update_page_count() pgd_lock protects only the direct map counters. The
-splits and collapses in CPA update the counters under pgd_lock that they
-hold for other reasons.
+CPA takes pgd_lock around the split decision, the update of a large page,
+the split and the collapse of large pages.
 
-Make the counters atomic_long_t, like s390 and powerpc do, so that updating
-them does not need pgd_lock.
+Everywhere else pgd_lock protects pgd_list. CPA needs it only on 32-bit, to
+update the per-pgd copies of the kernel PMD entries when it changes them.
 
-A split checks that the counter of the large pages is not zero before it
-decrements it. Use atomic_long_dec_if_positive() so that a concurrent
-update cannot drive the counter below zero between the two.
+Updates of large pages are serialized by cpa_lock anyway, and the direct
+map counters are atomic.
+
+Take pgd_lock only around the pgd_list walks.
+
+Without pgd_lock, should_split_large_page() only checks CPA_REQ_SPLIT
+before it calls __should_split_large_page(). Fold it into
+__should_split_large_page() and keep the shorter name.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/x86/mm/pat/set_memory.c | 28 +++++++++++++++-------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ arch/x86/mm/pat/set_memory.c | 56 +++++++++++++++++++++-----------------------
+ 1 file changed, 27 insertions(+), 29 deletions(-)
 
 diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index 5e3c1152d202..8076d29a2931 100644
+index 8076d29a2931..9dfe69d608b8 100644
 --- a/arch/x86/mm/pat/set_memory.c
 +++ b/arch/x86/mm/pat/set_memory.c
-@@ -84,56 +84,58 @@ static inline pgprot_t cachemode2pgprot(enum page_cache_mode pcm)
- }
- 
- #ifdef CONFIG_PROC_FS
--static unsigned long direct_pages_count[PG_LEVEL_NUM];
-+static atomic_long_t direct_pages_count[PG_LEVEL_NUM];
- 
- void update_page_count(int level, unsigned long pages)
+@@ -916,24 +916,29 @@ EXPORT_SYMBOL_GPL(slow_virt_to_phys);
+  */
+ static void __set_pmd_pte(pte_t *kpte, unsigned long address, pte_t pte)
  {
--	/* Protect against CPA */
--	guard(spinlock)(&pgd_lock);
--	direct_pages_count[level] += pages;
-+	atomic_long_add(pages, &direct_pages_count[level]);
- }
- 
- static void split_page_count(int level)
- {
--	if (direct_pages_count[level] == 0)
-+	if (atomic_long_dec_if_positive(&direct_pages_count[level]) < 0)
- 		return;
- 
--	direct_pages_count[level]--;
- 	if (system_state == SYSTEM_RUNNING) {
- 		if (level == PG_LEVEL_2M)
- 			count_vm_event(DIRECT_MAP_LEVEL2_SPLIT);
- 		else if (level == PG_LEVEL_1G)
- 			count_vm_event(DIRECT_MAP_LEVEL3_SPLIT);
- 	}
--	direct_pages_count[level - 1] += PTRS_PER_PTE;
-+	atomic_long_add(PTRS_PER_PTE, &direct_pages_count[level - 1]);
- }
- 
- static void collapse_page_count(int level)
- {
--	direct_pages_count[level]++;
-+	atomic_long_inc(&direct_pages_count[level]);
- 	if (system_state == SYSTEM_RUNNING) {
- 		if (level == PG_LEVEL_2M)
- 			count_vm_event(DIRECT_MAP_LEVEL2_COLLAPSE);
- 		else if (level == PG_LEVEL_1G)
- 			count_vm_event(DIRECT_MAP_LEVEL3_COLLAPSE);
- 	}
--	direct_pages_count[level - 1] -= PTRS_PER_PTE;
-+	atomic_long_sub(PTRS_PER_PTE, &direct_pages_count[level - 1]);
-+}
++	struct ptdesc *ptdesc;
 +
-+static unsigned long direct_pages(int level)
-+{
-+	return atomic_long_read(&direct_pages_count[level]);
++	if (!IS_ENABLED(CONFIG_X86_32)) {
++		set_pte_atomic(kpte, pte);
++		return;
++	}
++
++	guard(spinlock)(&pgd_lock);
++
+ 	/* change init_mm */
+ 	set_pte_atomic(kpte, pte);
+ 
+-	if (IS_ENABLED(CONFIG_X86_32)) {
+-		struct ptdesc *ptdesc;
+-
+-		list_for_each_entry(ptdesc, &pgd_list, pt_list) {
+-			pgd_t *pgd;
+-			p4d_t *p4d;
+-			pud_t *pud;
+-			pmd_t *pmd;
+-
+-			pgd = (pgd_t *)ptdesc_address(ptdesc) + pgd_index(address);
+-			p4d = p4d_offset(pgd, address);
+-			pud = pud_offset(p4d, address);
+-			pmd = pmd_offset(pud, address);
+-			set_pte_atomic((pte_t *)pmd, pte);
+-		}
++	list_for_each_entry(ptdesc, &pgd_list, pt_list) {
++		pgd_t *pgd;
++		p4d_t *p4d;
++		pud_t *pud;
++		pmd_t *pmd;
++
++		pgd = (pgd_t *)ptdesc_address(ptdesc) + pgd_index(address);
++		p4d = p4d_offset(pgd, address);
++		pud = pud_offset(p4d, address);
++		pmd = pmd_offset(pud, address);
++		set_pte_atomic((pte_t *)pmd, pte);
+ 	}
  }
  
- void arch_report_meminfo(struct seq_file *m)
- {
- 	seq_printf(m, "DirectMap4k:    %8lu kB\n",
--			direct_pages_count[PG_LEVEL_4K] << 2);
-+		   direct_pages(PG_LEVEL_4K) << 2);
- #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
- 	seq_printf(m, "DirectMap2M:    %8lu kB\n",
--			direct_pages_count[PG_LEVEL_2M] << 11);
-+		   direct_pages(PG_LEVEL_2M) << 11);
- #else
- 	seq_printf(m, "DirectMap4M:    %8lu kB\n",
--			direct_pages_count[PG_LEVEL_2M] << 12);
-+		   direct_pages(PG_LEVEL_2M) << 12);
- #endif
- 	if (direct_gbpages)
- 		seq_printf(m, "DirectMap1G:    %8lu kB\n",
--			direct_pages_count[PG_LEVEL_1G] << 20);
-+			   direct_pages(PG_LEVEL_1G) << 20);
+@@ -954,8 +959,8 @@ static pgprot_t pgprot_clear_protnone_bits(pgprot_t prot)
+ 	return prot;
  }
- #else
- static inline void split_page_count(int level) { }
+ 
+-static int __should_split_large_page(pte_t *kpte, unsigned long address,
+-				     struct cpa_data *cpa)
++static int should_split_large_page(pte_t *kpte, unsigned long address,
++				   struct cpa_data *cpa)
+ {
+ 	unsigned long numpages, pmask, psize, lpaddr, pfn, old_pfn;
+ 	pgprot_t old_prot, new_prot, req_prot, chk_prot;
+@@ -963,6 +968,9 @@ static int __should_split_large_page(pte_t *kpte, unsigned long address,
+ 	enum pg_level level;
+ 	bool nx, rw;
+ 
++	if (cpa->flags & CPA_REQ_SPLIT)
++		return 1;
++
+ 	/*
+ 	 * Check for races, another CPU might have split this page
+ 	 * up already:
+@@ -1101,16 +1109,6 @@ static int __should_split_large_page(pte_t *kpte, unsigned long address,
+ 	return 0;
+ }
+ 
+-static int should_split_large_page(pte_t *kpte, unsigned long address,
+-				   struct cpa_data *cpa)
+-{
+-	if (cpa->flags & CPA_REQ_SPLIT)
+-		return 1;
+-
+-	guard(spinlock)(&pgd_lock);
+-	return __should_split_large_page(kpte, address, cpa);
+-}
+-
+ static void split_set_pte(struct cpa_data *cpa, pte_t *pte, unsigned long pfn,
+ 			  pgprot_t ref_prot, unsigned long address,
+ 			  unsigned long size)
+@@ -1158,7 +1156,6 @@ __split_large_page(struct cpa_data *cpa, pte_t *kpte, unsigned long address,
+ 	bool nx, rw;
+ 	pte_t *tmp;
+ 
+-	guard(spinlock)(&pgd_lock);
+ 	/*
+ 	 * Check for races, another CPU might have split this page
+ 	 * up for us already:
+@@ -1304,6 +1301,8 @@ static int collapse_pmd_page(pmd_t *pmd, unsigned long addr,
+ 			return 0;
+ 	}
+ 
++	guard(spinlock)(&pgd_lock);
++
+ 	old_pmd = *pmd;
+ 
+ 	/* Success: set up a large page */
+@@ -1404,7 +1403,6 @@ static int collapse_large_pages(unsigned long addr, struct list_head *pgtables)
+ 
+ 	addr &= PMD_MASK;
+ 
+-	guard(spinlock)(&pgd_lock);
+ 	pgd = pgd_offset_k(addr);
+ 	if (pgd_none(*pgd))
+ 		return 0;
 
 -- 
 2.53.0
