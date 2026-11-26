@@ -1,50 +1,69 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E91B6606A326
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 18:35:31 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6DFB5606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 18:42:21 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=Aa6U7TmI
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jb4wx72XCz2y2h;
-	Fri, 27 Nov 2026 05:35:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.76.133.104
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795718129;
-	cv=none; b=XX/hf8EgPdEX/3ucNAMk2UyYch+HUvsgaqGQ5+iQiObTWeUHAuez2Rr1iYW/Qy8iZB/yvleaAQnG+Klp808/YsTIsSHJFAWMOR3nbk8T24t57Fx5IAupWEQAfGeBFgBcZQ2u3OP3oY7wIDSAq5sJZbekn90pqC1O+tn6D+pgIh1jqg8ehcPpEUFnLpbdCkHTFk3RL/ECpk/x3WTsf3++NqzuAarD9KG2FGGg/hObC3wLzIfAiT2oewW2LcYkwm2GvfL4rHmbYONnK0sIwUMgYnEgkBQ8IbLCGzf7FhN2TOQMdcTIAZNroIC5R6li7Gn35/fOLNtl4iPbnBDpYME+Rw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jb54r0l2fz2y2h;
+	Fri, 27 Nov 2026 05:42:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:e0c:1:1599::12"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795718540;
+	cv=none; b=jaF914M7CPOHk4lP54G+nTwCkQhwz44kJ0u9dt2sUg+9ph9KEzCriVYj+JKrSYAx++pAMqtgkxqZpRnJm/+09IRUOywA2fo9VTwxUY5/o3xC7/8AGtt/N7+Ui0hxZ5Dti/FitO+YNyl7gnsgjs0mlj+15QqIqPVHMzlXoT953aIvAcQ9J+D3hcUumMGDxKj/GlRwDEf0vBpnDppGIirV3DG6b6PTKZUklHXv+u4QJNhc7VNW96sKX+DxOwpSXkNXEzSqMcV6U7pQE7Hpk8kKM0YPZflvzOMkvfl2bDMkjrIQFt9Ww/HMv1ilUj4xg8qol/Vl/SgFgApn+nWoZcxLeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795718129; c=relaxed/relaxed;
-	bh=T8gL3R5Of4fh7/JSzNbmIkuPBYVFqpMyrpx8pK3ARFw=;
-	h=Message-Id:From:Date:Subject:To:Cc; b=DYvm11btvOuD0LwhX6l4+26vdJRXF67gtnA5EF02Xvo2yZ02VRhIW0WsukIMKvv8jSFIvF/7vaVl4GMsehaN8jBThAUNX+5IqK/G9e20PCr6F03DQnui5yauBMBKnupwRfq0Mn9VoeNwQq8gOVrBT/OMrp7P6wSgPY4nO+ZfbrIsJjFvS1M5gKly/HlYib8GV7apR1CeL79yfldjSM9uvVF4pjThqSZmCKrsonverQKU03YVIn0yqCbb/3CorsL1PmPeIVVurDPz6qlZGRcOpvHAwalnqRRnlvMRJ4u1pHSemEp7cg6a9U9pI04UshKHYoqsG3m/F4Jsrn8u2mJbjA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=144.76.133.104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=144.76.133.104; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [144.76.133.104])
+	t=1795718540; c=relaxed/relaxed;
+	bh=TmIlGqYRKL1N0DbrflYbwLWHTPbsYPsvR4Gqt4JhWS0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=oXZPBiugPV+agYAj0Y3QiW9/NuFK4KnLW3DyzYM++uBtwxOH7+ZZH+uAIW7xR89TNREVN37bAd9Gdm8Z3nbsK51hRlKLrt75m0zM5OEh40478ZzRTmBp6PY6+JskS6Ln0NLrGOC5SdEYJmRjUkJYNd+4Hldy02cOquqSk5FpGwzrGFPhSh2H0nfvNwjU+15lvqJ778WPHUsE4Fesw5GS4KTLnaYCbOEJ1ejQsJ0uGEKwohnN2YEByUAaliLpZmwDJGxqNKOU0o4o3NsF3WaOxKj0tb2r/bBeitXoJUVoTzoBRG9+T0IGFZb4xSF1uO1/tPWQ3VYmW9qnQi/CvKhdTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr; dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=Aa6U7TmI; dkim-atps=neutral; spf=pass (client-ip=2a01:e0c:1:1599::12; helo=smtp3-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org) smtp.mailfrom=free.fr
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=free.fr
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=free.fr header.i=@free.fr header.a=rsa-sha256 header.s=smtp-20201208 header.b=Aa6U7TmI;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=free.fr (client-ip=2a01:e0c:1:1599::12; helo=smtp3-g21.free.fr; envelope-from=vjardin@free.fr; receiver=lists.ozlabs.org)
+Received: from smtp3-g21.free.fr (smtp3-g21.free.fr [IPv6:2a01:e0c:1:1599::12])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jb4ww43Kqz2xMt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 05:35:26 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by mailout3.hostsharing.net (Postfix) with ESMTPS id 1DEE4DAA;
-	Thu, 26 Nov 2026 19:35:21 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id D77516028ECD; Thu, 26 Nov 2026 19:35:20 +0100 (CET)
-Message-Id: <1ddc35c51b5317988bbf235c467a9534218c6ea4.1795717157.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Thu, 26 Nov 2026 19:35:00 +0100
-Subject: [PATCH] PCI/AER: Check error status registers if Error Source ID is
- zero
-To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Keith Busch <kbusch@kernel.org>, Maciej Grochowski <Maciej.Grochowski@sony.com>, Yazen Ghannam <yazen.ghannam@amd.com>
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=ham
-	autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jb54n5M70z2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 05:42:16 +1100 (AEDT)
+Received: from L30177.local (unknown [78.240.251.125])
+	(Authenticated sender: vjardin@free.fr)
+	by smtp3-g21.free.fr (Postfix) with ESMTPSA id 60E9A13F8A7;
+	Thu, 26 Nov 2026 19:41:42 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=free.fr;
+	s=smtp-20201208; t=1795718527;
+	bh=RdqlfcRYRyRN/alGMnwzCeIIWGVeJlTeO4EFT1U28HY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Aa6U7TmI2pqdSQbqnVAZ9wKX17hNwrxb7sJCGV9smHxFQfk8SZWDVGYgaykp5Bf+o
+	 Opuxeg1dm6O2Towg5dhvaWuHtmKMVxBIpCDJOJUzALDj0tAlCADAWMldG++WYO4dsN
+	 tDKK5u0vaKg0Hh0rViFgV+Z7rXpZrG6kvHPnaxKg9+faXcARzsIOmnPngTAZJ1RQeY
+	 AZKeO66aAoBCbr2OWpSffyoctoL1hHR+Y9O5W9fT+//ct768q/Pc8Nn2hEz+EkLXrS
+	 fh+6gnFi83iGV1NNb8Hvel5dZrW6Ix3LBfLHl8lPGGBHCoQYeaY5+SmE2AeSVI3HwU
+	 ecFfi6TA2wvLg==
+Date: Thu, 26 Nov 2026 19:41:40 +0100
+From: Vincent Jardin <vjardin@free.fr>
+To: Linus Walleij <linusw@kernel.org>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, Fabio Estevam <festevam@gmail.com>,
+	Frank Li <Frank.Li@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	NXP S32 Linux Team <s32@nxp.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>, linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	imx@lists.linux.dev, Vladimir Oltean <vladimir.oltean@nxp.com>,
+	Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: Re: [PATCH v8 0/6] lx2160a: change the pad muxes through the RCW
+ override
+Message-ID: <awh9ZB5V3vG0gg4S@L30177.local>
+References: <20261118-for-upstream-lx2160a-rcw-pinmux-v1-v8-0-d01bc837593e@free.fr>
+ <CAD++jLnRWZrLfyBGGOikx_eeYXirahuB7E7yuDhB6KoSAQoA5w@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,64 +76,44 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAD++jLnRWZrLfyBGGOikx_eeYXirahuB7E7yuDhB6KoSAQoA5w@mail.gmail.com>
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 
-Since commit 6d69eeae8966 ("PCI/AER: Check validity of Error Source ID
-register"), the AER driver checks whether the Error Source ID register
-contains either the ID of the Root Port (or RCEC) itself, or of a device
-subordinate to the Root Port (or associated with the RCEC).
+Hi Linus,
 
-If this check succeeds, the Error Source ID register is assumed to contain
-a valid value and is not double-checked by reading error status registers.
+On Thu, Nov 26, 2026 at 01:53:00PM +0100, Linus Walleij wrote:
+> Once the review is complete, can I merge all patches except the DTSI
+> patch through the pin control tree, i.e. does it have the right ACKs?
 
-However per PCIe r7.1 sec 2.2.9.1, devices may send Completions with a
-zero Completer ID "prior to the initial device Configuration Write
-Request".  Similarly, CXL r4.0 sec 8.1.5.1 states that a Component may
-generate a CREDIT_RTN IP2PM message with a zero bus number after reset,
-which can fail ACS Source Validation and trigger an ACS Violation Error.
+Yes for patch 1/6 to 4/6, however, I believe that 1/6 needs an ack't
+from a DTS maintainers. The status is the following:
 
-On ARM platforms, there is often a Root Port at address 0000:00:00.0,
-which makes it impossible to discern whether a zero Error Source ID refers
-to the Root Port or to an uninitialized device downstream.
+- 1/6 dt-bindings: pinctrl: Reviewed-by Frank Li and Vladimir Oltean,
+  but TBC if any DTS maintainer Ack, is needed ?
 
-For this reason, always double-check error status registers if the Error
-Source ID is zero.
+- 2/6 dt-bindings: soc: fsl: Reviewed-by Rob Herring, Frank Li and
+  Vladimir Oltean
 
-Fixes: 6d69eeae8966 ("PCI/AER: Check validity of Error Source ID register")
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
-base-commit: 6d69eeae8966bc3bea0facbd550f45ef9de41cc4
- 
-This fixes a commit queued on pci/aer.  It can either be folded into
-that commit or applied on top of pci/aer, whichever is preferred.
- 
- drivers/pci/pcie/aer.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+- 3/6 soc: fsl: guts: Acked-by Frank Li (fsl tree) and Christophe Leroy,
+  Reviewed-by Vladimir Oltean
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 1973b6e..24b014b 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -1158,6 +1158,10 @@ static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
- 
- static bool source_id_valid(struct pci_dev *root, u16 id)
- {
-+	/* ID is zero prior to initial device config (PCIe r7.1 sec 2.2.9.1) */
-+	if (id == 0)
-+		return true;
-+
- 	/* The Root Port or RCEC can itself be a valid Error Source */
- 	if (pci_dev_id(root) == id)
- 		return true;
-@@ -1186,7 +1190,7 @@ static bool is_error_source(struct pci_dev *dev, struct aer_err_info *e_info)
- 	u16 reg16;
- 
- 	/* Some Root Ports report an invalid Error Source ID */
--	if (e_info->id_valid &&
-+	if (e_info->id && e_info->id_valid &&
- 	    !(dev->bus->bus_flags & PCI_BUS_FLAGS_NO_AERSID)) {
- 		/* Device ID match? */
- 		if (e_info->id == pci_dev_id(dev))
--- 
-2.53.0
+- 4/6 pinctrl: Reviewed-by Frank Li and Vladimir Oltean
 
+Regarding the DTS, if my understanding is correct, please,
+Rob, Krzysztof, Conor: could you have a look at 1/6 ?
+
+Then, the two DTSI patches, 5/6 and 6/6, will go through Frank once 1/6 to 4/6
+are in your tree, as he wrote:
+   https://lore.kernel.org/all/awebHKtul2FHepc7@SMW015318/
+
+Thank you,
+  Vincent
 
