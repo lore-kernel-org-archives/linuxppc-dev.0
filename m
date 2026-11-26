@@ -2,57 +2,57 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 95A78606A327
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 13:28:00 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 64B65606A335
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 13:28:50 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EPHU4bh1
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OKjmQFPo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZy672QTXz2xlq;
-	Fri, 27 Nov 2026 00:27:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795699679;
-	cv=none; b=d08VQ6M0YaMsPDodsH52zOUvMyAha/v9qk+qO15V09Q9IBue3oIRme3rAUtfNba5J/z7O9Ng4QUoiB5ZvRSRsOIYGo0a9Jeavn/IX8b6cCWEsCfPoYg6xKCOZuwT8A2fqWdvQABKg3hkNggOOq7sI/26CxsFmxM0qSXwA0Yifa6xa9Eo4AxoUBrTmLzFv3rkuskvsiBSbyQV+uiOjEN0HsVWLSFgJVmgdET3y2aWjY0FYkbOtvaKnpbSxAv0I82xY2SjpnZAAzykU0CRsYfemd5rNR6YG9gAg+TpDdbWROsEmZX5WRvyt/yKrQggE7BLZcZfyxhFOsQ69ojVk2Vs7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZy7510mcz2xlq;
+	Fri, 27 Nov 2026 00:28:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795699729;
+	cv=none; b=jpjt8cpwYoAS2GszUgjDpyG6q38DHlFoDP8ABA4XfBOfslGgb1TziI79qEVpqnhFB1P+OfKuDVSSn8Op4f7LxqFeiVK3/CNIdJ0Ev9O4LBycjtSZubYpl/ey5iwz/yKrZfJkFfmGBTTtsfimuVdMzQW2pxnUWEOfm/YnGtLjhS1SKFFr9TXH+/OvEMiWgi2xPtczphXU0HdT+80TZihy/CZX1MiW6aQV1dED2QgXv9tXyCuUuhuSKgkA14ABgEspxLPVsgiLQ/7xEz41oxs6d6y3mkfZgGzoIRWcB1F/6nRCMPRy6oBM+kCmMU5itzjk+2DmzlFA7IqmGTkT1ywNDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795699679; c=relaxed/relaxed;
-	bh=0SuygBFJgQJDPEHL8vg5eLv9glUvVL4TbpwchKTOKc8=;
+	t=1795699729; c=relaxed/relaxed;
+	bh=cjfeIB7Jh9Ac/AfayNnL1Yf0x7S27z/ryKSokFRvmis=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=oG7LLp1FlH+d7s0d3SKjRjkdlX2cnnpbG7cPa3ZDJbhPC6BAy1p+EvRAGxoCFGDNwDCIdnN4bhFD0WHsRlAEbdqvRVbbi26VCjTfXrGQ7zjmmbnnWnafNVpDDnTQRIaAb5S8uorkZClQJLrokm8Qio/HkUSl4F31axJX8J3qsx7YRNPDXDBUp889Sv3Ee24GQNktVFcCSghp1V5hQuDgD4GwRjMhYGQVfZAP5+rtpt/Zg6G86Ed+vT4ltXEfmwgHqiGpTeC/0AtO8Z2wqrMYf05w5yzVDMLIimwKFjvqBzNmchMXF9kztsu50pgGX2CPHm+SF6bRUpk3IqS4bLWIow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EPHU4bh1; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 To:Cc:Content-Type; b=eO+wLNg0axrpIzL4pV+rsFEvCGtc8Ey9qSkOhy7j+v2N788u96C0TGfHEOlvod38BbrLwHBhnvyURR6TAE+xWB7Slo2UuPs/kozZBeTApgM+xPWcpVgdKL+IOPEn0h2t945k5i3dKNL4AxJXyK+fVB7pR8KZA7HAC+nmYj1ARggwcfzWbKkv9qnuwiHDT6kjOAMpBsi+3d7qWEq0AD42tjDFXc8Xc0F0reqew3dBKAfkI9he6OsLI0hyH/AYOP1hNFqT1uFDGPeRI6Zvu4uZ9OR0z0IFBTapZMt5RD5DZHJv4DrkV5hTc7P2571SU5D/gjd5osvp+TggpauUG2sOxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OKjmQFPo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EPHU4bh1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=OKjmQFPo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZy662qL2z2xWt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 00:27:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZy7414Tgz2xWt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 00:28:48 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id DE29146474
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 13:27:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 988D31F01561
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 13:27:56 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2AE4063365
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 13:28:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 601EE1F00A3C
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 13:28:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795699676;
-	bh=0SuygBFJgQJDPEHL8vg5eLv9glUvVL4TbpwchKTOKc8=;
+	s=k20260515; t=1795699724;
+	bh=cjfeIB7Jh9Ac/AfayNnL1Yf0x7S27z/ryKSokFRvmis=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc;
-	b=EPHU4bh1rQUynF67I/BLiAYnpMItWNnTQ9AParYyhIyJ+y6H3njJ4HyIE0s6Jx202
-	 xCNzY4EbdFEUvhIGV7u89sr9xvmTk/hzD3usLMoUVQo7zRS1mVOEOGXKaU7srd0lqN
-	 QJ8zgMkZSbzwDG6k/Q8gKHxK2xOwoNZh0rfmPcgTWzKzVzQoVxEJRXus9AvWUL1U2G
-	 poRlMVnD4ZVArgDu1nm8eFgis+FkVYb/7yrTihelucyhtlDiutnGbPYYQd1IeXPRF1
-	 uMR3MT3fEDrUV6O3qWBar39ZOF0tAC8l88Y7GgJIURjBmPo17gy3FHsqx2yCKI3NPh
-	 QpwxgY4N6hLRw==
-Received: by mail-lf1-f41.google.com with SMTP id 2adb3069b0e04-5be3ed646a5so419283e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 05:27:56 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AL+hErFtCzqLW++BLmd79qVOfHCkXxrDdBlZWQo0omDDFbZGJLUKRLA1suE7ye5mH9ZPKddwweWLifjRzPw2ewQ=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/G0GVHYEp8g0anh0TMNV5blERVnnyM6N5lZtyXcv0fR1rwAlIV
-	ckhdtXHWSGIQmZuo210uPgjzBV+p2VZ324IvSGZ6/loZcgyT4HCoPGFzumQvOaP0e7dWACZCCTA
-	XQTE+k2P42WOIYKWU3dQV8mPOsdO0USU=
-X-Received: by 2002:a05:6512:36d9:b0:5c1:5976:1d30 with SMTP id
- 2adb3069b0e04-5c1bc8206cdmr4300123e87.57.1795699675392; Thu, 26 Nov 2026
- 05:27:55 -0800 (PST)
+	b=OKjmQFPo1M75NXkW1bHMDWybQdIuae5BfdUB+xGnCd8WnZUl/pDfDcBO7rB3WwRBS
+	 /Ob1mY//DhcXEHQ/uv6PMdV+zDPkCmw026DdqzRidvVfO57zNsZ5lx19VY8mEJEfRI
+	 NbQBvzhp+gPFFwQBIh98wVGgz0sVb5J2qhuKj3w2sLjZLC+2Jz3xd/iXOMiHZuSFhu
+	 VXk/8CCos/vN9KGdGMsSfxA8Ueh0PcXCmFe3AY2A44UJ4PQrSBxPd/ZTi4mfET6X/v
+	 ExJt6R9GcDL0CkqyBHW7iQlwm4AKk2/6tvRSIaioKBzEDyuHPX6sX/aLjG/Prito3n
+	 cJnEjZgWJdwjA==
+Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5c08539c827so5529564e87.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 05:28:44 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AL+hErGGoWin9j6/rdVQ2POgFR/W8ephYm8HA8ed/suuQ4k6G+JNDN/nONImSceip6HppRUIO7dP8GJTQvOsUrY=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z9vMHLu6bBW2t2TrDgAywi9gtSJTCb6S6RIJkvD4sj2ahvHF4Dx
+	EtYv48Cx4zzMHG+/OXaT3YHak3PG/0PwOl9Q1XpJQQtimEoxsQh3FUF+dZoq9Z+N4Vn2x3aXGn9
+	c/xrSyJGXJ5vjnPoKvpU50bW4bqRjgaQ=
+X-Received: by 2002:a05:6512:124d:b0:5c1:56f2:fda4 with SMTP id
+ 2adb3069b0e04-5c1bc89530fmr5518571e87.49.1795699723141; Thu, 26 Nov 2026
+ 05:28:43 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,14 +66,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-References: <20261116124832.662455-1-arnd@kernel.org> <20261116124832.662455-6-arnd@kernel.org>
-In-Reply-To: <20261116124832.662455-6-arnd@kernel.org>
+References: <20261116124832.662455-1-arnd@kernel.org> <20261116124832.662455-8-arnd@kernel.org>
+In-Reply-To: <20261116124832.662455-8-arnd@kernel.org>
 From: Linus Walleij <linusw@kernel.org>
-Date: Thu, 26 Nov 2026 14:27:42 +0100
-X-Gmail-Original-Message-ID: <CAD++jL=ZyHZcJRUTpVghs3xYH0OGOKauKVWTF8tiPpHPjuad+g@mail.gmail.com>
-X-Gm-Features: Aa3M54pIH7xhTLEiVGxFItiuCxGTTC1f9B6RJQ9R1KEb9x9xI611Qqdum1NmRD8
-Message-ID: <CAD++jL=ZyHZcJRUTpVghs3xYH0OGOKauKVWTF8tiPpHPjuad+g@mail.gmail.com>
-Subject: Re: [PATCH v3 05/10] ARM: add CONFIG_VMSPLIT_2G_OPT option
+Date: Thu, 26 Nov 2026 14:28:30 +0100
+X-Gmail-Original-Message-ID: <CAD++jLmT3dgWNhwXnxBbMWT4FPtM85j7pGqphVhofVDn6bgq4w@mail.gmail.com>
+X-Gm-Features: Aa3M54qt87pVcinKxHwHL_cdEyu5uWkoYM1H8TRwnc8234Hd9kxa6PUDkX4jAZc
+Message-ID: <CAD++jLmT3dgWNhwXnxBbMWT4FPtM85j7pGqphVhofVDn6bgq4w@mail.gmail.com>
+Subject: Re: [PATCH v3 07/10] ARM: defconfig: turn off highmem in favor of CONFIG_VMSPLIT_2G_OPT
 To: Arnd Bergmann <arnd@kernel.org>
 Cc: linux-mm@kvack.org, Arnd Bergmann <arnd@arndb.de>, 
 	Andreas Larsson <andreas@gaisler.com>, Andrew Morton <akpm@linux-foundation.org>, 
@@ -100,21 +100,34 @@ te:
 
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> Unlike x86 and powerpc, there is currently no option to use exactly 2GiB
-> of lowmem on Arm. Since 2GiB is still a relatively common configuration
-> on embedded systems, it makes sense to allow this to be used in
-> non-highmem builds.
+> The multi_v7_defconfig and omap2plus_defconfig attempt to support a
+> broad range of hardware. This is at odds with the setting for highmem
+> being slowly phased out on the one hand but still enabled by means of
+> CONFIG_ARCH_OMAP2PLUS_TYPICAL, leading to a default CONFIG_VMSPLIT_2G_OPT
+> split.
 >
-> Add the Kconfig option and make this the default for non-LPAE builds
-> with highmem enabled instead of CONFIG_VMSPLIT_2G.  LPAE still requires
-> the vmsplit to be on a gigabyte boundary, so this is only available for
-> classic pagetables at the moment, same as CONFIG_VMSPLIT_3G_OPT.
-> Keep ARCH_MMAP_RND_BITS_MAX at 15 for this.
+> None of the upstream OMAP2+ DTS files actually list more than 2GiB
+> of RAM, so it seems fine to just turn off highmem by default and use
+> CONFIG_VMSPLIT_2G_OPT from the defconfig to still support the same
+> hardware but not require highmem.
 >
-> Tested in qemu -M virt, both with and without HIGHMEM enabled.
+> This also changes multi_v7_defconfig, which currently supports all sorts
+> of ARMv7 systems except those that require LPAE.
 >
-> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> Acked-by: Lorenzo Stoakes (ARM) <ljs@kernel.org>
+> The best comprimise I can think of again is to use VMSPLIT_2G_OPT in
+> place of highmem. Compared to highmem configurations, this should be
+> an improvement on most machines with 2GiB of installed memory for the
+> lower overhead and complexity, but it does degrade machines that rely
+> on highmem to access all memory, as well as reduce the available user
+> address space (1.75GiB instead of the traditional 3GiB).
+>
+> For aspeed_g5_defconfig, the decision is trivial, as there are no
+> 4GiB configurations we need to support, but g6 is known to use
+> up to 2GiB.
+>
+> If you run into problems on production machines with the new default,
+> with the absence of highmem, or the smaller user area, please complain.
+>
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
 Reviewed-by: Linus Walleij <linusw@kernel.org>
