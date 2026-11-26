@@ -2,52 +2,51 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1514F606A321
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:14:49 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D5863606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:14:58 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kJyTKMIe
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EzXrhltc
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZv8R5p42z2xWt;
-	Thu, 26 Nov 2026 22:14:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691687;
-	cv=none; b=mbhbLVNeuu6V2fqMh/RjfBv6J9jEvbndoYSrw3PdPipLGRkS8TCLsHpxvFvBvydDoj7tTOhZSAxv3MEoP4M4SyCmminng9wJkBcPa7twMAzeG0LpNK7uzReyMwInvyYdWt6BO25mDlFlQAcFOifZG+dtDip7MdHDzWpYmnTJO11P2ImO6+8SWU0CNUeeQNhjKNEzWSiV/Bam55YJUF+ZhpPBA+aoqHZHNjVHCe8EIgm1DQkXI1IBoXJg2dvTTSlEF6FehoFk8tm74EoFfI8veBISS7rwk7umOLI8eZPDa0woN5uW1aqeJ8A40mtKpI4n7nm3pTRkiNX+L4/jb+qTGw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZv8d4GVYz2yFb;
+	Thu, 26 Nov 2026 22:14:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691697;
+	cv=none; b=Q5Z49H14eEVHKXReCkZ79nuH/1EWY0aE7qVNtcUzfZi3EATaz9lpM1Y6iiesFFi1h+8MHpQnStS6uol4XaA3HbsxzkGfidaO7HO5hZiGMMWud/0TY0LiUQSJjxmYdacQePcXb3B1t/XIRHrRusWmPg+N1ieMT5mXbGM3zzw1qCB4sZfJ1APpddtLbWvPMwjhlu0JVG1WIN5DVisdrTGTK4CEjGb6Bwefn40EN8c25LQHiM1sOqKFEt0vejJVPF8b1DcBW44YIOhi5Wh40JWi/cVu6KhvXbcDEmsrGObh7iWgkZ00Nr+Wlvyb64/aiICP6Nixr0zVkWzpYZE2SrrL8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691687; c=relaxed/relaxed;
-	bh=+zAN299vizOOPECPls5C9ly2hX7A6i/wCUYEhdWTrYE=;
+	t=1795691697; c=relaxed/relaxed;
+	bh=pOe0fNlH4H+/AQprp4nKXyU+tisJl0prDAgrQlBRIqs=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Jqy21RFAN2/9SiuUd/BAcIZwxDm4lPD4j9tkgyNbRkZftsBfdkE7QlzdDD6oKauiYBbURruMikWUCR5TVLsAuV/niZze40YtSc6JBhtyRG83oVUFL0Ix2W7qEzEmCQ7KW0zgJz/20e5ycUtj4PtaqRPxNqVkRTqQEF3IKuR0qQHnQz1IicGT1thVBckLb9529arYzOVWBZXOJQxLVd6AGD8E+8yhw/2WU3/wlrtAixHaRfbn47AOV0m34AaIW/8wFi4nvDDSBmqPSrrHEZh9qmMnvPprKgJEQQBrX1JxzjkKuGo1XUcDFxSi3mqj+Gjx923y/39PW4vhU8x85T1UBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kJyTKMIe; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=czA+OUO3XwfcwZBWI2Yu8OG00BggpdTqP6Ktb4WaZN9eKBJ/9k8Glxs6+F7WoOB/U+qy8NWVu+BfuqKsYZYt0eLBJxOxK0/pKxdKfSxbBsPiGGT0DrIe2veJm9vM8j79PJ6JDCsdOgvR+sg4moi2m+V36TbNAn4wHotiv/GBrvdaCNVWOqkHt7PAzk1js/m36OchiQHwTpiCxG4D1nA1wpsqYCvtMDSxiR7qD/Y/eHoI5W8QQw5uqM4gMJVhSiDBOF6YbJqoERSu1GcNelNZ0mlpZV/7rZfLp2gZrjmeYxHtx4HUJscjyzW0tzvRSH9dSmMH1GyD//uBmi0zn9gUMg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EzXrhltc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kJyTKMIe;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=EzXrhltc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZv8R0Ghsz2yQG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:14:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZv8c39Lkz2xMt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:14:56 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0FFB943B27;
+	by sea.source.kernel.org (Postfix) with ESMTP id 3F6DF444C8;
+	Thu, 26 Nov 2026 11:14:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 714501F000D4;
 	Thu, 26 Nov 2026 11:14:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 488AA1F000C4;
-	Thu, 26 Nov 2026 11:14:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691684;
-	bh=+zAN299vizOOPECPls5C9ly2hX7A6i/wCUYEhdWTrYE=;
+	s=k20260515; t=1795691693;
+	bh=pOe0fNlH4H+/AQprp4nKXyU+tisJl0prDAgrQlBRIqs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=kJyTKMIef9KUJ7TrzxTw1NFRlFaRrs8sShSVVpag23heJBC0+PbBRsR1oW1Wkkfe3
-	 /BEDq5VE3iJDg9scZN+INRUCab6B1pQg4aSTRrJ64C0kKSQyJj5olaROHEH5iUjs+j
-	 8wKpdu+jFo2YDtHGgaZw4V+6poffdw5Oag7Yqa5qdXG3V3GPOwPnZgPhV6dXf9v76W
-	 Sb0W8VbJ3BmR3nLdG+OyaPztr9yMUdYv/loapVRW0yE+e+WYmM44YbzJciMR6VYcE8
-	 wGiDHGR3bmNJb9AN7Zbx5mEvbwquRTkTxaAYZtEGd9VyUgt5DRG8mbCQoHnOAjKSOb
-	 +bMedTT8QILgA==
+	b=EzXrhltcMrtKqO6MUWfWRH8/mg8UPhf8i9k4imGHKf4DwbyhoWKKGEnGwRRQgDHwr
+	 GmANWhG79gGu7kXW0nekO6FiH4J7RNjWmJoACGQuDBbF6TFy0hUTXDeJ0AR58NQZc6
+	 buOPNoDUiaYbPsAZILufugpB4I0oq+kC27B2yxiGnZBMhs/TYqArOIvN/BjSWka2Ll
+	 CnvSHYHGIaFGI/ZvB/lVrv8z1dzNmQ6KLqJFB4zTv51MOrM0Ketp2V7nlbX1PnrjAl
+	 v0eW8OfCD1pYNH03IstDX7+gNwHnJQcool9WeGFi33CrMoUwm4fiA2rhPhJlQOskbm
+	 xnEyOahRKWe7A==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:14 +0200
-Subject: [PATCH RFC v2 01/54] riscv: do not use P4D entries for the linear
- mapping
+Date: Thu, 26 Nov 2026 13:14:15 +0200
+Subject: [PATCH RFC v2 02/54] riscv: test for Svnapot in pte_napot()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +62,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-1-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-2-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,39 +96,64 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The linear map uses P4D sized leaves with Sv57 since commit 3335068f8721
-("riscv: Use PUD/P4D/PGD pages for the linear mapping"), but riscv has no
-p4d_leaf() and the generic stub returns false.
+pte_napot() tests only bit 63 and relies on its callers to check that the
+CPU supports Svnapot.
 
-As a result, kernel page table walks treat P4D leaves as tables and wrongly
-descend to lower levels. This affects the split in set_memory_*(),
-kernel_page_present(), ptdump and the hibernation page table copy.
+On T-Head CPUs bit 63 is not the NAPOT bit: it is set in the non-cached I/O
+mappings (_PAGE_IO_THEAD).
 
-Stop creating P4D leaves rather than teaching every walker about them, as
-commit 629db01c64ff ("riscv: Don't use PGD entries for the linear mapping")
-did for PGD leaves.
+pte_pfn() checks has_svnapot() before pte_napot(), but pte_leaf_size() does
+not. With CONFIG_RISCV_ISA_SVNAPOT=y on T-Head, a page of an I/O mapping
+looks like a NAPOT block and pte_leaf_size() derives its size from the
+alignment of its PFN. perf then reports a bogus page size for addresses in
+I/O mappings.
 
-Fixes: 3335068f8721 ("riscv: Use PUD/P4D/PGD pages for the linear mapping")
+Check has_svnapot() in pte_napot() so that its callers don't have to, and
+drop the check that became redundant in pte_pfn().
+
+Fixes: e0fe5ab4192c ("riscv: Fix pte_leaf_size() for NAPOT")
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/riscv/mm/init.c | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/riscv/include/asm/pgtable.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 070ee69eabb3..e1bcc3a16129 100644
---- a/arch/riscv/mm/init.c
-+++ b/arch/riscv/mm/init.c
-@@ -717,10 +717,6 @@ static uintptr_t __meminit best_map_size(phys_addr_t pa, uintptr_t va, phys_addr
- 	if (debug_pagealloc_enabled())
- 		return PAGE_SIZE;
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index 2ebd5fa5adc5..1c1ba48315ed 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -288,9 +288,9 @@ static __always_inline bool has_svnapot(void)
+ 	return riscv_has_extension_likely(RISCV_ISA_EXT_SVNAPOT);
+ }
  
--	if (pgtable_l5_enabled() &&
--	    !(pa & (P4D_SIZE - 1)) && !(va & (P4D_SIZE - 1)) && size >= P4D_SIZE)
--		return P4D_SIZE;
--
- 	if (pgtable_l4_enabled() &&
- 	    !(pa & (PUD_SIZE - 1)) && !(va & (PUD_SIZE - 1)) && size >= PUD_SIZE)
- 		return PUD_SIZE;
+-static inline unsigned long pte_napot(pte_t pte)
++static inline bool pte_napot(pte_t pte)
+ {
+-	return pte_val(pte) & _PAGE_NAPOT;
++	return has_svnapot() && (pte_val(pte) & _PAGE_NAPOT);
+ }
+ 
+ static inline pte_t pte_mknapot(pte_t pte, unsigned int order)
+@@ -306,9 +306,9 @@ static inline pte_t pte_mknapot(pte_t pte, unsigned int order)
+ 
+ static __always_inline bool has_svnapot(void) { return false; }
+ 
+-static inline unsigned long pte_napot(pte_t pte)
++static inline bool pte_napot(pte_t pte)
+ {
+-	return 0;
++	return false;
+ }
+ 
+ #endif /* CONFIG_RISCV_ISA_SVNAPOT */
+@@ -318,7 +318,7 @@ static inline unsigned long pte_pfn(pte_t pte)
+ {
+ 	unsigned long res  = __page_val_to_pfn(pte_val(pte));
+ 
+-	if (has_svnapot() && pte_napot(pte))
++	if (pte_napot(pte))
+ 		res = res & (res - 1UL);
+ 
+ 	return res;
 
 -- 
 2.53.0
