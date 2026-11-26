@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1C9F6606A323
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:20:01 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 572F3606A326
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:20:11 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Td7WQqa3
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YQX4Vlfz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvGR60KHz3blC;
-	Thu, 26 Nov 2026 22:19:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691999;
-	cv=none; b=KFKmw9/G/ibdGs881UC4NyZgfcpvTGTOFKndr7BwxMBja14D9qCvS9i+oIRXUVvQNJ5gihD8mmvq+wp0D/5IiV3n0pyp1tTyQ193kLYALZSNj97U2wBWboLADXg99tS4YXl4QwtS5raJH7pB5AagXb0oBj5TO6S4VZFqlKWw4ODrlJ7L+QEAU2EL9+1xTV4Bz9dCW2A4Hvt2m+7pY6Ir39A5R72JYcHLPJo2KQbWiNIrIFHd7mVSFNxql0TkS/bnORzGEZ6fvvF/ESyK0/mISrk/lI2DwVWB5x6QeRK0Mb7L9htzhWc0sL+nWpKbepIafv74ArQUpmbFRq1ynlo3Lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvGf0YZkz3blk;
+	Thu, 26 Nov 2026 22:20:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795692010;
+	cv=none; b=QAqAJOoMUDX1fXO3F5e6k8KLOqMhJP58NDoXk6PI4NtVxJMHS9GVBKPFlATE315t6edSkCV5KLSgWLvPvgKFOVU04zpRG1gi8w2aoISt4Wr7EGn0EPtbnli3HewFU0438hWlH8Dy2puh2AtLwXJ6OEd/9X0sAVcBaWPE/iP+nusBmNJheMxkU9YlMoJq96ejAb4cZ9P9+FOe5YkJqrJfQbRofwE6phqGZ0ijubl2sgjF3cQBRwMVuma3g81RLjIEvCwWvcl8LjQ/bHyTUPkMwAhcTavYJNbGCZN77rizGS+aKBgwDIzkl+6LLUtDuyfPWsev6E2yvl21C+xoPWVMwQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691999; c=relaxed/relaxed;
-	bh=QjHPKIVW3NJ7hgK/PWATF9K0DetPjPAzIieyOSxd4IY=;
+	t=1795692010; c=relaxed/relaxed;
+	bh=TcovJ7fKpwSIau6n7YhDhlDaqqn2o0CpIonYbQhgs1Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=S56aj8wR0HoQspw4tB0e7kc7skoMy9iyD8dLP04iYX4SXbrANz6QWROgIbAWiFhK/MS63FTAHOsrO3SB5pwKI0G6uZ2lizw8Cz7PYJQ5kWOzBViGHxefp/KWxnsX0zDjRWMWXOiRQ0JoN6uuItIic6lxxq1RBjcSis6WBFVACCDtLhg57X+Pz53e+pyPvIk9wv0KOSn4O/c98MANZeA4nX7cnqMdrtNLpB+9I+6/JmViTQbp8ccyLiwP2xOpQpVlFDz11kY6DX8mdVXMUQDs1ZlZWAG1ZTYU9uUoJ/ek3R+qf1aCZC/G3yXyL+oKmFBKsIqCc7DBQUqbdZQ3nxjkZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Td7WQqa3; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=IhjtryoeM8Ae/ob/ndoAaTgFXQl4FH7sNrqGEQY6M6Dg5l+sz1rCp3qHmfGGhSW2Tq6j/oia12DabpFd8exucz9vHoeIQK+dGjFKMWERLD6i61YejpnFOnsThVe62zraEF33LcHh4V2sqPz9GUwzWresHmG/zmLYTZH6fibOYfSQZ+jqod/mM0lmxTDqR6lYhxTu6EqIZipp5wNlJB3RoIRmz+DI8Z3NAL7ExMkrcEqqYwaJeRzALRyBwYbAmQa77JofhvSrduHj7H/+7DBiSbyhJ23eN7/F2dK2/E2nFv850qU7AK2Am1kVxP0TV64py3eswYvm1GStRfZGzoRiAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YQX4Vlfz; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=Td7WQqa3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=YQX4Vlfz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvGR0473z308H
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:19:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvGd1lG3z3bld
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:20:09 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 035DF41AE8;
+	by tor.source.kernel.org (Postfix) with ESMTP id 5F5BF630FE;
+	Thu, 26 Nov 2026 11:20:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 291EB1F0089E;
 	Thu, 26 Nov 2026 11:19:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5CD1F1F000C0;
-	Thu, 26 Nov 2026 11:19:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691996;
-	bh=QjHPKIVW3NJ7hgK/PWATF9K0DetPjPAzIieyOSxd4IY=;
+	s=k20260515; t=1795692006;
+	bh=TcovJ7fKpwSIau6n7YhDhlDaqqn2o0CpIonYbQhgs1Q=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Td7WQqa3c7ClvHl+OoEBfCYgP/n9WHRuAztnd/C+dWFx/SKyzf+rot9DehsBhdEMR
-	 XhXHzNONCqJnzktHcCzhsfRDZommDkcJRNBgrcK5izNOUg12XwVVEbLxKxPwcdg96C
-	 Xl3Viw8y3ZSm0/uWV18pSGWunvgmjwPqYGaPkfo+V0AWmO70GciFkYKDvcqzBBfPed
-	 ctZTYZalj6ONgdxp/Rpub5hd6TXezAF/ggB1Nb4/cI+LVmxeD4StvrlxIEMNlT+TVE
-	 oOptv6/WnyWRCi5WfRuMwlrbjSFlyQfXsQ/Wxn6Hzybs66OymbziDAuPFND4Y1ib3g
-	 lTQWRh5WHeHKQ==
+	b=YQX4Vlfzncbu4ByMDCKIDOkYYuSMz8GiefAX4fx/EY+K2NBxvpNvsiNjKehGukcK3
+	 lYy3m1CGX662GRgnQjDUdbqu7M4DZmesh3UjBMBBpadd+prI19r4f7zsZRkeynMYjI
+	 xsqqk0eHRRZvHrMs/B6xCL2yudop9ANQuRk+Uwk6lNeuZmstf+gkjHcxLeG0C07xGd
+	 Jso+S6uzBcWs9Srk4u6wHwIrfto5nZZkQZ2G7x16qj3IaMAxz77wxlvKOemicCLn+0
+	 HxT7UKA95ELqMw6kAI+RO/k1BXqNlkMdNJ9XqukHBM6bTLzSCsIcXL/BxoHIhzTAYJ
+	 imaUFPSKUcSjA==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:47 +0200
-Subject: [PATCH RFC v2 34/54] LoongArch: stop pretending LoongArch supports
- set_direct_map APIs
+Date: Thu, 26 Nov 2026 13:14:48 +0200
+Subject: [PATCH RFC v2 35/54] LoongArch: drop the huge page handling from
+ set_memory()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-34-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-35-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,135 +97,99 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-LoongArch selects ARCH_HAS_SET_DIRECT_MAP and implements set_direct_map*()
-APIs to allow coexistence of hibernation with KFENCE, see
-commit f04de6d8f252 ("LoongArch: Add ARCH_HAS_SET_DIRECT_MAP support").
+set_memory() never finds a huge mapping on LoongArch.
 
-However, LoongArch does not have page tables for its direct map to begin
-with. It maps the physical memory with a hardware window, so there is no
-way to change the permissions of an individual page there.
+The direct map and the kernel image are in the direct mapping windows,
+which have no page tables, and set_memory() skips them.
 
-Protection of KFENCE pages is handled outside the direct map: they are
-mapped in the dedicated address space area and their virtual address is
-explicitly set with set_page_address() to keep page_address() working for
-those pages.
+Everything in the vmalloc area is mapped with base pages, because LoongArch
+selects neither HAVE_ARCH_HUGE_VMALLOC nor HAVE_ARCH_HUGE_VMAP.
 
-Selecting ARCH_HAS_SET_DIRECT_MAP enables secretmem on LoongArch, although
-without the actual ability to modify the direct map, secretmem becomes a
-limited memfd and does not provide the security it promises.
+The only huge kernel mapping is the vmemmap, and nothing changes its
+protections.
 
-After the rework of the temporary mappings in the hibernation code [1],
-there is no need for LoongArch to pretend it supports direct map
-operations.
-
-Remove the set_direct_map*() implementation and stop enabling
-ARCH_HAS_SET_DIRECT_MAP.
-
-Removing support for ARCH_HAS_SET_DIRECT_MAP effectively disables
-secretmem, and memfd_secret() returns -ENOSYS on LoongArch.
-
-[1] https://lore.kernel.org/all/20260917-hibernation-v1-4-7f7dfae3dbe0@kernel.org
+The PGD, P4D, PUD and PMD handlers of the set_memory() page table walk are
+dead code. Drop them.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/loongarch/Kconfig                  |  1 -
- arch/loongarch/include/asm/set_memory.h |  4 ---
- arch/loongarch/mm/pageattr.c            | 60 ---------------------------------
- 3 files changed, 65 deletions(-)
+ arch/loongarch/mm/pageattr.c | 56 --------------------------------------------
+ 1 file changed, 56 deletions(-)
 
-diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-index b5ed4881d3c0..bad699e2847f 100644
---- a/arch/loongarch/Kconfig
-+++ b/arch/loongarch/Kconfig
-@@ -27,7 +27,6 @@ config LOONGARCH
- 	select ARCH_HAS_PREEMPT_LAZY
- 	select ARCH_HAS_PTE_SPECIAL if 64BIT
- 	select ARCH_HAS_SET_MEMORY
--	select ARCH_HAS_SET_DIRECT_MAP
- 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- 	select ARCH_HAS_UBSAN
- 	select ARCH_HAS_VDSO_ARCH_DATA
-diff --git a/arch/loongarch/include/asm/set_memory.h b/arch/loongarch/include/asm/set_memory.h
-index 4bb01172fbc2..64c7f942e8ec 100644
---- a/arch/loongarch/include/asm/set_memory.h
-+++ b/arch/loongarch/include/asm/set_memory.h
-@@ -14,8 +14,4 @@ int set_memory_nx(unsigned long addr, int numpages);
- int set_memory_ro(unsigned long addr, int numpages);
- int set_memory_rw(unsigned long addr, int numpages);
- 
--bool kernel_page_present(struct page *page);
--int set_direct_map_default_noflush(struct page *page, unsigned int nr);
--int set_direct_map_invalid_noflush(struct page *page, unsigned int nr);
--
- #endif /* _ASM_LOONGARCH_SET_MEMORY_H */
 diff --git a/arch/loongarch/mm/pageattr.c b/arch/loongarch/mm/pageattr.c
-index a728db40f9e0..7283059d6e1f 100644
+index 7283059d6e1f..11cea93c7415 100644
 --- a/arch/loongarch/mm/pageattr.c
 +++ b/arch/loongarch/mm/pageattr.c
-@@ -156,63 +156,3 @@ int set_memory_rw(unsigned long addr, int numpages)
- 
- 	return __set_memory(addr, numpages, __pgprot(_PAGE_WRITE | _PAGE_DIRTY), __pgprot(0));
+@@ -24,58 +24,6 @@ static unsigned long set_pageattr_masks(unsigned long val, struct mm_walk *walk)
+ 	return new_val;
  }
--
--bool kernel_page_present(struct page *page)
+ 
+-static int pageattr_pgd_entry(pgd_t *pgd, unsigned long addr,
+-			      unsigned long next, struct mm_walk *walk)
 -{
--	pgd_t *pgd;
--	p4d_t *p4d;
--	pud_t *pud;
--	pmd_t *pmd;
--	pte_t *pte;
--	unsigned long addr = (unsigned long)page_address(page);
+-	pgd_t val = pgdp_get(pgd);
 -
--	if (addr < vm_map_base)
--		return true;
+-	if (pgd_leaf(val)) {
+-		val = __pgd(set_pageattr_masks(pgd_val(val), walk));
+-		set_pgd(pgd, val);
+-	}
 -
--	pgd = pgd_offset_k(addr);
--	if (pgd_none(pgdp_get(pgd)))
--		return false;
--	if (pgd_leaf(pgdp_get(pgd)))
--		return true;
--
--	p4d = p4d_offset(pgd, addr);
--	if (p4d_none(p4dp_get(p4d)))
--		return false;
--	if (p4d_leaf(p4dp_get(p4d)))
--		return true;
--
--	pud = pud_offset(p4d, addr);
--	if (pud_none(pudp_get(pud)))
--		return false;
--	if (pud_leaf(pudp_get(pud)))
--		return true;
--
--	pmd = pmd_offset(pud, addr);
--	if (pmd_none(pmdp_get(pmd)))
--		return false;
--	if (pmd_leaf(pmdp_get(pmd)))
--		return true;
--
--	pte = pte_offset_kernel(pmd, addr);
--	return pte_present(ptep_get(pte));
+-	return 0;
 -}
 -
--int set_direct_map_default_noflush(struct page *page, unsigned int nr)
+-static int pageattr_p4d_entry(p4d_t *p4d, unsigned long addr,
+-			      unsigned long next, struct mm_walk *walk)
 -{
--	unsigned long addr = (unsigned long)page_address(page);
+-	p4d_t val = p4dp_get(p4d);
 -
--	if (addr < vm_map_base)
--		return 0;
+-	if (p4d_leaf(val)) {
+-		val = __p4d(set_pageattr_masks(p4d_val(val), walk));
+-		set_p4d(p4d, val);
+-	}
 -
--	return __set_memory(addr, nr, PAGE_KERNEL, __pgprot(0));
+-	return 0;
 -}
 -
--int set_direct_map_invalid_noflush(struct page *page, unsigned int nr)
+-static int pageattr_pud_entry(pud_t *pud, unsigned long addr,
+-			      unsigned long next, struct mm_walk *walk)
 -{
--	unsigned long addr = (unsigned long)page_address(page);
+-	pud_t val = pudp_get(pud);
 -
--	if (addr < vm_map_base)
--		return 0;
+-	if (pud_leaf(val)) {
+-		val = __pud(set_pageattr_masks(pud_val(val), walk));
+-		set_pud(pud, val);
+-	}
 -
--	return __set_memory(addr, nr, __pgprot(0), __pgprot(_PAGE_PRESENT | _PAGE_VALID));
+-	return 0;
 -}
+-
+-static int pageattr_pmd_entry(pmd_t *pmd, unsigned long addr,
+-			      unsigned long next, struct mm_walk *walk)
+-{
+-	pmd_t val = pmdp_get(pmd);
+-
+-	if (pmd_leaf(val)) {
+-		val = __pmd(set_pageattr_masks(pmd_val(val), walk));
+-		set_pmd(pmd, val);
+-	}
+-
+-	return 0;
+-}
+-
+ static int pageattr_pte_entry(pte_t *pte, unsigned long addr,
+ 			      unsigned long next, struct mm_walk *walk)
+ {
+@@ -94,10 +42,6 @@ static int pageattr_pte_hole(unsigned long addr, unsigned long next,
+ }
+ 
+ static const struct mm_walk_ops pageattr_ops = {
+-	.pgd_entry = pageattr_pgd_entry,
+-	.p4d_entry = pageattr_p4d_entry,
+-	.pud_entry = pageattr_pud_entry,
+-	.pmd_entry = pageattr_pmd_entry,
+ 	.pte_entry = pageattr_pte_entry,
+ 	.pte_hole = pageattr_pte_hole,
+ 	.walk_lock = PGWALK_RDLOCK,
 
 -- 
 2.53.0
