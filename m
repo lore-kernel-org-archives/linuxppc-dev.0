@@ -2,52 +2,52 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 109FA606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:16:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 61764606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:16:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JJTmgF9h
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aYpj+ngS
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvBR5dFdz2yMl;
-	Thu, 26 Nov 2026 22:16:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691791;
-	cv=none; b=DwwFx4JIS9ZDN9ALe0RMocbOYbW9F2nUNK/l2yQpO2JOCZzamsOBdbqZaJm/4QABKSliRv6jK8hKtourQOiQn3jvWGNA5W4lqHCyuaSTCoLH46gU1VXkjRMM3gWf/xoM8bL3GXrkGRvI+9QD+NM8RCjK+IBSfusHKt6JUYsdXy2d2yynClsq8IhzPg500ik4pauZgYzZsZmIyj1bv8W2lUJP7S/OPX82v60E5s/zyCUYlLWzJHiGXP2AIQrcBaqQNkAeOjiUcDQPZLHRMgcDCDmd6ej+wdKsOBZOICKRVT02ivnj1RTqiwC/HcuLGyWTGLGRV5sI64Jd/g/uyfXX4A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZvBd0rfMz30dj;
+	Thu, 26 Nov 2026 22:16:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691801;
+	cv=none; b=VGfMBQfNYYZQcJRpz0YhHaPnykWEHYtHEs5xO8p334t8vn9WtckR8K14nvUtuIndWxchhnFUM1vP+w0ioA7vuUn9ZA9nH9aVCEv616u1abr/jIa1Epn7mUjxlpBvvwZoeXqDgXVSctL6PUg9t46N40BmfHurMdUL8sB+2LPeY6/HG73eADpaesmVKzwp7esOHHaBY6CADL9qA8yxtoIEz0z3z4LOA3sUTt5p80YEn9i6b3/ErLuvd5nM5iy/ZsEQu4MOVVCPRjTcuWl2x/y5XQgsCzkPwm/LIVkwDMb1tzoub2mDXGbll2HQNS8bnJdw2+hXaQdzSZNYay0Oserwfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691791; c=relaxed/relaxed;
-	bh=g7+G25h7JB/VdJKGT10uzFSZXJehzXr1o5C1pbOXKCo=;
+	t=1795691801; c=relaxed/relaxed;
+	bh=JWC/vBALKCjgB3Vp7e+Dp/3jppLyPAzKiZgZB+giSqk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HmOGViTMtcFAfWlbIH8TqmrI6KXTMjnP+0zxLXGuDMvoaYnkF4OkiLAtUShpOApYMS9estL+Q/CkQ4LLSz5w+HGuc8XFqkNFeFWdE1nJR4Lx1KOMcyCd/imn+nSRYFe8L83VW2uyl0Ht8urzyK+BQLTy9pZ1QSHerDRJI4I94uNBlr24m7kLX+wJJLZtTiCECAbfGry4O2PMeMxG6678iIoQzU+RvLR5FXHpPOrb03gOn/JDqZO2b0oCDPDIPAOHxohVy+k79Cf3K6CrvWGsEASFxEUoocBBSjOymEykdBDI8nVKPzUXtbBCbAZwfGshP0kllgjkpOaWWUI2ggOZtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JJTmgF9h; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=AV/ZY/vJttDTIeiXhMnGibMcFWh9yPUEjUPDGqd/ZjOJnVipmU8Osw4X4wyPTqCuUW5pIHfrJ+VR2m+sfUn7z9/9UbZ8Dwdzjr5aYkjZoCwMSg/DWcfdljYUzOGJzPybEhLsx+a2tT8Kidj8sZTFjINRBFxc/I+hOt/PSOu8Vr3eouTa3Q6xxdiX1dYYQ+37IwLq0t7B67ppG/ArJvwQ6xp3Cl6kKkyfQbhpAJhSVG1mKwfbzQkqqZ9AI9RJnt25WhQJpdOi8sNR0KPjYyuNK0bG60B91cC2aUNVzLUkWqPk1vtsglh/ci4tUbcjnJqvejtyOvj4fFLZ1KmTnkVwpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aYpj+ngS; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=JJTmgF9h;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=aYpj+ngS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvBQ5gg4z2yMP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:16:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZvBc286zz30Wg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:16:40 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id D6332628FB;
-	Thu, 26 Nov 2026 11:16:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A64B31F000D1;
-	Thu, 26 Nov 2026 11:16:19 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5BFA643B55;
+	Thu, 26 Nov 2026 11:16:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 733D71F000C4;
+	Thu, 26 Nov 2026 11:16:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691788;
-	bh=g7+G25h7JB/VdJKGT10uzFSZXJehzXr1o5C1pbOXKCo=;
+	s=k20260515; t=1795691797;
+	bh=JWC/vBALKCjgB3Vp7e+Dp/3jppLyPAzKiZgZB+giSqk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=JJTmgF9hCDloI4+C9h9XvD40HTS73PHevQ/AL1GPsnk5uRiOh0Xtwz/5NgaWA3TQd
-	 MhWF3uq8pOpyod+MeWUnBV+pluBsiCPrOiXQ6Gy2JuHY+eeB136zaAgdmRIBRHpArj
-	 xX9Pj8dnVkGzTfZ1P+3Xe8N9xqP1v86DauxGOJeKSJiIJcAHVE4MUggm1zKcR/bMrC
-	 CjoZMblWz3YnlXQU2MAi0Kp4nkCN12bw+vipoHgMvlvtK0322zGJ5Ja8RESYSBssgy
-	 BfJ8zyrYkmvuNYpAy8Ir0rc+KgNMUwONUWMrt3fK4eOR3FMphFviDpfly9rHAYJEip
-	 NLfXyYa2Uo6/w==
+	b=aYpj+ngSiVFqOgPwkjKWlL43cMwZ+c5qm9pyvtLBv6pRVxFQz/EnGMvT3cqG60CKV
+	 gp17gvtMKi2AUU8TijAS5yNkCTOTjH2Hcpzo5zl5CqJX4AX6FkoKmRtDnCuSFqV1Me
+	 F5l2AWld4jnr12BgoJ/0hRgE9SX3p1+lkLsNAfVFhqEKgJ6rZL/qR7qp6M7cgLZYkA
+	 cajyHtUCZrnpDkX20HptjbPShYFK0PskDHvCpXjIeQQYNmZuANQV5dGi67AmHknFT9
+	 b0dh9ehw25xnd7VAFSRbYHeAn3Icdmn02VTQRbc8OoQpSYOJECww1+H2cR7XMAw8q2
+	 JUPAaB2anngGA==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:25 +0200
-Subject: [PATCH RFC v2 12/54] x86/mm/pat: introduce
- change_page_attr_pages()
+Date: Thu, 26 Nov 2026 13:14:26 +0200
+Subject: [PATCH RFC v2 13/54] x86/mm/pat: make the direct map counters
+ atomic
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-12-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-13-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,411 +97,98 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-CPA takes either a range of addresses or, with CPA_REQ_PAGES_ARRAY, an
-array of pages.
+In update_page_count() pgd_lock protects only the direct map counters. The
+splits and collapses in CPA update the counters under pgd_lock that they
+hold for other reasons.
 
-CPA_REQ_PAGES_ARRAY is used by set_pages_array_*() APIs to change the cache
-mode of the direct map of the pages.
+Make the counters atomic_long_t, like s390 and powerpc do, so that updating
+them does not need pgd_lock.
 
-Changing the cache mode of the direct map is very x86 specific and no other
-architecture does it.
-
-With the upcoming move of the CPA core to the generic code, it is best to
-keep arrays of pages in x86, so that generic core deals only with ranges
-and is simpler to reason about.
-
-Besides, its current implementation is suboptimal. CPA walks an array page
-at a time and splits every large page it touches, even when the pages are
-contiguous. For instance, TTM passes arrays that may contain high order
-pages.
-
-Introduce change_page_attr_pages() that changes the pages that are
-contiguous in the direct map as a single range, so a range that covers a
-large page keeps it, and drop CPA_REQ_PAGES_ARRAY.
-
-Purge the vmap aliases once before the ranges and flush the TLB and the
-caches once after them, as before.
-
-change_page_attr_pages() flushes once for the entire pages array, so the
-flush can no longer take a struct cpa_data. Introduce struct cpa_flush_req
-that describes either a range or an array of pages, and use it for both
-change_page_attr_set_clr() and change_page_attr_pages().
-
-A highmem page has no address in the direct map. CPA looked up address 0
-for it, which on 32-bit ends in the "CPA: called for zero pte" warning and
--EFAULT since commit 16ebf031e8ab ("x86/mm/cpa: Add __cpa_addr() helper").
-Skip highmem pages.
+A split checks that the counter of the large pages is not zero before it
+decrements it. Use atomic_long_dec_if_positive() so that a concurrent
+update cannot drive the counter below zero between the two.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/x86/mm/pat/set_memory.c | 191 ++++++++++++++++++++++++++++---------------
- 1 file changed, 124 insertions(+), 67 deletions(-)
+ arch/x86/mm/pat/set_memory.c | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/arch/x86/mm/pat/set_memory.c b/arch/x86/mm/pat/set_memory.c
-index e1abc0d1d143..5e3c1152d202 100644
+index 5e3c1152d202..8076d29a2931 100644
 --- a/arch/x86/mm/pat/set_memory.c
 +++ b/arch/x86/mm/pat/set_memory.c
-@@ -49,7 +49,6 @@ struct cpa_data {
- 	unsigned long	pfn;
- 	unsigned int	flags;
- 	unsigned int	state;
--	struct page	**pages;
- };
+@@ -84,56 +84,58 @@ static inline pgprot_t cachemode2pgprot(enum page_cache_mode pcm)
+ }
  
- enum cpa_warn {
-@@ -72,7 +71,6 @@ static DEFINE_SPINLOCK(cpa_lock);
- #define CPA_REQ_NO_CHECK_ALIAS	0x01 /* Do not search for aliases */
- #define CPA_REQ_COLLAPSE	0x02 /* try to collapse large pages */
- #define CPA_REQ_SPLIT		0x04 /* split large pages */
--#define CPA_REQ_PAGES_ARRAY	0x08
+ #ifdef CONFIG_PROC_FS
+-static unsigned long direct_pages_count[PG_LEVEL_NUM];
++static atomic_long_t direct_pages_count[PG_LEVEL_NUM];
  
- /* cpa_data::state */
- #define CPA_ST_FLUSHTLB		0x01 /* the TLB needs a flush */
-@@ -309,15 +307,6 @@ static inline unsigned long fix_addr(unsigned long addr)
- 
- static unsigned long __cpa_addr(struct cpa_data *cpa, unsigned long idx)
+ void update_page_count(int level, unsigned long pages)
  {
--	if (cpa->flags & CPA_REQ_PAGES_ARRAY) {
--		struct page *page = cpa->pages[idx];
--
--		if (unlikely(PageHighMem(page)))
--			return 0;
--
--		return (unsigned long)page_address(page);
--	}
--
- 	return cpa->addr + idx * PAGE_SIZE;
+-	/* Protect against CPA */
+-	guard(spinlock)(&pgd_lock);
+-	direct_pages_count[level] += pages;
++	atomic_long_add(pages, &direct_pages_count[level]);
  }
  
-@@ -400,13 +389,33 @@ static void cpa_flush_all(unsigned long cache)
- 	on_each_cpu(__cpa_flush_all, (void *) cache, 1);
- }
- 
-+/* The pages to flush: @numpages pages from @addr, or those in @pages */
-+struct cpa_flush_req {
-+	unsigned long	addr;
-+	struct page	**pages;
-+	unsigned long	numpages;
-+	unsigned int	state;
-+};
-+
-+/*
-+ * A highmem page in @pages is not changed, but flushing it is harmless:
-+ * page_address() returns NULL or its kmap address.
-+ */
-+static unsigned long cpa_flush_addr(struct cpa_flush_req *req, unsigned int i)
-+{
-+	if (req->pages)
-+		return (unsigned long)page_address(req->pages[i]);
-+
-+	return req->addr + i * PAGE_SIZE;
-+}
-+
- static void __cpa_flush_tlb(void *data)
+ static void split_page_count(int level)
  {
--	struct cpa_data *cpa = data;
-+	struct cpa_flush_req *req = data;
- 	unsigned int i;
- 
--	for (i = 0; i < cpa->numpages; i++)
--		flush_tlb_one_kernel(fix_addr(__cpa_addr(cpa, i)));
-+	for (i = 0; i < req->numpages; i++)
-+		flush_tlb_one_kernel(fix_addr(cpa_flush_addr(req, i)));
- }
- 
- static int collapse_large_pages(unsigned long addr, struct list_head *pgtables);
-@@ -417,20 +426,13 @@ static void cpa_collapse_large_pages(struct cpa_data *cpa)
- 	struct ptdesc *ptdesc, *tmp;
- 	LIST_HEAD(pgtables);
- 	int collapsed = 0;
--	int i;
- 
--	if (cpa->flags & CPA_REQ_PAGES_ARRAY) {
--		for (i = 0; i < cpa->numpages; i++)
--			collapsed += collapse_large_pages(__cpa_addr(cpa, i),
--							  &pgtables);
--	} else {
--		addr = __cpa_addr(cpa, 0);
--		start = addr & PMD_MASK;
--		end = addr + PAGE_SIZE * cpa->numpages;
-+	addr = __cpa_addr(cpa, 0);
-+	start = addr & PMD_MASK;
-+	end = addr + PAGE_SIZE * cpa->numpages;
- 
--		for (addr = start; within(addr, start, end); addr += PMD_SIZE)
--			collapsed += collapse_large_pages(addr, &pgtables);
--	}
-+	for (addr = start; within(addr, start, end); addr += PMD_SIZE)
-+		collapsed += collapse_large_pages(addr, &pgtables);
- 
- 	if (!collapsed)
- 		return;
-@@ -451,7 +453,7 @@ static void cpa_collapse_large_pages(struct cpa_data *cpa)
- 	}
- }
- 
--static void cpa_flush(struct cpa_data *cpa, int cache)
-+static void __cpa_flush(struct cpa_flush_req *req, int cache)
- {
- 	unsigned int i;
- 
-@@ -462,18 +464,18 @@ static void cpa_flush(struct cpa_data *cpa, int cache)
- 		return;
- 	}
- 
--	if ((cpa->state & CPA_ST_FLUSH_ALL) ||
--	    cpa->numpages > tlb_single_page_flush_ceiling)
-+	if ((req->state & CPA_ST_FLUSH_ALL) ||
-+	    req->numpages > tlb_single_page_flush_ceiling)
- 		flush_tlb_all();
- 	else
--		on_each_cpu(__cpa_flush_tlb, cpa, 1);
-+		on_each_cpu(__cpa_flush_tlb, req, 1);
- 
- 	if (!cache)
+-	if (direct_pages_count[level] == 0)
++	if (atomic_long_dec_if_positive(&direct_pages_count[level]) < 0)
  		return;
  
- 	mb();
--	for (i = 0; i < cpa->numpages; i++) {
--		unsigned long addr = __cpa_addr(cpa, i);
-+	for (i = 0; i < req->numpages; i++) {
-+		unsigned long addr = cpa_flush_addr(req, i);
- 		unsigned int level;
- 
- 		pte_t *pte = lookup_address(addr, &level);
-@@ -487,6 +489,17 @@ static void cpa_flush(struct cpa_data *cpa, int cache)
- 	mb();
- }
- 
-+static void cpa_flush(struct cpa_data *cpa, int cache)
-+{
-+	struct cpa_flush_req req = {
-+		.addr = cpa->addr,
-+		.numpages = cpa->numpages,
-+		.state = cpa->state,
-+	};
-+
-+	__cpa_flush(&req, cache);
-+}
-+
- static bool overlaps(unsigned long r1_start, unsigned long r1_end,
- 		     unsigned long r2_start, unsigned long r2_end)
- {
-@@ -1949,7 +1962,6 @@ static int cpa_process_alias(struct cpa_data *cpa)
- 
- 		alias_cpa = *cpa;
- 		alias_cpa.addr = (unsigned long)__va(cpa->pfn << PAGE_SHIFT);
--		alias_cpa.flags &= ~CPA_REQ_PAGES_ARRAY;
- 		alias_cpa.state &= ~CPA_ST_FLUSHTLB;
- 		alias_cpa.state |= CPA_ST_ALIAS;
- 		alias_cpa.curpage = 0;
-@@ -1978,7 +1990,6 @@ static int cpa_process_alias(struct cpa_data *cpa)
- 		alias_cpa = *cpa;
- 		alias_cpa.addr = (cpa->pfn << PAGE_SHIFT) +
- 				 __START_KERNEL_map - phys_base;
--		alias_cpa.flags &= ~CPA_REQ_PAGES_ARRAY;
- 		alias_cpa.state &= ~CPA_ST_FLUSHTLB;
- 		alias_cpa.state |= CPA_ST_ALIAS;
- 		alias_cpa.curpage = 0;
-@@ -2024,9 +2035,6 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa)
- 		 * preservation check.
- 		 */
- 		cpa->numpages = rempages;
--		/* for array changes, we can't use large page */
--		if (cpa->flags & CPA_REQ_PAGES_ARRAY)
--			cpa->numpages = 1;
- 
- 		scoped_guard(spinlock, &cpa_lock)
- 			ret = __change_page_attr(cpa);
-@@ -2061,7 +2069,7 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa)
- 
- static int change_page_attr_set_clr(unsigned long addr, int numpages,
- 				    pgprot_t mask_set, pgprot_t mask_clr,
--				    int in_flag, struct page **pages)
-+				    int in_flag)
- {
- 	struct cpa_data cpa;
- 	int ret, cache;
-@@ -2079,18 +2087,12 @@ static int change_page_attr_set_clr(unsigned long addr, int numpages,
- 		return 0;
- 
- 	/* Ensure we are PAGE_SIZE aligned */
--	if (!(in_flag & CPA_REQ_PAGES_ARRAY)) {
-+	if (addr & ~PAGE_MASK) {
-+		addr &= PAGE_MASK;
- 		/*
--		 * in_flag of CPA_REQ_PAGES_ARRAY implies it is aligned.
--		 * No need to check in that case
-+		 * People should not be passing in unaligned addresses:
- 		 */
--		if (addr & ~PAGE_MASK) {
--			addr &= PAGE_MASK;
--			/*
--			 * People should not be passing in unaligned addresses:
--			 */
--			WARN_ON_ONCE(1);
--		}
-+		WARN_ON_ONCE(1);
+-	direct_pages_count[level]--;
+ 	if (system_state == SYSTEM_RUNNING) {
+ 		if (level == PG_LEVEL_2M)
+ 			count_vm_event(DIRECT_MAP_LEVEL2_SPLIT);
+ 		else if (level == PG_LEVEL_1G)
+ 			count_vm_event(DIRECT_MAP_LEVEL3_SPLIT);
  	}
- 
- 	/* Must avoid aliasing mappings in the highmem code */
-@@ -2099,7 +2101,6 @@ static int change_page_attr_set_clr(unsigned long addr, int numpages,
- 	vm_unmap_aliases();
- 
- 	cpa.addr = addr;
--	cpa.pages = pages;
- 	cpa.numpages = numpages;
- 	cpa.mask_set = mask_set;
- 	cpa.mask_clr = mask_clr;
-@@ -2151,29 +2152,88 @@ static int change_page_attr_set_clr(unsigned long addr, int numpages,
- static inline int change_page_attr_set(unsigned long addr, int numpages,
- 				       pgprot_t mask)
- {
--	return change_page_attr_set_clr(addr, numpages, mask, __pgprot(0), 0,
--					NULL);
-+	return change_page_attr_set_clr(addr, numpages, mask, __pgprot(0), 0);
+-	direct_pages_count[level - 1] += PTRS_PER_PTE;
++	atomic_long_add(PTRS_PER_PTE, &direct_pages_count[level - 1]);
  }
  
- static inline int change_page_attr_clear(unsigned long addr, int numpages,
- 					 pgprot_t mask)
+ static void collapse_page_count(int level)
  {
--	return change_page_attr_set_clr(addr, numpages, __pgprot(0), mask, 0,
--					NULL);
-+	return change_page_attr_set_clr(addr, numpages, __pgprot(0), mask, 0);
-+}
-+
-+/* The number of pages from @pages[0] that are contiguous in the direct map */
-+static int nr_contig_pages(struct page **pages, int numpages)
-+{
-+	void *addr = page_address(pages[0]);
-+	int n;
-+
-+	for (n = 1; n < numpages; n++) {
-+		if (page_address(pages[n]) != addr + n * PAGE_SIZE)
-+			break;
-+	}
-+
-+	return n;
-+}
-+
-+/*
-+ * Change the pages in ranges that are contiguous in the direct map, so that
-+ * a range that covers a large page keeps it. Purge the vmap aliases once
-+ * before the ranges and flush once after them.
-+ */
-+static int change_page_attr_pages(struct page **pages, int numpages,
-+				  pgprot_t mask_set, pgprot_t mask_clr)
-+{
-+	struct cpa_flush_req req = { .pages = pages, .numpages = numpages };
-+	struct cpa_data cpa = {
-+		.mask_set = canon_pgprot(mask_set),
-+		.mask_clr = mask_clr,
-+	};
-+	int i, n, ret = 0;
-+
-+	if (!pgprot_val(cpa.mask_set) && !pgprot_val(cpa.mask_clr))
-+		return 0;
-+
-+	kmap_flush_unused();
-+	vm_unmap_aliases();
-+
-+	for (i = 0; i < numpages; i += n) {
-+		n = 1;
-+		if (PageHighMem(pages[i]))
-+			continue;
-+
-+		n = nr_contig_pages(pages + i, numpages - i);
-+		cpa.addr = (unsigned long)page_address(pages[i]);
-+		cpa.numpages = n;
-+		cpa.curpage = 0;
-+		cpa.state = 0;
-+		ret = __change_page_attr_set_clr(&cpa);
-+		req.state |= cpa.state;
-+		if (ret)
-+			break;
-+	}
-+
-+	if (!(req.state & CPA_ST_FLUSHTLB))
-+		return ret;
-+
-+	/* On error, flush everything to be sure */
-+	if (ret)
-+		req.state |= CPA_ST_FLUSH_ALL;
-+
-+	__cpa_flush(&req, !!pgprot2cachemode(cpa.mask_set));
-+
-+	return ret;
- }
- 
- static inline int cpa_set_pages_array(struct page **pages, int numpages,
- 				       pgprot_t mask)
- {
--	return change_page_attr_set_clr(0, numpages, mask, __pgprot(0),
--					CPA_REQ_PAGES_ARRAY, pages);
-+	return change_page_attr_pages(pages, numpages, mask, __pgprot(0));
- }
- 
- static inline int cpa_clear_pages_array(struct page **pages, int numpages,
- 					 pgprot_t mask)
- {
--	return change_page_attr_set_clr(0, numpages, __pgprot(0), mask,
--					CPA_REQ_PAGES_ARRAY, pages);
-+	return change_page_attr_pages(pages, numpages, __pgprot(0), mask);
- }
- 
- int _set_memory_uc(unsigned long addr, int numpages)
-@@ -2222,8 +2282,7 @@ int _set_memory_wc(unsigned long addr, int numpages)
- 	if (!ret) {
- 		ret = change_page_attr_set_clr(addr, numpages,
- 					       cachemode2pgprot(_PAGE_CACHE_MODE_WC),
--					       __pgprot(_PAGE_CACHE_MASK),
--					       0, NULL);
-+					       __pgprot(_PAGE_CACHE_MASK), 0);
+-	direct_pages_count[level]++;
++	atomic_long_inc(&direct_pages_count[level]);
+ 	if (system_state == SYSTEM_RUNNING) {
+ 		if (level == PG_LEVEL_2M)
+ 			count_vm_event(DIRECT_MAP_LEVEL2_COLLAPSE);
+ 		else if (level == PG_LEVEL_1G)
+ 			count_vm_event(DIRECT_MAP_LEVEL3_COLLAPSE);
  	}
- 	return ret;
+-	direct_pages_count[level - 1] -= PTRS_PER_PTE;
++	atomic_long_sub(PTRS_PER_PTE, &direct_pages_count[level - 1]);
++}
++
++static unsigned long direct_pages(int level)
++{
++	return atomic_long_read(&direct_pages_count[level]);
  }
-@@ -2342,7 +2401,7 @@ int set_memory_rox(unsigned long addr, int numpages)
- 		clr.pgprot |= _PAGE_NX;
  
- 	return change_page_attr_set_clr(addr, numpages, __pgprot(0), clr,
--					CPA_REQ_COLLAPSE, NULL);
-+					CPA_REQ_COLLAPSE);
- }
- 
- int set_memory_rw(unsigned long addr, int numpages)
-@@ -2359,7 +2418,7 @@ int set_memory_np_noalias(unsigned long addr, int numpages)
+ void arch_report_meminfo(struct seq_file *m)
  {
- 	return change_page_attr_set_clr(addr, numpages, __pgprot(0),
- 					__pgprot(_PAGE_PRESENT),
--					CPA_REQ_NO_CHECK_ALIAS, NULL);
-+					CPA_REQ_NO_CHECK_ALIAS);
+ 	seq_printf(m, "DirectMap4k:    %8lu kB\n",
+-			direct_pages_count[PG_LEVEL_4K] << 2);
++		   direct_pages(PG_LEVEL_4K) << 2);
+ #if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
+ 	seq_printf(m, "DirectMap2M:    %8lu kB\n",
+-			direct_pages_count[PG_LEVEL_2M] << 11);
++		   direct_pages(PG_LEVEL_2M) << 11);
+ #else
+ 	seq_printf(m, "DirectMap4M:    %8lu kB\n",
+-			direct_pages_count[PG_LEVEL_2M] << 12);
++		   direct_pages(PG_LEVEL_2M) << 12);
+ #endif
+ 	if (direct_gbpages)
+ 		seq_printf(m, "DirectMap1G:    %8lu kB\n",
+-			direct_pages_count[PG_LEVEL_1G] << 20);
++			   direct_pages(PG_LEVEL_1G) << 20);
  }
- 
- int set_memory_p(unsigned long addr, int numpages)
-@@ -2371,7 +2430,7 @@ int set_memory_4k(unsigned long addr, int numpages)
- {
- 	return change_page_attr_set_clr(addr, numpages,
- 					__pgprot(_PAGE_KERNEL_4K),
--					__pgprot(0), CPA_REQ_SPLIT, NULL);
-+					__pgprot(0), CPA_REQ_SPLIT);
- }
- 
- int set_memory_nonglobal(unsigned long addr, int numpages)
-@@ -2535,11 +2594,9 @@ static int _set_pages_array(struct page **pages, int numpages,
- 	ret = cpa_set_pages_array(pages, numpages,
- 				  cachemode2pgprot(set_type));
- 	if (!ret && new_type == _PAGE_CACHE_MODE_WC)
--		ret = change_page_attr_set_clr(0, numpages,
--					       cachemode2pgprot(
--						_PAGE_CACHE_MODE_WC),
--					       __pgprot(_PAGE_CACHE_MASK),
--					       CPA_REQ_PAGES_ARRAY, pages);
-+		ret = change_page_attr_pages(pages, numpages,
-+				cachemode2pgprot(_PAGE_CACHE_MODE_WC),
-+				__pgprot(_PAGE_CACHE_MASK));
- 	if (ret)
- 		goto err_out;
- 	return 0; /* Success */
+ #else
+ static inline void split_page_count(int level) { }
 
 -- 
 2.53.0
