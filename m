@@ -1,53 +1,53 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5AE1F606A681
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:15:07 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44256606A32C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 11:15:16 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UtsNJXH5
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MP3x1Ccg
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jZv8p0ggbz2yMP;
-	Thu, 26 Nov 2026 22:15:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jZv8z01rsz2yNj;
+	Thu, 26 Nov 2026 22:15:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691706;
-	cv=none; b=VVGh2kBSLU/VpGqY0BtLRyXIWwMXHF20hjm0SzuQf9u2WJG1ud7rZujOML0IhRFtbWlblkKXKh3oPBuzs1j720B2b5Fdx3mbIViEbHvIgYBfGmL1QhCPVJVKjSogIAz3a0ugfNA/RKwl6NBXNr0U9VqZ6P52Lob+r0uS0L7rvF3kcB/khuh7fnbEG+DMaVx+JPXu/k9aHeZ8eHe3w+20+cyB+2K6sgi/3TntbSoBllgrrPPWjhlvjgv2FqA+RjSn2fIh6S9OjKgqNLPqna1h10rVO8aYzMGWIA5wnFEXmI+Vxcb8p2QVrydjzc4mfhgYZwniuPp3klilE4xI4YyPHQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795691714;
+	cv=none; b=cwVOkrf6dYsI6XRW7yb65zaqjAiBKTUzEQJtcWtRR4aYryY8+KjozYkWNcsCIawyJ2H3XDq2Y18LGNYfOfB5kAOdGV8KdhW81zZ/pfOZ2GIo8E1mYWMaLLPGVOHl8IjXlkWhtu4m86+Xd4QqgQwXwmz0sTCPeJ4zzZubTdjDnUwetSe9yGG94mKVDslOUF0aC9l79bYP6B8KYSP04MukiQRM4GTu9EcA7+rmtcBddmilKkF1ERyjpuHr/OMbZGm57c63btXQVWpmaXAt3kr/wBheLPGas6MP+7due1AIL3/591yo24RofSJeQyH6bEw6PAFp1LkRVFm8AWhpMfXVaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795691706; c=relaxed/relaxed;
-	bh=bj8/4t1D3486bMWuOXwhLcAKxLKyES2zSNh6vuKXpeY=;
+	t=1795691714; c=relaxed/relaxed;
+	bh=Pa/qSMCChRGH42K3rYTSztXsaxvBOYR3oBjTN9/+VqU=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZRHaQ83uHK9EuW2VOjVWNKBH8kAAP6QNyaMJZK6QRyPF/U5sAPX+t1alKaLWl/PXc3+a0JQzrPykbJaY8MWIoW/oJ9y395z99bkNRQbR3EUoqEBzafo1ZaJsUUI5/CioOgdCqt1aiI4fG6xofkurMsYJon1JY7CwzedFg2pHEEEf2YyL3Bp9BMQ2dgIEmh5yyHJAC9L4TZENv42VTXv6qXfmlP7ck/F9Ssj9T7/6DwZ3pxZAKPsbJ7GAr1ux/2iNYSIJlYVzBMCRJxuFMZkygOwoyM3Dorx2adr1DWgdB+G8tePtkQ8ksFfCYdsABWjJXhVYau7tGoCZQxinkkD0nw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UtsNJXH5; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=BhRiQUJfi4m57Rdsh2eyU/WZ1EeP0vlWZwLZjH/32nj6/tJrq5WChe/u26IO8xhKrmlvVm7uCuzNCxdNe1CjVCVeBROYENfHla1zxIDpenZnHtPzn5WaY+qA++0EIyBNdybBAKbuxu3t32jNvi4pje4hkrshk9I3Hry0pOYJPwx8U2c/Fb/OZl3IWkdWmuC6fpBBVh4T3gJtk0bpki9VaQ/PTAspIbazwJxb/794oCHxmxKu5PFmvIVTrEmP99alcwJcoTSMcRhSf9sweBlepvo9ivw2Yc8CXC5e+F3Ygc/2Osef1QklyO492qudwyrlls+IvA65d3hIeGK+2h9zwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MP3x1Ccg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=UtsNJXH5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MP3x1Ccg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZv8n0dSYz2yMK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:15:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jZv8y3Nwfz2yMn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 22:15:14 +1100 (AEDT)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 919D645CBF;
-	Thu, 26 Nov 2026 11:15:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F18B61F000C0;
-	Thu, 26 Nov 2026 11:14:54 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F014F44FDC;
+	Thu, 26 Nov 2026 11:15:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F70E1F000D3;
+	Thu, 26 Nov 2026 11:15:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795691703;
-	bh=bj8/4t1D3486bMWuOXwhLcAKxLKyES2zSNh6vuKXpeY=;
+	s=k20260515; t=1795691712;
+	bh=Pa/qSMCChRGH42K3rYTSztXsaxvBOYR3oBjTN9/+VqU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=UtsNJXH5LkGbLvmX8h3OWLUUPvo5d1Agxt9hiYQPPnM54LtZfxIJvEkh7mIytiaPL
-	 R/iQ8gA7kJPLRFnQ2FHCXHvqEw5yPC6eW6oxNL4Gli3chYbPmwhbjwy2PutbebUGMc
-	 R73R+kL6N6mVGWCCB1VsAFs8AB9+g4AyJv+7cH0WQ+PHsw7ExmQ0tVphZP274UDziY
-	 3gfWXTO7rOPovoqCNUi+BQdyjUiAqRxeTnYvKTBDnS5fdyx3AoxmmN1YYITXMeU6u5
-	 58JA57EHTN+Mt/ar7zYd+kdqSTSqOfYOBW/fd8UrNniZmSKj+/mHWAgxeBE9NdurAa
-	 swzGR3b7HpeBA==
+	b=MP3x1CcgVdwXZovNmf2Ki608k9RA+upmwxLp4DhhwvWZFzw5QHNd1LujvDkgy5dqK
+	 VudlIr+IQ0y5h01MkihEvEk+fN3u6e0wS395BMpBkuMKyfNQDtQIXifIJtscUMPgMn
+	 mRMkfl5ZkqBv6Pnrvr3XlMzLeXxLL8XTGCTeQjY+DsJ0sPHkki4BSfureOMycyH4Ig
+	 6F6k/5CR5+LLNSNVwEdIqxm8cn75nagz+yLvq8j0f6/pr5fLtiTxD0jmw41RAcqdG1
+	 gDHYFA178/+99Xx/ijLHYcEFPmOPjXC5GwRv8Ar3G2pFnmTMGX0EXfDolIxf5QrwSJ
+	 NJqE+CbJ3opQQ==
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-Date: Thu, 26 Nov 2026 13:14:16 +0200
-Subject: [PATCH RFC v2 03/54] s390/boot: parse boolean parameters like the
- kernel
+Date: Thu, 26 Nov 2026 13:14:17 +0200
+Subject: [PATCH RFC v2 04/54] s390/boot: stop parsing the command line at
+ "--"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20261126-generic-set-memory-v0-1-v2-3-723f1e33c3d8@kernel.org>
+Message-Id: <20261126-generic-set-memory-v0-1-v2-4-723f1e33c3d8@kernel.org>
 References: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 In-Reply-To: <20261126-generic-set-memory-v0-1-v2-0-723f1e33c3d8@kernel.org>
 To: linux-mm@kvack.org
@@ -97,58 +97,33 @@ X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-The decompressor has a copy of kstrtobool() that takes only y/n, 1/0 and
-on/off. The kernel's kstrtobool() also takes true/false since 0d6ea3ac94ca
-("lib/kstrtox.c: add "false"/"true" support to kstrtobool()") and
-enabled/disabled since ae5b3500856f ("kstrtox: add support for enabled and
-disabled in kstrtobool()").
+The kernel parses its parameters up to "--" and passes everything after it
+to init. The decompressor parses the whole command line, so an argument
+meant for init still takes effect in the decompressor if it has the name of
+a parameter the decompressor knows, like "mem=".
 
-The decompressor ignores these values, so "cmma=false" leaves CMMA enabled
-and "prot_virt=true" does not enable it.
-
-Copy kstrtobool() from lib/kstrtox.c. This also adds the break after the
-on/off switch, which only replaces a fall through to the empty default
-case.
+Stop at "--", like parse_args() does.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- arch/s390/boot/string.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/s390/boot/ipl_parm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/s390/boot/string.c b/arch/s390/boot/string.c
-index e4ad196cb720..c12fee2670e3 100644
---- a/arch/s390/boot/string.c
-+++ b/arch/s390/boot/string.c
-@@ -132,13 +132,21 @@ int kstrtobool(const char *s, bool *res)
- 		return -EINVAL;
+diff --git a/arch/s390/boot/ipl_parm.c b/arch/s390/boot/ipl_parm.c
+index 8bbd102fa50f..ed28ea2fc1d1 100644
+--- a/arch/s390/boot/ipl_parm.c
++++ b/arch/s390/boot/ipl_parm.c
+@@ -268,6 +268,10 @@ void parse_boot_command_line(void)
+ 	while (*args) {
+ 		args = next_arg(args, &param, &val);
  
- 	switch (s[0]) {
-+	case 'e':
-+	case 'E':
- 	case 'y':
- 	case 'Y':
-+	case 't':
-+	case 'T':
- 	case '1':
- 		*res = true;
- 		return 0;
-+	case 'd':
-+	case 'D':
- 	case 'n':
- 	case 'N':
-+	case 'f':
-+	case 'F':
- 	case '0':
- 		*res = false;
- 		return 0;
-@@ -156,6 +164,7 @@ int kstrtobool(const char *s, bool *res)
- 		default:
- 			break;
- 		}
-+		break;
- 	default:
- 		break;
- 	}
++		/* The arguments after "--" are for init */
++		if (!val && !strcmp(param, "--"))
++			break;
++
+ 		if (!strcmp(param, "mem") && val)
+ 			memory_limit = round_down(memparse(val, NULL), PAGE_SIZE);
+ 
 
 -- 
 2.53.0
