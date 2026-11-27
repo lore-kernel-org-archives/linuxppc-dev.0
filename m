@@ -2,50 +2,50 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B34EC606A321
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 10:11:04 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 961A5606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 10:11:37 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oyPM1LHY
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LHau4pfz
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbTgP2XFLz2yKn;
-	Fri, 27 Nov 2026 21:10:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.221
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795774209;
-	cv=none; b=NefU0QSv3Ui5M9n670G/LV2cF3sbmE/Dx5X32/f62Y8y8B9tLd+JPwbEZOXcsr3xrBJxM377m1YkMwZie++3edW0scwnfmGtPI3W3LclvRjSPIJjw+Ln0U89ntYkn+CZTdNsGy0CtAgfuLm3RCGwN2wVGyaCY3LtTRYXVQpmAWl+xoMW//ZTOSEb1bp1LBEVo/3XX1K0nULhVgQ2RdEr0ApX5I0M9govgfwX3RoTNTsKirRq1mGm5NU8p+dgrzDMpIqpZjgJtk0RwuosJZiGYbSuTB9yveJ8bEEWjx4LdUlbWtmVTLwbKtaAXwvG9iyHxZtRiNh/Ko+7L5mYtpsKVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbTgV264fz2yMK;
+	Fri, 27 Nov 2026 21:10:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.223
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795774214;
+	cv=none; b=QW8/hgIILmdS4b6wLEYtxgjTv0B+2nNumpgZ6ObThPu7cHgcl6gVgLkTKgA3YORDn89Iw13caJJrtjoJZrNn4my62xD8kDSUdB9soTQRLdZJlWpwib4XtwuY5tC1kbgQPg4eSI+FI3bV93CjOZafLz+0PqGDdtfDzSTo5av7Lrok2q1p5qFjHvm7orbvyOsmcyXlP5Paor7mbxoi5lBPLMno6zWlD4j91QekeKqwZwHpMXt4ORHVRPeehYeF1hM2VSY1bkd8R5zhLY4UcTJCjEeBmNe2YBFdbtDjFizcLHl2Mwnn2mcnr4czIJ5ZDVhAtsglFIgHf/bY3HRchBGGCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795774209; c=relaxed/relaxed;
-	bh=g2aQKnf0jkhqB/I9ZHGtic+nzES7sUc76+DfqqwSp3U=;
+	t=1795774214; c=relaxed/relaxed;
+	bh=RD+RhKHkx2ypFB5sfZGqGwGbb8y1IoqlO39za0vFLv4=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=D0NBhpSx5bzYQuQ9VGszx6aLYMvQRtDPn6CrLkCFsLEa6E2fiiPtCt6OuA7SIcPi0LryiaT17R6qNO7cwm5g8BTRd9BTfIeqRY8WVjEI1qXrOOdMySKBUEC+nn2N95kYMsS1Bnt0/STjBMRsBMdqeH6brvhFS39nKBa6R0OTO+47tNmPK0Eq2zDq8ax5q4/Chaslu8pOa4PcfwB8IBMexjfKsgllC8d1GSSznLwE6OPu4CWi+XuNo+2cv0G76D/MKsfTVZi+LjNfKT6898hHobdUPX2x8mToJZH2vn2xewmtBPGXsOIdYZb9C3z13dfXu1jB452bllnGvhh8ihS2rA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oyPM1LHY; dkim-atps=neutral; spf=pass (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=Qu5bH0EnCObUY/I9AjrisJFuWC28FpLLcWSwEKhaQYi3sBNT+2V6VhLeoAkspDITlRJPW/I4V917Qxi2tT83NoMvtmrnS4R18iljdwWCK7deN0SmxDBU2idYV3q5dOFDE4tpvHyU0xzLXkqMeAiL+djBj79dgzkGAJHfmWbsTyWdJAGeDAv7UIsfJjVa1zHuOhwpyjkoCSMWnhZqNvuhl0eh5X+1Yk93ITT4gahNkCoJNc8RmeV8blBKjH4FpB6xZrWxYUvu0ak38qbXFRj4SdpARIZoHx3ejY/6mUuZpUQ7TJNvxkwmmMXe0RwwuBKvwFeb2gH2j96lbN9JPJ9AyQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LHau4pfz; dkim-atps=neutral; spf=pass (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=oyPM1LHY;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=LHau4pfz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.221; helo=canpmsgout06.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout06.his.huawei.com (canpmsgout06.his.huawei.com [113.46.200.221])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.223; helo=canpmsgout08.his.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
+Received: from canpmsgout08.his.huawei.com (canpmsgout08.his.huawei.com [113.46.200.223])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbTgM6NlYz3bf4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 21:10:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbTgT1x7tz2yLH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 21:10:12 +1100 (AEDT)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=g2aQKnf0jkhqB/I9ZHGtic+nzES7sUc76+DfqqwSp3U=;
-	b=oyPM1LHY89iXEB/3m8eV7j/JnAvgIAmIVdOB3B0IFDd3WF/qjOBWoPQKp5QuLXZhR6PVx6H/Y
-	1dPu66Tj827doYjgQXafxjgCASuqLAY5JFDlN2FcJGp8tMdwFfK/b5JFqj8ZQSX6tXe2R8eYfbV
-	Nn0Eonw/t6FYr3r3mWlR4F4=
-Received: from mail.maildlp.com (unknown [172.19.162.197])
-	by canpmsgout06.his.huawei.com (SkyGuard) with ESMTPS id 4jbTfr6DyczRhXD;
-	Fri, 27 Nov 2026 18:09:40 +0800 (CST)
+	bh=RD+RhKHkx2ypFB5sfZGqGwGbb8y1IoqlO39za0vFLv4=;
+	b=LHau4pfz/sVP57FiK2UxBBLN/FUwWdlrRFdKQoAagxZjTMYkKP4CCFom+7r2gExa8cx+uTB6F
+	wM2IgZjUr4H3DMTa89BmZIZ1XA7SPR269+mshFrZgpWGX6xVa85isQLow5DdpnoG5chTDwApz6d
+	kC2XXILcZVAahBiMa/zjgkQ=
+Received: from mail.maildlp.com (unknown [172.19.163.15])
+	by canpmsgout08.his.huawei.com (SkyGuard) with ESMTPS id 4jbTfn5QdGzmV63;
+	Fri, 27 Nov 2026 18:09:37 +0800 (CST)
 Received: from kwepemk200008.china.huawei.com (unknown [7.202.194.74])
-	by mail.maildlp.com (Postfix) with ESMTPS id B5B074057D;
-	Fri, 27 Nov 2026 18:10:00 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id B4DBB4058E;
+	Fri, 27 Nov 2026 18:10:02 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemk200008.china.huawei.com
  (7.202.194.74) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.45; Fri, 27 Nov
- 2026 18:09:58 +0800
+ 2026 18:10:00 +0800
 From: Jinjie Ruan <ruanjinjie@huawei.com>
 To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <maddy@linux.ibm.com>,
@@ -73,9 +73,9 @@ To: <catalin.marinas@arm.com>, <will@kernel.org>, <mark.rutland@arm.com>,
 	<linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<kexec@lists.infradead.org>
 CC: <ruanjinjie@huawei.com>
-Subject: [PATCH v9 10/11] arm64: kexec_file: Fix CMA segment placement retries
-Date: Fri, 27 Nov 2026 18:09:24 +0800
-Message-ID: <20261127100925.3019877-11-ruanjinjie@huawei.com>
+Subject: [PATCH v9 11/11] LoongArch: kexec_file: Fix CMA segment placement retries
+Date: Fri, 27 Nov 2026 18:09:25 +0800
+Message-ID: <20261127100925.3019877-12-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20261127100925.3019877-1-ruanjinjie@huawei.com>
 References: <20261127100925.3019877-1-ruanjinjie@huawei.com>
@@ -108,10 +108,10 @@ The file-based kexec system call places segments with kexec_add_buffer(),
 which takes them from CMA when kexec_alloc_contig() succeeds, to avoid
 copying the payload at kexec time.
 
-When load_other_segments() cannot place the initrd or the DTB, the
-segments of the attempt are dropped but their CMA pages are leaked.
-Release them with kexec_rollback_segments() in the retry loop and in the
-error path of load_other_segments().
+When load_other_segments() cannot place the initrd, the segments of the
+attempt are dropped but their CMA pages are leaked.  Release them with
+kexec_rollback_segments() in the retry loop and in the error path of
+load_other_segments().
 
 The loop makes progress by advancing buf_min past a segment placed by the
 walk.  kexec_alloc_contig() ignores buf_min, so once the pages of a CMA
@@ -120,11 +120,11 @@ the retry makes no progress.  Disable CMA for the retry.
 
 A CMA segment can be anywhere in RAM, so moving buf_min to its end can
 raise the walk's lower bound close to the top of memory and leave the
-retry with too little space for the initrd and DTB, failing with
--EADDRNOTAVAIL.  Only advance buf_min for segments found by the walk.
+retry with too little space for the initrd, failing with -EADDRNOTAVAIL.
+Only advance buf_min for segments found by the walk.
 
-Tested with a non-crash kexec_file_load() on QEMU virt, 1 GiB RAM and
-cma=64M, which places CMA at the top of RAM.
+Tested with a non-crash kexec_file_load() on QEMU virt, 2 GiB RAM and
+cma=64M@0xe8000000, which leaves only 64 MiB above the CMA area.
 
 Before the fix:
 	The retry leaks the CMA pages and kexec_file_load() returns
@@ -134,26 +134,26 @@ After the fix:
 	The kernel and initrd are placed below CMA and the second
 	kernel boots.
 
-Fixes: 07d24902977e ("kexec: enable CMA based contiguous allocation")
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Breno Leitao <leitao@debian.org>
-Cc: Pratyush Yadav <pratyush@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yeoreum Yun <yeoreum.yun@arm.com>
-Cc: Baoquan He <bhe@redhat.com>
+Fixes: 55d990f0084c ("LoongArch: Add EFI binary support for kexec_file")
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: WANG Xuerui <kernel@xen0n.name>
+Cc: Youling Tang <tangyouling@kylinos.cn>
+Cc: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: Kees Cook <kees@kernel.org>
 Cc: stable@vger.kernel.org
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+Link: https://sashiko.dev/#/patchset/20260729031235.2840255-1-ruanjinjie%40huawei.com
 ---
- arch/arm64/kernel/kexec_image.c        | 12 ++++++++----
- arch/arm64/kernel/machine_kexec_file.c |  2 +-
+ arch/loongarch/kernel/kexec_efi.c          | 12 ++++++++----
+ arch/loongarch/kernel/machine_kexec_file.c |  2 +-
  2 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/kernel/kexec_image.c b/arch/arm64/kernel/kexec_image.c
-index a2a7c283b331..1cbb3c73c6e9 100644
---- a/arch/arm64/kernel/kexec_image.c
-+++ b/arch/arm64/kernel/kexec_image.c
-@@ -109,11 +109,15 @@ static void *image_load(struct kimage *image,
+diff --git a/arch/loongarch/kernel/kexec_efi.c b/arch/loongarch/kernel/kexec_efi.c
+index 4824c47907ac..1fbd0ee1deb6 100644
+--- a/arch/loongarch/kernel/kexec_efi.c
++++ b/arch/loongarch/kernel/kexec_efi.c
+@@ -82,11 +82,15 @@ static void *efi_kexec_load(struct kimage *image,
  			break;
  
  		/*
@@ -173,17 +173,17 @@ index a2a7c283b331..1cbb3c73c6e9 100644
  		kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
  	}
  
-diff --git a/arch/arm64/kernel/machine_kexec_file.c b/arch/arm64/kernel/machine_kexec_file.c
-index dff2cd613f87..169d991488ff 100644
---- a/arch/arm64/kernel/machine_kexec_file.c
-+++ b/arch/arm64/kernel/machine_kexec_file.c
-@@ -132,7 +132,7 @@ int load_other_segments(struct kimage *image, unsigned long kernel_load_addr,
+diff --git a/arch/loongarch/kernel/machine_kexec_file.c b/arch/loongarch/kernel/machine_kexec_file.c
+index 00940f20b45e..adf7416ff49f 100644
+--- a/arch/loongarch/kernel/machine_kexec_file.c
++++ b/arch/loongarch/kernel/machine_kexec_file.c
+@@ -190,7 +190,7 @@ int load_other_segments(struct kimage *image,
  	return 0;
  
  out_err:
 -	image->nr_segments = orig_segments;
 +	kexec_rollback_segments(image, orig_segments);
- 	kvfree(dtb);
+ 	kfree(modified_cmdline);
  	return ret;
  }
 -- 
