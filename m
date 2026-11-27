@@ -2,64 +2,90 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D4792606A324
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 11:53:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D8CFC606A338
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 14:30:18 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=itVam21t
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xiv3txIT
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbWyZ2m6Wz2yMP;
-	Fri, 27 Nov 2026 22:53:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795780406;
-	cv=none; b=ImQI1U2ToIdzzDSIDpF5p5/2lwEyzg8C6j6bmsziK9V7UGGflP5GjCZpR92q+/IwHKH6kDQ3xjj3X4yhM58GSgdBbGOSnurj+5UZKdtNvEMDDko3KspxLUhiUcxjzrXJHN73lJZfft/3QghkGzQJQPp+9GpT84ER8/aWUcSP83pUMSMQF5ofEo2r3MH5Wcmol53llQTByjpKxEnZcOIodOaK86U75JgLrtlcavb3HDeVx7WlHw2aNaq8ahXUW2DAxYZJmKaje1Ye2RGzw6FQqCINo3+dfiZbKrVbDdrm2QWJUWEY4ewsVqtKZxhnCaC9QKv/24xkuqcIbE9v1aGP/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbbQJ6VlFz3bSK;
+	Sat, 28 Nov 2026 01:29:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1329"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795789752;
+	cv=none; b=SlCZL/BH9DlxtpemEsAJLFTeZWN1J2HaLPi/k3+LswY4ckoMpBILhMU83a5DzyXvHNsvzrb80h/Lp95uJhI2g8mxcjFZXv3EVvWy0BTl1Hk3rCExl0u/lbiRWDBghdWkFYDL2pKn4jsvc5+4BywE99CZZznZLzv9JO8KyZCs+z2fqQMKUI8EU7seW+39EVW5sEiOV68jDNd5cIlIpAAeeWlS6WtEWInFzOg282gM6/YM8F6RzbZ46BmdNjWheNevwxIaCqyMzn3/WRcx2zdL/cbtNUJ27uEjR5K16FyWkKU7gdjxD3SwYS7dviYEdux8BjVSHYQQbpanFslFhz/J6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795780406; c=relaxed/relaxed;
-	bh=rByPEfNf4XLcPucHVrwkNxEV0dJQaoEcaC2v04KImDc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=OK/2iDip09aafkryB/SZYnuXO5RRVbjy6YtPt4BYlatZiLkGb3Lkgx43wd9jtV6mtjjWwDJNavXZ4bebkNTZzwYVIBpnJKeXq4NYaHJEmehQX7hv9lN/8GvDdrdLLm+eW9jlLqNszSNTssnZ01dxf4y/HSzPJOj0uqU2gtBKnaPdk6Vij72lzGOOoV8Dg9uvh1e+2hhmnwoklG3A6WjzTDu4bmeqP4vxTp3VvAmvfdzVsEyNNZoNsFaq+WE50phy1vS+2mUG7xKSKF0YLZTV2uEIc14PkasXbdquKRu/Y8CKnS21P5NvYKZ3CLp8OuRtVTBklfLCBxPY4UL+bthoPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=itVam21t; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1795789752; c=relaxed/relaxed;
+	bh=dm6cr41faFC8ArIx047bjmXEdHglWtT+kfMScNTGFvA=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=hAhB9pWuVHnzWNojvMy8g3o5RjqqjsVcQO1Um+yy05nOnztzmqHzhvoIka2bzVj2RRzIeocBbfc6fkVnbihiZAtdM5L9Pprmf6f1qheGThHJsUvmoWpzWihz8QBVbP4zi+yFJbK+FUvvheGDJtU2BW1spVQRiyhxueDVTn9LRcbVcrIEXZvcRTzA/xNr3jkb+3Axt23eiiZoyLd+nJpyl2n01xzPSyrVfxc4TusyOsDIeo68qKakTyRqrLrt2FoADt6oX+AkeHVssNpP9aQ1rZElTheJlTbtH6fFWvzW27khExF01ibYvDATCaCsmsS1kerHjpyVG8Tlr9CZO917uA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xiv3txIT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=itVam21t;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=xiv3txIT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1329; helo=mail-dy1-x1329.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1329.google.com (mail-dy1-x1329.google.com [IPv6:2607:f8b0:4864:20::1329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4jbWyX4vSPz2yMK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 22:53:24 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with UTF8SMTP id 3258B42A2A;
-	Fri, 27 Nov 2026 11:53:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id 8862A1F000C1;
-	Fri, 27 Nov 2026 11:53:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795780402;
-	bh=rByPEfNf4XLcPucHVrwkNxEV0dJQaoEcaC2v04KImDc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=itVam21tTHvEcaE5VJdWfQ/tgPSDAV6CDG2GMzdzyoN/mxuMlbjCKvTu2FworV8ko
-	 U7OM/C/AREEZstZ1VU3BDDwN/goi5NSVpHgyhlDjXS6qgi2nf64jSnYSLll7UVpryS
-	 WLdIPBh/exuiD/BBUBW5FXh68SNsHV4YssiLRrvITYGhcBKAd5wLXwjx7yGh5od1O1
-	 8hMFBo2DQVo3yX8N1qNr+U/E5QyfOPsa03nsb5nl21/an5e2Oegt8L8t1cEqRNbZkM
-	 efMDAmVRNTrhYS5cwidxYxi5Ge/AO1veZfDec67oehMQtdy9nU4FznwC7zn99d+vx+
-	 UcvATeB77jmlA==
-Date: Fri, 27 Nov 2026 13:53:18 +0200
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Zhouyi Zhou <zhouzhouyi@gmail.com>
-Cc: peterhuewe@gmx.de, lance@osuosl.org, rcu@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>, linuxppc-dev@lists.ozlabs.org,
-	linux-integrity@vger.kernel.org, Li Jun <lijun01@kylinos.cn>
-Subject: Re: [PATCH v2] tpm: ibmvtpm: Fix unused suspend callback with
- CONFIG_PM_SLEEP=n
-Message-ID: <awlvLjQT17DBZKpN@kernel.org>
-References: <20261127051359.852628-1-zhouzhouyi@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbbQH4GFwz3bcB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 01:29:11 +1100 (AEDT)
+Received: by mail-dy1-x1329.google.com with SMTP id 5a478bee46e88-38431138772so10638955eec.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 06:29:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795789749; x=1796394549; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=dm6cr41faFC8ArIx047bjmXEdHglWtT+kfMScNTGFvA=;
+        b=xiv3txITTcO+wCt5d6zq7Dofa5ENnn3U58izUbTNmtE1o3E7RoNSTVcFgcAGUxBRcF
+         0N+twLi2jHbeN7ZqVEIR3yLZU98LwzCgsiQP0ujfgYVoii/aACNKv0UDZeHpWOAdltgJ
+         kqH8nUV7jRtv3d3iHESlNqWSLr+dmUcV4IJoTsNqMZ/8HIGNU8OaUJDccjF+bnVxwOdx
+         3LxGfDIOQqaDGnSm9wmZEDNpJ+2c9Jj9rkZ2M+eb9efHlnT5aH730zzvhJAji17RpyxD
+         aAHGv2MWrGROxla9TobRKr4zjvsMVUfM83nmY4lN7NXJPoEl2y+Pn85V+jMHobPAPBTQ
+         LDMQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795789749; x=1796394549;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=dm6cr41faFC8ArIx047bjmXEdHglWtT+kfMScNTGFvA=;
+        b=T70j4o6MrKANQ0SvyjNNtKr/9gI/4/db5DvA36Plxi1TXxkubdAzdQ2Kh/tHEYRFmM
+         9io5F+GEATuMqXO1coJE2SA0fvKKrpBgcVYTAqeCSnGXoyjRhETwUNBrW9kumKC2pn3a
+         PiuHbini87Yd7kQB/8OxXsfkzalN7ZPJwmKsQujP94Kc8QS6EaoWydKuhlCrfCJrMeZ+
+         6tq6BX/yFhdUvx+QrUi1pq6oD3LHNGiiHbbHTuZUc67oaqDxvD8qhxY0qYGOl5XaH7iP
+         hiCbiZ3AVp3jPY0EEk4DcS0HbKcePSt7yr/4Yd41LnkFYD6zOg7WrHInI8ntrZ8I+HRG
+         7IJg==
+X-Forwarded-Encrypted: i=1; AL+hErEpUh1WuYNHeBaANW+cb+YbQfsHS3JCHDA6psa4PO+kDAWI8LM28XKlr11jVYD1FJ+P/rUYvG94LTXneU0=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z8CIIN9x0iuF9wzF1lkkZU5PQiH2W9YKx/XLnMMA3DV9Clkiw7o
+	lQWwsM8u1laZuLIuGjBTJL+UJ9xxN43/zwRepMB1IRNjkqJ9i1niBKqI
+X-Gm-Gg: AZFdTZfb6gv/HC0bnOkDn7WxsU5osqDBubXpDfarZl3Able5UHJCX0DTIe2aX0YgHm3
+	wxpP0uhPBkp48hlQzIhDnXm9Da6TMqcC74YW5OhLK3nyXok2DkxnWIC3xiwyMgShm9wM8PKWV11
+	cyiCumgOAbOjiJmFcgFbGt12o6bG8WThWLzLIvylbzjXIZoFZn6Rh/aWJzj4bgCPPbyGdspzY1o
+	WxWMlL4UAC0McVj+kXVeK2pL1fMePLgmy9uHHsE2jA97sclOsd1r8WQN/sp94SFLh1/HfM499/R
+	rakAdO0/WLbIwe0GfMPQPCLsAvK8Uwg3nqBPr7Gvv5Kwiy/CUpfZoEq6HiZm3w7tbryUjqTwEmB
+	YrzB32NjjIZDhGC0/hxE4ToVIcDFh3lXW/s5a4275XgRSQ38LtWbrZZomL6tSQE60b5Lofu+BFq
+	D/JMI2o/+za8s+GuyW7mWAIm0CqOtnuC0Zu2GRuuXIzIkgUTA7cG7eb1URLaoTHoEt8LgvHKOxH
+	Gl7YjHuh+v2zIuLFEV42pBSSef+qlqYa+OxdVlgIn7P+JyoJxnWKdgblsBI3bIFQ2CyUPzf2098
+	ze+SdkSU1QCWwby/DhmYvMqp2nuGfg4kbbpJ9Iwx4gs6lKPsOQ==
+X-Received: by 2002:a05:7301:152f:b0:376:203e:7d7b with SMTP id 5a478bee46e88-3856c6b35b5mr27107990eec.2.1795789749052;
+        Fri, 27 Nov 2026 06:29:09 -0800 (PST)
+Received: from pve-server ([49.205.216.49])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-38566fdce48sm78273881eec.14.2026.11.27.06.29.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Nov 2026 06:29:07 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: mdshahid03@gmail.com, maddy@linux.ibm.com
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, chleroy@kernel.org, sshegde@linux.ibm.com, atrajeev@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Mohammad Shahid <mdshahid03@gmail.com>, Tanushree Shah <tshah@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/perf: vpa-dtl: fix resource leak on allocation failure
+In-Reply-To: <20261127052345.23361-1-mdshahid03@gmail.com>
+Date: Fri, 27 Nov 2026 19:46:53 +0530
+Message-ID: <5wxiwe96.ritesh.list@gmail.com>
+References: <20261127052345.23361-1-mdshahid03@gmail.com>
+X-Spam-Status: No, score=-17.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_PASS,SPF_PASS
+	autolearn=ham autolearn_force=no version=4.0.1
+X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
+	aws-us-west-2-korg-listserv-alma10-1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,77 +98,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20261127051359.852628-1-zhouzhouyi@gmail.com>
-X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=ham autolearn_force=no version=4.0.1
-X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
-	aws-us-west-2-korg-listserv-alma10-1
 
-On Fri, Nov 27, 2026 at 05:13:59AM +0000, Zhouyi Zhou wrote:
-> Discovered in the Open Source Lab of Oregon State University when running
-> RCU torture.sh on a ppc64le VM.
-> 
-> With CONFIG_TCG_IBMVTPM=y and CONFIG_PM_SLEEP disabled, SIMPLE_DEV_PM_OPS()
-> omits the references to the system sleep callbacks. This leaves
-> tpm_ibmvtpm_suspend() unused and produces the following warning:
-> 
->   warning: 'tpm_ibmvtpm_suspend' defined but not used [-Wunused-function]
-> 
-> Use DEFINE_SIMPLE_DEV_PM_OPS() and pm_sleep_ptr() so that the compiler
-> sees the callback references and can discard the unused PM code when
-> system sleep is disabled. Preserve tpm_ibmvtpm_resume(), which is also
-> called directly from tpm_ibmvtpm_send().
-> 
-> Tested on PPC VM of the Open Source Lab
-> of Oregon State University.
-> 
-> Fixes: fc0ddb3174b0 ("char: tpm: Use SIMPLE_DEV_PM_OPS for ibmvtpm power management")
-> Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+mdshahid03@gmail.com writes:
+
+> From: Mohammad Shahid <mdshahid03@gmail.com>
+>
+> vpa_dtl_event_init() allocates the DTL buffer while holding
+> dtl_global_lock. Move the allocation before acquiring the spinlock
+> to avoid performing memory allocation while holding a spinlock.
+>
+> Since the buffer is allocated before acquiring dtl_access_lock
+> allocation failure can be returned directly without releasing the
+> semaphore.
+>
+> Free the allocated buffer if acquiring dtl_access_lock fails.
+>
+> Fixes: 4708fba19ade ("powerpc/vpa_dtl: Add interface to expose vpa dtl counters via perf")
+> Suggested-by: Athira Rajeev <atrajeev@linux.ibm.com>
+>
+> Signed-off-by: Mohammad Shahid <mdshahid03@gmail.com>
 > ---
-> Changes in v2:
-> - Remove the blank line between Fixes: and Signed-off-by:.
-> - Keep DEFINE_SIMPLE_DEV_PM_OPS() and its arguments on one line.
->   Both changes address Jarkko Sakkinen's review comments.
-> 
-> Only a targeted compile check was performed; the full RCU torture test
-> was not run because it takes too long.
-> 
->  drivers/char/tpm/tpm_ibmvtpm.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-> index 51c7e2add3d2..dd577f075c57 100644
-> --- a/drivers/char/tpm/tpm_ibmvtpm.c
-> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-> @@ -462,7 +462,7 @@ static const struct tpm_class_ops tpm_ibmvtpm = {
->  	.req_canceled = tpm_ibmvtpm_req_canceled,
->  };
->  
-> -static SIMPLE_DEV_PM_OPS(tpm_ibmvtpm_pm_ops, tpm_ibmvtpm_suspend, tpm_ibmvtpm_resume);
-> +static DEFINE_SIMPLE_DEV_PM_OPS(tpm_ibmvtpm_pm_ops, tpm_ibmvtpm_suspend, tpm_ibmvtpm_resume);
->  
->  /**
->   * ibmvtpm_crq_get_next - Get next responded crq
-> @@ -714,7 +714,7 @@ static struct vio_driver ibmvtpm_driver = {
->  	.remove		 = tpm_ibmvtpm_remove,
->  	.get_desired_dma = tpm_ibmvtpm_get_desired_dma,
->  	.name		 = tpm_ibmvtpm_driver_name,
-> -	.pm		 = &tpm_ibmvtpm_pm_ops,
-> +	.pm		 = pm_sleep_ptr(&tpm_ibmvtpm_pm_ops),
->  };
->  
->  /**
-> 
-> base-commit: 5f22fb20497f4983094131f00a734362300d22d2
+>  arch/powerpc/perf/vpa-dtl.c | 19 ++++++++++---------
+>  1 file changed, 10 insertions(+), 9 deletions(-)
 
-Thanks.
+I am unable to apply this patch on any of the upstream trees.
+Could you please rebase your patch on top of powerpc/next-test [2]?
 
-Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+[2]: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=next-test
 
-Br, Jarkko
+>
+> diff --git a/arch/powerpc/perf/vpa-dtl.c b/arch/powerpc/perf/vpa-dtl.c
+> index 20eafeaffa6b..57bc5773949f 100644
+> --- a/arch/powerpc/perf/vpa-dtl.c
+> +++ b/arch/powerpc/perf/vpa-dtl.c
+> @@ -338,7 +338,7 @@ static int vpa_dtl_mem_alloc(int cpu)
+>  	if (!dtl_cache)
+>  		return -ENOMEM;
+>  
+> -	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL | GFP_ATOMIC, cpu_to_node(cpu));
+> +	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL, cpu_to_node(cpu));
+
+E.g. in this commit [1], we already had changed this above allocation to
+GFP_ATOMIC, which is even merged in mainline. So it seems your base tree
+is old. Please rebase your changes to powerpc/next-test as pointed above
+and resend.
+
+[1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=9500416c8aa7c271b85be6a0d5856da62b60223a
+
+
+-ritesh
 
