@@ -1,97 +1,92 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2660F606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 05:14:18 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 349D5606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 05:24:14 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=d5gMUCMY
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rhgkFSL7
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbM604cWkz2xqh;
-	Fri, 27 Nov 2026 16:14:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795756456;
-	cv=none; b=JQ6TA2V4JY+I0mau92uUNL5DkFCpBlyTyGCx16fpaR9EaUbrzY6tLHng65wn4iE1PYhqhDJI17xrkMLYzxYdx2tQyg2qRIlU4dfw+VNRPD8zEDh2dD858Ax4CJBbrSdwpaqqufQrmkMFM6Ug93W3XOUl4D9QenZgT/V78eng6xYXxaCAvLfh8tICtv1WbuzLnizLudj/mlg70hC1AnPvOJTH3eY7/4qQo4aTzVhIb29GsGI/si+4xUtBgWt2BC+6CPqjKeuDzAUYgLS5Ng1481iYpkNKuwB0gSgC2+s7o8ZgOBHbaIGaoxHjuEX40RkUsD325pSQcUTpzqDew3xeMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbMKS6Xszz2xqh;
+	Fri, 27 Nov 2026 16:24:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1233"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795757052;
+	cv=none; b=HrcOKQ+k0AIrLZqzoPu5nu6Sr8Zzrd2wUHO1GAXJhVr6GuQx9la+PnX/hm6zVHENY+RIl/flVFrQta6rgSCgcCBFdqe/8K0Z+sDrotqitEieWKs/QZ/kt0zKfOPyAcKsLIVSSVrCdB7ieFY3BdddgiDHEAw7AxCFZJfKY1MPZnm5gs/m4HCjz8voJZi0Yong2N+4aG+K0mfOO7/x1IyHqTacuWKy8Yi+nshhnlfquPCc+fAJ1svfHCAqJfB8hgGzh2At4HqISe0gcQBuCcCAiM/DCYDCMSV8hEK/i2ynHsa8dqPerMLCliUw/DDwqhEl65WkpqzgXV6aR0Poqyomyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795756456; c=relaxed/relaxed;
-	bh=jKPPhHAxB9p6FLiS97eRH3zn7f+B3nbBCbyzaA3weeA=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Vc3l8+LaExYgYCHRNjtbER6ZtsRUspWcW15Ij0zmoKQGGg0GihJeUd6VGKbVsON2eYQJqdhdaKxo+xidROMzhMTv200IKSNpuPJxD5gc1Axl29vEw8pCWR9Xqgl7CmJO7rggWwtbtlnp1aaqLVQ5K+DUSP//P6+zrASpbf1xDNEImf/6/cjuRyyiaqU8mYLDcp7pAwXU+z7sthZdzbOy4FUjOycZfmaLA5v/us7sEdBtgGWnaL9Mpur8QsfQFDWKkxTk4YVWR8O7RaR9HEIROPQeCwM27Q8s3uXj4uhvFih6e2nOlCZeyTNohogsOYBUEZoIDvJGf78eMJIyV+G5yg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=d5gMUCMY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1795757052; c=relaxed/relaxed;
+	bh=VunIWhlXjqQbEeGcoAeOGcWx/ibG4ikraJURdAYqSgo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lSgbMkBCJWI5sasY40S2OaHxbz5ZcT+6GVY467hdIjgzyL5swu+OstvdYea4PUCTfTCbXzRlfmhvr3HZYDeecF3dwxQDFouxTJUw5pVWOuM2AEuCMqD2Xx0mWRUX1645FTxmG3x8AKn9q0FeJOyH4WQcCc2REMDzD5jy13DIbfoGwDvPAybpxNZBRAkeEN7ZnaxAP5WLyqtE8xObjXzH46a2Ec12GUksEDWKkcFFv8owtPGytxqg/uFisvtD3VJ/HoaWEmPKmre4mkYGA6z5DjvtJMbt30ETk+JRinf4RFJZ7S1dfhjLOaSUQZ8GCYJDb6DeLrhH6fH60yvf0kb/nw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rhgkFSL7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1233; helo=mail-dl1-x1233.google.com; envelope-from=mdshahid03@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=d5gMUCMY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rhgkFSL7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1233; helo=mail-dl1-x1233.google.com; envelope-from=mdshahid03@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1233.google.com (mail-dl1-x1233.google.com [IPv6:2607:f8b0:4864:20::1233])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbM5z2Yqsz2xLs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 16:14:14 +1100 (AEDT)
-Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-cde4b4e936fso3701738a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 21:14:14 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbMKR6cVZz2xLs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 16:24:11 +1100 (AEDT)
+Received: by mail-dl1-x1233.google.com with SMTP id a92af1059eb24-1b546061d58so17858643c88.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 21:24:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795756452; x=1796361252; darn=lists.ozlabs.org;
+        d=gmail.com; s=20260707; t=1795757049; x=1796361849; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=jKPPhHAxB9p6FLiS97eRH3zn7f+B3nbBCbyzaA3weeA=;
-        b=d5gMUCMYgpi+MMmaCwjV9uR/pOJcmgTbBmFkVHXgufA+vgoaAJIlczjvycblxVvLl5
-         FeZCUqTBTPFQhnLakkIg5LqWu3Td2xWt9znA1r53deEGa/N6YkTWY7g6kQXoOB/cEr/D
-         J+GVr0egVmo7qHESIUN1ts7pn1UuyL1lDgI9kFQKnsx4ZRnIkMYRwVv2TpgMWRX+W+jm
-         vJ/RKpiSVszBa/Iv2OhRm5Lx07OgywhD9+hoSTkJtscV0KMlGTiWlpTG5WUl6f5vr58r
-         +XP4scfUQNmqBSVuzQPe12XZZMEmyJZ6CfveGzNiCxZog+uvq0P+MnF5hCADYHJLwMYL
-         A3kw==
+        bh=VunIWhlXjqQbEeGcoAeOGcWx/ibG4ikraJURdAYqSgo=;
+        b=rhgkFSL7yOYuodXhtDsYxS0NQ2aLv3sPHU8xpRarvZLxmAJ+heQJL24Fsrt1P9/Pyu
+         jahYWMt2LPSqDs/nN87hNIdaj0QRYAFDXxMzg4212940QmYwqXaWTqJw7p/ysOk1cVK2
+         Xv/7yxSipuzA4ZuOxvPKmEum3nKwnz/RpskCVOrgg1r+jaBeMsk0G4euImUKB9Ze+6b+
+         BjMt2TX6B/f0LmhOttVYXN+OX2UPsvucKjwvrxcLLVmXpujmir7K7VC4XEPQWANrH6PD
+         b6wl6/MSeHq28ne6Mnci2YXORySC6oS8odJCrxmsR0Dydfpa2z6eL4lb0hz+bqoJioB4
+         NVzQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795756452; x=1796361252;
+        d=1e100.net; s=20260707; t=1795757049; x=1796361849;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=jKPPhHAxB9p6FLiS97eRH3zn7f+B3nbBCbyzaA3weeA=;
-        b=UxHGjuaeGnpdCYZKOoxE45Ok3OGCAg54JuZq17kygW9UIHFdigBuz43ui7GpGafPvQ
-         g6IEV+lD8QHpTvq/3M5J28gwmQp1R8xGTJglMdZpTb5OkwSxCtdl/l1Ye335jiMQYIH8
-         WRI60xO6KSppGBlleDwCXWJJQpNPvhtWbiz3HEbWysYMuognaz/xgCz9JdK5N2qy05gl
-         yWzByw/nzdcJ2O7ByzP7vGGYJtoDq5cblwIqaNNXnzP9/9ay+b7ZNu5KkWjyiv7qjDMj
-         Jwr+n57OC3AZ2Ib+WUAUexiltOuLPa65sctCMphklSXUDl27VajAgyJtNIvQRPFio47k
-         SPiw==
-X-Forwarded-Encrypted: i=1; AL+hErFEs61Yuk3xJMopSGuFGFTEI8xHtaJT+pWGP5EE1qEFLAQZ6L6Z8hr3uFK6MboOsXopi10KASg/TmaAFTg=@lists.ozlabs.org
-X-Gm-Message-State: APuU4Z/nhqtA0xOkAgxMtdyoV/ULHEIaeVq044bxRuDtrOZ9sv5RJ7Pi
-	4kiVSJ0TzDndOjwPYLx9ttHXI96MNhh5DmhkPoDTfy/ZE1k9nRPPiS9E
-X-Gm-Gg: AZFdTZekLlsiqqQYQF3yOiK23BR4E9J0TmYtssCzDtEHh6Q8NVgzkLUtHcbZmR3AzeR
-	15BvitaHKUhByoVz5xi4C6Tz4OxQ06j9nd/f1BBD5fg2bkubfmcUVKsHirExHNvpZomjeMQM1o+
-	+lktgLgYysIdWimxO2no0veMJYQYIyFSWLkVBdZHWbatROryDU1IlNgHpEEbMkPtel/nU3GwIbR
-	W1raO7bFtDigdvpGeG+t0twIHJ3u2RU2lM+CU2R1MfRslxNyhbaSb5IgSANOdRa7zn0cfTXnEL3
-	O+IUj4i+DXS416qHhf0vhl0HfhFQrW0mh5Lg9CEqjrNNl2yqVE+qnY3oufGIYRcgB+1Kja3+dGJ
-	6fM0hzbC+7lPZvgVNuC0ThXJhIUNOZxzfVWK9hnn24hvrT5Fd41U1ct+7acO99aCXueIfRNhrpn
-	pOY1RJLr53BAaZK5FL5AJ0eQUvYfsh2Ua/d2NUinY3jquHBoVr883uJrytGO5Aw4Xulda/Vr8rc
-	XfqekIyM8FXcWWl48vgWYHyCVNV/qsb/FOt2MR231mnKwuLuGZJprd2RPSOEWPRRhVarOsfkWZc
-	YN4bdVdZsgyLXC3GvzAWCeEES+VEM5m1iasRX2BARjSR7vvKD9dT9uPtzd2VhASX/Y8k52DYz+X
-	N
-X-Received: by 2002:a17:90a:e710:b0:39e:6c68:fd91 with SMTP id 98e67ed59e1d1-3b41c96151cmr15079773a91.38.1795756451942;
-        Thu, 26 Nov 2026 21:14:11 -0800 (PST)
-Received: from localhost.localdomain ([2605:bc80:3010:503:f816:3eff:fe99:6bb3])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3b48b41928esm26265061a91.9.2026.11.26.21.14.11
+        bh=VunIWhlXjqQbEeGcoAeOGcWx/ibG4ikraJURdAYqSgo=;
+        b=JcMsmzFNGEDqJamoz257kTKfMnAej78rdHrokFCC8TCCJUPMtqcgbwNxaK7F3zEnDA
+         8CSYfgzPr41qy1DE72f7JxWh41Xgg2ve/k4Gkz3w6lxplDCb2nLCat5f6KAzQcOxvNe5
+         36BAJBIZL/VgsAeCs2qyaVLxLXk7ws11YLdoAtpM4f6PitQM029lWj5TQBi54rszmwC6
+         8kArtUgt6QBFNPeBKRWQKgCErIGbBJaNU6+oqvM263xzC6+vDh4jRVzGlIgqQQ0LxYOF
+         7PSBrjQNHrqtw4e/VaflwIduqDFZEYjZpywDu6rRZCPs0CKQU9o0sFzJBFw+0lFv3VHg
+         KUaA==
+X-Forwarded-Encrypted: i=1; AL+hErHYkpQopb6/sgeYqb23B/A7XswWVqzCB5bQYRl7b1zx/0+Bn5d/4pwV3wT2gF3DEOoqF4YUgSeeDxTXTKs=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+reuGB1sCOd8YrARe1BDltZ49P4/dhl5vGlJEXaYcAl4NiubYy
+	r4GNxkPXF71eZ7htoTCvlXMwCs8kMGK6xIuW4R6WrUxoEvWVY19qoKJG
+X-Gm-Gg: AZFdTZds9ITsnB7raW/4gYQz6a84+GSjEk99oSYqX2LDs+lQHEGPl2xPWBs0vjTdjJV
+	tm+i+cY+WLuU8ydOihpg4o8+Ia5e88LPOxRjCc/oDikecXJ4cjYRLmvVL0u/pF/P6lRKu8HJuI4
+	4LiRjzl+gDaInPDijuXXK7cVh+lwgXV6EVDUEN0TKPpoaOK3XfiJyKDruQoU8wvQ7TimG4cI8t3
+	8p6RRhBC3pBj6e8A9ZZh450yhltn5vY8fdW7+ikYDn5Tv9nx5RmyvtbrDymTZw2ZgJxi2SuPA68
+	D5XtUWUNISKvoPmx4ahsRt8U7TxTTy1J4uvNpvh4wntoocIoIOr7PU8SYiJ7drseje5fcvTPcbT
+	w9Jf/AEXlkghuEc+e0GZA2dfYLs9OClUloy/DKnXK37Fofja39GBMnqjZN4C6l3WHYBOgZ3kAPS
+	m4i2AO0a7QRX0U23xfmjcn3WfAEQnSTlKO0aQ6ytLH7ZTKHTc/Y+sSjhoH4NarifduDm5e/1sU7
+	FJwHWsvMLKZMyb/tHpsFrPaStnYAw1YHeac2LYP1/ZT3SJ3EcC1Rk2sLQaxzT1o/U56L4wieGBq
+	hgg8MabX7kERu5/MB9ChLnwDiRjA
+X-Received: by 2002:a05:7023:a8b:b0:1b3:af3a:e784 with SMTP id a92af1059eb24-1b5568fe775mr26335922c88.32.1795757048934;
+        Thu, 26 Nov 2026 21:24:08 -0800 (PST)
+Received: from ubuntu.. ([2405:201:8026:213e:d3da:eb46:936a:228a])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-386d605c894sm14736480eec.2.2026.11.26.21.24.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Nov 2026 21:14:11 -0800 (PST)
-From: Zhouyi Zhou <zhouzhouyi@gmail.com>
-To: jarkko@kernel.org,
-	peterhuewe@gmx.de
-Cc: lance@osuosl.org,
-	rcu@vger.kernel.org,
-	Zhouyi Zhou <zhouzhouyi@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
+        Thu, 26 Nov 2026 21:24:08 -0800 (PST)
+From: mdshahid03@gmail.com
+To: maddy@linux.ibm.com
+Cc: mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ritesh.list@gmail.com,
+	sshegde@linux.ibm.com,
+	kjain@linux.ibm.com,
+	atrajeev@linux.ibm.com,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-integrity@vger.kernel.org,
-	Li Jun <lijun01@kylinos.cn>
-Subject: [PATCH v2] tpm: ibmvtpm: Fix unused suspend callback with CONFIG_PM_SLEEP=n
-Date: Fri, 27 Nov 2026 05:13:59 +0000
-Message-Id: <20261127051359.852628-1-zhouzhouyi@gmail.com>
-X-Mailer: git-send-email 2.25.1
+	linux-kernel@vger.kernel.org,
+	Mohammad Shahid <mdshahid03@gmail.com>
+Subject: [PATCH v2] powerpc/perf: vpa-dtl: fix resource leak on allocation failure
+Date: Fri, 27 Nov 2026 10:53:45 +0530
+Message-ID: <20261127052345.23361-1-mdshahid03@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -114,59 +109,79 @@ X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Discovered in the Open Source Lab of Oregon State University when running
-RCU torture.sh on a ppc64le VM.
+From: Mohammad Shahid <mdshahid03@gmail.com>
 
-With CONFIG_TCG_IBMVTPM=y and CONFIG_PM_SLEEP disabled, SIMPLE_DEV_PM_OPS()
-omits the references to the system sleep callbacks. This leaves
-tpm_ibmvtpm_suspend() unused and produces the following warning:
+vpa_dtl_event_init() allocates the DTL buffer while holding
+dtl_global_lock. Move the allocation before acquiring the spinlock
+to avoid performing memory allocation while holding a spinlock.
 
-  warning: 'tpm_ibmvtpm_suspend' defined but not used [-Wunused-function]
+Since the buffer is allocated before acquiring dtl_access_lock
+allocation failure can be returned directly without releasing the
+semaphore.
 
-Use DEFINE_SIMPLE_DEV_PM_OPS() and pm_sleep_ptr() so that the compiler
-sees the callback references and can discard the unused PM code when
-system sleep is disabled. Preserve tpm_ibmvtpm_resume(), which is also
-called directly from tpm_ibmvtpm_send().
+Free the allocated buffer if acquiring dtl_access_lock fails.
 
-Tested on PPC VM of the Open Source Lab
-of Oregon State University.
+Fixes: 4708fba19ade ("powerpc/vpa_dtl: Add interface to expose vpa dtl counters via perf")
+Suggested-by: Athira Rajeev <atrajeev@linux.ibm.com>
 
-Fixes: fc0ddb3174b0 ("char: tpm: Use SIMPLE_DEV_PM_OPS for ibmvtpm power management")
-Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Signed-off-by: Mohammad Shahid <mdshahid03@gmail.com>
 ---
-Changes in v2:
-- Remove the blank line between Fixes: and Signed-off-by:.
-- Keep DEFINE_SIMPLE_DEV_PM_OPS() and its arguments on one line.
-  Both changes address Jarkko Sakkinen's review comments.
+ arch/powerpc/perf/vpa-dtl.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-Only a targeted compile check was performed; the full RCU torture test
-was not run because it takes too long.
-
- drivers/char/tpm/tpm_ibmvtpm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-index 51c7e2add3d2..dd577f075c57 100644
---- a/drivers/char/tpm/tpm_ibmvtpm.c
-+++ b/drivers/char/tpm/tpm_ibmvtpm.c
-@@ -462,7 +462,7 @@ static const struct tpm_class_ops tpm_ibmvtpm = {
- 	.req_canceled = tpm_ibmvtpm_req_canceled,
- };
+diff --git a/arch/powerpc/perf/vpa-dtl.c b/arch/powerpc/perf/vpa-dtl.c
+index 20eafeaffa6b..57bc5773949f 100644
+--- a/arch/powerpc/perf/vpa-dtl.c
++++ b/arch/powerpc/perf/vpa-dtl.c
+@@ -338,7 +338,7 @@ static int vpa_dtl_mem_alloc(int cpu)
+ 	if (!dtl_cache)
+ 		return -ENOMEM;
  
--static SIMPLE_DEV_PM_OPS(tpm_ibmvtpm_pm_ops, tpm_ibmvtpm_suspend, tpm_ibmvtpm_resume);
-+static DEFINE_SIMPLE_DEV_PM_OPS(tpm_ibmvtpm_pm_ops, tpm_ibmvtpm_suspend, tpm_ibmvtpm_resume);
+-	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL | GFP_ATOMIC, cpu_to_node(cpu));
++	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL, cpu_to_node(cpu));
+ 	if (!buf) {
+ 		pr_warn("buffer allocation failed for cpu %d\n", cpu);
+ 		return -ENOMEM;
+@@ -350,6 +350,7 @@ static int vpa_dtl_mem_alloc(int cpu)
+ static int vpa_dtl_event_init(struct perf_event *event)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
++	struct vpa_dtl *dtl = &per_cpu(vpa_dtl_cpu, event->cpu);
  
- /**
-  * ibmvtpm_crq_get_next - Get next responded crq
-@@ -714,7 +714,7 @@ static struct vio_driver ibmvtpm_driver = {
- 	.remove		 = tpm_ibmvtpm_remove,
- 	.get_desired_dma = tpm_ibmvtpm_get_desired_dma,
- 	.name		 = tpm_ibmvtpm_driver_name,
--	.pm		 = &tpm_ibmvtpm_pm_ops,
-+	.pm		 = pm_sleep_ptr(&tpm_ibmvtpm_pm_ops),
- };
+ 	/* test the event attr type for PMU enumeration */
+ 	if (event->attr.type != event->pmu->type)
+@@ -377,6 +378,10 @@ static int vpa_dtl_event_init(struct perf_event *event)
+ 		return -EINVAL;
+ 	}
  
- /**
++	/* Allocate before taking the global spinlock */
++	if (vpa_dtl_mem_alloc(event->cpu))
++		return -ENOMEM;
++
+ 	spin_lock(&dtl_global_lock);
+ 
+ 	/*
+@@ -391,15 +396,11 @@ static int vpa_dtl_event_init(struct perf_event *event)
+ 	 */
+ 	if (dtl_global_refc == 0 && !down_write_trylock(&dtl_access_lock)) {
+ 		spin_unlock(&dtl_global_lock);
+-		return -EBUSY;
+-	}
++		/* Release the buffer allocated above */
++		kmem_cache_free(dtl_cache, dtl->buf);
++		dtl->buf = NULL;
+ 
+-	/* Allocate dtl buffer memory */
+-	if (vpa_dtl_mem_alloc(event->cpu)) {
+-		if (dtl_global_refc == 0)
+-			up_write(&dtl_access_lock);
+-		spin_unlock(&dtl_global_lock);
+-		return -ENOMEM;
++		return -EBUSY;
+ 	}
+ 
+ 	/*
+-- 
+2.43.0
 
-base-commit: 5f22fb20497f4983094131f00a734362300d22d2
 
