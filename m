@@ -2,68 +2,69 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 81F1E606A324
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 15:23:37 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1DD2606A681
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 15:23:43 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OOYyrnWo
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fMdgU/V6
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbcd41krPz2xPb;
-	Sat, 28 Nov 2026 02:23:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795793016;
-	cv=none; b=Uu1rIoZ2SKktwY6jSb8NyBTqe90/TJ3BiPbARhwp4/HrKZ8YUCUs7cdZbeaHqHKKqObzdZ3m0IQxuoraEoFNq+Agrt7KD7lsx6cv9m22piNkS3AqgAFYJnthEakBRtZuZamEjXdjmVcWVy5UAs3juCUSa9o4DctA8sMZfv6a2bVF39fYSZD6HjMqhFjpKj6kXXQz7nvDSi05Kq7Rg1Y7cHLMXU7nmvRT2sZ4azIRNCr3Wj4Hx0M3hmy6scxKhSjU5WaeU6ecRwq110+QmMD/KfTakVaynCS7C1bVsxOPlAM6nkxjwee7ghyOq9Yd+WtHNr1oNq7hltYeDgUCNuwjCg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbcd60gyFz2xNT;
+	Sat, 28 Nov 2026 02:23:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795793018;
+	cv=none; b=gjel+OSoSOudGPZuMwpmU1NBWThd5VhOxocg1dBe2hBHzdhegJQ5Bpj9SPLn5K9Aa5A0sSwDU4lqcyDDnB58piNq81SHygXFXAQtPAzixkBTvhbASy5cGCi4Imz2M7DOaadDON6653ISjloeSqWj6q9K6QklRq9jOyCoP9oBrC936lOXtzq+pEpjI0xYIuLIP8GNos15UrOx8jZGblFjnjGHUTTXeGwEuZrpwo+Jy1uGWhnWAFDqzpWeqmscx8SaWcEIM5G31pH9ONEgDP+EOu1F/KBsWmOsR/BKBpLP+DgH1/4e0EOMOm1e5Aup91/XKKSCQ1rL1R3M6nx/I6Uw8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795793016; c=relaxed/relaxed;
-	bh=JjEWTfCSXoDP61H7fMsjhbrtYMgCKQELqcke6a5fZC4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=El/04kUTWbrN53kmG6++KHshHQ2rBlN/ZYjQgegtmn2/Nlup3BLnIwebsorwtC+eccDZvZxPRziJKP2u1z+HRG06DDzf1nBPpiuy9U3cfCSpRW806TyLmERR3FvSnjcWND/ZFKrK7g8ck6aYP7uska7TQk8WE+Qgv4J6IO7tVz2E06FC2XFTNEl8diVz4IFEqUVb08oocVZhErA5XJhyZrLxSAxR+RRaQKZSJ6nYW5Du999tBLLyvAXwkufCZ9MhTyCDaobdP1BWgvQKuZo0VFTt0hk5kMFqqgtdSvMIsraM+f7GdgLt82OOzVDVXxPFAzaWW1csEi4Ae0Ovj1qKkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OOYyrnWo; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1795793018; c=relaxed/relaxed;
+	bh=+fupf6lvO00F5v0Mc4Ym4lHQfcOxw66+HeSzTfZRHb8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=S6kq9yoM+L8caGbxSKMbZRYUZ5w0q7SHkHAoJMwRS77ma7P2hTnMojLnlA+voI+lcDQxbbMURxS+/JLaqxmHDWlrD+QpGVHh1fJls5CqsioF2kQhrZrpRU2qbOEO1LygTgbymexrWR0XVNfGhLm2EIL2blUPHK3J9CdfdYbaRYNxvqU4Jqmcs9SQXb8iJBn5PrkezHde6IYdzT/PLHtbaboyOHv3NYIDDKPlCx1GnG0vNBtOZM6SKhlz5+RGRChdsvirvimemqRn5aQJew2kZRSTV9BVvCgI0Cpt3SE4zBMvxynGyHoqVaBw5y8ZlgF/6TNi/rwn+Fivj4qrs+2FRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fMdgU/V6; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OOYyrnWo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fMdgU/V6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbcd25lSTz2xNT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 02:23:34 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ARE4eVO3234319;
-	Fri, 27 Nov 2026 15:23:00 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbcd526r2z2ySc
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 02:23:36 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6ARE4r283266648;
+	Fri, 27 Nov 2026 15:23:12 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=JjEWTfCSXoDP61H7fMsjhbrtYMgCKQELqcke6a5fZ
-	C4=; b=OOYyrnWoM/XawP71YyCPZOPSRBH0ZbkbggVbZrG8QmArWOssvsteX9clk
-	kGDjNA78QuZDWeIda7W+m/EsGbZfI/OFidhOlNqSJBAx3d2iTSujFRSD7Yv4HXd7
-	E1v1uaw9c3tLgdRfTNHnTDLQXNs+KSRnN4QAHyQnL9+pp8Kzc+K29Dd7Psqn5GlQ
-	I252j0/tVfdK5UuLuWk4oUHv/DUFqJRjbrufPRmEUj5F2RE7rW+TnCX6Vm5SkEsJ
-	S7047IOJYr+9VKv2HFmeWO+JDPrUdRjNmF5D7sU43CoVSiMfDpkfAgMB1QfLt2Qe
-	Cea+1A0cmVcA1mkkwWAQOkWfaztYg==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34gvnpkr-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=+fupf6lvO00F5v0Mc
+	4Ym4lHQfcOxw66+HeSzTfZRHb8=; b=fMdgU/V6s/HCosDjUoQzos+hQs1whF73U
+	akPMHje6Xeq0NkpMaRZhSJ5Slws9xVxBoBqErnqwCjXmr8LXLH5CtSxfiKILeUQw
+	D32pIKTnBMnNMhFYhsmzwlk+VsbN5jLDtkk4CLadRs8xn5k5WfWAHxsi1iD/vWeq
+	1a4neTQbf7ykVGalO9n5heFcVEtGSdkgUKxQGu+e4OAnuPuP7X50gOIJrgiEPU7B
+	9qGLNQPEGIHXjS0AfpjVLr4PWgDP+7LzgrcUnZptwHGU1M6VTXuLYmEnBYDnki1h
+	Ej8CTXsoBoJHg78E1Orl/bq3orLXbvhV/CogQ2EtYNDKda05z+ZKQ==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4j34fkxdjt-1
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Fri, 27 Nov 2026 15:22:59 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ARE4IqE3893132;
-	Fri, 27 Nov 2026 15:22:58 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4j6uccu3xq-1
+	Fri, 27 Nov 2026 15:23:11 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.11/8.18.1.11) with ESMTP id 6ARE4ENm1180971;
+	Fri, 27 Nov 2026 15:23:10 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4j6rhckr61-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 27 Nov 2026 15:22:58 +0000 (GMT)
+	Fri, 27 Nov 2026 15:23:10 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ARFMreB36176260
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6ARFN6an53412098
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 27 Nov 2026 15:22:53 GMT
+	Fri, 27 Nov 2026 15:23:06 GMT
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C1DA02004E;
-	Fri, 27 Nov 2026 15:22:53 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id E468B2004F;
+	Fri, 27 Nov 2026 15:23:05 +0000 (GMT)
 Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DEB2C20040;
-	Fri, 27 Nov 2026 15:22:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 30D3020040;
+	Fri, 27 Nov 2026 15:23:00 +0000 (GMT)
 Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.16.105])
 	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 27 Nov 2026 15:22:47 +0000 (GMT)
+	Fri, 27 Nov 2026 15:22:59 +0000 (GMT)
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
 To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
         linux-kernel@vger.kernel.org, driver-core@lists.linux.dev
@@ -72,10 +73,12 @@ Cc: sshegde@linux.ibm.com, christophe.leroy@csgroup.eu, ritesh.list@gmail.com,
         gregkh@linuxfoundation.org, rafael@kernel.org, dakr@kernel.org,
         johan@kernel.org, sudeep.holla@kernel.org, peterz@infradead.org,
         tglx@kernel.org, kprateek.nayak@amd.com, srikar@linux.ibm.com
-Subject: [PATCH v2 0/6] cacheinfo, powerpc, sched: Move powerpc to generic cacheinfo
-Date: Fri, 27 Nov 2026 20:52:36 +0530
-Message-ID: <20261127152242.306333-1-sshegde@linux.ibm.com>
+Subject: [PATCH v2 2/6] cacheinfo: Support unified caches described by d-cache properties
+Date: Fri, 27 Nov 2026 20:52:38 +0530
+Message-ID: <20261127152242.306333-3-sshegde@linux.ibm.com>
 X-Mailer: git-send-email 2.54.0
+In-Reply-To: <20261127152242.306333-1-sshegde@linux.ibm.com>
+References: <20261127152242.306333-1-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,189 +95,125 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
 X-Proofpoint-Reinject: loops=2 maxloops=12
-X-Authority-Analysis: v=2.4 cv=CYCdd7rl c=1 sm=1 tr=0 ts=6b09a053 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI3MDA2MCBTYWx0ZWRfX7A/2KmqAbOdk
+ lqlvw18444F9iqfmDKXp4+mDdsvlFf/TLM8yfM2T5D7gAqgFGaEz26sjssO/q1fcy8pKS+xaA1G
+ maENqq5c8AtDaIBIpj2xNA3NZrJmrlAdPHtjI9+3Q2X6BgfHdqLKu/1eamJ0iI1QZ99K556oEv/
+ mYW4L4qs8Qk1IoaJ7k9QA6ggWBlyejVnr0zR7wFeAp5HpnaNbfihF8oEy6Yw2dh9N3Y5ekKvQX8
+ IBaZQODGbsoUVn5sOrbeaLvUSZBVxtkxsMGOYFaCFlrXzMG5o+frpAmPVtCqnzqzM665tsVISzx
+ nni15/5cHQ66DS04zQh0Hxz5F1MR1XrbsNvHKfEC21Q+UhcbOqIMGsyXrLntsw4+3RrfGMmeG7Q
+ IiKja4tOky7YAonVdpc6KVWi8oHrs+esb1xv4kLMnx0wy2VTD3DjhiCUIDsx7jRuoA/3BsmO0RU
+ XzCKJfBaSiFJrKfQkaQ==
+X-Proofpoint-ORIG-GUID: c-0GeN-vVU-5ogbCifPbbxvHpe5sxh5A
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI3MDA2MCBTYWx0ZWRfX+GRTnyrVbpjR
+ 8Dv/xwEmwzw+4v0rYJbza/zsgMAs3c8Q/Y5TfPy/nl5fDhEHAfJf8UOvFHRhUnUJT42TXNlZTWq
+ hZZ0rLulStqbctovcyASOZKopmkOPHw=
+X-Authority-Analysis: v=2.4 cv=A9z5rKWG c=1 sm=1 tr=0 ts=6b09a060 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=zJRp6_cAMcgA:10 a=VkNPw1HP01LnGYTKEx00:22 a=RnoormkPH1_aCDwRdu11:22
- a=Y2IxJ9c9Rs8Kov3niI8_:22 a=e5mUnYsNAAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=7CQSdrXTAAAA:8 a=E3HGokiD75dCrADgIB4A:9 a=Vxmtnl_E_bksehYqCbjh:22
- a=a-qgeE7W1pNrGK8U0ZQC:22
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI3MDA2MCBTYWx0ZWRfX9Y9wcaK6Ervy
- zjjBn1pQGy/zFask8QPU5q0uiq4CaKx30mdhthjeFl1w26y1+Dl2TxLhkJBGuspagoKMNbMqYVh
- Q00xoIxSRUB95Q6xzCO7B8YRZ/v2dWQ=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI3MDA2MCBTYWx0ZWRfX+EV6YLwEvEva
- 8qON9OjlFLCz4kXV/hgfVzJ7+VcOa8JsgIxVcvnObmIE1ASS3VEKAuXcRj+ngsu71N7Cmg/h3yn
- e8R+wF7n91XZCsvPMT2feDUfE0GLATBWXX5L9Z0NAdZyWZYamHVn1jUyCGfjF5yutXybNBLNw1v
- +jJ9rKTpjDEgnVnb0GgbzkUtJ1g84GFtxLS6GJEmLIbccnCrXNNZiDsviNCdDiw06PkHfqXsNAA
- ZdqIbQEf3Y+0YCXl5vFeIfmsOrbPWR/1Scepclou7eOMIR0J8vOQrNU6eJ+x1sINY+e+OdPiCLP
- TUwWGRcR/3vU76GNmGstwqPf8O0VRObEm7jklYEOeeV+JDmm6l12gdEOS6Iz4HMmkAK4bqgSzz6
- bQ34Rb1jE6q8llCWqktxUwxJWo8zX5vi1TVDVZj8kxHBlkJM0GMTVdUeDa2+V/IoxJ2+KSZHZOr
- nuMILb/vT9BrnabT19w==
-X-Proofpoint-ORIG-GUID: Ike8deZNp8OXbg6A5h0ra5q0jP34957S
-X-Proofpoint-GUID: pZLmlU4KSl5gZEk33xNljkNcANPHz8x4
+ a=U7nrCbtTmkRpXpFmAIza:22 a=VnNF1IyMAAAA:8 a=t_fYOQ62Ex-2Ni1ZEtoA:9
+X-Proofpoint-GUID: RuOKydFePPLanC_e1rO2aHKrnu8v2VEX
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-27_02,2026-11-27_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0 priorityscore=1501 lowpriorityscore=0
- clxscore=1015 spamscore=0 bulkscore=0 impostorscore=0 adultscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.22.0-2611040001
- definitions=main-2611270060
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=4.0.1
+ clxscore=1015 adultscore=0 phishscore=0 priorityscore=1501 impostorscore=0
+ bulkscore=0 malwarescore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611270060
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-This is another attempt to move PowerPC to the generic cacheinfo
-framework and is a spiritual successor to the earlier work from Sudeep
-Holla [1].
+PowerPC device trees commonly describe a unified cache using d-cache-*
+properties.
 
-Current motivation came from enabling Cache Aware Scheduling on
-PowerPC with an llc_override kernel parameter [2]. The scheduler obtains
-the effective LLC capacity through get_effective_llc_bytes(), which uses
-generic cacheinfo. Since PowerPC maintains a separate cacheinfo
-implementation and does not populate struct cpu_cacheinfo, llc_bytes is
-zero and the byte-capacity check effectively disables cache-aware
-placement once a process has a visible memory footprint.
+For example, Power11 L2 and L3 cache nodes have cache-unified together
+with properties such as:
 
-Rather than adding an architecture-specific fallback for the physical
-LLC size and sharing information, this series moves PowerPC to generic
-cacheinfo. This also removes the separate PowerPC implementation of the
-cache sysfs interface. If move to generic cacheinfo is contentious due
-to new extentions, I am afraid we might have to fallback to
-arch_llc_bytes kind of hooks.
+  d-cache-size
+  d-cache-line-size
+  d-cache-sets
 
-Since many don't read past this, Note that, I have tested this series 
-on PowerVM LPAR (Dedicated and Shared) and PowerNV (Power9). I think
-there may be corner cases of error handling where consumers may have
-stale info. Also Please test this on your powerpc platform if it has
-different device tree quirks. 
+They do not provide the corresponding cache-size, cache-line-size and
+cache-sets properties expected by generic cacheinfo for a unified cache.
 
-Applies cleanly on:
-powerpc/master at c44104f3642d ("Merge tag 'drm-fixes-2026-11-21' of https://gitlab.freedesktop.org/drm/kernel")
-powerpc/next at b6a9fa34ce41 ("Linux 7.4-rc4")
-tip/sched/core at c47af8566706 ("selftests/sched: Add a test for stuck forced idle under core scheduling")
+When a unified cache node does not contain cache-size but contains
+d-cache-size, select the data-cache property set. This only changes which
+device-tree properties are read. The cache leaf remains
+CACHE_TYPE_UNIFIED.
 
-PowerPC move needs a few extensions.
-===================================
-1. PowerPC firmware cache node does not always identify one
-   hardware cache instance. On Power11, one firmware CPU node can represent
-   eight threads, while ibm,thread-groups divides those threads into two
-   SMT4 cache-sharing groups. The series therefore allows an architecture
-   to provide a cache ID derived from its physical cache-sharing topology.
+[Both draft changelog and code are written by LLM under guidance]
+Assisted-by: LLM
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+A Subsequent optimization if the series is in an acceptable shape.
 
-2. PowerPC device trees commonly describe unified caches using
-   d-cache-* properties. Generic cacheinfo is extended to read those
-   properties while retaining CACHE_TYPE_UNIFIED for the resulting leaf.
+Cache the idx first and then use it in cache_size, cache_get_line_size
+and cache_nr_sets.
 
+ drivers/base/cacheinfo.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-The more involved part is preserving pSeries LPM and DLPAR behavior.
-====================================================================
-3. The existing PowerPC implementation owns references to its firmware
-   cache nodes and destroys and recreates the cache objects when the
-   firmware topology changes. Generic cacheinfo normally retains its
-   per-CPU leaf allocations across CPU offline and online operations.
-   That behavior is appropriate for ordinary hotplug, but not when LPM
-   replaces the firmware cache topology or DLPAR detaches a CPU and its
-   cache nodes.
-
-   This series adds explicit helpers to tear down and rebuild the complete
-   generic cacheinfo hierarchy. These destructive operations run under the
-   CPU hotplug write lock, excluding CPU hotplug readers while the old
-   cacheinfo generationis replaced. Normal generic CPU hotplug behavior
-   remains unchanged.
-
-4. Moving cache discovery to the generic CPUHP callback also exposed an
-   ordering issue for DLPAR-added CPUs. PowerPC previously associated
-   cpu_dev->of_node and initialized its private cacheinfo from the same
-   late dynamic CPUHP callback. Generic cacheinfo runs earlier at
-   CPUHP_AP_BASE_CACHEINFO_ONLINE. For a DLPAR-added CPU, the CPU device
-   already exists at that point, but its of_node is still NULL, causing
-   generic cache discovery to fail.
-
-   An explicit PowerPC CPUHP state is added immediately before
-   CPUHP_AP_BASE_CACHEINFO_ONLINE. The resulting ordering is:
-          PowerPC associates cpu_dev->of_node
-          generic cacheinfo initializes the cache hierarchy
-          PowerPC creates the remaining CPU sysfs attributes
-
-   CPU offline runs these callbacks in reverse order, ensuring that generic
-   cacheinfo is removed before PowerPC releases the OF-node reference.
-
-The series was tested on dedicated and shared Power11 LPARs.
-the existing cache sysfs values and hierarchy are preserved.
-Generic cacheinfo provides id and uevent in addition.
-
-The testcases are covered and marked as success if cache values are
-preserved.
-===================================================================
-
-  - Normal boot on dedicated LPARs		- Success
-  - Normal boot on shared LPARs			- Success
-  - Normal boot with lockdep on dedicated	- Success
-  - CPU Hotplug (Dedicated and Shared LPAR)	- Success
-  - CPU Hotplug with lockdep			- Success 
-  - LPM cacheinfo teardown and rebuild		- Not tested
-  - DLPAR CPU remove and add			- Success
-  - DLPAR CPU remove and add with lockdep	- Success
-  - DLPAR add logical CPUs not present at boot	- Success
-  - DLPAR reuse free CPUid from different node	- Success
-  - Normal boot on PowerNV			- Success
-  - CPU hotplug on PowerNV			- Success
-
-Script used for validation is here:
-https://lore.kernel.org/all/d76a72b5-e489-47fe-81bd-a3bf5935c209@linux.ibm.com/
-It is effectively checking for:
-- Is cache hierarchy/values are same.
-- comparing online,offline,possibe,preset masks.
-- lscpu topology without id.
-
-I have requested for the LPM test. Since I am on leave for next two
-weeks, wanted to send this out. Once I hear from LPM test, I will update
-the thread.
-
-Moving PowerPC to generic cacheinfo also supplies the physical LLC size
-and sharing information required by get_effective_llc_bytes().
-llc_override series[2] will use this information to scale the physical cache
-capacity to MC or package scope. In addition this also gives right
-information for page allocator.
-
-[1] https://lore.kernel.org/all/1424715500-21725-1-git-send-email-sudeep.holla@arm.com/#t
-v1: [2] https://lore.kernel.org/all/20261023131646.2907938-1-sshegde@linux.ibm.com/
-
-v1 -> v2:
-=========
-  - Add full cacheinfo teardown and transactional rebuild handling for
-    firmware topology replacement. Avoiding build failure.
-  - Hold the CPU hotplug write lock while replacing cacheinfo during
-    pSeries LPM.
-  - Add an ordered PowerPC CPUHP state before generic cacheinfo to make
-    cpu_dev->of_node available for DLPAR-added CPUs.
-  - Clean up the caches/derived states after DLPAR remove.
-  - Clean up the caches/derived states after DLPAR add failure
-
-Shrikanth Hegde (6):
-  cacheinfo: Allow architectures to provide custom cache IDs
-  cacheinfo: Support unified caches described by d-cache properties
-  cacheinfo: Add firmware topology replacement helpers
-  powerpc: Set CPU device OF node before generic cacheinfo setup
-  powerpc/cacheinfo: Move to generic cacheinfo
-  sched/topology: Remove stale comment around llc_bytes on powerpc
-
- arch/powerpc/kernel/cacheinfo.c              | 994 ++-----------------
- arch/powerpc/kernel/cacheinfo.h              |  13 -
- arch/powerpc/kernel/sysfs.c                  |  54 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c |  35 +
- arch/powerpc/platforms/pseries/mobility.c    |  17 +-
- drivers/base/cacheinfo.c                     | 192 +++-
- include/linux/cacheinfo.h                    |   4 +
- include/linux/cpuhotplug.h                   |   1 +
- kernel/sched/topology.c                      |  11 +-
- 9 files changed, 368 insertions(+), 953 deletions(-)
- delete mode 100644 arch/powerpc/kernel/cacheinfo.h
-
+diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
+index 10a9bbce899e..4a23377e9312 100644
+--- a/drivers/base/cacheinfo.c
++++ b/drivers/base/cacheinfo.c
+@@ -148,11 +148,21 @@ static const struct cache_type_info cache_type_info[] = {
+ 	},
+ };
+ 
+-static inline int get_cacheinfo_idx(enum cache_type type)
++static inline int get_cacheinfo_idx(enum cache_type type, struct device_node *np)
+ {
+-	if (type == CACHE_TYPE_UNIFIED)
+-		return 0;
+-	return type;
++	if (type != CACHE_TYPE_UNIFIED)
++		return type;
++
++	/*
++	 * Some device-tree bindings describe unified caches using
++	 * d-cache-* properties. Select the data-cache property set
++	 * without changing the cache leaf type.
++	 */
++	if (!of_property_present(np, "cache-size") &&
++	    of_property_present(np, "d-cache-size"))
++		return CACHE_TYPE_DATA;
++
++	return 0;
+ }
+ 
+ static void cache_size(struct cacheinfo *this_leaf, struct device_node *np)
+@@ -160,7 +170,7 @@ static void cache_size(struct cacheinfo *this_leaf, struct device_node *np)
+ 	const char *propname;
+ 	int ct_idx;
+ 
+-	ct_idx = get_cacheinfo_idx(this_leaf->type);
++	ct_idx = get_cacheinfo_idx(this_leaf->type, np);
+ 	propname = cache_type_info[ct_idx].size_prop;
+ 
+ 	of_property_read_u32(np, propname, &this_leaf->size);
+@@ -172,7 +182,7 @@ static void cache_get_line_size(struct cacheinfo *this_leaf,
+ {
+ 	int i, lim, ct_idx;
+ 
+-	ct_idx = get_cacheinfo_idx(this_leaf->type);
++	ct_idx = get_cacheinfo_idx(this_leaf->type, np);
+ 	lim = ARRAY_SIZE(cache_type_info[ct_idx].line_size_props);
+ 
+ 	for (i = 0; i < lim; i++) {
+@@ -194,7 +204,7 @@ static void cache_nr_sets(struct cacheinfo *this_leaf, struct device_node *np)
+ 	const char *propname;
+ 	int ct_idx;
+ 
+-	ct_idx = get_cacheinfo_idx(this_leaf->type);
++	ct_idx = get_cacheinfo_idx(this_leaf->type, np);
+ 	propname = cache_type_info[ct_idx].nr_sets_prop;
+ 
+ 	of_property_read_u32(np, propname, &this_leaf->number_of_sets);
 -- 
 2.52.0
 
