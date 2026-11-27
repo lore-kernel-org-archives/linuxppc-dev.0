@@ -1,50 +1,97 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5E98F606A31C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Nov 2026 23:05:20 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 8E33E606A323
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 01:01:42 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=DX8YmRhf
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NbxIpWcb
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbBwG67wfz2yCS;
-	Fri, 27 Nov 2026 10:05:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=81.187.240.206
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795734318;
-	cv=none; b=d0yKuZNrFMlmXAHCROqabqydEWMhP8L+9CbvOoXzeCIlawfSKzVPaZEJC5n27abGb7KWlEI8rpIlWbaw29zvVA10lhGD+Osayn9WMXJ2P7b1ClvQrWi8TB58lknIsUIoA3IU8AciNSA5lza7rvJEbyZYvmzNDe0iph8KaPDBiK9eMAxynmYUxQiczSf56DU561eB9FzZjdeZuVgA6HAMHwvWm4cmseWcqJ9/n35zVyxLXLZttefbsoJoYmPYYogjOhVUc9kA6ulrImAgIfG9N2AN829IF+8QXISlgN2+IadWSm4betWObGxbMeDZjoNgyMx1v3tiqd5dpoFX05Ev3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbFVX4qS3z2xqh;
+	Fri, 27 Nov 2026 12:01:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795741300;
+	cv=none; b=ElAy/cGfwIhWBSFgTHjYF7JPA3pOYlCd5Zw8UthOcsWJGeUSgOHI+rOCLlCIysg1mR/SqZcN/mT+uKd0Et2TcpwrNA+Hoz517lVIrsoyjOpVh6EctD5AVDL8zT7mm2PWvkRu0we41fFb4Cm5GEaYDPhsBtv8KykPuUHyDKm0jCjGSpg8QWjD2G38WZIOtf/QVhNuCMR+SBF5lcWSscEQ66S53Bj8B2TO8bxTMgoH7qdKjJGFzHsQwMBnmV8kV67Nlau90u2dtU8ZyVAnQd4XjYT5u264GdaHaiDGiPtpXLi6nCjX2fDzHvl9BOeW85LdoyscU4hjY1IJH9s2qwVzlg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795734318; c=relaxed/relaxed;
-	bh=Sj/aWkcJoX8osNOaYguPCPfPhZLRWGD842MdJCjN+4Y=;
-	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=WOtNxRA+ZcwFUv7Hox+R92t/DSxqKH6a+QkR2PowKKsn87I8Ouq6uF1LJ4eOmt7G66WDHEP4FS0ddDPdkOLYaAlx7xAAMQonejV7fkZlSRiv2rpHnUtveiYafzMTiHYHQewlqOQcKtLuoGdxtMLCqNpofMHffcBujMWeucZMOetx8QuCHAMAmTpDTkJOHFAluFoe9YAQrpgD5iR05cjdX27P5vajhJOPmQYE/IwVfoieriXPbp3oVlH8p5gsKRvyZTKroCpNPvSdsv5AYqEWuHlmziNGm7Cx1fukOY6vnF14TKXA6DdL4z1Pt++WllXFl5njD/0RE3Ug2fqSG9G8CA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=dim-sum.org; dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=DX8YmRhf; dkim-atps=neutral; spf=pass (client-ip=81.187.240.206; helo=chowmein.spicy.dim-sum.org; envelope-from=drw@dim-sum.org; receiver=lists.ozlabs.org) smtp.mailfrom=dim-sum.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=dim-sum.org
+	t=1795741300; c=relaxed/relaxed;
+	bh=R2dYx+9VfkblowgRJ/VmPm34jz2gVpt82fxbuv77UBc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=MC9jG+2pgmmWwuFdHwsM3H8vdxb6XC6ZV8JbKwMV4AfODubucvNnoRlQjWE2nw+7oaFyoTZ2ZN8OGtXKWiTv2CYjaFji80yVcuWKIUbGirGkMA9s0T9VzPs1rbFPRqyRu5SVLopSaBirKCjzTomEJzAssi5IBwjDlgl7wgfN0z/E4ZtQFUIxBeMUgmRvtgbbjfj4bwbkfJ9Uz9E1TwfdKwAPfaVQsp1o6rDskVFbze1zy5HiO9sxYC0Xu1+zfXQ/oI5XHeUsGJbxhwSJX8Bd+rJoYSpOq2aR0crGg4nMdqmw51vAgBf9TEZJETGlXxbLqVqeWITML5gvxyfmN1Vzww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NbxIpWcb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dim-sum.org header.i=@dim-sum.org header.a=rsa-sha256 header.s=chowmein header.b=DX8YmRhf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=NbxIpWcb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dim-sum.org (client-ip=81.187.240.206; helo=chowmein.spicy.dim-sum.org; envelope-from=drw@dim-sum.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 422 seconds by postgrey-1.37 at boromir; Fri, 27 Nov 2026 10:05:16 AEDT
-Received: from chowmein.spicy.dim-sum.org (chowmein.spicy.dim-sum.org [81.187.240.206])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbBwD0KwCz2y96
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 10:05:15 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=dim-sum.org;
-	s=chowmein; t=1795733882;
-	bh=lLSmzbK5NyJ4QRnqYbL+KLBr5kMfkKFsEvEgBH8TQP4=;
-	h=Subject:From:In-Reply-To:Date:Cc:References:To:From;
-	b=DX8YmRhf83EN3YIuwv9weX8O6SjISbzZjkrR8IRHNZO3qZd1HAx/7v7lzMgWtOdiz
-	 WdYd7gncUeWBPwS0K/1lPEIpV/9Z6CqyCGlbqKEN5nYrKv3obDzkRTWagelYoXCPNh
-	 S7ON7LMk9Q1THeWIh0UgqqW08D7FIsSz9zFd0A5ylsGjJCj3TgcKAX+dvz2xV3FapM
-	 XPnhI1k1Ea7CA5a4HYhvccrqNZd5DHlTj0ZazMznwX35GTCKHO3vb4JcOkv9XP2MQR
-	 Ao01VXZWOWxXuwM6/dgsPYPgPqKSCQS0P4vWr5gDqbhlLn2IKrL3Jfx2xr8k8FuEsO
-	 HwvzY3yckWj9Q==
-Received: from smtpclient.apple (unknown [IPv6:2001:8b0:ff99:15:1a2:f725:9750:5716])
-	by chowmein.spicy.dim-sum.org (Postfix) with ESMTPS id 34EB6BF54A;
-	Thu, 26 Nov 2026 22:58:01 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbFVW1qxnz2xLg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Nov 2026 12:01:38 +1100 (AEDT)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2f0414c1062so45362885ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Nov 2026 17:01:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795741295; x=1796346095; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=R2dYx+9VfkblowgRJ/VmPm34jz2gVpt82fxbuv77UBc=;
+        b=NbxIpWcbtgucyb/ACXa+IUOd+6rPcNJZkIWby48BDP2/C4ucjEQx1DPT+6YYEbSX6M
+         oDMsiB5HXdB3jaDl8jcYR7DpBbqF+oFDh5I6eABE01ueDsp5Awu5zXXJVVtZp3gkC97d
+         0LcJzvu52sy6xJGZnfPG6zwwtYiQUGuJ8xjg7fViPm9YMrNbwYZUIiVbR+XQA8/cA43e
+         x4ertazR2Ak3Zq3kDTLN75X+jj646WLQP3+Yws9pXckIND6wAse6eh0Y5uWS35EU3yuH
+         1cRHNm2TC7KSRB6jARJI2nGawBnWQo38ob/LXsRYH4MUdjNYnxQlUfNED09xUh6Pf/nD
+         lrQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795741295; x=1796346095;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=R2dYx+9VfkblowgRJ/VmPm34jz2gVpt82fxbuv77UBc=;
+        b=qwY9lNLXEhDVLaIvIkLVFDIXVvF1u+Tk072PH6g0HmZ0sNE/IXUaJUAv3o6MMAMECX
+         zPwJo0I/mitr5JqHUSwxMPpZhxRT9dCJ7yD0qlfV9dMGdh2+COhyISkrIHSp+ftymfVK
+         u4hdF/XGIRL5vcb8sRKyGblQ6Im2iTt9otpuAfpVedro6R7sOnJrcQVMEUtwUo5Yhi2Z
+         VzW7EcHjWtmwB5uJR0fLidyKz94lruRhDwwRTIx4V7LhOLcESYZb7Ovalb16nEskqS1r
+         GSyVFRxSsk8gmOdH+1voH4joVwABVNNEnD3lqsRIlDNvMG7T2wIMbqtec5MSaA8yiwq3
+         o04g==
+X-Forwarded-Encrypted: i=1; AL+hErEkiq0YJ6Fg0edJZCb9Y95avYRunuyzRng2YX2tAbYukW+ob8VlZZxmLAS/IlqShWnHIcXR/l5EYquHLN0=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z/B8c6qzvVK/ubPOfCp3ITetJ5w23R2DFJTz5tlVJSzW5qIW8hQ
+	TGhYlqI8VtkpaQb54+1qAr+yDHD1ctynLcYZ1VwVw8YNrvvuVMp/D04e
+X-Gm-Gg: AZFdTZe5kBs94wHXZ3BBjAB1DkYBf2tUmcAGxwFmF5OCy7w5YQmUmC3nQSC0PX/NUMs
+	l9OYkl9WWgEhD6wn13b+6NEzUC1j0DyLjV6zXsWs3u88fJcdpBigg/Nfiu+5G9ML49XhL24y/FA
+	BG8qavMER/tki01Ezxno6UtUbybxMygX1/4N88W7lfHsnjpa2uF/uYd+05zVujku48sr2GlPke1
+	K4muljKOdKCwT1tM23tZxXWuLDe+8Y7yq34NDsxHIq59/NqN6ukbOgfJNh8/QhsG4WefeVN4HNK
+	J6umJ19yJrRL7AOcVgsAY6mSjI08cXl9oB3SZIOkzDw5vfxYAYnE0RxIpvz2k1rmBPGpdVwQazF
+	gxBGRB+KfVSPLCgl1ZDryms11NezuEim4LcJOKmEJzMSRHjDBDP4J/tEFK6JZucNRcD5cLZO2h1
+	Dv3TQLJXP/LVZCBzPIZiQRXgLhfVTwBwPFFwLEOACOvGjsV8e3tEZGy+5/KBCgBZvMhK09lSg+B
+	oLI0pMCFDiyNwr0jGChNhcPWdbr0pFdwv2b+ncKpaPXr2j1ateJggBN/CSmYU9ecwLyTo79BO+N
+	TBkV0zQcOE7yNiSA4McnkUc6Jf4VFu8iqv0exbOm0BX5X1GiqeuoCXHrdoIiKqAYyPb3M4PfcOB
+	Q
+X-Received: by 2002:a17:903:230d:b0:2ef:f432:3fab with SMTP id d9443c01a7336-2f03f169933mr212665565ad.43.1795741294670;
+        Thu, 26 Nov 2026 17:01:34 -0800 (PST)
+Received: from localhost.localdomain ([2605:bc80:3010:503:f816:3eff:fe99:6bb3])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f051a566f7sm99260055ad.41.2026.11.26.17.01.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2026 17:01:33 -0800 (PST)
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+To: jarkko@kernel.org,
+	peterhuewe@gmx.de
+Cc: lance@osuosl.org,
+	rcu@vger.kernel.org,
+	Zhouyi Zhou <zhouzhouyi@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-integrity@vger.kernel.org,
+	Li Jun <lijun01@kylinos.cn>
+Subject: [PATCH] tpm: ibmvtpm: Fix unused suspend callback with CONFIG_PM_SLEEP=n
+Date: Fri, 27 Nov 2026 01:01:24 +0000
+Message-Id: <20261127010124.848125-1-zhouzhouyi@gmail.com>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,95 +104,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3901.200.71.1.16\))
-Subject: Re: Should the community reconsider their efforts on PowerPC?
-From: Dan Whitehouse <drw@dim-sum.org>
-In-Reply-To: <5793bff62d5995d322659d4a1d311bc4c795a829.camel@physik.fu-berlin.de>
-Date: Thu, 26 Nov 2026 22:57:51 +0000
-Cc: debian-powerpc <debian-powerpc@lists.debian.org>,
- gentoo-powerpc <gentoo-powerpc@lists.gentoo.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <86799B87-DFD3-44F3-8A04-00972FBADF9C@dim-sum.org>
-References: <5793bff62d5995d322659d4a1d311bc4c795a829.camel@physik.fu-berlin.de>
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-X-Mailer: Apple Mail (2.3901.200.71.1.16)
-X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS autolearn=no
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-Adrian,
-Before I write anything else on this subject I would like you to know =
-that I=E2=80=99m extremely grateful for your efforts.
-I cannot possibly express how much I appreciate the hard work you have =
-put in to not only the PPC ports, but all the work you do not only for =
-the Debian project, but also free software in general.
-Selfishly I would like you to continue working on PPC however I=E2=80=99ve=
- witnessed things like kvm-pr wither on the vine and seen Red Hat =
-deprecate kvm on IBM=E2=80=99s PPC platforms.
+Discovered in the Open Source Lab of Oregon State University when running
+RCU torture.sh on a ppc64le VM.
 
-To make a long story short, speaking selfishly, I would answer your =
-question with a resounding =E2=80=9CNO!=E2=80=9D. However, that =
-doesn=E2=80=99t mean that I don=E2=80=99t (at some level) understand the =
-challenges you face and would not understand if you decided to call it a =
-day.
-If it=E2=80=99s not fun anymore and is more trouble than its worth, I =
-won=E2=80=99t begrudge you putting it to bed. I=E2=80=99ll still be =
-appreciative of all the work you have done and I won=E2=80=99=E2=80=99t =
-begrudge you spending your efforts on other ports.
+With CONFIG_TCG_IBMVTPM=y and CONFIG_PM_SLEEP disabled, SIMPLE_DEV_PM_OPS()
+omits the references to the system sleep callbacks. This leaves
+tpm_ibmvtpm_suspend() unused and produces the following warning:
 
-Thanks again,
+  warning: 'tpm_ibmvtpm_suspend' defined but not used [-Wunused-function]
 
-Dan=20
+Use DEFINE_SIMPLE_DEV_PM_OPS() and pm_sleep_ptr() so that the compiler
+sees the callback references and can discard the unused PM code when
+system sleep is disabled. Preserve tpm_ibmvtpm_resume(), which is also
+called directly from tpm_ibmvtpm_send().
 
+Tested on PPC VM of the Open Source Lab
+of Oregon State University.
 
-> On 26 Nov 2026, at 21:04, John Paul Adrian Glaubitz =
-<glaubitz@physik.fu-berlin.de> wrote:
->=20
-> Hello,
->=20
-> as some of you may know, IBM has been pushing to deprecate any PowerPC
-> platforms that they aren't earning money with anymore. This includes
-> mainly POWER platforms before POWER8 and big-endian PowerPC.
->=20
-> Recently, IBM engineers have remove JIT support in OpenJDK after =
-sending
-> an email for feedback to a non-public, unmonitored Debian email =
-address [1].
->=20
-> Since IBM engineers have also killed off support for big-endian =
-PowerPC
-> in Golang, V8 and also don't look after LLVM on big-endian PowerPC =
-anymore,
-> I wonder what is left for the community working on PowerPC.
->=20
-> I personally feel that IBM thinks they own the PowerPC platform in the
-> open-source world and can single-handedly decide whether a certain =
-project
-> will support older PowerPC targets or not. And I'm starting to feel =
-that
-> this will sooner or later also happen to the kernel parts, GCC and =
-binutils.
->=20
-> As someone who has invested endless hours of my free time into working
-> Linux and open-source software on PowerPC, I feel really let down by
-> how IBM is handling this and currently I feel like it's starting to =
-become
-> pointless to invest my free time working on PowerPC support in Linux
-> and open-source projects.
->=20
-> Adrian
->=20
->> [1] https://bugs.openjdk.org/browse/JDK-8331859
->=20
-> --=20
-> .''`.  John Paul Adrian Glaubitz
-> : :' :  Debian Developer
-> `. `'   Physicist
->  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
->=20
+Fixes: fc0ddb3174b0 ("char: tpm: Use SIMPLE_DEV_PM_OPS for ibmvtpm power management")
 
+Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+---
+ drivers/char/tpm/tpm_ibmvtpm.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
+index 51c7e2add3d2..9840d0ebe6a3 100644
+--- a/drivers/char/tpm/tpm_ibmvtpm.c
++++ b/drivers/char/tpm/tpm_ibmvtpm.c
+@@ -462,7 +462,8 @@ static const struct tpm_class_ops tpm_ibmvtpm = {
+ 	.req_canceled = tpm_ibmvtpm_req_canceled,
+ };
+ 
+-static SIMPLE_DEV_PM_OPS(tpm_ibmvtpm_pm_ops, tpm_ibmvtpm_suspend, tpm_ibmvtpm_resume);
++static DEFINE_SIMPLE_DEV_PM_OPS(tpm_ibmvtpm_pm_ops,
++				tpm_ibmvtpm_suspend, tpm_ibmvtpm_resume);
+ 
+ /**
+  * ibmvtpm_crq_get_next - Get next responded crq
+@@ -714,7 +715,7 @@ static struct vio_driver ibmvtpm_driver = {
+ 	.remove		 = tpm_ibmvtpm_remove,
+ 	.get_desired_dma = tpm_ibmvtpm_get_desired_dma,
+ 	.name		 = tpm_ibmvtpm_driver_name,
+-	.pm		 = &tpm_ibmvtpm_pm_ops,
++	.pm		 = pm_sleep_ptr(&tpm_ibmvtpm_pm_ops),
+ };
+ 
+ /**
+
+base-commit: 5f22fb20497f4983094131f00a734362300d22d2
 
