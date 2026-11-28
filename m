@@ -1,86 +1,91 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 73328606A31F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2026 13:11:43 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 1924A606A31F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2026 14:31:04 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EepsqkPd
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rmttZie5
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jc9fQ0xrqz2xLg;
-	Sun, 29 Nov 2026 00:11:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795871502;
-	cv=none; b=dXchWOU1xSxgcwyz9AXTNgDE+mcyFoFKGINzpCzn1Jt2XZi3corx++Ec22zv/2s7MggQOoUXJzuItXUOZb5koaqaCze/C3/CwIPHFjM9/e8kQtyx13s2eNlPLEW9RbsS8b/nVJNOXrFfzmcHbqPfpH3Tkw7kvBuMUnzh+MJ8YRT3tEgW5PWhGofodII1xZhY8bPYJ0hM/kaigwu3N2pBkTClJf0xzjPx5AV4enhG31jK7tE0iYWj6XOnRJVYRWdscWdVhiRVijQVu+VZdYtlVxVNCtTV1et574HpBCqMTfDAVdJoCj3xiqxnkDlxcxELnxw0ykM8dUohAV94hXqETQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jcCPx6phRz2xpt;
+	Sun, 29 Nov 2026 01:31:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795876261;
+	cv=none; b=T4xWMvVnvD/8Uo1zi+DbBiHU+9UhoWLnhRmrFsHMTOZMomdonH05UFnFGRKVB9hqFZo89+Z7XvNVndA77yd/9OOdQZydnmxOp9smfOp1JqKMMtyhXohxl4FbTaybRV+KVwsJ62AHyC0dQH1x1dHnOk6pJflve1JUuaEwUTJY5EYjsrFKhQ2EsaeTb74pJsD7DbGm6+2PLulHAIlpxeI/KiXHQBr5GHhA64vIv5sHTPfmKRIQ7j4Nf0eVbYWMG4tnP1Ec8CGE7BVG5okILMhdhFaVg1fvG4QNyqIlEW0jbxQIvOvscNTJ85I7t6NJvpHJ7SyI8aCx5pwruLrN5lBRSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795871502; c=relaxed/relaxed;
-	bh=Znno/6cdjeGyh4QHR1BzUSwOFxc0tW9FZcWjMXNlod8=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=mtgUdWT2aFjKcV8bwKLi89wayppzk2cSo38H0c0J1V9S3sqmb93OH0h9b1qnCWlQxy2P2EiQi4HAGuDT/DQKXrIBy5PhAsjJSsvs1+N8uoX9h8fMTF83UlBZMz88PCtnMOJmdxm8MLEDbgC5U9H1EO9mkVu4maOABJH4rPuMQ6/bLac2pZIItd15lEWtaEquCluhw/YWgqWykzP1BGtLdmNRZqKsFGNU+cBJG+Z2NFjTrtiQmIGSyRZ+zbsZGY+3bc3qAb+OIeiPssubCsxPfozOhiLH9NOauBN2eOClPtyMcYvICsUJUBM3P3gazCE6Pxyri7C0d1cd5jzXHj/uWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EepsqkPd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1795876261; c=relaxed/relaxed;
+	bh=TAeMfYpE8Osn2ZlADlOhEsnNQgCG1HIa4JYQz3ncjy8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Fw0Klsuxkcz3scxZhMLjGYSOIHtzt7i83ORDz6OlJWxfDFsufcSlcFJQtVHA66yZi+r5NkrtxE9YFIbGCq9WKE5918BPP2STvGVWxoojm3oD3CLhNzjV2hx1ZHxr3ijjLHq1kaQJocobQmlvPzidJ3vhUppGxOe/gT27NlDgnE3AFv06FVywtSTDmhgGe/1iFGtTQiJMOtacXcmG131IkLeZmrkF2iUpQ6tR0hOzO8HMT3NNm2PNpdZVrTENOXzmIWd8NsBn2wmAdNr0Ho3BayqLrMbKVI/ntIT66RydTXUW3+Vt3aYMm28V4kKxdUph9ZYaor2VeAOHQ2go8rcyjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rmttZie5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=mdshahid03@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=EepsqkPd;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=rmttZie5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132f; helo=mail-dy1-x132f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132f.google.com (mail-dy1-x132f.google.com [IPv6:2607:f8b0:4864:20::132f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=mdshahid03@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jc9fN25XQz2xKx
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2026 00:11:39 +1100 (AEDT)
-Received: by mail-dy1-x132f.google.com with SMTP id 5a478bee46e88-386bd881d39so71404eec.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 05:11:39 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jcCPw3cMgz2xKx
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Nov 2026 01:30:59 +1100 (AEDT)
+Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-386cf1041cdso6770193eec.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 06:30:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795871497; x=1796476297; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=Znno/6cdjeGyh4QHR1BzUSwOFxc0tW9FZcWjMXNlod8=;
-        b=EepsqkPdYHSNxHm5VC6p0tKN9L73lzYBytz1Zx/LhuW4QZuxcbDUimuLqmTwf9pHPa
-         GRkyb5diMcq4An8ty/QTMnyvdhrt1ToHeXVLXVze9X2zqDn7OUUbNWNxYthl3VVxoB0Q
-         xWrikC8SIEZAd55a7jtn332EbdWafXyG/lYYk5v3D5OfQihbYSh7KEfm4TzS7zOyLJkH
-         FLKJIGW3FytEH+U1w3iXsCO8Mz+hIXCM3qoea8m2r7nnsBQ5tqUZzzA+5JFo6S9/hw36
-         itLOCFpFqr9pFyfz3fzx9f1sD6gHZmSnY7Q58PCZZEgr4tt/1MQPoCSzJ9R+1djd30gD
-         MyrA==
+        d=gmail.com; s=20260707; t=1795876256; x=1796481056; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
+        bh=TAeMfYpE8Osn2ZlADlOhEsnNQgCG1HIa4JYQz3ncjy8=;
+        b=rmttZie5GzsCy+LKW3iUKZDXsyksqED5luMEB8xeDYgYWN96dgdy3QM75DxUsNi8+f
+         3LHgBZL+mHSdB94F78i6mSfkLtU+O9pgIBxcThgdahmTtGKs4d5Lsqu83UrfeCgMHOMV
+         VfokrzAyd0kcTHT7ZfX1LP9POGs7Ad5ADmOseWh88Y2CcOy9gRUwoEVgzeE3IjjOCgTb
+         3voSKJ5YnrtBVy+UDFQ7MAvQbaTAEGyn5nJOi6l4XiVxXgCx1eRNUVEU7A+PwJNgszB1
+         6glMRMHiZgSm2AOopTNSq90kOSz9dVqb4RPyRat1qeOFieec52EEj6uBrZRBjpzwRHJX
+         2g7w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795871497; x=1796476297;
-        h=content-transfer-encoding:content-type:mime-version:references
-         :message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=Znno/6cdjeGyh4QHR1BzUSwOFxc0tW9FZcWjMXNlod8=;
-        b=P29TV6jnhw5VixxQ9D4MZ4Ti5HZo+2J05iPJpGGVoXMweVh65NuL0UTZ3SqqP8enZR
-         yOiKC7iViZR2Tv4tx+RiyKyHpUWLRB434O+bTIbsnFOnp5T1Tz0kEawuazijxl/yIKI1
-         IMJZLDBZyj0JhJYJxFhZSsq/Ws+bVMcQMZCt3+yujizRqKEMf/iN58e9NTPr65ibulUO
-         MUH7ZXqIvoWkqtFrlAvwa2jnoIqTsIwiWL6721n03aBRvjUr+2paIItvDkwl23KqSCWt
-         KJIgxM1ft0xuz+D6jTUMRr6jZuIY+49Wbbh4zZQaGo/2EG1YqBb2OxJHcFPdXiEqpdxt
-         Z+3A==
-X-Gm-Message-State: APuU4Z+lu7hYHoJgbiw7DEGN4uF8djyMaEPpGU6cIYxrChg0K5Wt9z+m
-	vraSBw7AfvuNlxhwk7GUG+VdCwxjkQyiycX7gs1CTWqq1Pso1s8G5Xua
-X-Gm-Gg: AZFdTZf71LiAsr3sDtpGabT25VPGvuLCmScx2GMG5RN6rtA0ePNgReetb9HLNpxDmNq
-	FxEFnizBh304kKazXbQzgn7xnr14XOSgatX/c3dNsG/zeSPDO+wPt3B1Dg9nCToiqwNkiMnXRBs
-	ax8L4z4Yke6uS3AlIdU72GzSvUGC7bZG+238lyu1Kno7fzsgsg41MRdzVDrLzR5wdYv/DZmu3Cf
-	gknQZ2CD2k3LEWdwAV+6n0/vz+oRMLFRg8mugXkkGxVvueqpB5wZ0ajaxJzo5vza+vPHXCd+Woj
-	R4PrdeleFmhZZyf/u959UD7EYe1E0O5fBwMSUSunCA6a+L8k8cCuKf/LSPmk/KhbFuhcUafoZt0
-	FmZj25I3OdHPEDyeFd+/gv4XR4XNCnkZCf4wSDmoen7sKzJCuam62fBmEkRVB/YSq7nU/ZY1Cd7
-	ZummOPq5e1qrc/WCKIvJ6YNenYbxCYMn9Nshc/NPulP0JtQVOCAvRo4eclOhuo+o9j+r3PIlrIZ
-	UT/6bOL+mzwnjRpO+aXY7VqDHuMXNSp0E+RZ5dPI8sO7gnRDYSfHV0BtL/B0nDQOOXyqa6+gt1J
-	MWsfoDchFSKHoRs73bDYRSl43MQ=
-X-Received: by 2002:a05:7301:b02:b0:382:48a5:cd53 with SMTP id 5a478bee46e88-3857111f187mr29171697eec.31.1795871497156;
-        Sat, 28 Nov 2026 05:11:37 -0800 (PST)
-Received: from pve-server ([49.205.216.49])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-386b9bdafb5sm49634928eec.9.2026.11.28.05.11.32
+        d=1e100.net; s=20260707; t=1795876256; x=1796481056;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=TAeMfYpE8Osn2ZlADlOhEsnNQgCG1HIa4JYQz3ncjy8=;
+        b=Vd11Nog9DW0yNfzJts9fYxhe9VtAd1yduHsoeaPLMn+kt/21spQrfgx5KwTVuD5k6X
+         JObt/Cmdwt9yoRmAuoVlXgFfLTTq7MX/xT3F7Sm2DDzqNLjGSnQi8WxEBpGYPrEUm6/A
+         wkiFJLVXYHgAh8DkX2lat9uHA+mTzhNTGhq/eK5eEUs9mDQcZ3gxaXLY3h34ut09dwE6
+         AI7+20eFuvIhz/v5GCYJA/XzaSJJ08kjuEI/VlFed2WRYOdxifixXsr/09AazS0hltgO
+         /l4NVl3wqOxn9lghkAZCQhbodYS5XFCju9Nwpkeag3LRPihCTPkRFWBQ4wWlK7ayXGIp
+         +KuQ==
+X-Forwarded-Encrypted: i=1; AL+hErHmmFmrEuN4WSkfNtpNpv6P0aFm2oVwpEvYP3Xg68Bw8DMIPBdbGDoLU4RR3IP/nkWd43CWpJRB9m70l+o=@lists.ozlabs.org
+X-Gm-Message-State: APuU4Z+dQtceXwnUcR+AOvO4CGxkxy4RY4sbCNZZ6vpnncnI0upHLhr2
+	9sqin7SZLqiS2HABMnSq0FN2qyF8O1MvTvps948b1nCCPf/UY22l3CTn
+X-Gm-Gg: AZFdTZdD2bOrBvNeD7hwuwM8/G+LjECPikxRDcKTG/OVzxXtg9J/rJBTTaZZB7O7otq
+	m7try37lMt0U+vZ6NaoleS+7cG/mM/AHxgWYZe9sDSWDqxWbhTXcBU4j+r1WJqXtj6yRVfa9UG7
+	SeeMPjie16nsqSXlnKtpwuz3wyw+gEWVU3+CMaZcKjkjYw5EjYhjiopt8/tieNbFJwG8vorDfAR
+	SaUBHpk7NMBEvoiIA5T0hBQ7rVT1ubVtEB34Y1mYus4j7lYtmqkbbPeasmh0Zw1qkMhANzTcjvR
+	Kx1UOeqO9gH8G3TuxZ6/xjI4FfZ7CyXkoojnWEW1ZUsrBRZ0mQVy9TwfFtbQirUJ/i5BBsUbuXF
+	BwJMQyB1xpplpm0BIl4OFsDBV8sti1jqnhHSu4mJARajwCZt2GuorOEF9b+jYL9HoZTvGCYTKdt
+	vPNpNjAPcXu+YICfH/6pgWhP/EBTaK5s6qydxQi5GkEaLp1CL8BRtmNzawUB7aYVpFJAkPI3GmZ
+	cGY5+hpsp8NylcDy6kOOyj7eMeUQ4cH6hAbjR30lbq7D3GBzTtDuFq7s0UJDU1xmr0zEt7scEzs
+	/PZMMtMQ3MCdpAgwwf8YTpz9LD2i
+X-Received: by 2002:a05:693c:8947:20b0:386:9ef2:8e01 with SMTP id 5a478bee46e88-3869ef28fe2mr19916723eec.0.1795876255590;
+        Sat, 28 Nov 2026 06:30:55 -0800 (PST)
+Received: from ubuntu.. ([2405:201:8026:213e:5952:703b:1e4f:156b])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-3866f299d0bsm72064841eec.19.2026.11.28.06.30.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 28 Nov 2026 05:11:36 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Mukesh Kumar Chaurasiya <mkchauras@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Shrikanth Hegde <sshegde@linux.ibm.com>, stable@vger.kernel.org
-Subject: Re: [PATCHv3 2/4] powerpc/watchdog: Disable preemption in arch_touch_nmi_watchdog()
-In-Reply-To: <jylzkbvr.ritesh.list@gmail.com>
-Date: Sat, 28 Nov 2026 18:37:29 +0530
-Message-ID: <33slw1da.ritesh.list@gmail.com>
-References: <cover.1795441238.git.ritesh.list@gmail.com> <8a70fa42449a63a73b8340d3296974cc519b5826.1795441238.git.ritesh.list@gmail.com> <awZ2qXSxXPO3XUUb@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com> <o6bdjkq1.ritesh.list@gmail.com> <76a1d48f-7425-4cd9-a88b-dbb453c6f95c@kernel.org> <jylzkbvr.ritesh.list@gmail.com>
+        Sat, 28 Nov 2026 06:30:55 -0800 (PST)
+From: mdshahid03@gmail.com
+To: maddy@linux.ibm.com
+Cc: mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	ritesh.list@gmail.com,
+	sshegde@linux.ibm.com,
+	kjain@linux.ibm.com,
+	linuxppc-dev@lists.ozlabs.org,
+	Mohammad Shahid <mdshahid03@gmail.com>,
+	Athira Rajeev <atrajeev@linux.ibm.com>
+Subject: [PATCH v3] powerpc/perf: vpa-dtl: fix resource leak on allocation failure
+Date: Sat, 28 Nov 2026 20:00:29 +0530
+Message-ID: <20261128143029.15262-1-mdshahid03@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,110 +98,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_PASS,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+From: Mohammad Shahid <mdshahid03@gmail.com>
 
-Hi Christophe,
+vpa_dtl_event_init() allocates the DTL buffer while holding
+dtl_global_lock. Move the allocation before acquiring the spinlock
+to avoid performing memory allocation while holding a spinlock.
 
-Ritesh Harjani (IBM) <ritesh.list@gmail.com> writes:
+Since the buffer is allocated before acquiring dtl_access_lock
+allocation failure can be returned directly without releasing the
+semaphore.
 
-> "Christophe Leroy (CS GROUP)" <chleroy@kernel.org> writes:
->
->> Le 25/11/2026 à 10:58, Ritesh Harjani a écrit :
->>> Mukesh Kumar Chaurasiya <mkchauras@gmail.com> writes:
->>> 
->>>> On Mon, Nov 23, 2026 at 07:21:51PM +0530, Ritesh Harjani (IBM) wrote:
->>>>> touch_nmi_watchdog() can be called from preemptible context, e.g.
->>>>> sysrq-w via /proc/sysrq-trigger. The powerpc implementation uses
->>>>> smp_processor_id(), so with DEBUG_PREEMPT we get:
->>>>>
->>>>>    root@buildroot:/# echo w > /proc/sysrq-trigger
->>>>>    sysrq: Show Blocked State
->>>>>    BUG: using smp_processor_id() in preemptible [00000000] code: bash/238
->>>>>    caller is arch_touch_nmi_watchdog+0x3c/0xd4
->>>>>    CPU: 0 UID: 0 PID: 238 Comm: bash Not tainted 7.4.0-rc2-00029-g7664547149ae-dirty #126 PREEMPT
->>>>>    Call Trace:
->>>>>     dump_stack_lvl+0x138/0x150 (unreliable)
->>>>>     check_preemption_disabled+0x120/0x158
->>>>>     arch_touch_nmi_watchdog+0x3c/0xd4
->>>>>     show_state_filter+0xf0/0x338
->>>>>     sysrq_handle_showstate_blocked+0x24/0x38
->>>>>     __handle_sysrq+0x134/0x3a8
->>>>>     write_sysrq_trigger+0x178/0x22c
->>>>>     proc_reg_write+0xf4/0x150
->>>>>     vfs_write+0xfc/0x71c
->>>>>     ksys_write+0x8c/0x150
->>>>>     system_call_exception+0x310/0x590
->>>>>     system_call_vectored_common+0x15c/0x2ec
->>>>>    ---- interrupt: 3000 at 0x7ffd01755b98
->>>>>
->>>>> Unlike the generic version, which only sets a flag, we update the CPU's
->>>>> timebase stamp and its SMP watchdog pending bit, so a migration in
->>>>> between touches the state of a CPU we are no longer on.
->>>>>
->>>>> Disable preemption across the update. While at it, let's also mark the
->>>>> function as notrace (since we might be within a tracer when this
->>>>> function gets called).
->>>> Do we need to also mark wd_smp_clear_cpu_pending as notrace?
->>>>
->>> 
->>> aah yes, I didn't see that there is another function which is not
->>> inlined. Thanks for spotting that. The reason I added "notrace" was
->>> mainly to have consistency with kernel/watchdog.c which is due to this
->>> commit:
->>> 
->>> cb9d7fd51d9f ("watchdog: Mark watchdog touch functions as notrace")
->>> 
->>> 
->>> However, after looking more closely now, I don't think we need notrace
->>> here at all. To simply put, on powerpc, we don't use stop_machine() from
->>> within arch_ftrace_update_code() like how arch/arm does and besides, I
->>> think it is even safe for one cpu to be executing the instruction on
->>> powerpc, while another cpu modifying that atomically.
->>
->> But haven't we identified in another discussion that it might be needed 
->> to use stop_machine() ? See 
->> https://lore.kernel.org/all/qzh06fxn.ritesh.list@gmail.com/
->>
->
-> Yes, that is why I also quoted second reason too on why we don't need it
-> on powerpc. But here is the detailed explaination of what I understood -
-> while looking at the history of changes on why "notrace" was added to
-> some arch (like arm or to the generic definition) in the first place.
->
-> On ARM, ftrace call sites were patched under stop_machine() and the code
-> used to rely on other CPUs not executing any call site meanwhile. (Note
-> that this itself is not needed on PowerPC see commit ee456bb346e7).
-> However, with a THUMB-2 instruction set on ARM, a 4byte instruction is
-> only 2 byte aligned, so while patching the instruction it can result
-> into a 2 x 16bit stores. Now after commit ce4f06dcbb5d ("stop_machine:
-> Touch_nmi_watchdog() after MULTI_STOP_PREPARE"), stopped cpus started
-> calling the watchdog touch functions (which were not marked notrace yet)
-> from multi_cpu_stop(), so a stopped cpu could therefore execute the
-> ftrace call site of those functions between the two stores. This
-> resulted into kernel crashes as seen on ARM while enabling/disabling
-> ftrace on ARM kernels built with THUMB-2 instruction set.
-> Therefore commit cb9d7fd51d9f ("watchdog: Mark watchdog touch functions
-> as notrace") was needed on ARM to fix these crashes.
->
-> So I still think we don't need a "notrace" on arch_touch_nmi_watchdog()
-> on powerpc, even if tomorrow, we extend the use of stop_machine() for
-> patching usecase, as we discussed on that other thread.
->
+Free the allocated buffer if acquiring dtl_access_lock fails.
 
-Just wondering if this answer your concerns? I see that others have
-provided their Tested-by on v4 of this patch series. If that looks ok to
-you - I was hoping if we could get that series queued up in powerpc's
-next. Thoughts?
+Fixes: 4708fba19ade ("powerpc/vpa_dtl: Add interface to expose vpa dtl counters via perf")
+Suggested-by: Athira Rajeev <atrajeev@linux.ibm.com>
 
--ritesh
+Signed-off-by: Mohammad Shahid <mdshahid03@gmail.com>
+---
+ arch/powerpc/perf/vpa-dtl.c | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/perf/vpa-dtl.c b/arch/powerpc/perf/vpa-dtl.c
+index 3d34417e6aae..57bc5773949f 100644
+--- a/arch/powerpc/perf/vpa-dtl.c
++++ b/arch/powerpc/perf/vpa-dtl.c
+@@ -338,7 +338,7 @@ static int vpa_dtl_mem_alloc(int cpu)
+ 	if (!dtl_cache)
+ 		return -ENOMEM;
+ 
+-	buf = kmem_cache_alloc_node(dtl_cache, GFP_ATOMIC, cpu_to_node(cpu));
++	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL, cpu_to_node(cpu));
+ 	if (!buf) {
+ 		pr_warn("buffer allocation failed for cpu %d\n", cpu);
+ 		return -ENOMEM;
+@@ -350,6 +350,7 @@ static int vpa_dtl_mem_alloc(int cpu)
+ static int vpa_dtl_event_init(struct perf_event *event)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
++	struct vpa_dtl *dtl = &per_cpu(vpa_dtl_cpu, event->cpu);
+ 
+ 	/* test the event attr type for PMU enumeration */
+ 	if (event->attr.type != event->pmu->type)
+@@ -377,6 +378,10 @@ static int vpa_dtl_event_init(struct perf_event *event)
+ 		return -EINVAL;
+ 	}
+ 
++	/* Allocate before taking the global spinlock */
++	if (vpa_dtl_mem_alloc(event->cpu))
++		return -ENOMEM;
++
+ 	spin_lock(&dtl_global_lock);
+ 
+ 	/*
+@@ -391,13 +396,11 @@ static int vpa_dtl_event_init(struct perf_event *event)
+ 	 */
+ 	if (dtl_global_refc == 0 && !down_write_trylock(&dtl_access_lock)) {
+ 		spin_unlock(&dtl_global_lock);
+-		return -EBUSY;
+-	}
++		/* Release the buffer allocated above */
++		kmem_cache_free(dtl_cache, dtl->buf);
++		dtl->buf = NULL;
+ 
+-	/* Allocate dtl buffer memory */
+-	if (vpa_dtl_mem_alloc(event->cpu)) {
+-		spin_unlock(&dtl_global_lock);
+-		return -ENOMEM;
++		return -EBUSY;
+ 	}
+ 
+ 	/*
+-- 
+2.43.0
 
 
