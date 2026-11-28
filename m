@@ -2,48 +2,79 @@ Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A72E3606A323
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Nov 2026 16:28:14 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA35B606A31E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2026 04:58:33 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wSBlN8+6
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TibZhc1f
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbf3c335rz2ySY;
-	Sat, 28 Nov 2026 03:28:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::2d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795796892;
-	cv=none; b=DmJofaxbrz13uKLJRonaAp4AJubZPPJhT89cf5rVinNjc0X7YLmhiO0MxoCtnUmfUHgRcQ7Iah01vq70YWP+25MALg+UocRKDVTXDcRS++v5DB19KMeP6Fj0kTjJPQo2ykFrIWocTBve4v+ska1z51GvaWY8imK9m0T5V6iDtY4SCnfDpjj6KWq4M7Sv0jNNZjgmNEvRj7KxKqXTWzg2+NBzd/f/LAglwY6yZrFfn/djsMzCSmENR2lEVD8esjFcQij6DLgvGy1Ugk9voAGvMITLDxkeoU1fpElpePzhJURhIBy/sNSmuaR5KMYbOHmqkN4kl52TwsaHsLH3NZI/gA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795796892; c=relaxed/relaxed;
-	bh=VaEAs2JpnZX/wCopgOCtsrHcdnJ8AK5BNMT03LjZSPs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ym9AqimFZuUDkpRuPPISz+PC9vwpKgdDIXVj+rdrqTL55iL1D+6bAAbrDiBFGiUS1vxKPOs5/xWMtB0envPv+PZ3tTporK2BCrPZmsbfXHAGkzaOqyJiVd27NQEJGzFEi4DmK2g64iLqoe8XFd4G8uoCo5bQBdLLXzeswkQUOY/SJEo+XMuVnOM7dol9l8dv7RMe4rZfNlv2Lz/SzICTGDEHWyP3i+/Uaft/OGYu+ru239UU6cGfZmK44ATUzfrIrxK6C1gRxNyhNyRca1SUJj7N8Ucg3exBTJr45ZarrlL64aVQMyl+1GcuZbyQYXE2xjTYGroPr6YVar/KvMje7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wSBlN8+6; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::2d; helo=mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbyjN2fGGz2y7p;
+	Sat, 28 Nov 2026 15:58:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.105.4.254 arc.chain=kernel.org
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795831058;
+	cv=pass; b=a934wVWYuCcKIWQqOfFix+7cScnNGqyDVVYZNqU5UdW+gQ/Xkmyr70WFMMyN2zMZ3223no0bw4ft5bNdERp17vxpfrmF0KpPJTt7EFVPpzNRO5hnKCchonf68XwDDLtzPXLC/CCDuTMmq3mHuVs0WTXi6H7gAvBEayRRBDNYWf403Mp0+e23fIqAS6f+0CP+u4ulxcwM6N6ga2hl0exfcAuQqk37Yres3cMAk/D56O0ZCbH/A82thaxgBGe9FHx/likGDlQyCKDJEEPKf5dY6MdcvlS1tN7EYHfB0twa6LwvTo/MtsZaaS3ydCqpZJBZqTlT74FUUF+CoqFydQZ8tQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795831058; c=relaxed/relaxed;
+	bh=bHxqvPh3ppNYFdCM4V5QvWKC2wpzaqk/bpoy4eBiOkA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=XCHrR9GZhTsDLqKWehSRofToSh/vCMzX/FTbqJLdZxgefFnQoks6Tq1Isn9KlsKgllsZH0qAUcxIsFM4Q0ofyjPpkCOlv1XofS49ILVUhoHv7ayiYAzLBOLrDLeCbkchyIlHbBKVBxs/Z0wFkJ3eU8umGohblSgGE7uinbuUqsuKg/hZMQ06x1o5eMcBtG7eMRl8DH8pHj7V/qKLSWU1bHLPlQUlVOuSWnVo+Bw/xVpUX0JIr7Ot3lT59gc+LHi9Uwe80hAjC4EecY3av1CMCBvrjkbPq7V6/ceflUh/taHNx43HnotSkAJrYy2MS/zN7s8faCcVH+5bZbVdLRMzLA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TibZhc1f; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+akafelixab.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=wSBlN8+6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TibZhc1f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::2d; helo=mta0.migadu.com; envelope-from=usama.arif@linux.dev; receiver=lists.ozlabs.org)
-Received: from mta0.migadu.com (out-45.mta0.migadu.com [IPv6:2001:41d0:1004:224b::2d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+akafelixab.gmail.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbf3X6tvcz2xGw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 03:28:07 +1100 (AEDT)
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-DKIM-Signature: a=rsa-sha256; bh=Rf/MCpoYMsHhZVqN9YRHgJpiVwU0YEKm9+BlNtnxvdI=;
- c=simple/simple; d=linux.dev;
- h=from:to:subject:date:message-id:mime-version:content-type; s=key1;
- t=1795796864; v=1; x=1796401664;
- b=wSBlN8+6CURYpQ1D0VQIh2YyHNh83TwUAONbJyBL5tUf1D7B2KBBvHws1ZV575NwoYlEn3lG
- rcLT/nJTaB55wTpY1F+/Lm8lYPYBZnF12QmL4oYT9wxhUHqB+fVbI8cxF/reUV5nX3xy3OZ0zp0
- G1N6LI8y5fMd4Juj1SJOERsQ=
-X-Envelope-To: linuxppc-dev@lists.ozlabs.org
-Received: by smtp.migadu.com with ESMTPS id 40760d7bb28af9f0;
-	Fri, 27 Nov 2026 16:27:44 +0000
-X-Mizu-Trace-ID: 40760d7bb28af9f0
-X-Migadu-Flow: FLOW_OUT
-Message-ID: <63e62346-fabf-4426-88a3-056e1d909fab@linux.dev>
-Date: Fri, 27 Nov 2026 16:27:39 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbthd5GL6z2xyh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 12:57:37 +1100 (AEDT)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by tor.source.kernel.org (Postfix) with ESMTP id EC49860416;
+	Sat, 28 Nov 2026 01:57:34 +0000 (UTC)
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795831054;
+	b=VdA74k43fIcKqtntVsKcHmiArm4yeT8zKEy3BNSiGuFG/9cigHNdh1lG/WHxmvuNXuu1
+	 Sd4HI/fbY8NhUskCO9PwT5++JHc15pth0qIqWTjb+UWhbbqvKVXSwPccfWKOIzZnfRigv
+	 R7bpcjLhXmysXbs1BPp5R9c12KpEDsoTV4nRYqaggZScA1gGH0c+vuGwVCQHzgFYPFstj
+	 cmhuNB6j/oLzpGoi85LPoKp2CZ5L/a25KXrM5uVksPVIe3S3zWhz1ZLZtn5Rmy3siSUgZ
+	 Rd4M9pXUSnB/mseOjgIdFwqg3Wv/RiVnyLGhk6hh4s/5JoBxCiCOoUispXGr4O5/Wdg==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795831054;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
+	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To:Content-Transfer-Encoding;
+	bh=bHxqvPh3ppNYFdCM4V5QvWKC2wpzaqk/bpoy4eBiOkA=;
+	b=CIMIZ0ab0Wcvms/uNLDeVSzRMyHcXePpeddjI9xV/3af5PvJNeJIais6/gQpxD+n+N6n
+	 cJ2tmnQih8z9R9VcMR8pcIUzsU7yUWUQzReAjJ4ompmLy7fb5yejO0GFXXEVBpafN5TdC
+	 nObXBzOnixdZdr3jbp/I2V5bD20zZPZ0F8rIccnEiflDNmjHD4hRiug9HtczW4TF6n4OZ
+	 HeBDTUbGzeCp1eFj3kOXGDYvr0m62H4RhJypq+GOzL6TeN4lvXj7MtlGkhquIYckA28od
+	 BGfY8qphCH7WN3R9lhnjwuRMMZynUQPdCsI229AtZQuZygstsia6Yqd4mB2YZWwmKjQ==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	(No client certificate requested)
+	by smtp.kernel.org (Postfix) with ESMTPS id 3D58E1F00893;
+	Sat, 28 Nov 2026 01:57:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795831054;
+	bh=bHxqvPh3ppNYFdCM4V5QvWKC2wpzaqk/bpoy4eBiOkA=;
+	h=From:Date:Subject:To:Cc:Reply-To;
+	b=TibZhc1fqM+TLNB8jF61TRaUBRkzq2pxWJZdDcbJFEezJVY6czG4kUvHE0nQ2K4R+
+	 XTpc+qP2zDEQkwTdxuY3wnFV713HgxmMaT8wsNPlqwWGRGa0/GFgPThiBwc/af7/PJ
+	 pxMb1nwAoTpa2KkZTbvKup7nMeaeHHtTTAUPt/w/0QFUOiDR6+6wMlkfqwzkj8E+X8
+	 2wcjbAAOe0WtlybmpBK+FBKZzQjx9dNR2XDS77IIGs1dWx9w5ZfyeLco3fxGRnS16Y
+	 CuX185n7yZP3fZ1rpVO53JthZWCFeA3vZCu0PkF5dT8rQjmpD3tZ9RlGK01ievMgoH
+	 9UkX2bOBFjqXA==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id C4C9C4DF08;
+	Sat, 28 Nov 2026 01:57:33 +0000 (UTC)
+From: Felix Huang via B4 Relay <devnull+akafelixab.gmail.com@kernel.org>
+Date: Fri, 27 Nov 2026 20:58:51 -0500
+Subject: [PATCH] usb: phy: fsl-usb: use NULL instead of plain integer 0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,108 +88,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH for 7.4-rc2+ 1/7] powerpc/book3s64/mm: don't count
- invalidated PMDs in page table check
-To: Zi Yan <ziy@nvidia.com>, David Hildenbrand <david@kernel.org>,
- Baolin Wang <baolin.wang@linux.alibaba.com>,
- "Liam R. Howlett" <liam@infradead.org>, Nico Pache <nico.pache@linux.dev>,
- Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>,
- Barry Song <baohua@kernel.org>, Lance Yang <lance.yang@linux.dev>,
- Kiryl Shutsemau <kas@kernel.org>, Lorenzo Stoakes <ljs@kernel.org>,
- Rik van Riel <riel@surriel.com>, Vlastimil Babka <vbabka@kernel.org>,
- Harry Yoo <harry@kernel.org>, Jann Horn <jannh@google.com>,
- Kyle Zeng <kylebot@openai.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Andrew Donnellan <andrew+kernel@donnellan.id.au>,
- Rohan McLure <rmclure@linux.ibm.com>,
- Pasha Tatashin <pasha.tatashin@soleen.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Shrikanth Hegde <sshegde@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20261015-anon_vma_uaf_fix-v1-0-7b977303b42b@nvidia.com>
- <20261015-anon_vma_uaf_fix-v1-1-7b977303b42b@nvidia.com>
-Content-Language: en-US
-From: Usama Arif <usama.arif@linux.dev>
-In-Reply-To: <20261015-anon_vma_uaf_fix-v1-1-7b977303b42b@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20261127-fsl-usb-null-pointer-v1-1-1d10607f9f39@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQqDMBBA0avIrB1I0qKlVykuHDvRkRAlY0pBv
+ HtTXb7F/zsoJ2GFZ7VD4o+oLLHA1hUMUx9HRnkXgzOusda16DVgVsKYQ8B1kbhxQk9k7w/T9Dc
+ yUNI1sZfvuX11lzXTzMP2f8Fx/AAoLyv+eAAAAA==
+X-Change-ID: 20261127-fsl-usb-null-pointer-fbb14806a3b0
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ Felix Huang <akafelixab@gmail.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795831131; l=1057;
+ i=akafelixab@gmail.com; s=20261128; h=from:subject:message-id;
+ bh=F90+UAhf/qFwjlJxTZbrRIrGBJm8qNw2VciNz2TFR6I=;
+ b=dq/U0Wmrsv/58/mA0pLYFqm6ys7ncWjOkCfRqzTVV8Txb6bluBYA5ekaFRD5GiaKD6V4ywLdq
+ ANp9UlLeWzUAFIiUhqdxB7L2tlZm+sX3zVh3S1nB6g6UhG0Fk3jZQzE
+X-Developer-Key: i=akafelixab@gmail.com; a=ed25519;
+ pk=Axl3BM1UWa+m0/AWcEhRIdIk/WY9FnY4wZkyQn64uVY=
+X-Endpoint-Received: by B4 Relay for akafelixab@gmail.com/20261128 with
+ auth_id=1670
+X-Original-From: Felix Huang <akafelixab@gmail.com>
+Reply-To: akafelixab@gmail.com
 Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=4.0.1
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
+From: Felix Huang <akafelixab@gmail.com>
 
+Fix the following sparse warning in fsl_otg_set_peripheral():
 
-On 15/10/2026 11:13, Zi Yan wrote:
-> pmdp_invalidate() replaces a huge PMD with an invalidated one
-> (_PAGE_PRESENT cleared and _PAGE_INVALID set) and calls
-> page_table_check_pmd_clear() on the old entry. This decreases the page
-> table check map count. When the invalidated entry is later replaced with
-> set_pmd_at(), as MADV_COLD, page_mkclean_one() and change_huge_pmd() do,
-> page_table_check_pmds_set() in set_pmd_at() clears it a second time and
-> decreases the map count because pmd_user_accessible_page() still counts it
-> as a live user mapping. The same happens when it is cleared with
-> pmdp_huge_get_and_clear(). Then the map count underflows and hits BUG_ON()
-> in page_table_check_clear().
-> 
-> Found by code inspection and confirmed in QEMU (pseries, POWER9, 64K
-> pages, CONFIG_PAGE_TABLE_CHECK_ENFORCED=y): MADV_COLD or mprotect() on
-> an anonymous THP hits the BUG_ON() with both the radix and the hash MMU.
-> 
-> Fix it by only counting entries that are hardware valid, so an
-> invalidated entry is skipped, as the patch "riscv: mm: exclude invalid
-> THP PMDs from page table check" did for riscv.
-> 
-> Fixes: 641d47d4c963 ("powerpc/mm: support page table check")
-> Cc: stable@vger.kernel.org
-> Assisted-by: LLM
-> Signed-off-by: Zi Yan <ziy@nvidia.com>
-> To: Madhavan Srinivasan <maddy@linux.ibm.com>
-> To: Andrew Donnellan <andrew+kernel@donnellan.id.au>
-> To: Rohan McLure <rmclure@linux.ibm.com>
-> To: Pasha Tatashin <pasha.tatashin@soleen.com>
-> To: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-> Cc: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-> Cc: Shrikanth Hegde <sshegde@linux.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index dff8790a047db..392474972777c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -1091,7 +1091,8 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
->  #define pmd_user_accessible_page pmd_user_accessible_page
->  static inline bool pmd_user_accessible_page(struct mm_struct *mm, unsigned long addr, pmd_t pmd)
->  {
-> -	return pmd_leaf(pmd) && pte_user_accessible_page(mm, addr, pmd_pte(pmd));
-> +	return pmd_leaf(pmd) && pte_hw_valid(pmd_pte(pmd)) &&
-> +	       pte_user_accessible_page(mm, addr, pmd_pte(pmd));
->  }
->  
+  drivers/usb/phy/phy-fsl-usb.c:618:31: warning: Using plain integer as NULL pointer
 
-LGTM.
+Assign NULL instead of 0 to the struct usb_gadget pointer otg->gadget.
 
-It fixes the double decrement in the page-table checker
-and preserves how kernel walkers recognize the temporarily
-invalid PMD.
+Signed-off-by: Felix Huang <akafelixab@gmail.com>
+---
+ drivers/usb/phy/phy-fsl-usb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Usama Arif <usama.arif@linux.dev>
+diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
+index 1986f7e9d..110b277aa 100644
+--- a/drivers/usb/phy/phy-fsl-usb.c
++++ b/drivers/usb/phy/phy-fsl-usb.c
+@@ -615,7 +615,7 @@ static int fsl_otg_set_peripheral(struct usb_otg *otg,
+ 		if (!otg->default_a)
+ 			otg->gadget->ops->vbus_draw(otg->gadget, 0);
+ 		usb_gadget_vbus_disconnect(otg->gadget);
+-		otg->gadget = 0;
++		otg->gadget = NULL;
+ 		otg_dev->fsm.b_bus_req = 0;
+ 		otg_statemachine(&otg_dev->fsm);
+ 		return 0;
 
+---
+base-commit: f4585067150b85e33f60876149a6e742928da75e
+change-id: 20261127-fsl-usb-null-pointer-fbb14806a3b0
 
->  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> 
+Best regards,
+--  
+Felix Huang <akafelixab@gmail.com>
+
 
 
