@@ -1,80 +1,56 @@
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EA35B606A31E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2026 04:58:33 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 92FD7606A31C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Nov 2026 05:08:38 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TibZhc1f
+	dkim=pass (2048-bit key, unprotected) header.d=protonmail.com header.i=@protonmail.com header.a=rsa-sha256 header.s=protonmail3 header.b=eP7Aqklo
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4jbyjN2fGGz2y7p;
-	Sat, 28 Nov 2026 15:58:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=172.105.4.254 arc.chain=kernel.org
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795831058;
-	cv=pass; b=a934wVWYuCcKIWQqOfFix+7cScnNGqyDVVYZNqU5UdW+gQ/Xkmyr70WFMMyN2zMZ3223no0bw4ft5bNdERp17vxpfrmF0KpPJTt7EFVPpzNRO5hnKCchonf68XwDDLtzPXLC/CCDuTMmq3mHuVs0WTXi6H7gAvBEayRRBDNYWf403Mp0+e23fIqAS6f+0CP+u4ulxcwM6N6ga2hl0exfcAuQqk37Yres3cMAk/D56O0ZCbH/A82thaxgBGe9FHx/likGDlQyCKDJEEPKf5dY6MdcvlS1tN7EYHfB0twa6LwvTo/MtsZaaS3ydCqpZJBZqTlT74FUUF+CoqFydQZ8tQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1795831058; c=relaxed/relaxed;
-	bh=bHxqvPh3ppNYFdCM4V5QvWKC2wpzaqk/bpoy4eBiOkA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=XCHrR9GZhTsDLqKWehSRofToSh/vCMzX/FTbqJLdZxgefFnQoks6Tq1Isn9KlsKgllsZH0qAUcxIsFM4Q0ofyjPpkCOlv1XofS49ILVUhoHv7ayiYAzLBOLrDLeCbkchyIlHbBKVBxs/Z0wFkJ3eU8umGohblSgGE7uinbuUqsuKg/hZMQ06x1o5eMcBtG7eMRl8DH8pHj7V/qKLSWU1bHLPlQUlVOuSWnVo+Bw/xVpUX0JIr7Ot3lT59gc+LHi9Uwe80hAjC4EecY3av1CMCBvrjkbPq7V6/ceflUh/taHNx43HnotSkAJrYy2MS/zN7s8faCcVH+5bZbVdLRMzLA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TibZhc1f; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+akafelixab.gmail.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4jbyx058CLz2y97;
+	Sat, 28 Nov 2026 16:08:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=109.224.244.28
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1795837872;
+	cv=none; b=mHOxmo9LA1NPVEToM37csTf9SbwcIKXz8hKdwe1GoxcscqZUzUVFPNZlzlPVoyzMRY3v1O9W/8XEX2c0ARxOU6hX92YkogJKjfR8aVWDzfvUc9gqF+6QQpcE/1mkJ+vVe4FU+L/In8nWWFdpLkbz5HviL6cumcpeGrNF2EgGBTQbfHyEVXI+67MRZKeXu4rNqLJnaEymU7lv0dO0GbMe8Cw/DCoknYhxjWqEaGjIj5YgK6LwhD41gklnvLZJKcuicGKjOJA9eJHXN5DrAdqZCdzDLff5IqzSrEotzC9deeYl01zywyDTwsD7YPd3KiB1D0kOOI2E3a/5a9c+9laxmw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1795837872; c=relaxed/relaxed;
+	bh=izHP/C9NAuemLVsJ9g8YC454Fc8reNwACxwd8cLNkco=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=RjkNaB0/2NSaQxGdtySPOafmF9KdjJa6bl8TjUv744mIzRS4SNnPOAA4ZHY+YGbtHFhU/Mb/z042TT+1YQpJtPkpZlVxehQqyW2smd7eDJOp24S/Sq+4B3QyAHi0ICuUSuiUDb/vPNKhiAGSHhcRjHCIyD9vJsv7rKs8VGO+P4oL5FBHt29F/mL4CiIiIYqV5B0oQgPNMoizhAnKoFMrMW+b3nQy2LDXYmZzbdYiZ3gdf290FrgUjZS+4bQejE7L/YxAPQqLFyPrLzDsMw7b6Cy98iUrIPXwZVsWsFn8OyHwmvyMNkBkOry591WGxRa2IGhFA5cOUT9gpOXBmfgSVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com; dkim=pass (2048-bit key; secure) header.d=protonmail.com header.i=@protonmail.com header.a=rsa-sha256 header.s=protonmail3 header.b=eP7Aqklo; dkim-atps=neutral; spf=pass (client-ip=109.224.244.28; helo=mail-24428.protonmail.ch; envelope-from=tomgrzybow@protonmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=protonmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=protonmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=TibZhc1f;
+	dkim=pass (2048-bit key; secure) header.d=protonmail.com header.i=@protonmail.com header.a=rsa-sha256 header.s=protonmail3 header.b=eP7Aqklo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+akafelixab.gmail.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=protonmail.com (client-ip=109.224.244.28; helo=mail-24428.protonmail.ch; envelope-from=tomgrzybow@protonmail.com; receiver=lists.ozlabs.org)
+Received: from mail-24428.protonmail.ch (mail-24428.protonmail.ch [109.224.244.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbthd5GL6z2xyh
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 12:57:37 +1100 (AEDT)
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by tor.source.kernel.org (Postfix) with ESMTP id EC49860416;
-	Sat, 28 Nov 2026 01:57:34 +0000 (UTC)
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795831054;
-	b=VdA74k43fIcKqtntVsKcHmiArm4yeT8zKEy3BNSiGuFG/9cigHNdh1lG/WHxmvuNXuu1
-	 Sd4HI/fbY8NhUskCO9PwT5++JHc15pth0qIqWTjb+UWhbbqvKVXSwPccfWKOIzZnfRigv
-	 R7bpcjLhXmysXbs1BPp5R9c12KpEDsoTV4nRYqaggZScA1gGH0c+vuGwVCQHzgFYPFstj
-	 cmhuNB6j/oLzpGoi85LPoKp2CZ5L/a25KXrM5uVksPVIe3S3zWhz1ZLZtn5Rmy3siSUgZ
-	 Rd4M9pXUSnB/mseOjgIdFwqg3Wv/RiVnyLGhk6hh4s/5JoBxCiCOoUispXGr4O5/Wdg==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795831054;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=bHxqvPh3ppNYFdCM4V5QvWKC2wpzaqk/bpoy4eBiOkA=;
-	b=CIMIZ0ab0Wcvms/uNLDeVSzRMyHcXePpeddjI9xV/3af5PvJNeJIais6/gQpxD+n+N6n
-	 cJ2tmnQih8z9R9VcMR8pcIUzsU7yUWUQzReAjJ4ompmLy7fb5yejO0GFXXEVBpafN5TdC
-	 nObXBzOnixdZdr3jbp/I2V5bD20zZPZ0F8rIccnEiflDNmjHD4hRiug9HtczW4TF6n4OZ
-	 HeBDTUbGzeCp1eFj3kOXGDYvr0m62H4RhJypq+GOzL6TeN4lvXj7MtlGkhquIYckA28od
-	 BGfY8qphCH7WN3R9lhnjwuRMMZynUQPdCsI229AtZQuZygstsia6Yqd4mB2YZWwmKjQ==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
-	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 3D58E1F00893;
-	Sat, 28 Nov 2026 01:57:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795831054;
-	bh=bHxqvPh3ppNYFdCM4V5QvWKC2wpzaqk/bpoy4eBiOkA=;
-	h=From:Date:Subject:To:Cc:Reply-To;
-	b=TibZhc1fqM+TLNB8jF61TRaUBRkzq2pxWJZdDcbJFEezJVY6czG4kUvHE0nQ2K4R+
-	 XTpc+qP2zDEQkwTdxuY3wnFV713HgxmMaT8wsNPlqwWGRGa0/GFgPThiBwc/af7/PJ
-	 pxMb1nwAoTpa2KkZTbvKup7nMeaeHHtTTAUPt/w/0QFUOiDR6+6wMlkfqwzkj8E+X8
-	 2wcjbAAOe0WtlybmpBK+FBKZzQjx9dNR2XDS77IIGs1dWx9w5ZfyeLco3fxGRnS16Y
-	 CuX185n7yZP3fZ1rpVO53JthZWCFeA3vZCu0PkF5dT8rQjmpD3tZ9RlGK01ievMgoH
-	 9UkX2bOBFjqXA==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id C4C9C4DF08;
-	Sat, 28 Nov 2026 01:57:33 +0000 (UTC)
-From: Felix Huang via B4 Relay <devnull+akafelixab.gmail.com@kernel.org>
-Date: Fri, 27 Nov 2026 20:58:51 -0500
-Subject: [PATCH] usb: phy: fsl-usb: use NULL instead of plain integer 0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4jbxCf3Mgtz2xyh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Nov 2026 14:51:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
+	s=protonmail3; t=1795837860; x=1796097060;
+	bh=izHP/C9NAuemLVsJ9g8YC454Fc8reNwACxwd8cLNkco=;
+	h=Date:To:From:Cc:Subject:Message-ID:In-Reply-To:References:
+	 Feedback-ID:From:To:Cc:Date:Subject:Reply-To:Feedback-ID:
+	 Message-ID:BIMI-Selector;
+	b=eP7AqkloBx33u1Agsi+4tJN900omtCR/flEW0QRuHdCk2oebkXt3Ea9WFgc9Ir336
+	 5QWLMmVqlQlY9bxyDHPb3C+2Mlk4rNNHyHSicLHIZuSVrZb6/rDb4uyPSMvR6ctLSp
+	 iAZxW6gegsvwh/dbabFuE6Nvg79CqCDFoyfl+QvpQG9vf/+fP4qNJnVpVcC/FaN1Ym
+	 9tEmFnFoNQ+1+IDbOmFpP/go6DCx86jRg+jPdCuXxGQZYbqAN6bD2QW7B0Rygv5Fz0
+	 xnFx1hugtKu146806uVXccnZyisHrFH4QYpJrMCdQv0BWrg+g8QkpdnZ1mHkLnO7j4
+	 VYK6oHD1L1vlg==
+Date: Sat, 28 Nov 2026 03:50:54 +0000
+To: Dan Whitehouse <drw@dim-sum.org>
+From: Thomas Grzybowski <tomgrzybow@protonmail.com>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, debian-powerpc <debian-powerpc@lists.debian.org>, gentoo-powerpc <gentoo-powerpc@lists.gentoo.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Should the community reconsider their efforts on PowerPC?
+Message-ID: <5HJPHLEATDG843styfhcwgdprq49njzb8oUg3r2TrzD6FP0G-4j-GCi50HWN4xFE1WywTkebXjn-2xmyao1N7AVCc17_S7w2YbaPTBuXCQE=@protonmail.com>
+In-Reply-To: <86799B87-DFD3-44F3-8A04-00972FBADF9C@dim-sum.org>
+References: <5793bff62d5995d322659d4a1d311bc4c795a829.camel@physik.fu-berlin.de> <86799B87-DFD3-44F3-8A04-00972FBADF9C@dim-sum.org>
+Feedback-ID: 8225560:user:proton
+X-Pm-Message-ID: 02f92fe74abb81069d914596927c002b1f7ad1b2
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,69 +64,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 Precedence: list
 X-Archived-By: <archiver.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261127-fsl-usb-null-pointer-v1-1-1d10607f9f39@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/yXMQQqDMBBA0avIrB1I0qKlVykuHDvRkRAlY0pBv
- HtTXb7F/zsoJ2GFZ7VD4o+oLLHA1hUMUx9HRnkXgzOusda16DVgVsKYQ8B1kbhxQk9k7w/T9Dc
- yUNI1sZfvuX11lzXTzMP2f8Fx/AAoLyv+eAAAAA==
-X-Change-ID: 20261127-fsl-usb-null-pointer-fbb14806a3b0
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- Felix Huang <akafelixab@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795831131; l=1057;
- i=akafelixab@gmail.com; s=20261128; h=from:subject:message-id;
- bh=F90+UAhf/qFwjlJxTZbrRIrGBJm8qNw2VciNz2TFR6I=;
- b=dq/U0Wmrsv/58/mA0pLYFqm6ys7ncWjOkCfRqzTVV8Txb6bluBYA5ekaFRD5GiaKD6V4ywLdq
- ANp9UlLeWzUAFIiUhqdxB7L2tlZm+sX3zVh3S1nB6g6UhG0Fk3jZQzE
-X-Developer-Key: i=akafelixab@gmail.com; a=ed25519;
- pk=Axl3BM1UWa+m0/AWcEhRIdIk/WY9FnY4wZkyQn64uVY=
-X-Endpoint-Received: by B4 Relay for akafelixab@gmail.com/20261128 with
- auth_id=1670
-X-Original-From: Felix Huang <akafelixab@gmail.com>
-Reply-To: akafelixab@gmail.com
-Content-Transfer-Encoding: 7bit
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_PASS,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=4.0.1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+X-Spam-Status: No, score=-2.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_PASS,
+	SPF_PASS autolearn=no autolearn_force=no version=4.0.1
 X-Spam-Checker-Version: SpamAssassin 4.0.1 (2024-03-26) on
 	aws-us-west-2-korg-listserv-alma10-1
 
-From: Felix Huang <akafelixab@gmail.com>
-
-Fix the following sparse warning in fsl_otg_set_peripheral():
-
-  drivers/usb/phy/phy-fsl-usb.c:618:31: warning: Using plain integer as NULL pointer
-
-Assign NULL instead of 0 to the struct usb_gadget pointer otg->gadget.
-
-Signed-off-by: Felix Huang <akafelixab@gmail.com>
----
- drivers/usb/phy/phy-fsl-usb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-index 1986f7e9d..110b277aa 100644
---- a/drivers/usb/phy/phy-fsl-usb.c
-+++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -615,7 +615,7 @@ static int fsl_otg_set_peripheral(struct usb_otg *otg,
- 		if (!otg->default_a)
- 			otg->gadget->ops->vbus_draw(otg->gadget, 0);
- 		usb_gadget_vbus_disconnect(otg->gadget);
--		otg->gadget = 0;
-+		otg->gadget = NULL;
- 		otg_dev->fsm.b_bus_req = 0;
- 		otg_statemachine(&otg_dev->fsm);
- 		return 0;
-
----
-base-commit: f4585067150b85e33f60876149a6e742928da75e
-change-id: 20261127-fsl-usb-null-pointer-fbb14806a3b0
-
-Best regards,
---  
-Felix Huang <akafelixab@gmail.com>
+I would like to suggest that we put together a PowerPC release which largel=
+y works, and simply support that static release, ad infinitum.
 
 
+Thomas Grzybowski
+
+Sent with Proton Mail secure email.
+
+On Thursday, November 26th, 2026 at 11:21 PM, Dan Whitehouse <drw@dim-sum.o=
+rg> wrote:
+
+> Adrian,
+> Before I write anything else on this subject I would like you to know tha=
+t I=E2=80=99m extremely grateful for your efforts.
+> I cannot possibly express how much I appreciate the hard work you have pu=
+t in to not only the PPC ports, but all the work you do not only for the De=
+bian project, but also free software in general.
+> Selfishly I would like you to continue working on PPC however I=E2=80=
+=99ve witnessed things like kvm-pr wither on the vine and seen Red Hat depr=
+ecate kvm on IBM=E2=80=99s PPC platforms.
+>=20
+> To make a long story short, speaking selfishly, I would answer your quest=
+ion with a resounding =E2=80=9CNO!=E2=80=9D. However, that doesn=E2=80=
+=99t mean that I don=E2=80=99t (at some level) understand the challenges yo=
+u face and would not understand if you decided to call it a day.
+> If it=E2=80=99s not fun anymore and is more trouble than its worth, I won=
+=E2=80=99t begrudge you putting it to bed. I=E2=80=99ll still be appreciati=
+ve of all the work you have done and I won=E2=80=99=E2=80=99t begrudge you =
+spending your efforts on other ports.
+>=20
+> Thanks again,
+>=20
+> Dan
+>=20
+>=20
+> > On 26 Nov 2026, at 21:04, John Paul Adrian Glaubitz <glaubitz@physik.fu=
+-berlin.de> wrote:
+> >
+> > Hello,
+> >
+> > as some of you may know, IBM has been pushing to deprecate any PowerPC
+> > platforms that they aren't earning money with anymore. This includes
+> > mainly POWER platforms before POWER8 and big-endian PowerPC.
+> >
+> > Recently, IBM engineers have remove JIT support in OpenJDK after sendin=
+g
+> > an email for feedback to a non-public, unmonitored Debian email address=
+ [1].
+> >
+> > Since IBM engineers have also killed off support for big-endian PowerPC
+> > in Golang, V8 and also don't look after LLVM on big-endian PowerPC anym=
+ore,
+> > I wonder what is left for the community working on PowerPC.
+> >
+> > I personally feel that IBM thinks they own the PowerPC platform in the
+> > open-source world and can single-handedly decide whether a certain proj=
+ect
+> > will support older PowerPC targets or not. And I'm starting to feel tha=
+t
+> > this will sooner or later also happen to the kernel parts, GCC and binu=
+tils.
+> >
+> > As someone who has invested endless hours of my free time into working
+> > Linux and open-source software on PowerPC, I feel really let down by
+> > how IBM is handling this and currently I feel like it's starting to bec=
+ome
+> > pointless to invest my free time working on PowerPC support in Linux
+> > and open-source projects.
+> >
+> > Adrian
+> >
+> >> [1] https://bugs.openjdk.org/browse/JDK-8331859
+> >
+> > --
+> > .''`.  John Paul Adrian Glaubitz
+> > : :' :  Debian Developer
+> > `. `'   Physicist
+> >  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+> >
+>=20
+> 
 
